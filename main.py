@@ -1,0 +1,226 @@
+
+from urllib.parse import urlparse
+import base64
+import datetime
+import json
+import requests
+import hashlib
+import os
+import uuid
+from cryptography.hazmat.backends import default_backend as crypto_default_backend
+from cryptography.hazmat.primitives import serialization as crypto_serialization
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+
+from typing import Union
+import asyncio
+import requests
+
+from fastapi import FastAPI
+import json
+from fastapi import APIRouter, Request, Depends, Query, HTTPException, status, Response
+
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
+app = FastAPI()
+
+
+API_POINT = "/api"
+HOST = "www.adelphos.it"
+HOST_API = HOST + API_POINT
+USER_ID = "daemon"
+
+sender_url = f"https://{HOST_API}/users/{USER_ID}"
+sender_key = f"{sender_url}#main-key"
+
+activity_id = "https://www.adelphos.it/users/bank/follows/test"
+
+
+KEY_FILE = "private_key.pem"
+
+if os.path.exists(KEY_FILE):
+    print(f"Loading existing private key from {KEY_FILE}.")
+    with open(KEY_FILE, "rb") as f:
+        private_key = crypto_serialization.load_pem_private_key(f.read(), password=None)
+else:
+    print(f"No key file found. Generating new private key and saving to {KEY_FILE}.")
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    with open(KEY_FILE, "wb") as f:
+        f.write(private_key.private_bytes(
+            encoding=crypto_serialization.Encoding.PEM,
+            format=crypto_serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=crypto_serialization.NoEncryption()
+        ))
+
+public_key = private_key.public_key().public_bytes(
+    encoding=crypto_serialization.Encoding.PEM,
+    format=crypto_serialization.PublicFormat.SubjectPublicKeyInfo
+).decode('utf-8')
+
+
+@app.get("/.well-known/webfinger",
+    description="Adelphos's end point",
+)
+def webfinger(resource: str = Query(..., alias="resource")):
+
+    print(str(resource))
+
+    if resource != f"acct:{USER_ID}@{HOST}":
+        HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    response = Response(
+        content=json.dumps({
+            "subject": f"acct:{USER_ID}@{HOST}",
+            "links": [
+                {
+                    "rel": "self",
+                    "type": "application/activity+json",
+                    "href": f"https://{HOST_API}/users/{USER_ID}"
+                }
+            ]
+        })
+    )
+    
+    response.headers['Content-Type'] = 'application/jrd+json'
+    
+    return response
+
+
+@app.get('/users/{username}')
+def user(username : str):
+    if username != USER_ID:
+        return Response(status_code=404)
+
+    response_ob = {
+        "@context": [
+            "https://www.w3.org/ns/activitystreams",
+            "https://w3id.org/security/v1",
+        ],
+        "id": f"https://{HOST_API}/users/{USER_ID}",
+        "inbox": f"https://{HOST_API}/users/{USER_ID}/inbox",
+        "outbox": f"https://www.adelphos.it/users/{USER_ID}/outbox",
+        "type": "Person",
+        "name": "Adelphos' activity pub daemon",
+        "preferredUsername": "daemon",
+        "publicKey": {
+            "id": f"https://{HOST_API}/users/{USER_ID}#main-key",
+            "id": f"https://{HOST_API}/users/{USER_ID}",
+            "publicKeyPem": public_key
+        }
+    }
+
+    resp_json = jsonable_encoder(response_ob)
+
+    response = JSONResponse(content = resp_json)
+
+    response.headers['Content-Type'] = 'application/activity+json'
+
+    return response
+
+
+
+
+INBOX_CONTENT = list()
+
+async def send_echo(actor_str: str):
+    """Waits for a delay and then sends a reminder."""
+
+    print("I wait 3 seconds")
+    await asyncio.sleep(3)
+    print(f"NOW I send it! to {actor_str}")
+    # for now this is an assumption.
+    actor_inbox = actor_str + "/inbox"
+    print(f"I assume the inbox is: {actor_inbox}")
+
+    current_date = datetime.datetime.now().strftime(
+            '%a, %d %b %Y %H:%M:%S GMT')
+
+    recipient_parsed = urlparse(actor_inbox)
+    recipient_host = recipient_parsed.netloc
+    recipient_path = recipient_parsed.path
+
+    follow_request_message = {
+            "@context": "https://www.w3.org/ns/activitystreams",
+            "id": activity_id,
+            "type": "Create",
+            "actor": sender_url,
+            "object": {
+                "id": f"{sender_url}/posts/{uuid.uuid4()}",
+                "type": "Note",
+                "attributedTo": sender_url,
+                "to": [actor_str],
+                "content": f"echo from daemon {current_date}",
+                }
+
+            }
+
+    follow_request_json = json.dumps(follow_request_message)
+    digest = base64.b64encode(hashlib.sha256(
+        follow_request_json.encode('utf-8')).digest())
+
+    signature_text = b'(request-target): post %s\ndigest: SHA-256=%s\nhost: %s\ndate: %s' % (recipient_path.encode('utf-8'), digest, recipient_host.encode('utf-8'), current_date.encode('utf-8'))
+
+    raw_signature = private_key.sign(
+            signature_text,
+            padding.PKCS1v15(),
+            hashes.SHA256()
+            )
+
+    print(f"sender {sender_key}")
+    signature_str = base64.b64encode(raw_signature).decode('utf-8') 
+    print(f"signature {signature_str}")
+
+    signature_header = f'keyId="{sender_key}",algorithm="rsa-sha256",headers="(request-target) digest host date",signature="{signature_str}"' 
+
+    print(f"total {signature_header}")
+    headers = {
+            'Date': current_date,
+            'Content-Type': 'application/activity+json',
+            'Host': recipient_host,
+            'Digest': "SHA-256="+digest.decode('utf-8'),
+            'Signature': signature_header
+            }
+
+
+    r = requests.post(actor_inbox, headers=headers, 
+                      json=follow_request_message)
+
+
+    print(r)
+
+
+
+# I take the raw request and this is the inbox
+@app.post('/users/{username}/inbox')
+async def user_inbox(username: str, request: Request):
+    print(username)
+
+    if username != USER_ID:
+        return Response(status_code=400)
+
+    #global INBOX_CONTENT
+
+    body = await request.body()
+    body_str = body.decode()
+
+    # Now I should get the actor field and schedule an echo.
+
+    body_ob = json.loads(body_str)
+
+    actor_str = body_ob['actor']
+
+
+    print ("======================================== Start")
+    print (f"{str(request.headers)}")
+    print (f"---------------- actor [{actor_str}]-------------------")
+    print (f"{body_str}")
+    print ("======================================== End")
+
+    asyncio.create_task(send_echo(actor_str)) 
+
+    #INBOX_CONTENT.append( 
+    #        (request.headers, body_str))
+
+    return Response(status_code=202)
+
+
