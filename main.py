@@ -1,5 +1,6 @@
-
+import typer
 from urllib.parse import urlparse
+import sys
 import base64
 import datetime
 import json
@@ -22,6 +23,16 @@ from fastapi import APIRouter, Request, Depends, Query, HTTPException, status, R
 
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
+
+from app.keys import load_keys, public_key, private_key
+from app.logging import gCon
+from app.config import load_conf
+import uvicorn
+
+
+ADELPHOS_AP_ENV_KEY = "ADELPHOS_AP_INSTANCE"
+
+
 app = FastAPI()
 
 
@@ -37,25 +48,6 @@ activity_id = "https://www.adelphos.it/users/bank/follows/test"
 
 
 KEY_FILE = "private_key.pem"
-
-if os.path.exists(KEY_FILE):
-    print(f"Loading existing private key from {KEY_FILE}.")
-    with open(KEY_FILE, "rb") as f:
-        private_key = crypto_serialization.load_pem_private_key(f.read(), password=None)
-else:
-    print(f"No key file found. Generating new private key and saving to {KEY_FILE}.")
-    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    with open(KEY_FILE, "wb") as f:
-        f.write(private_key.private_bytes(
-            encoding=crypto_serialization.Encoding.PEM,
-            format=crypto_serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=crypto_serialization.NoEncryption()
-        ))
-
-public_key = private_key.public_key().public_bytes(
-    encoding=crypto_serialization.Encoding.PEM,
-    format=crypto_serialization.PublicFormat.SubjectPublicKeyInfo
-).decode('utf-8')
 
 
 @app.get("/.well-known/webfinger",
@@ -118,9 +110,6 @@ def user(username : str):
     return response
 
 
-
-
-INBOX_CONTENT = list()
 
 async def send_echo(actor_str: str):
     """Waits for a delay and then sends a reminder."""
@@ -198,7 +187,6 @@ async def user_inbox(username: str, request: Request):
     if username != USER_ID:
         return Response(status_code=400)
 
-    #global INBOX_CONTENT
 
     body = await request.body()
     body_str = body.decode()
@@ -224,3 +212,22 @@ async def user_inbox(username: str, request: Request):
     return Response(status_code=202)
 
 
+def main(port: int = 8000, env: str = "dev"):
+    global KEY_FILE
+
+    instance_name = os.getenv(ADELPHOS_AP_ENV_KEY)
+    if (instance_name is None):
+        print(f"{ADELPHOS_AP_ENV_KEY} env var not defined, please provide it")
+        sys.exit(1)
+
+    load_conf(instance_name)
+
+    gCon.log(f"the instance is {instance_name}, loading keys")
+    load_keys(KEY_FILE)
+
+
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)
+
+
+if __name__ == "__main__":
+    typer.run(main)
