@@ -2,6 +2,7 @@
 
 import os
 from cryptography.hazmat.primitives import serialization as crypto_serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from .logging import gCon
 
 public_key = None

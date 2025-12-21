@@ -27,27 +27,27 @@ from fastapi.responses import JSONResponse
 from app.keys import load_keys, public_key, private_key
 from app.logging import gCon
 from app.config import load_conf
+from app.config import get_config
 import uvicorn
 
 
 ADELPHOS_AP_ENV_KEY = "ADELPHOS_AP_INSTANCE"
 
 
-app = FastAPI()
+app = FastAPI(root_path="/api")
 
 
 API_POINT = "/api"
-HOST = "www.adelphos.it"
+HOST = "to_be_customized"
 HOST_API = HOST + API_POINT
-USER_ID = "daemon"
 
-sender_url = f"https://{HOST_API}/users/{USER_ID}"
-sender_key = f"{sender_url}#main-key"
+# this is equal for all the instances.
+USER_ID = "daemon"
 
 activity_id = "https://www.adelphos.it/users/bank/follows/test"
 
 
-KEY_FILE = "private_key.pem"
+#KEY_FILE = "private_key.pem"
 
 
 @app.get("/.well-known/webfinger",
@@ -55,10 +55,14 @@ KEY_FILE = "private_key.pem"
 )
 def webfinger(resource: str = Query(..., alias="resource")):
 
-    print(str(resource))
+    #global HOST
+    HOST = get_config()['General']['host']
+    HOST_API = HOST + API_POINT
+
+    print(f"------- host {HOST} resource {resource}")
 
     if resource != f"acct:{USER_ID}@{HOST}":
-        HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        return Response(status_code=404)
 
     response = Response(
         content=json.dumps({
@@ -80,6 +84,12 @@ def webfinger(resource: str = Query(..., alias="resource")):
 
 @app.get('/users/{username}')
 def user(username : str):
+    HOST = get_config()['General']['host']
+    HOST_API = HOST + API_POINT
+
+    #global HOST_API
+    #global USER_ID
+
     if username != USER_ID:
         return Response(status_code=404)
 
@@ -120,6 +130,15 @@ async def send_echo(actor_str: str):
     # for now this is an assumption.
     actor_inbox = actor_str + "/inbox"
     print(f"I assume the inbox is: {actor_inbox}")
+
+    HOST = get_config()['General']['host']
+    HOST_API = HOST + API_POINT
+
+
+    sender_url = f"https://{HOST_API}/users/{USER_ID}"
+    sender_key = f"{sender_url}#main-key"
+
+
 
     current_date = datetime.datetime.now().strftime(
             '%a, %d %b %Y %H:%M:%S GMT')
@@ -206,14 +225,10 @@ async def user_inbox(username: str, request: Request):
 
     asyncio.create_task(send_echo(actor_str)) 
 
-    #INBOX_CONTENT.append( 
-    #        (request.headers, body_str))
-
     return Response(status_code=202)
 
 
-def main(port: int = 8000, env: str = "dev"):
-    global KEY_FILE
+def main():
 
     instance_name = os.getenv(ADELPHOS_AP_ENV_KEY)
     if (instance_name is None):
@@ -223,10 +238,19 @@ def main(port: int = 8000, env: str = "dev"):
     load_conf(instance_name)
 
     gCon.log(f"the instance is {instance_name}, loading keys")
-    load_keys(KEY_FILE)
+
+    port = get_config()['General']['port']
+    key_file = get_config()['General']['private_key']
+    global HOST
+    global HOST_API
+    HOST  = get_config()['General']['host']
+    HOST_API = HOST + API_POINT
+    load_keys(key_file)
 
 
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)
+    gCon.log(f"start here port {port}")
+    gCon.log(f"{HOST}    host_api {HOST_API}")
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,18 @@
+
+
+
+# A configuration file for the project.
+# this is a prototype, move it to
+# adelphos_ap_$instance.toml
+
+
+[General]
+
+# this is the port which this server uses.
+port = 8000
+
+db_name = "db1"
+
+private_key = "private_key.pem"
+
+
