@@ -29,6 +29,7 @@ from app.logging import gCon
 from app.config import load_conf
 from app.config import get_config
 import uvicorn
+import re
 
 
 ADELPHOS_AP_ENV_KEY = "ADELPHOS_AP_INSTANCE"
@@ -45,9 +46,6 @@ HOST_API = HOST + API_POINT
 USER_ID = "daemon"
 
 activity_id = "https://www.adelphos.it/users/bank/follows/test"
-
-
-#KEY_FILE = "private_key.pem"
 
 
 @app.get("/.well-known/webfinger",
@@ -197,6 +195,62 @@ async def send_echo(actor_str: str):
     print(r)
 
 
+######
+# code to verify the signature and the digest.
+
+def check_message(headers, body_str, body_ob):
+
+    signature = headers['signature']
+
+    gCon.log(f"signature {signature} {type(signature)}")
+
+    # this is the global object, now we take the fields
+
+    #keyId = signature['keyId']
+    #signed_headers = signature['headers']
+    #signature_val = signature['signature']
+
+    (keyId, algorithm, signed_headers, signature_val) = signature.split(",")
+
+
+    gCon.log(f"key id {keyId}")
+    gCon.log(f"algorithm {algorithm}")
+    gCon.log(f"signed headers {signed_headers}")
+    gCon.log(f"signature_val {signature_val}")
+
+
+    # Now we try to get the public key 
+    key_id_val = keyId.split("=")[1][1:-1] #remove the quotes
+    gCon.log(f"Get the public key {key_id_val}")
+
+    headers = {"Accept" : "application/activity+json"}
+
+    res_key = requests.get(key_id_val, headers = headers)
+
+    gCon.log(f"this is the response {res_key}")
+
+    if (res_key.status_code != 200):
+        gCon.log()
+        return False
+
+    gCon.log(res_key.headers)
+
+    key_ob_text = res_key.text
+
+    gCon.log(f"[bold]{key_ob_text}[bold]")
+
+
+
+
+    return True
+
+
+
+######
+
+
+
+
 
 # I take the raw request and this is the inbox
 @app.post('/users/{username}/inbox')
@@ -214,13 +268,31 @@ async def user_inbox(username: str, request: Request):
 
     body_ob = json.loads(body_str)
 
+    # Here we check the body and signatures. Actually adelphos
+    # uses only post methods inside the inbox as activities
+    valid_ob = check_message(request.headers, body_str, body_ob)
+
+    if (valid_ob == False):
+        return Response(status_code=401)
+
+
     actor_str = body_ob['actor']
 
+    object_body = body_ob['object']
+
+    if (isinstance(object_body, dict) == False):
+        gCon.log(f"what is it? {str(object_body)}")
+        return Response(status_code=400)
+
+    content = object_body['content']
+
+    clean_content = re.sub('<[^<]+?>', '', content) # type: ignore
+ 
 
     print ("======================================== Start")
-    print (f"{str(request.headers)}")
+    gCon.log(f"{request.headers}")
     print (f"---------------- actor [{actor_str}]-------------------")
-    print (f"{body_str}")
+    print (f"Message: [{clean_content}]")
     print ("======================================== End")
 
     asyncio.create_task(send_echo(actor_str)) 
@@ -241,8 +313,6 @@ def main():
 
     port = get_config()['General']['port']
     key_file = get_config()['General']['private_key']
-    global HOST
-    global HOST_API
     HOST  = get_config()['General']['host']
     HOST_API = HOST + API_POINT
     load_keys(key_file)
