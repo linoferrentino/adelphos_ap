@@ -2,8 +2,8 @@ import typer
 from urllib.parse import urlparse
 import sys
 import base64
-import datetime
 from datetime import timedelta
+from datetime import datetime
 
 import json
 import requests
@@ -14,6 +14,9 @@ from cryptography.hazmat.backends import default_backend as crypto_default_backe
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
+
+#from cryptography.hazmat.primitives import serialization
+#from cryptography.hazmat.backends import default_backend
 
 from typing import Union
 import asyncio
@@ -140,7 +143,7 @@ async def send_echo(actor_str: str):
 
 
 
-    current_date = datetime.datetime.now().strftime(
+    current_date = datetime.now().strftime(
             '%a, %d %b %Y %H:%M:%S GMT')
 
     recipient_parsed = urlparse(actor_inbox)
@@ -168,19 +171,23 @@ async def send_echo(actor_str: str):
 
     signature_text = b'(request-target): post %s\ndigest: SHA-256=%s\nhost: %s\ndate: %s' % (recipient_path.encode('utf-8'), digest, recipient_host.encode('utf-8'), current_date.encode('utf-8'))
 
+    sign_utf8 = signature_text.decode('utf-8')
+
+    gCon.log(f"This is my signature\n{sign_utf8}")
+
     raw_signature = private_key.sign(
             signature_text,
             padding.PKCS1v15(),
             hashes.SHA256()
             )
 
-    print(f"sender {sender_key}")
+    #print(f"sender {sender_key}")
     signature_str = base64.b64encode(raw_signature).decode('utf-8') 
-    print(f"signature {signature_str}")
+    #print(f"signature {signature_str}")
 
     signature_header = f'keyId="{sender_key}",algorithm="rsa-sha256",headers="(request-target) digest host date",signature="{signature_str}"' 
 
-    print(f"total {signature_header}")
+    #print(f"total {signature_header}")
     headers = {
             'Date': current_date,
             'Content-Type': 'application/activity+json',
@@ -193,8 +200,7 @@ async def send_echo(actor_str: str):
     r = requests.post(actor_inbox, headers=headers, 
                       json=follow_request_message)
 
-
-    print(r)
+    gCon.log(f"Sent message, output {r.status_code}")
 
 
 ######
@@ -216,6 +222,19 @@ def check_message(headers, body_str, body_ob):
     gCon.log(f"signed headers {signed_headers}")
     gCon.log(f"signature_val {signature_val}")
 
+    signature_field_list = signature_val.split("=", 1)
+
+    gCon.log(f"Signature list {signature_field_list}")
+
+    signature_field_raw = signature_field_list[1]
+
+    gCon.log(f"sign field raw {signature_field_raw}")
+
+    signature_field = signature_field_raw[1:-1]
+
+    gCon.log(f"signature field is {signature_field}")
+
+
     # for now we support only sha-256 algo
     algo_id_val = algorithm.split("=")[1][1:-1]
     if (algo_id_val != "rsa-sha256"):
@@ -236,7 +255,7 @@ def check_message(headers, body_str, body_ob):
         gCon.log()
         return False
 
-    gCon.log(res_key.headers)
+    #gCon.log(res_key.headers)
 
     key_ob_text = res_key.text
 
@@ -280,15 +299,56 @@ def check_message(headers, body_str, body_ob):
 
     #date_str = date_str_kv.split("=")[1][1:-1]
 
-    #date_val = datetime.strptime(date_str, '%a, %d %b %Y %H:%M:%S GMT')
+    date_val = datetime.strptime(date_str, '%a, %d %b %Y %H:%M:%S GMT')
 
-    #gCon.log(f"this is the date sent {date_val}")
+    gCon.log(f"this is the date sent {date_val}")
 
-    #current_date = datetime.datetime.now()
+    current_date = datetime.now()
 
-    #time_diff = current_date - date_val
+    time_diff = current_date - date_val
 
-    #gCon.log(f"this is the difference {time_diff}")
+    total_secs = abs(time_diff.total_seconds())
+
+    gCon.log(f"this is the difference {time_diff}, secs {total_secs}")
+
+    if (total_secs > 30):
+        gCon.log("Too late!")
+        return False
+
+    # OK, digest and date are OK, now we check the signature.
+    gCon.log(f"signature field is still {signature_field}")
+
+    # first of all we build the signature string to validate
+    host_hdr = headers['host']
+
+    signature_text = b'(request-target): post %s\nhost: %s\ndate: %s\ndigest: SHA-256=%s\ncontent-type: %s' % (
+            "/api/users/daemon/inbox".encode('utf-8'), 
+            host_hdr.encode('utf-8'), 
+            date_str.encode('utf-8'), 
+            digest_body, 
+            headers['content-type'].encode('utf-8'))
+
+    sign_utf8 = signature_text.decode('utf-8')
+
+    gCon.log(f"this is my signature block\n{sign_utf8}")
+
+    remote_public_key = crypto_serialization.load_pem_public_key(
+            pub_key_ob_pem.encode(),
+            backend=crypto_default_backend()
+    )
+
+    gCon.log(f"I compare it to {signature_field}")
+
+    try:
+        remote_public_key.verify(
+                base64.b64decode(signature_field),
+                signature_text,
+                padding.PKCS1v15(),
+                hashes.SHA256()
+                )
+        print("The signature is valid.")
+    except Exception as err:
+        gCon.log(f"The signature is invalid.{err}")
 
 
     return True
@@ -304,10 +364,10 @@ def check_message(headers, body_str, body_ob):
 # I take the raw request and this is the inbox
 @app.post('/users/{username}/inbox')
 async def user_inbox(username: str, request: Request):
-    print(username)
+    #print(username)
 
     if username != USER_ID:
-        return Response(status_code=400)
+        return Response(status_code=404)
 
 
     body = await request.body()
@@ -316,6 +376,10 @@ async def user_inbox(username: str, request: Request):
     # Now I should get the actor field and schedule an echo.
 
     body_ob = json.loads(body_str)
+
+    gCon.rule(" Start processing ")
+    gCon.log(f"{request.headers}")
+
 
     # Here we check the body and signatures. Actually adelphos
     # uses only post methods inside the inbox as activities
@@ -338,8 +402,6 @@ async def user_inbox(username: str, request: Request):
     clean_content = re.sub('<[^<]+?>', '', content) # type: ignore
  
 
-    print ("======================================== Start")
-    gCon.log(f"{request.headers}")
     print (f"---------------- actor [{actor_str}]-------------------")
     print (f"Message: [{clean_content}]")
     print ("======================================== End")
