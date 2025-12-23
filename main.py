@@ -3,6 +3,8 @@ from urllib.parse import urlparse
 import sys
 import base64
 import datetime
+from datetime import timedelta
+
 import json
 import requests
 import hashlib
@@ -206,10 +208,6 @@ def check_message(headers, body_str, body_ob):
 
     # this is the global object, now we take the fields
 
-    #keyId = signature['keyId']
-    #signed_headers = signature['headers']
-    #signature_val = signature['signature']
-
     (keyId, algorithm, signed_headers, signature_val) = signature.split(",")
 
 
@@ -218,14 +216,19 @@ def check_message(headers, body_str, body_ob):
     gCon.log(f"signed headers {signed_headers}")
     gCon.log(f"signature_val {signature_val}")
 
+    # for now we support only sha-256 algo
+    algo_id_val = algorithm.split("=")[1][1:-1]
+    if (algo_id_val != "rsa-sha256"):
+        gCon.log(f"unsupported algo {algo_id_val}")
+        return False
 
     # Now we try to get the public key 
     key_id_val = keyId.split("=")[1][1:-1] #remove the quotes
     gCon.log(f"Get the public key {key_id_val}")
 
-    headers = {"Accept" : "application/activity+json"}
+    headers_acc = {"Accept" : "application/activity+json"}
 
-    res_key = requests.get(key_id_val, headers = headers)
+    res_key = requests.get(key_id_val, headers = headers_acc)
 
     gCon.log(f"this is the response {res_key}")
 
@@ -237,9 +240,55 @@ def check_message(headers, body_str, body_ob):
 
     key_ob_text = res_key.text
 
-    gCon.log(f"[bold]{key_ob_text}[bold]")
+    key_ob = json.loads(key_ob_text)
+
+    pub_key_ob = key_ob['publicKey']
+
+    pub_key_ob_id = pub_key_ob['id']
+    pub_key_ob_pem = pub_key_ob['publicKeyPem']
+
+    gCon.log(f"obtained id {pub_key_ob_id}")
+
+    # are they the same?
+    if (pub_key_ob_id != key_id_val):
+        gCon.log("Error, got another key")
+        return False
+
+    gCon.log(f"this is the pem {pub_key_ob_pem}")
 
 
+    ####### 1st, Check the digest
+    digest_body = base64.b64encode(hashlib.sha256(
+        body_str.encode('utf-8')).digest())
+
+    digest_body_total = "SHA-256=" + digest_body.decode('utf-8')
+
+    gCon.log(f"I expect {digest_body_total} as digest in headers")
+
+    digest_sign = headers['digest']
+
+    gCon.log(f"I got {digest_sign} as digest in headers")
+
+    if (digest_body_total != digest_sign):
+        gCon.log("digest mismatch, go away")
+        return False
+
+    ####### 2nd check date
+    date_str = headers['date']
+
+    gCon.log(f"date [{date_str}]")
+
+    #date_str = date_str_kv.split("=")[1][1:-1]
+
+    #date_val = datetime.strptime(date_str, '%a, %d %b %Y %H:%M:%S GMT')
+
+    #gCon.log(f"this is the date sent {date_val}")
+
+    #current_date = datetime.datetime.now()
+
+    #time_diff = current_date - date_val
+
+    #gCon.log(f"this is the difference {time_diff}")
 
 
     return True
