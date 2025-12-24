@@ -206,7 +206,9 @@ async def send_echo(actor_str: str):
 ######
 # code to verify the signature and the digest.
 
-def check_message(headers, body_str, body_ob):
+def check_message(request, body_str, body_ob):
+
+    headers = request.headers
 
     signature = headers['signature']
 
@@ -216,11 +218,14 @@ def check_message(headers, body_str, body_ob):
 
     (keyId, algorithm, signed_headers, signature_val) = signature.split(",")
 
-
     gCon.log(f"key id {keyId}")
     gCon.log(f"algorithm {algorithm}")
     gCon.log(f"signed headers {signed_headers}")
     gCon.log(f"signature_val {signature_val}")
+
+    # transform the string into a list.
+    signed_headers_list = signed_headers.split("=")[1][1:-1].split(" ")
+    gCon.log(f"this is the list {signed_headers_list}")
 
     signature_field_list = signature_val.split("=", 1)
 
@@ -321,6 +326,34 @@ def check_message(headers, body_str, body_ob):
     # first of all we build the signature string to validate
     host_hdr = headers['host']
 
+    # OK, now I have to build the message to sign using the headers in the
+    # order in which they have been signed in the source.
+
+    # at first it is empty
+    signature_text = ""
+    for signed_header in signed_headers_list:
+        signature_text += f"{signed_header}: "
+        match signed_header:
+            case '(request-target)':
+                signature_text += f"{request.method} {request.url.path}\n"
+            case 'host':
+                signature_text += f"{host_hdr}\n"
+            case 'date':
+                signature_text += f"{date_str}\n"
+            case 'digest':
+                signature_text += f"{digest_body_total}\n"
+            case "content-type":
+                signature_text += f"{headers['content-type']}\n"
+            case _:
+                signature_text += f"INVALID {signed_header}\n"
+        
+
+    gCon.rule("computed")
+    gCon.log(f"This is my signature text computed\n{signature_text}")
+    gCon.rule("computed end")
+
+
+
     signature_text = b'(request-target): post %s\nhost: %s\ndate: %s\ndigest: SHA-256=%s\ncontent-type: %s' % (
             "/api/users/daemon/inbox".encode('utf-8'), 
             host_hdr.encode('utf-8'), 
@@ -378,12 +411,14 @@ async def user_inbox(username: str, request: Request):
     body_ob = json.loads(body_str)
 
     gCon.rule(" Start processing ")
+    gCon.log(f"url {request.url} path {request.url.path} \
+meth {request.method}")
     gCon.log(f"{request.headers}")
 
 
     # Here we check the body and signatures. Actually adelphos
     # uses only post methods inside the inbox as activities
-    valid_ob = check_message(request.headers, body_str, body_ob)
+    valid_ob = check_message(request, body_str, body_ob)
 
     if (valid_ob == False):
         return Response(status_code=401)
