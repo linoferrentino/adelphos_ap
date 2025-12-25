@@ -329,13 +329,31 @@ def check_message(request, body_str, body_ob):
     # OK, now I have to build the message to sign using the headers in the
     # order in which they have been signed in the source.
 
+    # to verify the signature, I have to check the prefix
+    #x_forwarded_prefix = ""
+
+    if (hasattr(headers, 'x-forwarded-prefix') == True):
+        x_forwarded_prefix = headers['x-forwarded-prefix']
+        gCon.log(f"[yellow]1. c'è il prefisso! {x_forwarded_prefix}[/yellow]")
+    else:
+        gCon.log("[red]2. Non c'è il prefisso![/red]")
+
+    try:
+        x_forwarded_prefix = headers['x-forwarded-prefix']
+        gCon.log(f"[yellow]1. c'è il prefisso! {x_forwarded_prefix}[/yellow]")
+    except:
+        gCon.log("[red]2. Non c'è il prefisso![/red]")
+        x_forwarded_prefix = ""
+
+
     # at first it is empty
     signature_text = ""
     for signed_header in signed_headers_list:
         signature_text += f"{signed_header}: "
         match signed_header:
             case '(request-target)':
-                signature_text += f"{request.method} {request.url.path}\n"
+                signature_text += f"{str(request.method).lower()} \
+{x_forwarded_prefix}{request.url.path}\n"
             case 'host':
                 signature_text += f"{host_hdr}\n"
             case 'date':
@@ -348,22 +366,25 @@ def check_message(request, body_str, body_ob):
                 signature_text += f"INVALID {signed_header}\n"
         
 
+    # I remove the last newline
+    signature_text = signature_text[:-1]
+
     gCon.rule("computed")
-    gCon.log(f"This is my signature text computed\n{signature_text}")
+    gCon.log(f"This is my signature text computed\n|{signature_text}|")
     gCon.rule("computed end")
 
 
+    #signature_text = b'(request-target): post %s\nhost: %s\ndate: %s\ndigest: SHA-256=%s\ncontent-type: %s' % (
+    #        "/api/users/daemon/inbox".encode('utf-8'), 
+    #        host_hdr.encode('utf-8'), 
+    #        date_str.encode('utf-8'), 
+    #        digest_body, 
+    #        headers['content-type'].encode('utf-8'))
 
-    signature_text = b'(request-target): post %s\nhost: %s\ndate: %s\ndigest: SHA-256=%s\ncontent-type: %s' % (
-            "/api/users/daemon/inbox".encode('utf-8'), 
-            host_hdr.encode('utf-8'), 
-            date_str.encode('utf-8'), 
-            digest_body, 
-            headers['content-type'].encode('utf-8'))
+    #sign_utf8 = signature_text.decode('utf-8')
 
-    sign_utf8 = signature_text.decode('utf-8')
-
-    gCon.log(f"this is my signature block\n{sign_utf8}")
+    #gCon.log(f"this is my signature block\n{sign_utf8}\n")
+    signature_text = signature_text.encode('utf-8')
 
     remote_public_key = crypto_serialization.load_pem_public_key(
             pub_key_ob_pem.encode(),
@@ -379,9 +400,9 @@ def check_message(request, body_str, body_ob):
                 padding.PKCS1v15(),
                 hashes.SHA256()
                 )
-        print("The signature is valid.")
+        gCon.log("[green]The signature is valid.[/green]")
     except Exception as err:
-        gCon.log(f"The signature is invalid.{err}")
+        gCon.log(f"[red]The signature is invalid.[/red]\n{err}")
 
 
     return True
