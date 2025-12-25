@@ -15,8 +15,6 @@ from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
-#from cryptography.hazmat.primitives import serialization
-#from cryptography.hazmat.backends import default_backend
 
 from typing import Union
 import asyncio
@@ -33,6 +31,7 @@ from app.keys import load_keys, public_key, private_key
 from app.logging import gCon
 from app.config import load_conf
 from app.config import get_config
+from app.dao.AdelphosDao import AdelphosDao
 import uvicorn
 import re
 
@@ -401,15 +400,15 @@ def check_message(request, body_str, body_ob):
                 hashes.SHA256()
                 )
         gCon.log("[green]The signature is valid.[/green]")
+
     except Exception as err:
         gCon.log(f"[red]The signature is invalid.[/red]\n{err}")
+        return False
 
 
     return True
 
 
-
-######
 
 
 
@@ -475,6 +474,9 @@ def main():
         sys.exit(1)
 
     load_conf(instance_name)
+
+    # create the dao
+    dao = AdelphosDao()
 
     gCon.log(f"the instance is {instance_name}, loading keys")
 

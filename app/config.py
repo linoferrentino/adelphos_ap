@@ -24,8 +24,7 @@ def load_conf(instance_name: str):
     with open(toml_file, "rb") as f:
         config = tomllib.load(f)
 
-        gCon.log("This is my config")
-        gCon.log(f"{json.dumps(config)}")
+    gCon.log(f"{json.dumps(config)}")
     
 
 def get_config():

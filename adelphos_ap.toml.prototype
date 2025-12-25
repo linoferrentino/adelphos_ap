@@ -8,11 +8,14 @@
 
 [General]
 
-# this is the port which this server uses.
+# this is the port which this server uses, usually it is behind a
+# reverse proxy, like ngrok cor nginx.
 port = 8000
 
+# this is the name of the database, it can be ":memory:" to have
+# the instance only in memory.
 db_name = "db1"
 
 private_key = "private_key.pem"
 
-
+host = "example.instance.org"
