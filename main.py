@@ -35,12 +35,14 @@ from app.dao.AdelphosDao import AdelphosDao
 import uvicorn
 import re
 
+from app.AdelphosApp import AdelphosApp
 
+# this env variable is used to get the name of the instance.
 ADELPHOS_AP_ENV_KEY = "ADELPHOS_AP_INSTANCE"
 
-
-app = FastAPI(root_path="/api")
-
+# the app global object.
+#app = FastAPI(root_path="/api")
+app = AdelphosApp('instance_to_do', root_path="/api")
 
 API_POINT = "/api"
 HOST = "to_be_customized"
@@ -124,9 +126,9 @@ def user(username : str):
 
 
 async def send_echo(actor_str: str):
-    """Waits for a delay and then sends a reminder."""
 
     print("I wait 3 seconds")
+
     await asyncio.sleep(3)
     print(f"NOW I send it! to {actor_str}")
     # for now this is an assumption.
@@ -136,11 +138,8 @@ async def send_echo(actor_str: str):
     HOST = get_config()['General']['host']
     HOST_API = HOST + API_POINT
 
-
     sender_url = f"https://{HOST_API}/users/{USER_ID}"
     sender_key = f"{sender_url}#main-key"
-
-
 
     current_date = datetime.now().strftime(
             '%a, %d %b %Y %H:%M:%S GMT')
@@ -334,8 +333,6 @@ def check_message(request, body_str, body_ob):
             backend=crypto_default_backend()
     )
 
-    #gCon.log(f"I compare it to {signature_field}")
-
     try:
         remote_public_key.verify(
                 base64.b64decode(signature_field),
@@ -360,6 +357,10 @@ async def user_inbox(username: str, request: Request):
     if username != USER_ID:
         return Response(status_code=404)
 
+    # I create the request context and pass it to the dispatcher
+
+    # I have to pass the request to the ingress gateway
+
     body = await request.body()
     body_str = body.decode()
 
@@ -372,17 +373,18 @@ async def user_inbox(username: str, request: Request):
     gCon.rule(f"Start processing from {actor_str}")
     gCon.log(f"For: url {request.url}")
 
-    valid_ob = check_message(request, body_str, body_ob)
-
-    if (valid_ob == False):
-        return Response(status_code=401)
-
     object_body = body_ob['object']
 
     if (isinstance(object_body, dict) == False):
         gCon.log(f"what is it? {str(object_body)}")
         return Response(status_code=400)
-    
+
+    content = object_body['content']
+
+    clean_content = re.sub('<[^<]+?>', '', content) 
+
+    gCon.log(f"Message: [yellow]{clean_content}[/yellow]")
+
     ob_type = body_ob['type']
 
     # I only understand activity create post objects.
@@ -394,14 +396,12 @@ async def user_inbox(username: str, request: Request):
     if (object_body_type != 'Note'):
         gCon.log(f"Unrecognized object internal type {object_body_type}")
         return Response(status_code=400)
+
+    valid_ob = check_message(request, body_str, body_ob)
+
+    if (valid_ob == False):
+        return Response(status_code=401)
     
-    content = object_body['content']
-
-    clean_content = re.sub('<[^<]+?>', '', content) 
- 
-
-    gCon.log(f"Message: [yellow]{clean_content}[/yellow]")
-
     asyncio.create_task(send_echo(actor_str)) 
 
     return Response(status_code=202)
@@ -419,7 +419,7 @@ def main():
     # create the dao
     dao = AdelphosDao()
 
-    gCon.log(f"the instance is {instance_name}, loading keys")
+    gCon.log(f"Adelphos' instance {instance_name} starting; loading keys.")
 
     port = get_config()['General']['port']
     key_file = get_config()['General']['private_key']
@@ -428,9 +428,11 @@ def main():
     load_keys(key_file)
 
 
-    gCon.log(f"start here port {port}")
-    gCon.log(f"{HOST}    host_api {HOST_API}")
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+    gCon.log(f"Will start with port {port}")
+    gCon.log(f"{HOST} host_api {HOST_API}")
+    #uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+    # I am called only by the reverse proxy
+    uvicorn.run("main:app", host="127.0.0.1", port=port, reload=False)
 
 
 if __name__ == "__main__":

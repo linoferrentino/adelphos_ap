@@ -70,3 +70,22 @@ create table trust_line(
 
         if (create_schema == True):
             self._create_schema()
+
+
+    # returns an alias for the actor, if there is not one it will
+    # return None.
+    def get_alias_for_actor():
+        pass
+
+
+    # creates the alias for an actor:
+    def create_alias():
+        pass
+
+
+    def delete_alias():
+        pass
+
+
+    def update_alias():
+        pass
