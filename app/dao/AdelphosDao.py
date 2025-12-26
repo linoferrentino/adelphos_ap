@@ -21,6 +21,7 @@ class AdelphosDao:
 create table alias(
         id integer primary key,
         name text,
+        inbox text,
         password text,
         public_key blob); 
 
@@ -39,10 +40,7 @@ create table trust_line(
 
         cursor.close()
 
-        # commit the transaction.
-
         self._conn.commit()
-
 
 
     # for testing I can also create the file in memory

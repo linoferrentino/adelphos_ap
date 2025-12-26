@@ -204,40 +204,20 @@ async def send_echo(actor_str: str):
 
 ######
 # code to verify the signature and the digest.
-
 def check_message(request, body_str, body_ob):
 
     headers = request.headers
 
     signature = headers['signature']
 
-    gCon.log(f"signature {signature} {type(signature)}")
-
     # this is the global object, now we take the fields
-
     (keyId, algorithm, signed_headers, signature_val) = signature.split(",")
-
-    gCon.log(f"key id {keyId}")
-    gCon.log(f"algorithm {algorithm}")
-    gCon.log(f"signed headers {signed_headers}")
-    gCon.log(f"signature_val {signature_val}")
 
     # transform the string into a list.
     signed_headers_list = signed_headers.split("=")[1][1:-1].split(" ")
-    gCon.log(f"this is the list {signed_headers_list}")
-
     signature_field_list = signature_val.split("=", 1)
-
-    gCon.log(f"Signature list {signature_field_list}")
-
     signature_field_raw = signature_field_list[1]
-
-    gCon.log(f"sign field raw {signature_field_raw}")
-
     signature_field = signature_field_raw[1:-1]
-
-    gCon.log(f"signature field is {signature_field}")
-
 
     # for now we support only sha-256 algo
     algo_id_val = algorithm.split("=")[1][1:-1]
@@ -253,32 +233,29 @@ def check_message(request, body_str, body_ob):
 
     res_key = requests.get(key_id_val, headers = headers_acc)
 
-    gCon.log(f"this is the response {res_key}")
-
     if (res_key.status_code != 200):
-        gCon.log()
+        gCon.log(f"Could not fetch the public key {res_key.status_code}")
         return False
-
-    #gCon.log(res_key.headers)
 
     key_ob_text = res_key.text
 
     key_ob = json.loads(key_ob_text)
+
+    gCon.log(f"this is the actor {key_ob}")
 
     pub_key_ob = key_ob['publicKey']
 
     pub_key_ob_id = pub_key_ob['id']
     pub_key_ob_pem = pub_key_ob['publicKeyPem']
 
-    gCon.log(f"obtained id {pub_key_ob_id}")
+    #gCon.log(f"obtained id {pub_key_ob_id}")
 
     # are they the same?
     if (pub_key_ob_id != key_id_val):
         gCon.log("Error, got another key")
         return False
 
-    gCon.log(f"this is the pem {pub_key_ob_pem}")
-
+    #gCon.log(f"this is the pem {pub_key_ob_pem}")
 
     ####### 1st, Check the digest
     digest_body = base64.b64encode(hashlib.sha256(
@@ -286,11 +263,11 @@ def check_message(request, body_str, body_ob):
 
     digest_body_total = "SHA-256=" + digest_body.decode('utf-8')
 
-    gCon.log(f"I expect {digest_body_total} as digest in headers")
+    #gCon.log(f"I expect {digest_body_total} as digest in headers")
 
     digest_sign = headers['digest']
 
-    gCon.log(f"I got {digest_sign} as digest in headers")
+    #gCon.log(f"I got {digest_sign} as digest in headers")
 
     if (digest_body_total != digest_sign):
         gCon.log("digest mismatch, go away")
@@ -305,7 +282,7 @@ def check_message(request, body_str, body_ob):
 
     date_val = datetime.strptime(date_str, '%a, %d %b %Y %H:%M:%S GMT')
 
-    gCon.log(f"this is the date sent {date_val}")
+    #gCon.log(f"this is the date sent {date_val}")
 
     current_date = datetime.now()
 
@@ -313,37 +290,20 @@ def check_message(request, body_str, body_ob):
 
     total_secs = abs(time_diff.total_seconds())
 
-    gCon.log(f"this is the difference {time_diff}, secs {total_secs}")
+    #gCon.log(f"this is the difference {time_diff}, secs {total_secs}")
 
     if (total_secs > 30):
         gCon.log("Too late!")
         return False
 
-    # OK, digest and date are OK, now we check the signature.
-    gCon.log(f"signature field is still {signature_field}")
-
     # first of all we build the signature string to validate
     host_hdr = headers['host']
 
-    # OK, now I have to build the message to sign using the headers in the
-    # order in which they have been signed in the source.
-
-    # to verify the signature, I have to check the prefix
-    #x_forwarded_prefix = ""
-
-    if (hasattr(headers, 'x-forwarded-prefix') == True):
-        x_forwarded_prefix = headers['x-forwarded-prefix']
-        gCon.log(f"[yellow]1. c'è il prefisso! {x_forwarded_prefix}[/yellow]")
-    else:
-        gCon.log("[red]2. Non c'è il prefisso![/red]")
-
+    # to verify the signature, I have to add the prefix
     try:
         x_forwarded_prefix = headers['x-forwarded-prefix']
-        gCon.log(f"[yellow]1. c'è il prefisso! {x_forwarded_prefix}[/yellow]")
     except:
-        gCon.log("[red]2. Non c'è il prefisso![/red]")
         x_forwarded_prefix = ""
-
 
     # at first it is empty
     signature_text = ""
@@ -364,38 +324,22 @@ def check_message(request, body_str, body_ob):
             case _:
                 signature_text += f"INVALID {signed_header}\n"
         
-
     # I remove the last newline
     signature_text = signature_text[:-1]
 
-    gCon.rule("computed")
-    gCon.log(f"This is my signature text computed\n|{signature_text}|")
-    gCon.rule("computed end")
-
-
-    #signature_text = b'(request-target): post %s\nhost: %s\ndate: %s\ndigest: SHA-256=%s\ncontent-type: %s' % (
-    #        "/api/users/daemon/inbox".encode('utf-8'), 
-    #        host_hdr.encode('utf-8'), 
-    #        date_str.encode('utf-8'), 
-    #        digest_body, 
-    #        headers['content-type'].encode('utf-8'))
-
-    #sign_utf8 = signature_text.decode('utf-8')
-
-    #gCon.log(f"this is my signature block\n{sign_utf8}\n")
-    signature_text = signature_text.encode('utf-8')
+    signature_text_bin = signature_text.encode('utf-8')
 
     remote_public_key = crypto_serialization.load_pem_public_key(
             pub_key_ob_pem.encode(),
             backend=crypto_default_backend()
     )
 
-    gCon.log(f"I compare it to {signature_field}")
+    #gCon.log(f"I compare it to {signature_field}")
 
     try:
         remote_public_key.verify(
                 base64.b64decode(signature_field),
-                signature_text,
+                signature_text_bin,
                 padding.PKCS1v15(),
                 hashes.SHA256()
                 )
@@ -405,61 +349,58 @@ def check_message(request, body_str, body_ob):
         gCon.log(f"[red]The signature is invalid.[/red]\n{err}")
         return False
 
-
     return True
-
-
-
-
-
 
 
 # I take the raw request and this is the inbox
 @app.post('/users/{username}/inbox')
 async def user_inbox(username: str, request: Request):
-    #print(username)
 
+    # I accept messages only for the daemon
     if username != USER_ID:
         return Response(status_code=404)
-
 
     body = await request.body()
     body_str = body.decode()
 
-    # Now I should get the actor field and schedule an echo.
+    # Now I should get the actor field and take the alias from the db, if
+    # present, otherwise I assume that this is a create activity
 
     body_ob = json.loads(body_str)
+    actor_str = body_ob['actor']
 
-    gCon.rule(" Start processing ")
-    gCon.log(f"url {request.url} path {request.url.path} \
-meth {request.method}")
-    gCon.log(f"{request.headers}")
+    gCon.rule(f"Start processing from {actor_str}")
+    gCon.log(f"For: url {request.url}")
 
-
-    # Here we check the body and signatures. Actually adelphos
-    # uses only post methods inside the inbox as activities
     valid_ob = check_message(request, body_str, body_ob)
 
     if (valid_ob == False):
         return Response(status_code=401)
-
-
-    actor_str = body_ob['actor']
 
     object_body = body_ob['object']
 
     if (isinstance(object_body, dict) == False):
         gCon.log(f"what is it? {str(object_body)}")
         return Response(status_code=400)
+    
+    ob_type = body_ob['type']
 
+    # I only understand activity create post objects.
+    if (ob_type != 'Create'):
+        gCon.log(f"Unrecognized activity type {ob_type}")
+        return Response(status_code=400)
+
+    object_body_type = object_body['type']
+    if (object_body_type != 'Note'):
+        gCon.log(f"Unrecognized object internal type {object_body_type}")
+        return Response(status_code=400)
+    
     content = object_body['content']
 
-    clean_content = re.sub('<[^<]+?>', '', content) # type: ignore
+    clean_content = re.sub('<[^<]+?>', '', content) 
  
 
-    print (f"---------------- actor [{actor_str}]-------------------")
-    print (f"Message: [{clean_content}]")
-    print ("======================================== End")
+    gCon.log(f"Message: [yellow]{clean_content}[/yellow]")
 
     asyncio.create_task(send_echo(actor_str)) 
 
