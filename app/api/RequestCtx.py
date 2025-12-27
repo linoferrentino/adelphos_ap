@@ -4,9 +4,9 @@
 class RequestCtx:
 
 
-    pass
+    def __init__(self, app, request):
+        self.app = app
+        self.request = request
 
 
-    # I create the request context with the actual request and
-    # the application context which is then used to get the objects and
-    # return the answer to the original actor.
+

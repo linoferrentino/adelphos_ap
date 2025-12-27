@@ -34,22 +34,23 @@ from app.config import get_config
 from app.dao.AdelphosDao import AdelphosDao
 import uvicorn
 import re
+from app.api.RequestCtx import RequestCtx
+from app.api.IngressGateway import ingress_request
 
-from app.AdelphosApp import AdelphosApp
+from app.AdelphosApp import AdelphosApp, get_app
+from app.consts import USER_ID
 
-# this env variable is used to get the name of the instance.
-ADELPHOS_AP_ENV_KEY = "ADELPHOS_AP_INSTANCE"
 
 # the app global object.
 #app = FastAPI(root_path="/api")
-app = AdelphosApp('instance_to_do', root_path="/api")
+#app = AdelphosApp('instance_to_do', root_path="/api")
+app = get_app()
 
 API_POINT = "/api"
 HOST = "to_be_customized"
 HOST_API = HOST + API_POINT
 
 # this is equal for all the instances.
-USER_ID = "daemon"
 
 activity_id = "https://www.adelphos.it/users/bank/follows/test"
 
@@ -90,9 +91,6 @@ def webfinger(resource: str = Query(..., alias="resource")):
 def user(username : str):
     HOST = get_config()['General']['host']
     HOST_API = HOST + API_POINT
-
-    #global HOST_API
-    #global USER_ID
 
     if username != USER_ID:
         return Response(status_code=404)
@@ -201,218 +199,27 @@ async def send_echo(actor_str: str):
     gCon.log(f"Sent message, output {r.status_code}")
 
 
-######
-# code to verify the signature and the digest.
-def check_message(request, body_str, body_ob):
-
-    headers = request.headers
-
-    signature = headers['signature']
-
-    # this is the global object, now we take the fields
-    (keyId, algorithm, signed_headers, signature_val) = signature.split(",")
-
-    # transform the string into a list.
-    signed_headers_list = signed_headers.split("=")[1][1:-1].split(" ")
-    signature_field_list = signature_val.split("=", 1)
-    signature_field_raw = signature_field_list[1]
-    signature_field = signature_field_raw[1:-1]
-
-    # for now we support only sha-256 algo
-    algo_id_val = algorithm.split("=")[1][1:-1]
-    if (algo_id_val != "rsa-sha256"):
-        gCon.log(f"unsupported algo {algo_id_val}")
-        return False
-
-    # Now we try to get the public key 
-    key_id_val = keyId.split("=")[1][1:-1] #remove the quotes
-    gCon.log(f"Get the public key {key_id_val}")
-
-    headers_acc = {"Accept" : "application/activity+json"}
-
-    res_key = requests.get(key_id_val, headers = headers_acc)
-
-    if (res_key.status_code != 200):
-        gCon.log(f"Could not fetch the public key {res_key.status_code}")
-        return False
-
-    key_ob_text = res_key.text
-
-    key_ob = json.loads(key_ob_text)
-
-    gCon.log(f"this is the actor {key_ob}")
-
-    pub_key_ob = key_ob['publicKey']
-
-    pub_key_ob_id = pub_key_ob['id']
-    pub_key_ob_pem = pub_key_ob['publicKeyPem']
-
-    #gCon.log(f"obtained id {pub_key_ob_id}")
-
-    # are they the same?
-    if (pub_key_ob_id != key_id_val):
-        gCon.log("Error, got another key")
-        return False
-
-    #gCon.log(f"this is the pem {pub_key_ob_pem}")
-
-    ####### 1st, Check the digest
-    digest_body = base64.b64encode(hashlib.sha256(
-        body_str.encode('utf-8')).digest())
-
-    digest_body_total = "SHA-256=" + digest_body.decode('utf-8')
-
-    #gCon.log(f"I expect {digest_body_total} as digest in headers")
-
-    digest_sign = headers['digest']
-
-    #gCon.log(f"I got {digest_sign} as digest in headers")
-
-    if (digest_body_total != digest_sign):
-        gCon.log("digest mismatch, go away")
-        return False
-
-    ####### 2nd check date
-    date_str = headers['date']
-
-    gCon.log(f"date [{date_str}]")
-
-    #date_str = date_str_kv.split("=")[1][1:-1]
-
-    date_val = datetime.strptime(date_str, '%a, %d %b %Y %H:%M:%S GMT')
-
-    #gCon.log(f"this is the date sent {date_val}")
-
-    current_date = datetime.now()
-
-    time_diff = current_date - date_val
-
-    total_secs = abs(time_diff.total_seconds())
-
-    #gCon.log(f"this is the difference {time_diff}, secs {total_secs}")
-
-    if (total_secs > 30):
-        gCon.log("Too late!")
-        return False
-
-    # first of all we build the signature string to validate
-    host_hdr = headers['host']
-
-    # to verify the signature, I have to add the prefix
-    try:
-        x_forwarded_prefix = headers['x-forwarded-prefix']
-    except:
-        x_forwarded_prefix = ""
-
-    # at first it is empty
-    signature_text = ""
-    for signed_header in signed_headers_list:
-        signature_text += f"{signed_header}: "
-        match signed_header:
-            case '(request-target)':
-                signature_text += f"{str(request.method).lower()} \
-{x_forwarded_prefix}{request.url.path}\n"
-            case 'host':
-                signature_text += f"{host_hdr}\n"
-            case 'date':
-                signature_text += f"{date_str}\n"
-            case 'digest':
-                signature_text += f"{digest_body_total}\n"
-            case "content-type":
-                signature_text += f"{headers['content-type']}\n"
-            case _:
-                signature_text += f"INVALID {signed_header}\n"
-        
-    # I remove the last newline
-    signature_text = signature_text[:-1]
-
-    signature_text_bin = signature_text.encode('utf-8')
-
-    remote_public_key = crypto_serialization.load_pem_public_key(
-            pub_key_ob_pem.encode(),
-            backend=crypto_default_backend()
-    )
-
-    try:
-        remote_public_key.verify(
-                base64.b64decode(signature_field),
-                signature_text_bin,
-                padding.PKCS1v15(),
-                hashes.SHA256()
-                )
-        gCon.log("[green]The signature is valid.[/green]")
-
-    except Exception as err:
-        gCon.log(f"[red]The signature is invalid.[/red]\n{err}")
-        return False
-
-    return True
-
 
 # I take the raw request and this is the inbox
 @app.post('/users/{username}/inbox')
 async def user_inbox(username: str, request: Request):
 
-    # I accept messages only for the daemon
-    if username != USER_ID:
-        return Response(status_code=404)
+    res_code = 404
+    if username == USER_ID:
 
-    # I create the request context and pass it to the dispatcher
+        ctx = RequestCtx(app, request)
 
-    # I have to pass the request to the ingress gateway
+        ctx.body = await ctx.request.body()
 
-    body = await request.body()
-    body_str = body.decode()
+        res_code = ingress_request(ctx)
+        
+    return Response(status_code = res_code)
 
-    # Now I should get the actor field and take the alias from the db, if
-    # present, otherwise I assume that this is a create activity
-
-    body_ob = json.loads(body_str)
-    actor_str = body_ob['actor']
-
-    gCon.rule(f"Start processing from {actor_str}")
-    gCon.log(f"For: url {request.url}")
-
-    object_body = body_ob['object']
-
-    if (isinstance(object_body, dict) == False):
-        gCon.log(f"what is it? {str(object_body)}")
-        return Response(status_code=400)
-
-    content = object_body['content']
-
-    clean_content = re.sub('<[^<]+?>', '', content) 
-
-    gCon.log(f"Message: [yellow]{clean_content}[/yellow]")
-
-    ob_type = body_ob['type']
-
-    # I only understand activity create post objects.
-    if (ob_type != 'Create'):
-        gCon.log(f"Unrecognized activity type {ob_type}")
-        return Response(status_code=400)
-
-    object_body_type = object_body['type']
-    if (object_body_type != 'Note'):
-        gCon.log(f"Unrecognized object internal type {object_body_type}")
-        return Response(status_code=400)
-
-    valid_ob = check_message(request, body_str, body_ob)
-
-    if (valid_ob == False):
-        return Response(status_code=401)
-    
-    asyncio.create_task(send_echo(actor_str)) 
-
-    return Response(status_code=202)
 
 
 def main():
 
-    instance_name = os.getenv(ADELPHOS_AP_ENV_KEY)
-    if (instance_name is None):
-        print(f"{ADELPHOS_AP_ENV_KEY} env var not defined, please provide it")
-        sys.exit(1)
+    # I create the main application and I will run it.
 
     load_conf(instance_name)
 
@@ -427,9 +234,9 @@ def main():
     HOST_API = HOST + API_POINT
     load_keys(key_file)
 
-
     gCon.log(f"Will start with port {port}")
     gCon.log(f"{HOST} host_api {HOST_API}")
+
     #uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
     # I am called only by the reverse proxy
     uvicorn.run("main:app", host="127.0.0.1", port=port, reload=False)

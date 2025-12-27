@@ -1,14 +1,18 @@
 # this is the dispatcher that understands the Adelphos' API.
 
 from .RequestCtx import RequestCtx
+from app.logging import gCon
 
-# the dispatcher is called asynchronously.
-class Dispatcher:
+async def dispatch_request(ctx):
+    gCon.rule("--- dispatch request ---")
 
-    def __init__(self):
-        pass
-
-    # gets the message from the outside, and dispatchers it to the right
-    # objects, the processing is done asynchronously
-    def take_message(self, ctx):
-        pass
+## the dispatcher is called asynchronously.
+#class Dispatcher:
+#
+#    def __init__(self):
+#        pass
+#
+#    # gets the message from the outside, and dispatches it to the right
+#    # objects, the processing is done asynchronously
+#    def take_message(self, ctx):
+#        pass
