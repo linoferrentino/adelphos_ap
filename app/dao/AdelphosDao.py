@@ -76,8 +76,8 @@ create table trust_line(
 
     # returns an alias for the actor, if there is not one it will
     # return None.
-    def get_alias(ext_name: str) -> AliasDao:
-        pass
+    def get_alias(self, ctx, ext_name: str) -> AliasDao:
+        return None
 
 
     # creates the alias for an actor:

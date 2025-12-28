@@ -8,5 +8,7 @@ class RequestCtx:
         self.app = app
         self.request = request
 
+        self.need_commit = False
+
 
 

@@ -3,22 +3,47 @@
 from .RequestCtx import RequestCtx
 from app.logging import gCon
 from app.api.OutgressGateway import post_response
+from app.consts import USER_ID
+from app.api.AdelphosException import AdelphosException
+
+
+def alias_create_handler(ctx):
+    return f"Hello from the alias_create_handler! args {ctx.cmd_dict}"
+
+
+# I have here the command parsers.
+cmd_handlers = {
+        "alias_create": alias_create_handler,
+}
+
+def make_cmd_params(ctx):
+    ctx.cmd_dict = {}
+    while (len(ctx.cmd_splits) > 1):
+        key = ctx.cmd_splits.pop(0)
+        val = ctx.cmd_splits.pop(0)
+        ctx.cmd_dict[key] = val
 
 
 def cmd_parse(ctx):
 
     # the first string is the @daemon
-    cmd_splits = ctx.clean_content.split()
+    ctx.cmd_splits = ctx.clean_content.split()
 
-    
-    if (cmd_splits[0] != "@daemon"):
-        gCon.log("This is not a message for me")
+    if (ctx.cmd_splits.pop(0) != f"@{USER_ID}"):
+        gCon.log("This is not a message for me.")
         return
 
-    # the answer needs to be serialized.
-    ctx.answer_txt = f"Response for {cmd_splits[1]}"
+    cmd = ctx.cmd_splits.pop(0)
 
-    post_response(ctx)
+    gCon.log(f"Will do command {cmd}")
+
+    # now the dispatcher.
+    handler = cmd_handlers.get(cmd)
+    if (handler is None):
+        raise AdelphosException(f"command {cmd} not recognized")
+
+    make_cmd_params(ctx)
+    ctx.answer_txt = handler(ctx)
 
 
 async def dispatch_request(ctx):
@@ -26,6 +51,11 @@ async def dispatch_request(ctx):
     gCon.log(f"The message is {ctx.clean_content}")
 
     # I will have to parse it 
-    cmd_parse(ctx)
+    try:
+        cmd_parse(ctx)
+    except AdelphosException as ex:
+        ctx.answer_txt = f"Error! {ex}" 
+
+    post_response(ctx)
 
 

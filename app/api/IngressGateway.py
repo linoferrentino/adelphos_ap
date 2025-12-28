@@ -15,7 +15,53 @@ from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 import asyncio
+from app.dao.AliasDao import AliasDao
 
+
+# this function will also fetch the public key of the actor
+def create_tentative_alias(ctx, keyId):
+    gCon.log("I will create here an alias")
+    ctx.alias = AliasDao()
+    ctx.alias.ext_name = ctx.actor_str
+
+    # Now we try to get the public key 
+    key_id_val = keyId.split("=")[1][1:-1] #remove the quotes
+    gCon.log(f"Get the public key {key_id_val}")
+
+    headers_acc = {"Accept" : "application/activity+json"}
+
+    res_key = requests.get(key_id_val, headers = headers_acc)
+
+    if (res_key.status_code != 200):
+        gCon.log(f"Could not fetch the public key {res_key.status_code}")
+        return False
+
+    key_ob_text = res_key.text
+
+    ctx.key_ob = json.loads(key_ob_text)
+
+    gCon.log(f"this is the actor {ctx.key_ob}")
+
+    pub_key_ob = ctx.key_ob['publicKey']
+
+    pub_key_ob_id = pub_key_ob['id']
+    ctx.alias.public_key = pub_key_ob['publicKeyPem']
+
+    #gCon.log(f"obtained id {pub_key_ob_id}")
+
+    # are they the same?
+    if (pub_key_ob_id != key_id_val):
+        gCon.log("Error, got another key")
+        return False
+
+    # is the owner?
+    if (pub_key_ob['owner'] != ctx.actor_str):
+        gCon.log("Error, owner different")
+        return False
+
+    ctx.alias.inbox = ctx.key_ob['inbox']
+
+    return True
 
 
 def check_message(ctx):
@@ -48,46 +94,8 @@ def check_message(ctx):
     ctx.alias = ctx.app.dao.get_alias(ctx, ctx.actor_str)
 
     if (ctx.alias is None):
-        gCon.log("I will create here an alias")
-        ctx.alias = AliasDao()
-        ctx.alias.ext_name = ctx.actor_str
-
-
-
-    # Now we try to get the public key 
-    key_id_val = keyId.split("=")[1][1:-1] #remove the quotes
-    gCon.log(f"Get the public key {key_id_val}")
-
-    headers_acc = {"Accept" : "application/activity+json"}
-
-    res_key = requests.get(key_id_val, headers = headers_acc)
-
-    if (res_key.status_code != 200):
-        gCon.log(f"Could not fetch the public key {res_key.status_code}")
-        return False
-
-    key_ob_text = res_key.text
-
-    ctx.key_ob = json.loads(key_ob_text)
-
-    gCon.log(f"this is the actor {ctx.key_ob}")
-
-    pub_key_ob = ctx.key_ob['publicKey']
-
-    pub_key_ob_id = pub_key_ob['id']
-    pub_key_ob_pem = pub_key_ob['publicKeyPem']
-
-    #gCon.log(f"obtained id {pub_key_ob_id}")
-
-    # are they the same?
-    if (pub_key_ob_id != key_id_val):
-        gCon.log("Error, got another key")
-        return False
-
-    # is the owner?
-    if (pub_key_ob['owner'] != ctx.actor_str):
-        gCon.log("Error, owner different")
-        return False
+        if (create_tentative_alias(ctx, keyId) == False):
+            return False
 
     ####### 1st, Check the digest
     digest_body = base64.b64encode(hashlib.sha256(
@@ -162,7 +170,7 @@ def check_message(ctx):
     signature_text_bin = signature_text.encode('utf-8')
 
     remote_public_key = crypto_serialization.load_pem_public_key(
-            pub_key_ob_pem.encode(),
+            ctx.alias.public_key.encode(),
             backend=crypto_default_backend()
     )
 

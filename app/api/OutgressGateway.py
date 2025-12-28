@@ -27,7 +27,7 @@ ADELPHOS_ERROR_CODES = {
 def post_response(ctx):
 
     #actor_inbox = actor_str + "/inbox"
-    actor_inbox = ctx.key_ob['inbox']
+    actor_inbox = ctx.alias.inbox
 
     #gCon.log(f"will send to {actor_inbox}")
 

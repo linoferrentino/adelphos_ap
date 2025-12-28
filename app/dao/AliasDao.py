@@ -13,4 +13,4 @@ class AliasDao:
     ext_name: str = None
     inbox: str = None
     password: str = None
-    public_key: bytes = None
+    public_key: str = None
