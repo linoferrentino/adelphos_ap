@@ -180,7 +180,6 @@ def ingress_request(ctx) -> int:
     ctx.body_str = ctx.body.decode()
     # I create the request context and pass it to the dispatcher
 
-    # I have to pass the request to the ingress gateway
 
     # Now I should get the actor field and take the alias from the db, if
     # present, otherwise I assume that this is a create activity
@@ -199,6 +198,7 @@ def ingress_request(ctx) -> int:
 
     content = ctx.object_body['content']
 
+    # remove HTML tags
     ctx.clean_content = re.sub('<[^<]+?>', '', content) 
 
     gCon.log(f"Message: [yellow]{ctx.clean_content}[/yellow]")

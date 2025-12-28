@@ -27,10 +27,10 @@ from fastapi import APIRouter, Request, Depends, Query, HTTPException, status, R
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
-from app.keys import load_keys, public_key, private_key
+#from app.keys import load_keys, public_key, private_key
 from app.logging import gCon
 from app.config import load_conf
-from app.config import get_config
+#from app.config import get_config
 from app.dao.AdelphosDao import AdelphosDao
 import uvicorn
 import re
@@ -39,6 +39,7 @@ from app.api.IngressGateway import ingress_request
 
 from app.AdelphosApp import AdelphosApp, get_app
 from app.consts import USER_ID
+from app.consts import API_POINT
 
 
 # the app global object.
@@ -46,7 +47,6 @@ from app.consts import USER_ID
 #app = AdelphosApp('instance_to_do', root_path="/api")
 app = get_app()
 
-API_POINT = "/api"
 HOST = "to_be_customized"
 HOST_API = HOST + API_POINT
 
@@ -221,21 +221,21 @@ def main():
 
     # I create the main application and I will run it.
 
-    load_conf(instance_name)
+    #load_conf(instance_name)
 
     # create the dao
-    dao = AdelphosDao()
+    #dao = AdelphosDao()
 
-    gCon.log(f"Adelphos' instance {instance_name} starting; loading keys.")
+    #gCon.log(f"Adelphos' instance {app.instance} starting; loading keys.")
 
-    port = get_config()['General']['port']
-    key_file = get_config()['General']['private_key']
-    HOST  = get_config()['General']['host']
-    HOST_API = HOST + API_POINT
-    load_keys(key_file)
+    port = app.config['General']['port']
+    #key_file = get_config()['General']['private_key']
+    #HOST  = get_config()['General']['host']
+    #HOST_API = HOST + API_POINT
+    #load_keys(key_file)
 
     gCon.log(f"Will start with port {port}")
-    gCon.log(f"{HOST} host_api {HOST_API}")
+    #gCon.log(f"{HOST} host_api {HOST_API}")
 
     #uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
     # I am called only by the reverse proxy

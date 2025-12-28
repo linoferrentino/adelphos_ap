@@ -1,18 +1,22 @@
-# module that stores the daemon keys
+# module that reads (or creates) the daemon keys
 
 import os
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from .logging import gCon
 
-public_key = None
-private_key = None
+#public_key = None
+#private_key = None
+
+from .consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
 
 
-def load_keys(key_file: str):
+def load_keys(config):
 
-    global public_key
-    global private_key
+    #public_key
+    #private_key
+
+    key_file = config[GENERAL_SECTION][PRIVATE_KEY_FILE_KEY]
 
     if os.path.exists(key_file):
         gCon.log(f"Loading existing private key from {key_file}.")
@@ -32,5 +36,8 @@ def load_keys(key_file: str):
         encoding=crypto_serialization.Encoding.PEM,
         format=crypto_serialization.PublicFormat.SubjectPublicKeyInfo
     ).decode('utf-8')
+
+
+    return (public_key, private_key)
 
 

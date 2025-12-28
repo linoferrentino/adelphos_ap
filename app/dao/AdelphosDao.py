@@ -3,7 +3,7 @@
 # the database for now is a simple sqlite database.
 
 
-from ..config import get_config
+#from ..config import get_config
 from ..logging import gCon
 import os
 from pathlib import Path
@@ -44,9 +44,9 @@ create table trust_line(
 
 
     # for testing I can also create the file in memory
-    def __init__(self):
+    def __init__(self, config):
 
-        db_name = get_config()['General']['db_name']
+        db_name = config['General']['db_name']
 
         create_schema = False
 
