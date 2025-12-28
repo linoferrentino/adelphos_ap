@@ -7,4 +7,10 @@ from dataclasses import dataclass
 
 @dataclass
 class AliasDao:
-    pass
+
+    alias_id: int = 0
+    alias: str = None
+    ext_name: str = None
+    inbox: str = None
+    password: str = None
+    public_key: bytes = None

@@ -43,6 +43,17 @@ def check_message(ctx):
         gCon.log(f"unsupported algo {algo_id_val}")
         return False
 
+
+    # get the alias!
+    ctx.alias = ctx.app.dao.get_alias(ctx, ctx.actor_str)
+
+    if (ctx.alias is None):
+        gCon.log("I will create here an alias")
+        ctx.alias = AliasDao()
+        ctx.alias.ext_name = ctx.actor_str
+
+
+
     # Now we try to get the public key 
     key_id_val = keyId.split("=")[1][1:-1] #remove the quotes
     gCon.log(f"Get the public key {key_id_val}")
