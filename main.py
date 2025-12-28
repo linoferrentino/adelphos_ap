@@ -47,12 +47,8 @@ from app.consts import API_POINT
 #app = AdelphosApp('instance_to_do', root_path="/api")
 app = get_app()
 
-HOST = "to_be_customized"
-HOST_API = HOST + API_POINT
-
-# this is equal for all the instances.
-
-activity_id = "https://www.adelphos.it/users/bank/follows/test"
+#HOST = "to_be_customized"
+#HOST_API = HOST + API_POINT
 
 
 @app.get("/.well-known/webfinger",
@@ -61,22 +57,22 @@ activity_id = "https://www.adelphos.it/users/bank/follows/test"
 def webfinger(resource: str = Query(..., alias="resource")):
 
     #global HOST
-    HOST = get_config()['General']['host']
-    HOST_API = HOST + API_POINT
+    host = app.config['General']['host']
+    host_api = host + API_POINT
 
-    print(f"------- host {HOST} resource {resource}")
+    print(f"------- host {host} resource {resource}")
 
-    if resource != f"acct:{USER_ID}@{HOST}":
+    if resource != f"acct:{USER_ID}@{host}":
         return Response(status_code=404)
 
     response = Response(
         content=json.dumps({
-            "subject": f"acct:{USER_ID}@{HOST}",
+            "subject": f"acct:{USER_ID}@{host}",
             "links": [
                 {
                     "rel": "self",
                     "type": "application/activity+json",
-                    "href": f"https://{HOST_API}/users/{USER_ID}"
+                    "href": f"https://{host_api}/users/{USER_ID}"
                 }
             ]
         })
@@ -89,27 +85,28 @@ def webfinger(resource: str = Query(..., alias="resource")):
 
 @app.get('/users/{username}')
 def user(username : str):
-    HOST = get_config()['General']['host']
-    HOST_API = HOST + API_POINT
 
     if username != USER_ID:
         return Response(status_code=404)
+
+    host = app.config['General']['host']
+    host_api = host + API_POINT
 
     response_ob = {
         "@context": [
             "https://www.w3.org/ns/activitystreams",
             "https://w3id.org/security/v1",
         ],
-        "id": f"https://{HOST_API}/users/{USER_ID}",
-        "inbox": f"https://{HOST_API}/users/{USER_ID}/inbox",
-        "outbox": f"https://www.adelphos.it/users/{USER_ID}/outbox",
+        "id": f"https://{host_api}/users/{USER_ID}",
+        "inbox": f"https://{host_api}/users/{USER_ID}/inbox",
+        "outbox": f"https://{host_api}/users/{USER_ID}/outbox",
         "type": "Person",
         "name": "Adelphos' activity pub daemon",
         "preferredUsername": "daemon",
         "publicKey": {
-            "id": f"https://{HOST_API}/users/{USER_ID}#main-key",
-            "id": f"https://{HOST_API}/users/{USER_ID}",
-            "publicKeyPem": public_key
+            "id": f"https://{host_api}/users/{USER_ID}#main-key",
+            "id": f"https://{host_api}/users/{USER_ID}",
+            "publicKeyPem": app.public_key
         }
     }
 
@@ -120,84 +117,6 @@ def user(username : str):
     response.headers['Content-Type'] = 'application/activity+json'
 
     return response
-
-
-
-async def send_echo(actor_str: str):
-
-    print("I wait 3 seconds")
-
-    await asyncio.sleep(3)
-    print(f"NOW I send it! to {actor_str}")
-    # for now this is an assumption.
-    actor_inbox = actor_str + "/inbox"
-    print(f"I assume the inbox is: {actor_inbox}")
-
-    HOST = get_config()['General']['host']
-    HOST_API = HOST + API_POINT
-
-    sender_url = f"https://{HOST_API}/users/{USER_ID}"
-    sender_key = f"{sender_url}#main-key"
-
-    current_date = datetime.now().strftime(
-            '%a, %d %b %Y %H:%M:%S GMT')
-
-    recipient_parsed = urlparse(actor_inbox)
-    recipient_host = recipient_parsed.netloc
-    recipient_path = recipient_parsed.path
-
-    follow_request_message = {
-            "@context": "https://www.w3.org/ns/activitystreams",
-            "id": activity_id,
-            "type": "Create",
-            "actor": sender_url,
-            "object": {
-                "id": f"{sender_url}/posts/{uuid.uuid4()}",
-                "type": "Note",
-                "attributedTo": sender_url,
-                "to": [actor_str],
-                "content": f"echo from daemon {current_date}",
-                }
-
-            }
-
-    follow_request_json = json.dumps(follow_request_message)
-    digest = base64.b64encode(hashlib.sha256(
-        follow_request_json.encode('utf-8')).digest())
-
-    signature_text = b'(request-target): post %s\ndigest: SHA-256=%s\nhost: %s\ndate: %s' % (recipient_path.encode('utf-8'), digest, recipient_host.encode('utf-8'), current_date.encode('utf-8'))
-
-    sign_utf8 = signature_text.decode('utf-8')
-
-    gCon.log(f"This is my signature\n{sign_utf8}")
-
-    raw_signature = private_key.sign(
-            signature_text,
-            padding.PKCS1v15(),
-            hashes.SHA256()
-            )
-
-    #print(f"sender {sender_key}")
-    signature_str = base64.b64encode(raw_signature).decode('utf-8') 
-    #print(f"signature {signature_str}")
-
-    signature_header = f'keyId="{sender_key}",algorithm="rsa-sha256",headers="(request-target) digest host date",signature="{signature_str}"' 
-
-    #print(f"total {signature_header}")
-    headers = {
-            'Date': current_date,
-            'Content-Type': 'application/activity+json',
-            'Host': recipient_host,
-            'Digest': "SHA-256="+digest.decode('utf-8'),
-            'Signature': signature_header
-            }
-
-
-    r = requests.post(actor_inbox, headers=headers, 
-                      json=follow_request_message)
-
-    gCon.log(f"Sent message, output {r.status_code}")
-
 
 
 # I take the raw request and this is the inbox
@@ -219,26 +138,8 @@ async def user_inbox(username: str, request: Request):
 
 def main():
 
-    # I create the main application and I will run it.
-
-    #load_conf(instance_name)
-
-    # create the dao
-    #dao = AdelphosDao()
-
-    #gCon.log(f"Adelphos' instance {app.instance} starting; loading keys.")
-
     port = app.config['General']['port']
-    #key_file = get_config()['General']['private_key']
-    #HOST  = get_config()['General']['host']
-    #HOST_API = HOST + API_POINT
-    #load_keys(key_file)
-
     gCon.log(f"Will start with port {port}")
-    #gCon.log(f"{HOST} host_api {HOST_API}")
-
-    #uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
-    # I am called only by the reverse proxy
     uvicorn.run("main:app", host="127.0.0.1", port=port, reload=False)
 
 
