@@ -25,7 +25,9 @@ create table alias(
         ext_name text,
         inbox text,
         password text,
-        public_key blob); 
+        public_key blob,
+unique (alias) on conflict abort
+        ); 
 
 create table trust_line(
         alias_1 text,
@@ -87,6 +89,32 @@ create table trust_line(
 
     def delete_alias():
         pass
+
+
+    def commit(self):
+        self._conn.commit()
+
+
+    def create_alias(self, ctx):
+        create_alias = """
+insert into alias(alias, ext_name, inbox, password, public_key)
+values (?, ?, ?, ?, ?);
+"""
+
+        cur = self._conn.cursor()
+
+        alias = ctx.alias
+
+        cur.execute(create_alias, (alias.alias, alias.ext_name,
+                                   alias.inbox, alias.password,
+                                   alias.public_key))
+
+        alias.alias_id = cur.lastrowid
+
+        ctx.need_commit = True
+
+        cur.close()
+        
 
 
     def update_alias():

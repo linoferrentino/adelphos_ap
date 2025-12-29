@@ -7,8 +7,37 @@ from app.consts import USER_ID
 from app.api.AdelphosException import AdelphosException
 
 
+from argon2 import PasswordHasher
+
+def get_param_safe(ctx, param):
+    par_value = ctx.cmd_dict.get(param)
+    
+    if (par_value is not None):
+        return par_value
+
+    raise AdelphosException(f"Required parameter {param} not found")
+
+
 def alias_create_handler(ctx):
-    return f"Hello from the alias_create_handler! args {ctx.cmd_dict}"
+
+    # The alias is from the dictionary
+    ctx.alias.alias = get_param_safe(ctx, 'alias')
+
+    clear_pwd = get_param_safe(ctx, 'pwd')
+
+    ph = PasswordHasher()
+    
+    password_hashed = ph.hash(clear_pwd)
+
+    ctx.alias.password = password_hashed
+
+    # OK, let't try to add it to the database
+
+    ctx.app.dao.create_alias(ctx)
+
+    return f"Create alias success, your id {ctx.alias.alias_id}"
+
+    
 
 
 # I have here the command parsers.
@@ -52,7 +81,15 @@ async def dispatch_request(ctx):
 
     # I will have to parse it 
     try:
+
         cmd_parse(ctx)
+
+        # If I am here without exceptions I can commit
+        if (ctx.need_commit == True):
+            gCon.log("I will commit")
+            ctx.app.dao.commit()
+
+
     except AdelphosException as ex:
         ctx.answer_txt = f"Error! {ex}" 
 

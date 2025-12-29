@@ -13,3 +13,4 @@ wheels/
 private_key.pem
 *.pem
 *.toml
+*.sqlite
