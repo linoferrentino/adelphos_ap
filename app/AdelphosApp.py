@@ -14,8 +14,16 @@ from app.config import load_conf
 from app.keys import load_keys
 
 from app.dao.AdelphosDao import AdelphosDao
+from contextlib import asynccontextmanager
 
 app = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.dao = AdelphosDao(app.config)
+    yield
+    app.dao.close()
+
 
 # I create here the main application object, singleton
 def get_app():
@@ -30,14 +38,14 @@ def get_app():
         exit_err(f"{ADELPHOS_AP_ENV_KEY} variable not defined")
 
     gCon.log(f"Starting Adelphos' instance {instance_name}")
-    app = AdelphosApp(instance_name, root_path = API_POINT)
+    app = AdelphosApp(instance_name, root_path = API_POINT,
+                      lifespan = lifespan)
 
     return get_app()
 
 
 class AdelphosApp(FastAPI):
 
-    # the app has inside the context shared by all the modules.
 
     def __init__(self, instance: str, **kwargs):
 
@@ -53,5 +61,4 @@ class AdelphosApp(FastAPI):
         self.private_key = priv_key
         
 
-        self.dao = AdelphosDao(self.config)
 

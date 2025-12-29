@@ -43,12 +43,7 @@ from app.consts import API_POINT
 
 
 # the app global object.
-#app = FastAPI(root_path="/api")
-#app = AdelphosApp('instance_to_do', root_path="/api")
 app = get_app()
-
-#HOST = "to_be_customized"
-#HOST_API = HOST + API_POINT
 
 
 @app.get("/.well-known/webfinger",
