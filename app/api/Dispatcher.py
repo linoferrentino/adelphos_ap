@@ -5,6 +5,7 @@ from app.logging import gCon
 from app.api.OutgressGateway import post_response
 from app.consts import USER_ID
 from app.api.AdelphosException import AdelphosException
+from app.dao.AliasDto import AliasDto
 
 
 from argon2 import PasswordHasher
@@ -20,8 +21,18 @@ def get_param_safe(ctx, param):
 
 def alias_create_handler(ctx):
 
-    # The alias is from the dictionary
-    ctx.alias.alias = get_param_safe(ctx, 'alias')
+    # first of all let's see if the alias is already present
+    alias = get_param_safe(ctx, 'alias')
+
+    ctx.alias = AliasDto.get_from_alias(ctx, alias)
+
+    if (ctx.alias is not None):
+        raise AdelphosException(f"Duplicate {alias}, cannot insert")
+
+    # OK! Now I can create a new Alias
+    ctx.alias = AliasDto()
+
+    ctx.alias.alias = alias
 
     clear_pwd = get_param_safe(ctx, 'pwd')
 
@@ -31,12 +42,12 @@ def alias_create_handler(ctx):
 
     ctx.alias.password = password_hashed
 
+    ctx.alias.actor_fk = ctx.actor.actor_id
+
     # OK, let't try to add it to the database
+    ctx.alias.store(ctx)
 
-    ctx.app.dao.create_alias(ctx)
-
-    return f"Create alias success, your id {ctx.alias.alias_id}"
-
+    return f"Created alias {alias} successfully"
     
 
 
@@ -45,11 +56,12 @@ cmd_handlers = {
         "alias_create": alias_create_handler,
 }
 
+
 def make_cmd_params(ctx):
     ctx.cmd_dict = {}
     while (len(ctx.cmd_splits) > 1):
-        key = ctx.cmd_splits.pop(0)
-        val = ctx.cmd_splits.pop(0)
+        val = ctx.cmd_splits.pop()
+        key = ctx.cmd_splits.pop()
         ctx.cmd_dict[key] = val
 
 

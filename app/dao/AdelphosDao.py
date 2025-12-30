@@ -5,11 +5,13 @@
 
 #from ..config import get_config
 from ..logging import gCon
+from ..logging import good_bye
 import os
 from pathlib import Path
 import sqlite3
-from app.dao.AliasDao import AliasDao
+from app.dao.AliasDto import AliasDto
 from app.api.AdelphosException import AdelphosException
+from app.dao.CachedActorDto import CachedActorDto
 
 
 class AdelphosDao:
@@ -21,7 +23,7 @@ class AdelphosDao:
         create_schema_sql = """
 
 create table cached_actor (
-        id integer primary key,
+        actor_id integer primary key,
         ext_name text,
         inbox text,
         public_key text,
@@ -29,8 +31,9 @@ create table cached_actor (
 );
 
 create table alias(
-        id integer primary key,
-        actor_id integer references cached_actor(id) on delete restrict,
+        alias_id integer primary key,
+        actor_fk integer references cached_actor(actor_id) 
+        on delete restrict,
         alias text unique on conflict abort,
         password text,
         date_created text default current_timestamp
@@ -90,6 +93,65 @@ create table trust_line(
             gCon.log(f"{line}")
 
 
+    def get_dto(self, table_name, fields_to_ask, field_to_seek, 
+                value_to_seek, constructor_dto):
+
+        #list_sql_fields = ""
+        #for field in fields_to_ask:
+        #    list_sql_fields += field
+        #    list_sql_fields += ", "
+
+        ## remove last comma
+        #list_sql_fields = list_sql_fields[0:-2]
+        list_sql_fields = ", ".join(fields_to_ask)
+
+        sql_get = f"""
+select {list_sql_fields} from {table_name} where {field_to_seek} = ?
+
+"""
+        #good_bye(f"this is the get {sql_get}")
+        cur = self._conn.cursor()
+        cur.execute(sql_get, (value_to_seek,))
+        row = cur.fetchone()
+        cur.close()
+
+        if (row is None):
+            gCon.log(f"No row in {table_name} for {field_to_seek} \
+= {value_to_seek}")
+            return None
+
+        gCon.log(f"I have read {row}")
+
+        # I simply get the dto 
+        return constructor_dto(*row)
+
+
+    def insert_dto(self, ctx, table_name, dto_as_dict):
+
+        fields = dto_as_dict.keys()
+        fields_colon = [ f":{field}" for field in fields ]
+
+        fields_list = ", ".join(fields)
+        place_holders_list = ", ".join(fields_colon)
+
+
+        sql_insert = f"""
+insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
+
+"""
+
+        gCon.log(f"executing {sql_insert}")
+        cur = self._conn.cursor()
+        cur.execute(sql_insert, dto_as_dict)
+
+        new_id = cur.lastrowid
+        cur.close()
+
+        ctx.need_commit = True
+
+        return new_id
+        
+
     def close(self):
         gCon.log("Shut down the database")
         if (self.mem_db == True):
@@ -97,41 +159,53 @@ create table trust_line(
         self._conn.close()
 
 
-    # returns an alias for the actor, if there is not one it will
-    # return None.
-    def get_alias(self, ctx, alias: str) -> AliasDao:
-
-        get_alias_sql = """
-
-select id, alias, ext_name, inbox, password, public_key from
-alias where alias = ?
-
-"""
-
-        cur = self._conn.cursor()
-        cur.execute(get_alias_sql, (ext_name,))
-
-        row = cur.fetchone()
-
-        if (row is None):
-            return None
-
-        #gCon.log(f"Found Alias 
-        #return alias 
-        return alias
-
-
-    # creates the alias for an actor:
-    def new_alias(ext_name: str) -> AliasDao:
-        pass
-
-
-    def delete_alias():
-        pass
+#    def store_actor(self, ctx, actor: CachedActorDto):
+#        pass
+#
+#
+#    # returns an alias for the actor, if there is not one it will
+#    # return None.
+#    def get_alias(self, ctx, alias: str) -> AliasDto:
+#
+#        get_alias_sql = """
+#
+#select id, alias, ext_name, inbox, password, public_key from
+#alias where alias = ?
+#
+#"""
+#
+#        cur = self._conn.cursor()
+#        cur.execute(get_alias_sql, (ext_name,))
+#
+#        row = cur.fetchone()
+#
+#        if (row is None):
+#            return None
+#
+#        #gCon.log(f"Found Alias 
+#        #return alias 
+#        return alias
+#
+#
+#    # creates the alias for an actor:
+#    def new_alias(ext_name: str) -> AliasDto:
+#        pass
+#
+#
+#    def delete_alias():
+#        pass
 
 
     def commit(self):
         self._conn.commit()
+
+
+#    def insert_dto(self, table_name, dto_ob):
+#        sql_insert = f"""
+#insert into {table_name} (
+#
+#"""
+#        gCon.log(f"this is my sql {sql_insert}")
 
 
     # execs the cursor and close it

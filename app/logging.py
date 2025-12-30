@@ -1,5 +1,6 @@
 from rich.console import Console
 
+import sys
 
 # I create the global console object.
 

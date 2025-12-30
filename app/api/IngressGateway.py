@@ -15,14 +15,15 @@ from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 import asyncio
-from app.dao.AliasDao import AliasDao
+from app.dao.AliasDto import AliasDto
+from app.dao.CachedActorDto import CachedActorDto
 
 
-# this function will also fetch the public key of the actor
-def create_tentative_alias(ctx, keyId):
-    gCon.log("I will create here an alias")
-    ctx.alias = AliasDao()
-    ctx.alias.ext_name = ctx.actor_str
+# this function will fetch the public key of the actor
+def create_tentative_actor(ctx, keyId):
+    gCon.log(f"Create here a cached actor {ctx.actor_str}")
+    ctx.actor = CachedActorDto()
+    ctx.actor.ext_name = ctx.actor_str
 
     # Now we try to get the public key 
     key_id_val = keyId.split("=")[1][1:-1] #remove the quotes
@@ -45,9 +46,8 @@ def create_tentative_alias(ctx, keyId):
     pub_key_ob = ctx.key_ob['publicKey']
 
     pub_key_ob_id = pub_key_ob['id']
-    ctx.alias.public_key = pub_key_ob['publicKeyPem']
+    ctx.actor.public_key = pub_key_ob['publicKeyPem']
 
-    #gCon.log(f"obtained id {pub_key_ob_id}")
 
     # are they the same?
     if (pub_key_ob_id != key_id_val):
@@ -59,7 +59,9 @@ def create_tentative_alias(ctx, keyId):
         gCon.log("Error, owner different")
         return False
 
-    ctx.alias.inbox = ctx.key_ob['inbox']
+    ctx.actor.inbox = ctx.key_ob['inbox']
+
+    ctx.actor.store(ctx)
 
     return True
 
@@ -74,7 +76,7 @@ def check_message(ctx):
 
     signature = headers['signature']
 
-    # this is the global object, now we take the fields
+    # this is the serialized object, we take the fields
     (keyId, algorithm, signed_headers, signature_val) = signature.split(",")
 
     # transform the string into a list.
@@ -89,12 +91,13 @@ def check_message(ctx):
         gCon.log(f"unsupported algo {algo_id_val}")
         return False
 
+    gCon.log(f"Try to get the cached actor's key {ctx.actor_str}")
 
     # get the alias!
-    ctx.alias = ctx.app.dao.get_alias(ctx, ctx.actor_str)
+    ctx.actor = CachedActorDto.get_from_name(ctx, ctx.actor_str)
 
-    if (ctx.alias is None):
-        if (create_tentative_alias(ctx, keyId) == False):
+    if (ctx.actor is None):
+        if (create_tentative_actor(ctx, keyId) == False):
             return False
 
     ####### 1st, Check the digest
@@ -170,7 +173,7 @@ def check_message(ctx):
     signature_text_bin = signature_text.encode('utf-8')
 
     remote_public_key = crypto_serialization.load_pem_public_key(
-            ctx.alias.public_key.encode(),
+            ctx.actor.public_key.encode(),
             backend=crypto_default_backend()
     )
 
@@ -192,12 +195,7 @@ def check_message(ctx):
 
 def ingress_request(ctx) -> int:
 
-    # I accept messages only for the daemon
-    #if ctx.username != USER_ID:
-    #    return 404
-
     ctx.body_str = ctx.body.decode()
-    # I create the request context and pass it to the dispatcher
 
 
     # Now I should get the actor field and take the alias from the db, if
