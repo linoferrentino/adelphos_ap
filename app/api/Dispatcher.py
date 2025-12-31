@@ -51,16 +51,25 @@ def alias_create_handler(ctx):
 
 
 def sudo_cmd(func):
+
     def check_root(ctx):
         pwd = get_param_safe(ctx, 'pwd')
-        if (pwd != '42'):
+        # I take the hashed password
+        hashed = ctx.app.config['General']['root_password']
+        #gCon.log(f"check the {hashed} password")
+        ph = PasswordHasher()
+        try:
+            res = ph.verify(hashed, pwd)
+        except:
             raise AdelphosException("Wrong sudo password")
         return func(ctx)
+
     return check_root
 
 
 @sudo_cmd
 def dump_db(ctx):
+    ctx.app.dao.dump_database()
     return "dump db OK"
 
 

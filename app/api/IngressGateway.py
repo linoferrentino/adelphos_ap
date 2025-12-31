@@ -119,7 +119,7 @@ def check_message(ctx):
     ####### 2nd check date
     date_str = headers['date']
 
-    gCon.log(f"date [{date_str}]")
+    #gCon.log(f"date [{date_str}]")
 
     #date_str = date_str_kv.split("=")[1][1:-1]
 

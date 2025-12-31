@@ -111,7 +111,7 @@ select {list_sql_fields} from {table_name} where {field_to_seek} = ?
 = {value_to_seek}")
             return None
 
-        gCon.log(f"I have read {row}")
+        #gCon.log(f"I have read {row}")
 
         # I simply get the dto 
         return constructor_dto(*row)
