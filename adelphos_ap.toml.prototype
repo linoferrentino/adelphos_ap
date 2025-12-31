@@ -19,3 +19,19 @@ db_name = "db1"
 private_key = "private_key.pem"
 
 host = "example.instance.org"
+
+# this is the root user of this instance: it should be a fediverse account
+# in the form of @handle@host
+root_user = "@user@host.org"
+
+# This is the root password, hashed by argon.
+# To obtain a hashed value for your password use the following python
+# script
+#>>> from argon2 import PasswordHasher
+#>>> ph = PasswordHasher()
+#>>> pwd = ph.hash("super_secret")
+#>>> print(pwd)
+root_password = "$argon2id$v=19$m=65536,t=3,p=4$XGe/4m0i02bBX1g92lsx+g$dGLAmUkdOTbfCBqjq6IVF37ZurADNuRN40f31Rb3O0Q"
+
+
+

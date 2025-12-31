@@ -3,7 +3,6 @@
 # the database for now is a simple sqlite database.
 
 
-#from ..config import get_config
 from ..logging import gCon
 from ..logging import good_bye
 import os
@@ -96,20 +95,12 @@ create table trust_line(
     def get_dto(self, table_name, fields_to_ask, field_to_seek, 
                 value_to_seek, constructor_dto):
 
-        #list_sql_fields = ""
-        #for field in fields_to_ask:
-        #    list_sql_fields += field
-        #    list_sql_fields += ", "
-
-        ## remove last comma
-        #list_sql_fields = list_sql_fields[0:-2]
         list_sql_fields = ", ".join(fields_to_ask)
 
         sql_get = f"""
 select {list_sql_fields} from {table_name} where {field_to_seek} = ?
 
 """
-        #good_bye(f"this is the get {sql_get}")
         cur = self._conn.cursor()
         cur.execute(sql_get, (value_to_seek,))
         row = cur.fetchone()
@@ -159,54 +150,8 @@ insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
         self._conn.close()
 
 
-#    def store_actor(self, ctx, actor: CachedActorDto):
-#        pass
-#
-#
-#    # returns an alias for the actor, if there is not one it will
-#    # return None.
-#    def get_alias(self, ctx, alias: str) -> AliasDto:
-#
-#        get_alias_sql = """
-#
-#select id, alias, ext_name, inbox, password, public_key from
-#alias where alias = ?
-#
-#"""
-#
-#        cur = self._conn.cursor()
-#        cur.execute(get_alias_sql, (ext_name,))
-#
-#        row = cur.fetchone()
-#
-#        if (row is None):
-#            return None
-#
-#        #gCon.log(f"Found Alias 
-#        #return alias 
-#        return alias
-#
-#
-#    # creates the alias for an actor:
-#    def new_alias(ext_name: str) -> AliasDto:
-#        pass
-#
-#
-#    def delete_alias():
-#        pass
-
-
     def commit(self):
         self._conn.commit()
-
-
-#    def insert_dto(self, table_name, dto_ob):
-#        sql_insert = f"""
-#insert into {table_name} (
-#
-#"""
-#        gCon.log(f"this is my sql {sql_insert}")
-
 
     # execs the cursor and close it
     def _exec_cursor_safe(self, ctx, cur, sql, pars):

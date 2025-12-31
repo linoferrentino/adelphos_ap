@@ -48,12 +48,26 @@ def alias_create_handler(ctx):
     ctx.alias.store(ctx)
 
     return f"Created alias {alias} successfully"
-    
+
+
+def sudo_cmd(func):
+    def check_root(ctx):
+        pwd = get_param_safe(ctx, 'pwd')
+        if (pwd != '42'):
+            raise AdelphosException("Wrong sudo password")
+        return func(ctx)
+    return check_root
+
+
+@sudo_cmd
+def dump_db(ctx):
+    return "dump db OK"
 
 
 # I have here the command parsers.
 cmd_handlers = {
         "alias_create": alias_create_handler,
+        "dump_db": dump_db
 }
 
 
