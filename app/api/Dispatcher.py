@@ -73,10 +73,24 @@ def dump_db(ctx):
     return "dump db OK"
 
 
+def tl_create_handler(ctx):
+    alias = get_param_safe(ctx, 'alias')
+    trust = get_param_safe(ctx, 'trust')
+
+    # check alias syntax, for now I assume it is OK
+    if (alias[0] != '$'):
+        raise AdelphosException("Invalid alias")
+
+    # remove the dollar.
+    alias = alias[1:]
+
+    return "create alias OK"
+
 # I have here the command parsers.
 cmd_handlers = {
         "alias_create": alias_create_handler,
-        "dump_db": dump_db
+        "dump_db": dump_db,
+        "tl_create": tl_create_handler,
 }
 
 

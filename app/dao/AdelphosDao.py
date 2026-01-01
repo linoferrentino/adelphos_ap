@@ -19,11 +19,23 @@ class AdelphosDao:
     def _create_schema(self):
         gCon.log("Creating schema...")
 
+        
+
+        # the table alias stores only the local aliases,
+        # the other aliases are stored with the string "$alias@host"
         create_schema_sql = """
+
+create table remote_instance (
+        instance_id integer primary key
+        hostname text unique on conflict abort,
+        daemon_endpoint text,
+        date_created text default current_timestamp
+);
 
 create table cached_actor (
         actor_id integer primary key,
-        ext_name text,
+        preferred_username text,
+        ext_name text unique on conflict abort,
         inbox text,
         public_key text,
         date_created text default current_timestamp

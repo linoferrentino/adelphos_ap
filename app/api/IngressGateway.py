@@ -59,7 +59,10 @@ def create_tentative_actor(ctx, keyId):
         gCon.log("Error, owner different")
         return False
 
+    # maybe we can store the inbox only if different.
     ctx.actor.inbox = ctx.key_ob['inbox']
+
+    ctx.actor.preferred_username = ctx.key_ob['preferredUsername']
 
     ctx.actor.store(ctx)
 
