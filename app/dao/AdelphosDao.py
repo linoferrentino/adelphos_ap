@@ -26,9 +26,11 @@ class AdelphosDao:
         create_schema_sql = """
 
 create table remote_instance (
-        instance_id integer primary key
+        remote_instance_id integer primary key,
         hostname text unique on conflict abort,
-        daemon_endpoint text,
+        endpoint text,
+        inbox text,
+        public_key text,
         date_created text default current_timestamp
 );
 

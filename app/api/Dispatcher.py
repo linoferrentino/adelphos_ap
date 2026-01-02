@@ -6,6 +6,10 @@ from app.api.OutgressGateway import post_response
 from app.consts import USER_ID
 from app.api.AdelphosException import AdelphosException
 from app.dao.AliasDto import AliasDto
+from app.dao.RemoteInstanceDto import RemoteInstanceDto
+import requests
+from app.consts import USER_ID
+import json
 
 
 from argon2 import PasswordHasher
@@ -86,11 +90,67 @@ def tl_create_handler(ctx):
 
     return "create alias OK"
 
+
+def create_remote_daemon(ctx, rem_instance):
+
+    daemon_query = f"https://{rem_instance}/.well-known/webfinger?\
+resource=acct:{USER_ID}@{rem_instance}"
+
+    headers_acc = {"Accept" : "application/activity+json"}
+    daemon_res = requests.get(daemon_query, headers = headers_acc)
+
+    if (daemon_res.status_code != 200):
+        raise AdelphosException(
+            f"remote daemon not responding {rem_instance}")
+
+    daemon_ob = json.loads(daemon_res.text)
+
+    subject = daemon_ob['subject']
+    if ( subject != f"acct:{USER_ID}@{rem_instance}"):
+        raise AdelphosException(f"got {subject} instead!")
+
+    ctx.daemon = RemoteInstanceDto()
+    ctx.daemon.hostname = rem_instance
+    ctx.daemon.endpoint = daemon_ob['links'][0]['href']
+    
+    # Now we do the request for the actor
+    daemon_actor = requests.get(ctx.daemon.endpoint, headers = headers_acc)
+
+    if (daemon_actor.status_code != 200):
+        raise AdelphosException(
+            f"remote daemon misconfigured {ctx.daemon.endpoint}")
+
+    daemon_ob = json.loads(daemon_actor.text)
+
+    # OK, we can now take the inbox and the public key.
+    ctx.daemon.inbox = daemon_ob['inbox']
+    ctx.daemon.public_key = daemon_ob['publicKey']['publicKeyPem']
+
+    ctx.daemon.store(ctx)
+
+
+def rem_echo_handler(ctx):
+    rem_instance = get_param_safe(ctx, "remote-instance")
+    gCon.log(f"I have to do an echo to {rem_instance}")
+
+    # I have to query the dao to get the remote
+    ctx.daemon = RemoteInstanceDto.get_from_hostname(ctx, rem_instance)
+
+    if (ctx.daemon is None):
+        create_remote_daemon(ctx, rem_instance)
+
+    # Now I have the daemon.
+    gCon.log(f"remote daemon {ctx.daemon.endpoint} OK")
+
+    return f"echo to {rem_instance} is good {ctx.daemon.endpoint}"
+
+
 # I have here the command parsers.
 cmd_handlers = {
         "alias_create": alias_create_handler,
         "dump_db": dump_db,
         "tl_create": tl_create_handler,
+        "recho": rem_echo_handler
 }
 
 
