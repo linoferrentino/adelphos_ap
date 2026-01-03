@@ -27,8 +27,25 @@ ADELPHOS_ERROR_CODES = {
 def post_response(ctx):
 
     actor_inbox = ctx.actor.inbox
+    actor_str = ctx.actor.ext_name
+    msg = ctx.answer_txt
 
-    #gCon.log(f"will send to {actor_inbox}")
+    return post_response_inbox(ctx, actor_str, actor_inbox, msg)
+
+
+def post_daemon_req(ctx):
+
+    actor_inbox = ctx.daemon.inbox
+    actor_str = ctx.daemon.endpoint
+    msg = ctx.query_txt 
+
+    return post_response_inbox(ctx, actor_str, actor_inbox, msg)
+
+
+# we can pass messages to other inbox, for example a daemon inbox 
+def post_response_inbox(ctx, actor_str, inbox, msg):
+
+    #gCon.log(f"will send to {inbox}")
 
     host = ctx.app.config['General']['host']
     host_api = host + API_POINT
@@ -39,7 +56,7 @@ def post_response(ctx):
     current_date = datetime.now().strftime(
             '%a, %d %b %Y %H:%M:%S GMT')
 
-    recipient_parsed = urlparse(actor_inbox)
+    recipient_parsed = urlparse(inbox)
     recipient_host = recipient_parsed.netloc
     recipient_path = recipient_parsed.path
 
@@ -54,8 +71,8 @@ def post_response(ctx):
                 "id": f"{sender_url}/posts/{id_message}",
                 "type": "Note",
                 "attributedTo": sender_url,
-                "to": [ctx.actor_str],
-                "content": f"{ctx.answer_txt}",
+                "to": [actor_str],
+                "content": f"{msg}",
                 }
 
             }
@@ -93,7 +110,7 @@ def post_response(ctx):
             }
 
 
-    r = requests.post(actor_inbox, headers=headers, 
+    r = requests.post(inbox, headers=headers, 
                       json=new_message)
 
     #gCon.log(f"Sent message, output {r.status_code}")

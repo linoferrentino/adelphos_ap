@@ -3,6 +3,9 @@
 from .RequestCtx import RequestCtx
 from app.logging import gCon
 from app.api.OutgressGateway import post_response
+from app.api.OutgressGateway import post_daemon_req
+from app.ap_api.daemon_qa import daemon_qa
+from app.ap_api.daemon_qa import daemon_a
 from app.consts import USER_ID
 from app.api.AdelphosException import AdelphosException
 from app.dao.AliasDto import AliasDto
@@ -10,6 +13,7 @@ from app.dao.RemoteInstanceDto import RemoteInstanceDto
 import requests
 from app.consts import USER_ID
 import json
+import asyncio
 
 
 from argon2 import PasswordHasher
@@ -128,9 +132,18 @@ resource=acct:{USER_ID}@{rem_instance}"
 
     ctx.daemon.store(ctx)
 
+# this is the sequence to hold the requests, we have only one thread,
+# so it is safe to share.
+remote_api_id = 0
+
+# this is the dictionary for the async contexts.
+async_contexts = {}
+
 
 def rem_echo_handler(ctx):
     rem_instance = get_param_safe(ctx, "remote-instance")
+    msg = get_param_safe(ctx, "msg")
+
     gCon.log(f"I have to do an echo to {rem_instance}")
 
     # I have to query the dao to get the remote
@@ -142,7 +155,55 @@ def rem_echo_handler(ctx):
     # Now I have the daemon.
     gCon.log(f"remote daemon {ctx.daemon.endpoint} OK")
 
-    return f"echo to {rem_instance} is good {ctx.daemon.endpoint}"
+    # TODO, create an async context object
+    global remote_api_id
+    remote_api_id += 1
+
+    ctx.query_txt = f"daemon_q api_id {remote_api_id} msg {msg}"
+    
+    ctx.async_ctx = asyncio.create_task(daemon_qa(ctx))
+
+    global async_contexts
+
+    new_async_id = remote_api_id
+    ctx.async_cond = asyncio.Condition()  
+
+    async_contexts[new_async_id] = ctx
+
+    return f"Created async context for id {new_async_id}"
+
+
+# this is the entry point for the remote API
+def daemon_q_handler(ctx):
+    # OK, now I get the message.
+    msg = get_param_safe(ctx, "msg")
+    rem_id = get_param_safe("api_id")
+
+
+    # I build the response
+    response = f"daemon_a api_id {rem_id} msg parsed_{msg}_good"
+
+    gCon.log(f"Got {msg} I will respond with {response}")
+
+    return response 
+
+
+def daemon_a_handler(ctx):
+
+    msg = get_param_safe(ctx, "msg")
+    local_id = get_param_safe("api_id")
+    global async_contexts
+    gCon.log(f"got msg {msg} for api {api_id}")
+
+    # I put it into the other context.
+    async_ctx = async_contexts.get(local_id)
+    if (async_ctx is None):
+        gCon.log("What? no context")
+
+    async_ctx.answer_txt = msg
+    asyncio.create_task(daemon_a(async_ctx))
+    # my answer is None
+    ctx.answer_txt = None
 
 
 # I have here the command parsers.
@@ -150,7 +211,9 @@ cmd_handlers = {
         "alias_create": alias_create_handler,
         "dump_db": dump_db,
         "tl_create": tl_create_handler,
-        "recho": rem_echo_handler
+        "recho": rem_echo_handler,
+        "daemon_q": daemon_q_handler, 
+        "daemon_a": daemon_a_handler, 
 }
 
 
@@ -202,7 +265,13 @@ async def dispatch_request(ctx):
     except AdelphosException as ex:
         ctx.answer_txt = f"Error! {ex}" 
 
+    # I might be in a async context, so I wait for the response.
+    if (ctx.async_ctx is not None):
+        gCon.log("I have to wait an async context")
+        await ctx.async_ctx
 
-    post_response(ctx)
+    # No async, I can give immediately the response
+    if (ctx.answer_txt is not None):
+        post_response(ctx)
 
 
