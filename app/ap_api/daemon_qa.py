@@ -24,13 +24,8 @@ async def daemon_qa(ctx):
     ctx.answer_txt = None
 
     # OK, I have created a new question and I wait
-    while ctx.answer_txt is not None:
+    while ctx.answer_txt is None:
         async with ctx.async_cond:
             await ctx.async_cond.wait()
-
-    #await asyncio.sleep(3)
-    # OK, now I have to yield until some condition happens.
-
-    # Now I have waited, the other "thread" has given the answer
 
     gCon.log(f"finished with answer {ctx.answer_txt}")

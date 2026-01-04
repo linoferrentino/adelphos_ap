@@ -110,8 +110,9 @@ def post_response_inbox(ctx, actor_str, inbox, msg):
             }
 
 
+    gCon.log(f"just before sending to {inbox}")
     r = requests.post(inbox, headers=headers, 
                       json=new_message)
 
-    #gCon.log(f"Sent message, output {r.status_code}")
+    gCon.log(f"Sent message, output {r.status_code}")
 

@@ -159,7 +159,7 @@ def rem_echo_handler(ctx):
     global remote_api_id
     remote_api_id += 1
 
-    ctx.query_txt = f"daemon_q api_id {remote_api_id} msg {msg}"
+    ctx.query_txt = f"@{USER_ID} daemon_q api_id {remote_api_id} msg {msg}"
     
     ctx.async_ctx = asyncio.create_task(daemon_qa(ctx))
 
@@ -168,20 +168,20 @@ def rem_echo_handler(ctx):
     new_async_id = remote_api_id
     ctx.async_cond = asyncio.Condition()  
 
-    async_contexts[new_async_id] = ctx
+    async_contexts[int(new_async_id)] = ctx
 
-    return f"Created async context for id {new_async_id}"
+    gCon.log(f"Created async context for id {new_async_id}")
 
 
 # this is the entry point for the remote API
 def daemon_q_handler(ctx):
     # OK, now I get the message.
     msg = get_param_safe(ctx, "msg")
-    rem_id = get_param_safe("api_id")
+    rem_id = get_param_safe(ctx, "api_id")
 
 
     # I build the response
-    response = f"daemon_a api_id {rem_id} msg parsed_{msg}_good"
+    response = f"@{USER_ID} daemon_a api_id {rem_id} msg parsed_{msg}_good"
 
     gCon.log(f"Got {msg} I will respond with {response}")
 
@@ -191,14 +191,16 @@ def daemon_q_handler(ctx):
 def daemon_a_handler(ctx):
 
     msg = get_param_safe(ctx, "msg")
-    local_id = get_param_safe("api_id")
-    global async_contexts
-    gCon.log(f"got msg {msg} for api {api_id}")
+    local_id = get_param_safe(ctx, "api_id")
+    gCon.log(f"got msg {msg} for api {local_id}")
 
     # I put it into the other context.
-    async_ctx = async_contexts.get(local_id)
+
+    global async_contexts
+    async_ctx = async_contexts.get(int(local_id))
     if (async_ctx is None):
-        gCon.log("What? no context")
+        gCon.log(f"What? no context {async_contexts}")
+        return
 
     async_ctx.answer_txt = msg
     asyncio.create_task(daemon_a(async_ctx))
@@ -230,8 +232,9 @@ def cmd_parse(ctx):
     # the first string is the @daemon
     ctx.cmd_splits = ctx.clean_content.split()
 
-    if (ctx.cmd_splits.pop(0) != f"@{USER_ID}"):
-        gCon.log("This is not a message for me.")
+    mention = ctx.cmd_splits.pop(0)
+    if ( mention != f"@{USER_ID}"):
+        gCon.log(f"This is not a message for me. {mention}")
         return
 
     cmd = ctx.cmd_splits.pop(0)
@@ -266,7 +269,7 @@ async def dispatch_request(ctx):
         ctx.answer_txt = f"Error! {ex}" 
 
     # I might be in a async context, so I wait for the response.
-    if (ctx.async_ctx is not None):
+    if (hasattr(ctx, "async_ctx")):
         gCon.log("I have to wait an async context")
         await ctx.async_ctx
 

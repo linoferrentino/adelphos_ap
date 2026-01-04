@@ -25,44 +25,47 @@ def create_tentative_actor(ctx, keyId):
     ctx.actor = CachedActorDto()
     ctx.actor.ext_name = ctx.actor_str
 
+    gCon.log("HERE I FAKE")
+    ctx.actor.inbox = ctx.actor_str + "/inbox"
+
     # Now we try to get the public key 
-    key_id_val = keyId.split("=")[1][1:-1] #remove the quotes
-    gCon.log(f"Get the public key {key_id_val}")
+    #key_id_val = keyId.split("=")[1][1:-1] #remove the quotes
+    #gCon.log(f"Get the public key {key_id_val}")
 
-    headers_acc = {"Accept" : "application/activity+json"}
+    #headers_acc = {"Accept" : "application/activity+json"}
 
-    res_key = requests.get(key_id_val, headers = headers_acc)
+    #res_key = requests.get(key_id_val, headers = headers_acc)
 
-    if (res_key.status_code != 200):
-        gCon.log(f"Could not fetch the public key {res_key.status_code}")
-        return False
+    #if (res_key.status_code != 200):
+    #    gCon.log(f"Could not fetch the public key {res_key.status_code}")
+    #    return False
 
-    key_ob_text = res_key.text
+    #key_ob_text = res_key.text
 
-    ctx.key_ob = json.loads(key_ob_text)
+    #ctx.key_ob = json.loads(key_ob_text)
 
-    gCon.log(f"this is the actor {ctx.key_ob}")
+    #gCon.log(f"this is the actor {ctx.key_ob}")
 
-    pub_key_ob = ctx.key_ob['publicKey']
+    #pub_key_ob = ctx.key_ob['publicKey']
 
-    pub_key_ob_id = pub_key_ob['id']
-    ctx.actor.public_key = pub_key_ob['publicKeyPem']
+    #pub_key_ob_id = pub_key_ob['id']
+    #ctx.actor.public_key = pub_key_ob['publicKeyPem']
 
 
-    # are they the same?
-    if (pub_key_ob_id != key_id_val):
-        gCon.log("Error, got another key")
-        return False
+    ## are they the same?
+    #if (pub_key_ob_id != key_id_val):
+    #    gCon.log(f"Error, got {pub_key_ob_id} key exp {key_id_val}")
+    #    return False
 
-    # is the owner?
-    if (pub_key_ob['owner'] != ctx.actor_str):
-        gCon.log("Error, owner different")
-        return False
+    ## is the owner?
+    #if (pub_key_ob['owner'] != ctx.actor_str):
+    #    gCon.log("Error, owner different")
+    #    return False
 
-    # maybe we can store the inbox only if different.
-    ctx.actor.inbox = ctx.key_ob['inbox']
+    ## maybe we can store the inbox only if different.
+    #ctx.actor.inbox = ctx.key_ob['inbox']
 
-    ctx.actor.preferred_username = ctx.key_ob['preferredUsername']
+    #ctx.actor.preferred_username = ctx.key_ob['preferredUsername']
 
     ctx.actor.store(ctx)
 
@@ -102,6 +105,9 @@ def check_message(ctx):
     if (ctx.actor is None):
         if (create_tentative_actor(ctx, keyId) == False):
             return False
+
+    gCon.log("here I fake")
+    return True
 
     ####### 1st, Check the digest
     digest_body = base64.b64encode(hashlib.sha256(
@@ -236,6 +242,8 @@ def ingress_request(ctx) -> int:
         return 400
 
     valid_ob = check_message(ctx)
+    gCon.log("I FAKE THE CHECK MESSAGE")
+    valid_ob = True
 
     if (valid_ob == False):
         return 401

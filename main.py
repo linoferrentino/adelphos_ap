@@ -49,13 +49,13 @@ app = get_app()
 @app.get("/.well-known/webfinger",
     description="Adelphos's end point",
 )
-def webfinger(resource: str = Query(..., alias="resource")):
+async def webfinger(resource: str = Query(..., alias="resource")):
 
     #global HOST
     host = app.config['General']['host']
     host_api = host + API_POINT
 
-    print(f"------- host {host} resource {resource}")
+    gCon.log(f"[red]webfinger[/red] host {host} resource {resource}")
 
     if resource != f"acct:{USER_ID}@{host}":
         return Response(status_code=404)
@@ -79,7 +79,9 @@ def webfinger(resource: str = Query(..., alias="resource")):
 
 
 @app.get('/users/{username}')
-def user(username : str):
+async def user(username : str):
+
+    gCon.log(f"[red]get {username}[/red]")
 
     if username != USER_ID:
         return Response(status_code=404)
@@ -100,7 +102,7 @@ def user(username : str):
         "preferredUsername": "daemon",
         "publicKey": {
             "id": f"https://{host_api}/users/{USER_ID}#main-key",
-            "id": f"https://{host_api}/users/{USER_ID}",
+            "owner": f"https://{host_api}/users/{USER_ID}",
             "publicKeyPem": app.public_key
         }
     }
@@ -117,6 +119,8 @@ def user(username : str):
 # I take the raw request and this is the inbox
 @app.post('/users/{username}/inbox')
 async def user_inbox(username: str, request: Request):
+
+    gCon.log(f"[red]post inbox {username}[/red]")
 
     res_code = 404
     if username == USER_ID:
