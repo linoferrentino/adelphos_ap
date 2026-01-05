@@ -6,7 +6,6 @@ from datetime import timedelta
 from datetime import datetime
 
 import json
-import requests
 import hashlib
 import os
 import uuid
@@ -18,7 +17,6 @@ from cryptography.hazmat.primitives.asymmetric import padding
 
 from typing import Union
 import asyncio
-import requests
 
 from fastapi import FastAPI
 import json
@@ -129,7 +127,7 @@ async def user_inbox(username: str, request: Request):
 
         ctx.body = await ctx.request.body()
 
-        res_code = ingress_request(ctx)
+        res_code = await ingress_request(ctx)
         
     return Response(status_code = res_code)
 

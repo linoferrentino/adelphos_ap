@@ -11,10 +11,10 @@ import json
 import base64
 import hashlib
 from urllib.parse import urlparse
-import requests
 from datetime import datetime
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
+from app.ap_api.AsyncRequest import AsyncRequest
 
 ADELPHOS_ERROR_CODES = {
 
@@ -24,26 +24,26 @@ ADELPHOS_ERROR_CODES = {
 
 
 
-def post_response(ctx):
+async def post_response(ctx):
 
     actor_inbox = ctx.actor.inbox
     actor_str = ctx.actor.ext_name
     msg = ctx.answer_txt
 
-    return post_response_inbox(ctx, actor_str, actor_inbox, msg)
+    return await post_response_inbox(ctx, actor_str, actor_inbox, msg)
 
 
-def post_daemon_req(ctx):
+async def post_daemon_req(ctx):
 
     actor_inbox = ctx.daemon.inbox
     actor_str = ctx.daemon.endpoint
     msg = ctx.query_txt 
 
-    return post_response_inbox(ctx, actor_str, actor_inbox, msg)
+    return await post_response_inbox(ctx, actor_str, actor_inbox, msg)
 
 
 # we can pass messages to other inbox, for example a daemon inbox 
-def post_response_inbox(ctx, actor_str, inbox, msg):
+async def post_response_inbox(ctx, actor_str, inbox, msg):
 
     #gCon.log(f"will send to {inbox}")
 
@@ -111,8 +111,11 @@ def post_response_inbox(ctx, actor_str, inbox, msg):
 
 
     gCon.log(f"just before sending to {inbox}")
-    r = requests.post(inbox, headers=headers, 
-                      json=new_message)
+    #r = requests.post(inbox, headers=headers, 
+    #                  json=new_message)
+    #gCon.log(f"Sent message, output {r.status_code}")
+    post_res  = AsyncRequest(inbox, "post", headers, new_message)
+    await ctx.app.async_req_push(post_res)
 
-    gCon.log(f"Sent message, output {r.status_code}")
+
 

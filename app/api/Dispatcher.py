@@ -10,7 +10,6 @@ from app.consts import USER_ID
 from app.api.AdelphosException import AdelphosException
 from app.dao.AliasDto import AliasDto
 from app.dao.RemoteInstanceDto import RemoteInstanceDto
-import requests
 from app.consts import USER_ID
 import json
 import asyncio
@@ -275,6 +274,6 @@ async def dispatch_request(ctx):
 
     # No async, I can give immediately the response
     if (ctx.answer_txt is not None):
-        post_response(ctx)
+        await post_response(ctx)
 
 

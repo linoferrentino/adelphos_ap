@@ -9,5 +9,4 @@ dependencies = [
     "argon2-cffi>=25.1.0",
     "cryptography>=46.0.3",
     "fastapi[standard]>=0.125.0",
-    "requests>=2.32.5",
 ]

@@ -4,7 +4,7 @@
 from app.consts import USER_ID
 from app.logging import gCon
 from app.api.Dispatcher import dispatch_request
-import requests
+#import requests
 import base64
 import json
 import re
@@ -17,62 +17,65 @@ from cryptography.hazmat.primitives.asymmetric import padding
 import asyncio
 from app.dao.AliasDto import AliasDto
 from app.dao.CachedActorDto import CachedActorDto
+from app.ap_api.AsyncRequest import AsyncRequest
 
 
 # this function will fetch the public key of the actor
-def create_tentative_actor(ctx, keyId):
+async def create_tentative_actor(ctx, keyId):
     gCon.log(f"Create here a cached actor {ctx.actor_str}")
     ctx.actor = CachedActorDto()
     ctx.actor.ext_name = ctx.actor_str
 
-    gCon.log("HERE I FAKE")
-    ctx.actor.inbox = ctx.actor_str + "/inbox"
+    #gCon.log("HERE I FAKE")
+    #ctx.actor.inbox = ctx.actor_str + "/inbox"
 
     # Now we try to get the public key 
-    #key_id_val = keyId.split("=")[1][1:-1] #remove the quotes
-    #gCon.log(f"Get the public key {key_id_val}")
+    key_id_val = keyId.split("=")[1][1:-1] #remove the quotes
+    gCon.log(f"Get the public key {key_id_val}")
 
     #headers_acc = {"Accept" : "application/activity+json"}
 
     #res_key = requests.get(key_id_val, headers = headers_acc)
+    res_key = AsyncRequest(key_id_val)
+    await ctx.app.async_req_wait(res_key)
 
-    #if (res_key.status_code != 200):
-    #    gCon.log(f"Could not fetch the public key {res_key.status_code}")
-    #    return False
+    if (res_key.status_code != 200):
+        gCon.log(f"Could not fetch the public key {res_key.status_code}")
+        return False
 
-    #key_ob_text = res_key.text
+    key_ob_text = res_key.text
 
-    #ctx.key_ob = json.loads(key_ob_text)
+    ctx.key_ob = json.loads(key_ob_text)
 
-    #gCon.log(f"this is the actor {ctx.key_ob}")
+    gCon.log(f"this is the actor {ctx.key_ob}")
 
-    #pub_key_ob = ctx.key_ob['publicKey']
+    pub_key_ob = ctx.key_ob['publicKey']
 
-    #pub_key_ob_id = pub_key_ob['id']
-    #ctx.actor.public_key = pub_key_ob['publicKeyPem']
+    pub_key_ob_id = pub_key_ob['id']
+    ctx.actor.public_key = pub_key_ob['publicKeyPem']
 
 
-    ## are they the same?
-    #if (pub_key_ob_id != key_id_val):
-    #    gCon.log(f"Error, got {pub_key_ob_id} key exp {key_id_val}")
-    #    return False
+    # are they the same?
+    if (pub_key_ob_id != key_id_val):
+        gCon.log(f"Error, got {pub_key_ob_id} key exp {key_id_val}")
+        return False
 
-    ## is the owner?
-    #if (pub_key_ob['owner'] != ctx.actor_str):
-    #    gCon.log("Error, owner different")
-    #    return False
+    # is the owner?
+    if (pub_key_ob['owner'] != ctx.actor_str):
+        gCon.log("Error, owner different")
+        return False
 
-    ## maybe we can store the inbox only if different.
-    #ctx.actor.inbox = ctx.key_ob['inbox']
+    # maybe we can store the inbox only if different.
+    ctx.actor.inbox = ctx.key_ob['inbox']
 
-    #ctx.actor.preferred_username = ctx.key_ob['preferredUsername']
+    ctx.actor.preferred_username = ctx.key_ob['preferredUsername']
 
     ctx.actor.store(ctx)
 
     return True
 
 
-def check_message(ctx):
+async def check_message(ctx):
 
     request = ctx.request
     body_str = ctx.body_str
@@ -103,11 +106,9 @@ def check_message(ctx):
     ctx.actor = CachedActorDto.get_from_name(ctx, ctx.actor_str)
 
     if (ctx.actor is None):
-        if (create_tentative_actor(ctx, keyId) == False):
+        res_actor = await create_tentative_actor(ctx, keyId)
+        if (res_actor == False):
             return False
-
-    gCon.log("here I fake")
-    return True
 
     ####### 1st, Check the digest
     digest_body = base64.b64encode(hashlib.sha256(
@@ -202,7 +203,7 @@ def check_message(ctx):
     return True
 
 
-def ingress_request(ctx) -> int:
+async def ingress_request(ctx) -> int:
 
     ctx.body_str = ctx.body.decode()
 
@@ -241,9 +242,7 @@ def ingress_request(ctx) -> int:
         gCon.log(f"Unrecognized object internal type {object_body_type}")
         return 400
 
-    valid_ob = check_message(ctx)
-    gCon.log("I FAKE THE CHECK MESSAGE")
-    valid_ob = True
+    valid_ob = await check_message(ctx)
 
     if (valid_ob == False):
         return 401
