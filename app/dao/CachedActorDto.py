@@ -13,21 +13,23 @@ class CachedActorDto:
 
     # these are fields which are stored in db.
     preferred_username: str = None
-    ext_name: str = None
-    inbox: str = None
+    hostname: str = None
+    actor_uri: str = None
+    inbox_uri: str = None
     public_key: str = None
 
     date_created: str = None
 
 
     @staticmethod
-    def get_from_name(ctx, ext_name):
+    def get_from_name(ctx, actor_uri):
 
         global table_name
 
-        fields_to_ask = ('actor_id', 'preferred_username', 'ext_name', 
-                         'inbox', 'public_key', 'date_created')
-        field_to_seek = 'ext_name'
+        fields_to_ask = ('actor_id', 'preferred_username', 'hostname', 
+                         'actor_uri', 'inbox_uri', 
+                         'public_key', 'date_created')
+        field_to_seek = 'actor_uri'
         value_to_seek = ext_name
 
         dto = ctx.app.dao.get_dto(table_name, fields_to_ask, field_to_seek, 
@@ -41,8 +43,9 @@ class CachedActorDto:
 
         fields_stored = {
                          'preferred_username': self.preferred_username,
-                         'ext_name': self.ext_name,
-                         'inbox': self.inbox,
+                         'hostname': self.hostname,
+                         'actor_uri': self.actor_uri,
+                         'inbox_uri': self.inbox_uri,
                          'public_key': self.public_key,
                          }
 

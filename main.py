@@ -87,6 +87,8 @@ async def user(username : str):
     host = app.config['General']['host']
     host_api = host + API_POINT
 
+    instance = app.instance
+
     response_ob = {
         "@context": [
             "https://www.w3.org/ns/activitystreams",
@@ -96,8 +98,8 @@ async def user(username : str):
         "inbox": f"https://{host_api}/users/{USER_ID}/inbox",
         "outbox": f"https://{host_api}/users/{USER_ID}/outbox",
         "type": "Person",
-        "name": "Adelphos' activity pub daemon",
-        "preferredUsername": "daemon",
+        "name": f"Adelphos' daemon for instance {instance} @ {host}",
+        "preferredUsername": USER_ID,
         "publicKey": {
             "id": f"https://{host_api}/users/{USER_ID}#main-key",
             "owner": f"https://{host_api}/users/{USER_ID}",

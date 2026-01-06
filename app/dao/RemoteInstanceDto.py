@@ -8,7 +8,7 @@ from app.logging import gCon
 table_name = "remote_instance"
 
 @dataclass
-class RemoteInstanceDto:
+class RemoteInstanceDto_deprecated:
 
     remote_instance_id: int = 0
 

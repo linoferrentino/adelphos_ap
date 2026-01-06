@@ -9,7 +9,8 @@ from app.ap_api.daemon_qa import daemon_a
 from app.consts import USER_ID
 from app.api.AdelphosException import AdelphosException
 from app.dao.AliasDto import AliasDto
-from app.dao.RemoteInstanceDto import RemoteInstanceDto
+#from app.dao.RemoteInstanceDto import RemoteInstanceDto
+from app.dao.CachedActorDto import CachedActorDto
 from app.consts import USER_ID
 from app.ap_api.AsyncRequest import AsyncRequest
 import json
@@ -100,9 +101,7 @@ async def create_remote_daemon(ctx, rem_instance):
     daemon_query = f"https://{rem_instance}/.well-known/webfinger?\
 resource=acct:{USER_ID}@{rem_instance}"
 
-    #headers_acc = {"Accept" : "application/activity+json"}
     daemon_res = AsyncRequest(daemon_query)
-    #daemon_res = requests.get(daemon_query, headers = headers_acc)
     await ctx.app.async_req_wait(daemon_res)
 
     if (daemon_res.status_code != 200):
@@ -115,7 +114,7 @@ resource=acct:{USER_ID}@{rem_instance}"
     if ( subject != f"acct:{USER_ID}@{rem_instance}"):
         raise AdelphosException(f"got {subject} instead!")
 
-    ctx.daemon = RemoteInstanceDto()
+    ctx.daemon = CachedActorDto()
     ctx.daemon.hostname = rem_instance
     ctx.daemon.endpoint = daemon_ob['links'][0]['href']
     
