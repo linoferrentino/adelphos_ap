@@ -11,6 +11,7 @@ from app.api.AdelphosException import AdelphosException
 from app.dao.AliasDto import AliasDto
 from app.dao.RemoteInstanceDto import RemoteInstanceDto
 from app.consts import USER_ID
+from app.ap_api.AsyncRequest import AsyncRequest
 import json
 import asyncio
 
@@ -26,7 +27,7 @@ def get_param_safe(ctx, param):
     raise AdelphosException(f"Required parameter {param} not found")
 
 
-def alias_create_handler(ctx):
+async def alias_create_handler(ctx):
 
     # first of all let's see if the alias is already present
     alias = get_param_safe(ctx, 'alias')
@@ -75,12 +76,12 @@ def sudo_cmd(func):
 
 
 @sudo_cmd
-def dump_db(ctx):
+async def dump_db(ctx):
     ctx.app.dao.dump_database()
     return "dump db OK"
 
 
-def tl_create_handler(ctx):
+async def tl_create_handler(ctx):
     alias = get_param_safe(ctx, 'alias')
     trust = get_param_safe(ctx, 'trust')
 
@@ -94,13 +95,15 @@ def tl_create_handler(ctx):
     return "create alias OK"
 
 
-def create_remote_daemon(ctx, rem_instance):
+async def create_remote_daemon(ctx, rem_instance):
 
     daemon_query = f"https://{rem_instance}/.well-known/webfinger?\
 resource=acct:{USER_ID}@{rem_instance}"
 
-    headers_acc = {"Accept" : "application/activity+json"}
-    daemon_res = requests.get(daemon_query, headers = headers_acc)
+    #headers_acc = {"Accept" : "application/activity+json"}
+    daemon_res = AsyncRequest(daemon_query)
+    #daemon_res = requests.get(daemon_query, headers = headers_acc)
+    await ctx.app.async_req_wait(daemon_res)
 
     if (daemon_res.status_code != 200):
         raise AdelphosException(
@@ -117,7 +120,9 @@ resource=acct:{USER_ID}@{rem_instance}"
     ctx.daemon.endpoint = daemon_ob['links'][0]['href']
     
     # Now we do the request for the actor
-    daemon_actor = requests.get(ctx.daemon.endpoint, headers = headers_acc)
+    daemon_actor = AsyncRequest(ctx.daemon.endpoint)
+    #daemon_actor = requests.get(ctx.daemon.endpoint, headers = headers_acc)
+    await ctx.app.async_req_wait(daemon_actor)
 
     if (daemon_actor.status_code != 200):
         raise AdelphosException(
@@ -139,7 +144,7 @@ remote_api_id = 0
 async_contexts = {}
 
 
-def rem_echo_handler(ctx):
+async def rem_echo_handler(ctx):
     rem_instance = get_param_safe(ctx, "remote-instance")
     msg = get_param_safe(ctx, "msg")
 
@@ -149,7 +154,7 @@ def rem_echo_handler(ctx):
     ctx.daemon = RemoteInstanceDto.get_from_hostname(ctx, rem_instance)
 
     if (ctx.daemon is None):
-        create_remote_daemon(ctx, rem_instance)
+        await create_remote_daemon(ctx, rem_instance)
 
     # Now I have the daemon.
     gCon.log(f"remote daemon {ctx.daemon.endpoint} OK")
@@ -173,7 +178,7 @@ def rem_echo_handler(ctx):
 
 
 # this is the entry point for the remote API
-def daemon_q_handler(ctx):
+async def daemon_q_handler(ctx):
     # OK, now I get the message.
     msg = get_param_safe(ctx, "msg")
     rem_id = get_param_safe(ctx, "api_id")
@@ -187,7 +192,7 @@ def daemon_q_handler(ctx):
     return response 
 
 
-def daemon_a_handler(ctx):
+async def daemon_a_handler(ctx):
 
     msg = get_param_safe(ctx, "msg")
     local_id = get_param_safe(ctx, "api_id")
@@ -226,7 +231,7 @@ def make_cmd_params(ctx):
         ctx.cmd_dict[key] = val
 
 
-def cmd_parse(ctx):
+async def cmd_parse(ctx):
 
     # the first string is the @daemon
     ctx.cmd_splits = ctx.clean_content.split()
@@ -246,7 +251,7 @@ def cmd_parse(ctx):
         raise AdelphosException(f"command {cmd} not recognized")
 
     make_cmd_params(ctx)
-    ctx.answer_txt = handler(ctx)
+    ctx.answer_txt = await handler(ctx)
 
 
 async def dispatch_request(ctx):
@@ -256,7 +261,7 @@ async def dispatch_request(ctx):
     # I will have to parse it 
     try:
 
-        cmd_parse(ctx)
+        await cmd_parse(ctx)
 
         # If I am here without exceptions I can commit
         if (ctx.need_commit == True):

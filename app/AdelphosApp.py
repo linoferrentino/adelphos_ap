@@ -49,7 +49,8 @@ async def client_request_async(session, req):
 
 async def client_post_async(session, req):
     gCon.log(f"will post to url {req._url}")
-    async with session.post(req._url, headers = req._headers):
+    async with session.post(req._url, headers = req._headers, json =
+                            req._json):
         pass
      
 

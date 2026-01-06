@@ -17,7 +17,7 @@ async def daemon_a(ctx):
 async def daemon_qa(ctx):
     gCon.log(f"I have to send {ctx.query_txt}!")
 
-    post_daemon_req(ctx)
+    await post_daemon_req(ctx)
 
     gCon.log(f"OK, Now I wait for the end")
 

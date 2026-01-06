@@ -12,8 +12,23 @@ class AsyncRequest:
         self._url = url
         self._method = method 
         self._headers = headers
-        self._cond = asyncio.Condition()
         self._json = json
         self.status_code = None
+        self._cond = asyncio.Condition()
+
+
+class AsyncGetReq(AsyncRequest):
+
+
+    def __init__(self, url):
+        super().__init__(self, url)
+
+
+# this class posts the request with the signatures.
+class AysncPostReq(AsyncRequest):
+
+
+    def __init__(self, url, headers, json):
+        pass
 
 
