@@ -12,7 +12,7 @@ from app.dao.AliasDto import AliasDto
 #from app.dao.RemoteInstanceDto import RemoteInstanceDto
 from app.dao.CachedActorDto import CachedActorDto
 from app.consts import USER_ID
-from app.ap_api.AsyncRequest import AsyncRequest
+from app.ap_api.AsyncRequest import AsyncGetReq
 import json
 import asyncio
 
@@ -65,12 +65,20 @@ def sudo_cmd(func):
         pwd = get_param_safe(ctx, 'pwd')
         # I take the hashed password
         hashed = ctx.app.config['General']['root_password']
-        #gCon.log(f"check the {hashed} password")
         ph = PasswordHasher()
         try:
             res = ph.verify(hashed, pwd)
         except:
-            raise AdelphosException("Wrong sudo password")
+            raise AdelphosException("Invalid username/password")
+
+        total_name = f"@{ctx.actor.preferred_username}@{ctx.actor.hostname}"
+        gCon.log(f"You would like dump and you are {total_name}")
+        expected_username = ctx.app.config['General']['root_user']
+        gCon.log(f"But I expect {expected_username}")
+
+        if (total_name != expected_username):
+            raise AdelphosException("Invalid username/password")
+
         return func(ctx)
 
     return check_root
@@ -83,17 +91,18 @@ async def dump_db(ctx):
 
 
 async def tl_create_handler(ctx):
-    alias = get_param_safe(ctx, 'alias')
+    alias_from = get_param_safe(ctx, 'alias_from')
+    alias_to = get_param_safe(ctx, 'alias_to')
     trust = get_param_safe(ctx, 'trust')
 
     # check alias syntax, for now I assume it is OK
-    if (alias[0] != '$'):
-        raise AdelphosException("Invalid alias")
+    if (alias_to[0] != '$'):
+        raise AdelphosException(f"Invalid alias <{alias_to}>")
 
     # remove the dollar.
-    alias = alias[1:]
+    alias_to = alias_to[1:]
 
-    return "create alias OK"
+    return f"create trust line to {alias_to} OK"
 
 
 async def create_remote_daemon(ctx, rem_instance):
@@ -101,7 +110,7 @@ async def create_remote_daemon(ctx, rem_instance):
     daemon_query = f"https://{rem_instance}/.well-known/webfinger?\
 resource=acct:{USER_ID}@{rem_instance}"
 
-    daemon_res = AsyncRequest(daemon_query)
+    daemon_res = AsyncGetReq(daemon_query)
     await ctx.app.async_req_wait(daemon_res)
 
     if (daemon_res.status_code != 200):
@@ -116,11 +125,10 @@ resource=acct:{USER_ID}@{rem_instance}"
 
     ctx.daemon = CachedActorDto()
     ctx.daemon.hostname = rem_instance
-    ctx.daemon.endpoint = daemon_ob['links'][0]['href']
+    ctx.daemon.actor_uri = daemon_ob['links'][0]['href']
     
     # Now we do the request for the actor
-    daemon_actor = AsyncRequest(ctx.daemon.endpoint)
-    #daemon_actor = requests.get(ctx.daemon.endpoint, headers = headers_acc)
+    daemon_actor = AsyncGetReq(ctx.daemon.actor_uri)
     await ctx.app.async_req_wait(daemon_actor)
 
     if (daemon_actor.status_code != 200):
@@ -130,10 +138,12 @@ resource=acct:{USER_ID}@{rem_instance}"
     daemon_ob = json.loads(daemon_actor.text)
 
     # OK, we can now take the inbox and the public key.
-    ctx.daemon.inbox = daemon_ob['inbox']
+    ctx.daemon.inbox_uri = daemon_ob['inbox']
     ctx.daemon.public_key = daemon_ob['publicKey']['publicKeyPem']
+    ctx.daemon.preferred_username = USER_ID
 
     ctx.daemon.store(ctx)
+
 
 # this is the sequence to hold the requests, we have only one thread,
 # so it is safe to share.
@@ -147,16 +157,18 @@ async def rem_echo_handler(ctx):
     rem_instance = get_param_safe(ctx, "remote-instance")
     msg = get_param_safe(ctx, "msg")
 
-    gCon.log(f"I have to do an echo to {rem_instance}")
+    gCon.log(f"I have to do an echo to @{USER_ID}@{rem_instance}")
 
-    # I have to query the dao to get the remote
-    ctx.daemon = RemoteInstanceDto.get_from_hostname(ctx, rem_instance)
+    # I have to query the dao to get the remote, in this case (only in this
+    # case) the hostname is sufficient to get the actor, because the
+    # preferred username is fixed to `daemon'
+    ctx.daemon = CachedActorDto.get_from_hostname(ctx, rem_instance)
 
     if (ctx.daemon is None):
         await create_remote_daemon(ctx, rem_instance)
 
     # Now I have the daemon.
-    gCon.log(f"remote daemon {ctx.daemon.endpoint} OK")
+    gCon.log(f"remote daemon {ctx.daemon.actor_uri} OK")
 
     # TODO, create an async context object
     global remote_api_id

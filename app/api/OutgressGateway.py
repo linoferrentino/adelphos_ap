@@ -14,7 +14,8 @@ from urllib.parse import urlparse
 from datetime import datetime
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
-from app.ap_api.AsyncRequest import AsyncRequest
+from app.ap_api.AsyncRequest import AsyncPostReq
+
 
 ADELPHOS_ERROR_CODES = {
 
@@ -26,8 +27,8 @@ ADELPHOS_ERROR_CODES = {
 
 async def post_response(ctx):
 
-    actor_inbox = ctx.actor.inbox
-    actor_str = ctx.actor.ext_name
+    actor_inbox = ctx.actor.inbox_uri
+    actor_str = ctx.actor.actor_uri
     msg = ctx.answer_txt
 
     return await post_response_inbox(ctx, actor_str, actor_inbox, msg)
@@ -35,8 +36,8 @@ async def post_response(ctx):
 
 async def post_daemon_req(ctx):
 
-    actor_inbox = ctx.daemon.inbox
-    actor_str = ctx.daemon.endpoint
+    actor_inbox = ctx.daemon.inbox_uri
+    actor_str = ctx.daemon.actor_uri
     msg = ctx.query_txt 
 
     return await post_response_inbox(ctx, actor_str, actor_inbox, msg)
@@ -114,7 +115,7 @@ async def post_response_inbox(ctx, actor_str, inbox, msg):
     #r = requests.post(inbox, headers=headers, 
     #                  json=new_message)
     #gCon.log(f"Sent message, output {r.status_code}")
-    post_res  = AsyncRequest(inbox, "post", headers, new_message)
+    post_res  = AsyncPostReq(inbox, headers, new_message)
     await ctx.app.async_req_push(post_res)
 
 

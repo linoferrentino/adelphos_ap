@@ -17,26 +17,25 @@ from cryptography.hazmat.primitives.asymmetric import padding
 import asyncio
 from app.dao.AliasDto import AliasDto
 from app.dao.CachedActorDto import CachedActorDto
-from app.ap_api.AsyncRequest import AsyncRequest
+from app.ap_api.AsyncRequest import AsyncGetReq
+from urllib.parse import urlparse
 
 
 # this function will fetch the public key of the actor
 async def create_tentative_actor(ctx, keyId):
     gCon.log(f"Create here a cached actor {ctx.actor_str}")
     ctx.actor = CachedActorDto()
-    ctx.actor.ext_name = ctx.actor_str
+    ctx.actor.actor_uri = ctx.actor_str
 
-    #gCon.log("HERE I FAKE")
-    #ctx.actor.inbox = ctx.actor_str + "/inbox"
+    # get the part for the hostname
+    parsed = urlparse(ctx.actor_str)
+    ctx.actor.hostname = parsed.hostname
 
     # Now we try to get the public key 
     key_id_val = keyId.split("=")[1][1:-1] #remove the quotes
     gCon.log(f"Get the public key {key_id_val}")
 
-    #headers_acc = {"Accept" : "application/activity+json"}
-
-    #res_key = requests.get(key_id_val, headers = headers_acc)
-    res_key = AsyncRequest(key_id_val)
+    res_key = AsyncGetReq(key_id_val)
     await ctx.app.async_req_wait(res_key)
 
     if (res_key.status_code != 200):
@@ -54,7 +53,6 @@ async def create_tentative_actor(ctx, keyId):
     pub_key_ob_id = pub_key_ob['id']
     ctx.actor.public_key = pub_key_ob['publicKeyPem']
 
-
     # are they the same?
     if (pub_key_ob_id != key_id_val):
         gCon.log(f"Error, got {pub_key_ob_id} key exp {key_id_val}")
@@ -66,8 +64,7 @@ async def create_tentative_actor(ctx, keyId):
         return False
 
     # maybe we can store the inbox only if different.
-    ctx.actor.inbox = ctx.key_ob['inbox']
-
+    ctx.actor.inbox_uri = ctx.key_ob['inbox']
     ctx.actor.preferred_username = ctx.key_ob['preferredUsername']
 
     ctx.actor.store(ctx)

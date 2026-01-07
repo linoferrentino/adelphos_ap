@@ -40,7 +40,7 @@ create table cached_actor (
         inbox_uri text,
         public_key text,
         date_created text default current_timestamp,
-        unique (preferred_username, host_name) on conflict abort
+        unique (preferred_username, hostname) on conflict abort
 );
 
 create table alias(
