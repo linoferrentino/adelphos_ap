@@ -1,11 +1,15 @@
 # this is the dispatcher that understands the Adelphos' API.
 
+# this dispatcher answers to local commands only: remote commands from
+# other adelphos instances are dispatched in the remote dispatcher.
+
 from .RequestCtx import RequestCtx
 from app.logging import gCon
 from app.api.OutgressGateway import post_response
 from app.api.OutgressGateway import post_daemon_req
-from app.ap_api.daemon_qa import daemon_qa
+from app.ap_api.daemon_qa import daemon_remote_cmd
 from app.ap_api.daemon_qa import daemon_a
+from app.ap_api.daemon_qa import daemon_q_handler
 from app.consts import USER_ID
 from app.api.AdelphosException import AdelphosException
 from app.dao.AliasDto import AliasDto
@@ -13,6 +17,7 @@ from app.dao.AliasDto import AliasDto
 from app.dao.CachedActorDto import CachedActorDto
 from app.consts import USER_ID
 from app.ap_api.AsyncRequest import AsyncGetReq
+from fastapi.encoders import jsonable_encoder
 import json
 import asyncio
 
@@ -36,27 +41,30 @@ async def alias_create_handler(ctx):
     ctx.alias = AliasDto.get_from_alias(ctx, alias)
 
     if (ctx.alias is not None):
-        raise AdelphosException(f"Duplicate {alias}, cannot insert")
+        raise AdelphosException(f"{alias} already existing, cannot insert")
 
     # OK! Now I can create a new Alias
     ctx.alias = AliasDto()
 
     ctx.alias.alias = alias
 
-    clear_pwd = get_param_safe(ctx, 'pwd')
+    #clear_pwd = get_param_safe(ctx, 'pwd')
 
-    ph = PasswordHasher()
+    #ph = PasswordHasher()
     
-    password_hashed = ph.hash(clear_pwd)
+    #password_hashed = ph.hash(clear_pwd)
 
-    ctx.alias.password = password_hashed
+    #ctx.alias.password = password_hashed
 
     ctx.alias.actor_fk = ctx.actor.actor_id
 
     # OK, let't try to add it to the database
     ctx.alias.store(ctx)
 
-    return f"Created alias {alias} successfully"
+    host = ctx.app.config['General']['host']
+
+    return f"Created alias {alias} successfully.\
+Your nick in adelphos is ${alias}@{host}"
 
 
 def sudo_cmd(func):
@@ -145,14 +153,6 @@ resource=acct:{USER_ID}@{rem_instance}"
     ctx.daemon.store(ctx)
 
 
-# this is the sequence to hold the requests, we have only one thread,
-# so it is safe to share.
-remote_api_id = 0
-
-# this is the dictionary for the async contexts.
-async_contexts = {}
-
-
 async def rem_echo_handler(ctx):
     rem_instance = get_param_safe(ctx, "remote-instance")
     msg = get_param_safe(ctx, "msg")
@@ -170,37 +170,14 @@ async def rem_echo_handler(ctx):
     # Now I have the daemon.
     gCon.log(f"remote daemon {ctx.daemon.actor_uri} OK")
 
-    # TODO, create an async context object
-    global remote_api_id
-    remote_api_id += 1
+    # OK, I now have the message to the remote instance
+    rcmd = {
+            'cmd' : 'echo',
+            'msg' : msg
+            }
+    ctx.rcmd = rcmd
 
-    ctx.query_txt = f"@{USER_ID} daemon_q api_id {remote_api_id} msg {msg}"
-    
-    ctx.async_ctx = asyncio.create_task(daemon_qa(ctx))
-
-    global async_contexts
-
-    new_async_id = remote_api_id
-    ctx.async_cond = asyncio.Condition()  
-
-    async_contexts[int(new_async_id)] = ctx
-
-    gCon.log(f"Created async context for id {new_async_id}")
-
-
-# this is the entry point for the remote API
-async def daemon_q_handler(ctx):
-    # OK, now I get the message.
-    msg = get_param_safe(ctx, "msg")
-    rem_id = get_param_safe(ctx, "api_id")
-
-
-    # I build the response
-    response = f"@{USER_ID} daemon_a api_id {rem_id} msg parsed_{msg}_good"
-
-    gCon.log(f"Got {msg} I will respond with {response}")
-
-    return response 
+    await daemon_remote_cmd(ctx)
 
 
 async def daemon_a_handler(ctx):
@@ -212,7 +189,7 @@ async def daemon_a_handler(ctx):
     # I put it into the other context.
 
     global async_contexts
-    async_ctx = async_contexts.get(int(local_id))
+    async_ctx = async_contexts.pop(int(local_id), None)
     if (async_ctx is None):
         gCon.log(f"What? no context {async_contexts}")
         return
@@ -274,19 +251,18 @@ async def dispatch_request(ctx):
 
         await cmd_parse(ctx)
 
+        # I might be in a async context, so I wait for the response.
+        if (hasattr(ctx, "async_ctx")):
+            gCon.log("I have to wait an async context")
+            await ctx.async_ctx
+
         # If I am here without exceptions I can commit
         if (ctx.need_commit == True):
             gCon.log("I will commit")
             ctx.app.dao.commit()
 
-
     except AdelphosException as ex:
         ctx.answer_txt = f"Error! {ex}" 
-
-    # I might be in a async context, so I wait for the response.
-    if (hasattr(ctx, "async_ctx")):
-        gCon.log("I have to wait an async context")
-        await ctx.async_ctx
 
     # No async, I can give immediately the response
     if (ctx.answer_txt is not None):

@@ -14,7 +14,7 @@ class AliasDto:
     alias_id: int = 0
     actor_fk: int = 0
     alias: str = None
-    password: str = None
+    #password: str = None
     date_created: str = None
 
     @staticmethod
@@ -23,7 +23,7 @@ class AliasDto:
         global table_name
 
         fields_to_ask = ('alias_id', 'actor_fk', 
-                         'alias', 'password', 'date_created')
+                         'alias', 'date_created')
         field_to_seek = 'alias'
         value_to_seek = alias 
 
@@ -37,7 +37,7 @@ class AliasDto:
 
         fields_stored = {'actor_fk' : self.actor_fk,
                          'alias': self.alias,
-                         'password': self.password}
+                         }
 
         new_id = ctx.app.dao.insert_dto(ctx, table_name, fields_stored)
 

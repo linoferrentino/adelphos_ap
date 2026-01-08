@@ -48,7 +48,7 @@ create table alias(
         actor_fk integer references cached_actor(actor_id) 
         on delete restrict,
         alias text unique on conflict abort,
-        password text,
+        -- password text,
         date_created text default current_timestamp
         ); 
 

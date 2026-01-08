@@ -220,7 +220,13 @@ async def ingress_request(ctx) -> int:
         gCon.log(f"what is it? {str(ctx.object_body)}")
         return 400
 
-    content = ctx.object_body['content']
+    #gCon.log(f"{ctx.object_body}")
+    content = ctx.object_body.get('content')
+    if (content is None):
+        gCon.log(f"No content in object {ctx.object_body}")
+        return 401
+
+    #content = ctx.object_body['content']
 
     # remove HTML tags
     ctx.clean_content = re.sub('<[^<]+?>', '', content) 
