@@ -7,13 +7,14 @@ from .RequestCtx import RequestCtx
 from app.logging import gCon
 from app.api.OutgressGateway import post_response
 from app.api.OutgressGateway import post_daemon_req
-from app.ap_api.daemon_qa import daemon_remote_cmd
+from app.api.params import get_param_safe
+from app.ap_api.daemon_qa import daemon_remote_query
 from app.ap_api.daemon_qa import daemon_a
 from app.ap_api.daemon_qa import daemon_q_handler
+from app.ap_api.daemon_qa import daemon_a_handler
 from app.consts import USER_ID
 from app.api.AdelphosException import AdelphosException
 from app.dao.AliasDto import AliasDto
-#from app.dao.RemoteInstanceDto import RemoteInstanceDto
 from app.dao.CachedActorDto import CachedActorDto
 from app.consts import USER_ID
 from app.ap_api.AsyncRequest import AsyncGetReq
@@ -24,13 +25,6 @@ import asyncio
 
 from argon2 import PasswordHasher
 
-def get_param_safe(ctx, param):
-    par_value = ctx.cmd_dict.get(param)
-    
-    if (par_value is not None):
-        return par_value
-
-    raise AdelphosException(f"Required parameter {param} not found")
 
 
 async def alias_create_handler(ctx):
@@ -175,29 +169,12 @@ async def rem_echo_handler(ctx):
             'cmd' : 'echo',
             'msg' : msg
             }
-    ctx.rcmd = rcmd
+    ctx.daemon_post_ob = rcmd
 
-    await daemon_remote_cmd(ctx)
+    await daemon_remote_query(ctx)
 
 
-async def daemon_a_handler(ctx):
 
-    msg = get_param_safe(ctx, "msg")
-    local_id = get_param_safe(ctx, "api_id")
-    gCon.log(f"got msg {msg} for api {local_id}")
-
-    # I put it into the other context.
-
-    global async_contexts
-    async_ctx = async_contexts.pop(int(local_id), None)
-    if (async_ctx is None):
-        gCon.log(f"What? no context {async_contexts}")
-        return
-
-    async_ctx.answer_txt = msg
-    asyncio.create_task(daemon_a(async_ctx))
-    # my answer is None
-    ctx.answer_txt = None
 
 
 # I have here the command parsers.
@@ -251,7 +228,8 @@ async def dispatch_request(ctx):
 
         await cmd_parse(ctx)
 
-        # I might be in a async context, so I wait for the response.
+        # I might be in a async context, so I wait for the response:
+        # this is done only when we are waiting for a post response.
         if (hasattr(ctx, "async_ctx")):
             gCon.log("I have to wait an async context")
             await ctx.async_ctx
