@@ -69,14 +69,20 @@ class AdelphosApp(FastAPI):
 @asynccontextmanager
 async def lifespan(app: AdelphosApp):
     app.dao = AdelphosDao(app.config)
-    asyncio.create_task(session_worker(app))
+    ses_worker = asyncio.create_task(session_worker(app))
+    daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
+
     yield
+
     # no more running, please.
     app.running = False
-    app.dao.close()
-    # signal the session worker to stop 
+    # signal the workers to stop 
     async with app.cond:
         app.cond.notify_all()
+    gCon.log("Please wait for adelphos shutdown")
+    await ses_worker
+    await daemon_worker
+    app.dao.close()
 
 
 # this method is called with the app.cond taken.
@@ -91,6 +97,19 @@ async def _dequeue_requests_or_wait_lock(session, app: AdelphosApp):
     gCon.log("No requests, I wait")
     await app.cond.wait()
     gCon.log("woken up!")
+
+
+async def daemon_bg_cycle(app: AdelphosApp):
+
+    while app.running == True:
+        async with app.cond:
+            try:
+                res = await asyncio.wait_for(app.cond.wait(),
+                                             timeout = 3.0)
+            except asyncio.TimeoutError:
+                #gCon.log("Now I can do a cycle")
+                pass
+    gCon.log("Daemon quit.")
 
 
 # this is the session worker that holds the session and

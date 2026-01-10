@@ -21,21 +21,12 @@ class AdelphosDao:
 
         create_schema_sql = """
 
---create table remote_instance (
---        remote_instance_id integer primary key,
---        hostname text unique on conflict abort,
---        endpoint text,
---        inbox text,
---        public_key text,
---        date_created text default current_timestamp
---);
-
+-- this is a local table: all the actors can be erased, except
+-- the ones who hold a local alias in adelphos.
 create table cached_actor (
         actor_id integer primary key,
-        -- forward discovery
         preferred_username text,
         hostname text,
-        -- reverse discovery 
         actor_uri text unique on conflict abort,
         inbox_uri text,
         public_key text,
@@ -43,21 +34,37 @@ create table cached_actor (
         unique (preferred_username, hostname) on conflict abort
 );
 
+
+-- this is a local table, it lists my aliases: other table in
+-- adelphos are distributed, their data 
 create table alias(
         alias_id integer primary key,
         actor_fk integer references cached_actor(actor_id) 
         on delete restrict,
         alias text unique on conflict abort,
-        -- password text,
         date_created text default current_timestamp
         ); 
 
+-- this is a cached trust line, it can be recomputed
+create table cached_tl(
+    alias_fk integer references alias(alias_id),
+    tl_fk integer references trust_line(tl_id)
+);
+
+
+-- this is a distributed table; the same line in different servers could
+-- have a different id, but this is not a problem, because the computation
+-- does not depend on it.
 create table trust_line(
-        alias_1 text,
-        alias_2 text,
+        tl_id integer primary key,
+        alias_from integer references alias(alias_id),
+        alias_to text,
         trust_val real,
-        primary key(alias_1, alias_2)
-) without rowid;
+        date_created text default current_timestamp,
+        unique (alias_from, alias_to) on conflict abort
+);
+
+
 
 """
 

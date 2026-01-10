@@ -46,7 +46,6 @@ async def post_daemon_req(ctx):
 # we can pass messages to other inbox, for example a daemon inbox 
 async def post_response_inbox(ctx, actor_str, inbox, msg):
 
-    #gCon.log(f"will send to {inbox}")
 
     host = ctx.app.config['General']['host']
     host_api = host + API_POINT
@@ -87,21 +86,16 @@ async def post_response_inbox(ctx, actor_str, inbox, msg):
 
     sign_utf8 = signature_text.decode('utf-8')
 
-    #gCon.log(f"This is my signature\n{sign_utf8}")
-
     raw_signature = ctx.app.private_key.sign(
             signature_text,
             padding.PKCS1v15(),
             hashes.SHA256()
             )
 
-    #print(f"sender {sender_key}")
     signature_str = base64.b64encode(raw_signature).decode('utf-8') 
-    #print(f"signature {signature_str}")
 
     signature_header = f'keyId="{sender_key}",algorithm="rsa-sha256",headers="(request-target) digest host date",signature="{signature_str}"' 
 
-    #print(f"total {signature_header}")
     headers = {
             'Date': current_date,
             'Content-Type': 'application/activity+json',
@@ -112,9 +106,6 @@ async def post_response_inbox(ctx, actor_str, inbox, msg):
 
 
     gCon.log(f"just before sending to {inbox}")
-    #r = requests.post(inbox, headers=headers, 
-    #                  json=new_message)
-    #gCon.log(f"Sent message, output {r.status_code}")
     post_res  = AsyncPostReq(inbox, headers, new_message)
     await ctx.app.async_req_push(post_res)
 

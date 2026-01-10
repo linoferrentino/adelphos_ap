@@ -21,10 +21,20 @@ from app.ap_api.AsyncRequest import AsyncGetReq
 from fastapi.encoders import jsonable_encoder
 import json
 import asyncio
+import re
 
 
 from argon2 import PasswordHasher
 
+
+def validate_local_alias(alias):
+
+    if (re.match("[a-z0-9][a-z0-9_.]+", alias, re.IGNORECASE) is None):
+        raise AdelphosException(f"Invalid alias {alias}, \
+it must begin with a letter or a digit.")
+
+    if (len(alias) < 2 or len(alias) > 64):
+        raise AdelphosException(f"Alias length incorrect")
 
 
 async def alias_create_handler(ctx):
@@ -37,20 +47,16 @@ async def alias_create_handler(ctx):
     if (ctx.alias is not None):
         raise AdelphosException(f"{alias} already existing, cannot insert")
 
-    # OK! Now I can create a new Alias
+    validate_local_alias(alias)
+
+    # If I am here I can create a new alias
     ctx.alias = AliasDto()
 
     ctx.alias.alias = alias
-
-    #clear_pwd = get_param_safe(ctx, 'pwd')
-
-    #ph = PasswordHasher()
-    
-    #password_hashed = ph.hash(clear_pwd)
-
-    #ctx.alias.password = password_hashed
-
     ctx.alias.actor_fk = ctx.actor.actor_id
+
+    # the alias for now has not a password, when we will have p2p
+    # encryption then it will be sensible to have one.
 
     # OK, let't try to add it to the database
     ctx.alias.store(ctx)
@@ -58,7 +64,7 @@ async def alias_create_handler(ctx):
     host = ctx.app.config['General']['host']
 
     return f"Created alias {alias} successfully.\
-Your nick in adelphos is ${alias}@{host}"
+Your nick in adelphos fediverse is #{alias}@{host}"
 
 
 def sudo_cmd(func):
@@ -97,14 +103,34 @@ async def tl_create_handler(ctx):
     alias_to = get_param_safe(ctx, 'alias_to')
     trust = get_param_safe(ctx, 'trust')
 
-    # check alias syntax, for now I assume it is OK
-    if (alias_to[0] != '$'):
-        raise AdelphosException(f"Invalid alias <{alias_to}>")
+    # first of all I have to get the actor from the alias.
+    # the alias must be local.
+    ctx.alias_from = AliasDto.get_from_alias(ctx, alias_from)
+    if (ctx.alias_ob is None):
+        raise AdelphosException(f"unknown alias {alias_from}")
+
+    # does the alias belong to the user?
+    if (ctx.alias_from.actor_fk != ctx.actor.actor_id):
+        raise AdelphosException(
+                f"The alias {alias_from} does not belong to you.")
+
+    # OK, now for the outer alias.
+    if (alias_to[0] == '#'):
+        # this is a remote alias.
+        raise AdelphosException(f"implementation to remote alias to do")
+
+
+    # this is a local alias, so I can create here the trust line, but
+    # only if the other alias agrees.
+    post_message_to_other_alias(ctx, "do you really want?")
+    
+
+    # I have to parse the alias to.
 
     # remove the dollar.
-    alias_to = alias_to[1:]
+    #alias_to = alias_to[1:]
 
-    return f"create trust line to {alias_to} OK"
+    return f"create trust line to {alias_to} initiated, waiting for confirmation"
 
 
 async def create_remote_daemon(ctx, rem_instance):
