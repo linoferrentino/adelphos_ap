@@ -38,10 +38,74 @@ from app.api.IngressGateway import ingress_request
 from app.AdelphosApp import AdelphosApp, get_app
 from app.consts import USER_ID
 from app.consts import API_POINT
+from fastapi import FastAPI, WebSocket
+from fastapi.responses import HTMLResponse
 
 
 # the app global object.
 app = get_app()
+
+# the web socket interface towards mastodon.
+
+
+
+@app.get("/daemon_cli")
+async def get():
+
+    host = app.config['General']['host']
+    host_api = host + API_POINT
+
+    instance = app.instance
+
+    html_string = f"""
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Welcome to adelphos instance {instance} @ {host}</title>
+    </head>
+    <body>
+        <h1>Daemon cli for adelphos {instance}@{host}</h1>
+        <form action="" onsubmit="sendMessage(event)">
+            <input type="text" id="messageText" autocomplete="off"/>
+            <button>Send</button>
+        </form>
+        <ul id='messages'>
+        </ul>
+        <script>
+            var ws = new WebSocket("wss://{host_api}/ws");"""
+
+    # here we have to change the string without the formatting because it
+    # has the { parenthesis
+    html_string += """
+            ws.onmessage = function(event) {
+                var messages = document.getElementById('messages')
+                var message = document.createElement('li')
+                var content = document.createTextNode(event.data)
+                message.appendChild(content)
+                messages.appendChild(message)
+            };
+            function sendMessage(event) {
+                var input = document.getElementById("messageText")
+                ws.send(input.value)
+                input.value = ''
+                event.preventDefault()
+            }
+        </script>
+    </body>
+</html>
+"""
+
+    gCon.log(f"Hello I give to you the html")
+    return HTMLResponse(html_string)
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        gCon.log(f"received {data}")
+        await websocket.send_text(f"Message text was: {data}")
 
 
 @app.get("/.well-known/webfinger",

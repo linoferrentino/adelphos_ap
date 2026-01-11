@@ -16,6 +16,7 @@ dependencies = [
     { name = "argon2-cffi" },
     { name = "cryptography" },
     { name = "fastapi", extra = ["standard"] },
+    { name = "websockets" },
 ]
 
 [package.metadata]
@@ -24,6 +25,7 @@ requires-dist = [
     { name = "argon2-cffi", specifier = ">=25.1.0" },
     { name = "cryptography", specifier = ">=46.0.3" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.125.0" },
+    { name = "websockets", specifier = ">=15.0.1" },
 ]
 
 [[package]]
