@@ -51,7 +51,7 @@ class AdelphosApp(FastAPI):
     async def async_req_push(self, ar):
         async with self.cond:
             self.requests.append(ar)
-            self.cond.notify()
+            self.cond.notify_all()
 
 
     # this is the blocking (async) GET request.
@@ -106,9 +106,12 @@ async def daemon_bg_cycle(app: AdelphosApp):
             try:
                 res = await asyncio.wait_for(app.cond.wait(),
                                              timeout = 3.0)
+                # If I have a 'normal' notification I do not do anything,
+                # this is a message for the session_worker
             except asyncio.TimeoutError:
-                #gCon.log("Now I can do a cycle")
-                pass
+                    #gCon.log("Now I can do a cycle")
+                    pass
+
     gCon.log("Daemon quit.")
 
 
