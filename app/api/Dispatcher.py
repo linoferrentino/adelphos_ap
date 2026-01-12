@@ -39,8 +39,9 @@ it must begin with a letter or a digit.")
 
 async def alias_create_handler(ctx):
 
-    # first of all let's see if the alias is already present
+    # first of all let's see if the alias is lready present
     alias = get_param_safe(ctx, 'alias')
+    password = get_param_safe(ctx, 'password')
 
     ctx.alias = AliasDto.get_from_alias(ctx, alias)
 
@@ -54,6 +55,8 @@ async def alias_create_handler(ctx):
 
     ctx.alias.alias = alias
     ctx.alias.actor_fk = ctx.actor.actor_id
+    ph = PasswordHasher()
+    ctx.alias.password = ph.hash(password)
 
     # the alias for now has not a password, when we will have p2p
     # encryption then it will be sensible to have one.

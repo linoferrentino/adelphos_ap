@@ -70,6 +70,7 @@ async def get():
             <button>Send</button>
         </form>
         <ul id='messages'>
+        <li>Adelphos CLI: ready</li>
         </ul>
         <script>
             var ws = new WebSocket("wss://{host_api}/ws");"""
@@ -82,7 +83,7 @@ async def get():
                 var message = document.createElement('li')
                 var content = document.createTextNode(event.data)
                 message.appendChild(content)
-                messages.appendChild(message)
+                messages.insertBefore(message, messages.firstChild)
             };
             function sendMessage(event) {
                 var input = document.getElementById("messageText")
@@ -101,11 +102,12 @@ async def get():
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    while True:
-        data = await websocket.receive_text()
-        gCon.log(f"received {data}")
-        await websocket.send_text(f"Message text was: {data}")
+
+    #client = await websocket.accept()
+    client = await app.conn_hndl.accept(websocket)
+
+    # this is the never ending cycle.
+    await client.serve()
 
 
 @app.get("/.well-known/webfinger",

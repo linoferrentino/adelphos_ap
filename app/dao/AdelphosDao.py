@@ -36,11 +36,12 @@ create table cached_actor (
 
 
 -- this is a local table, it lists my aliases: other table in
--- adelphos are distributed, their data 
+-- adelphos are distributed.
 create table alias(
         alias_id integer primary key,
-        actor_fk integer references cached_actor(actor_id) 
+        actor_fk integer references cached_actor(actor_id)
         on delete restrict,
+        password text,
         alias text unique on conflict abort,
         date_created text default current_timestamp
         ); 
@@ -111,6 +112,37 @@ create table trust_line(
     def dump_database(self):
         for line in self._conn.iterdump():
             gCon.log(f"{line}")
+
+
+    # this has a list of queries, and they are combined
+    def get_dto_ex(self, table_name, fields_to_ask, fields_to_seek, 
+                values_to_seek, constructor_dto):
+
+        condition = []
+
+        for field_to_seek in fields_to_seek:
+            condition.append(" {field_to_seek} = ? ")
+
+        condition_str = " and ". join(condition)
+
+
+        sql_get = f"""
+select {list_sql_fields} from {table_name} where {condition_str} 
+
+"""
+        cur = self._conn.cursor()
+        cur.execute(sql_get, values_to_seek)
+        row = cur.fetchone()
+        cur.close()
+
+        if (row is None):
+            gCon.log(f"No row in {table_name} for {field_to_seek} \
+= {value_to_seek}")
+            return None
+
+
+        # I simply get the dto 
+        return constructor_dto(*row)
 
 
     def get_dto(self, table_name, fields_to_ask, field_to_seek, 

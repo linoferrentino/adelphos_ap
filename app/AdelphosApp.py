@@ -10,6 +10,8 @@ from app.consts import API_POINT
 from app.logging import exit_err
 from app.logging import gCon
 
+from app.cli.ConnHandler import ConnHandler
+
 from app.config import load_conf
 from app.keys import load_keys
 
@@ -38,7 +40,8 @@ class AdelphosApp(FastAPI):
         self.public_key = pub_key
         self.private_key = priv_key
 
-        # create the condition for the http requests.
+        # create the condition for the http requests and the daemon
+        # background cycle.
         self.cond = asyncio.Condition()  
 
         # this is the queue of requests that this daemon does
@@ -71,6 +74,7 @@ async def lifespan(app: AdelphosApp):
     app.dao = AdelphosDao(app.config)
     ses_worker = asyncio.create_task(session_worker(app))
     daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
+    app.conn_hndl = ConnHandler(app)
 
     yield
 
@@ -80,6 +84,7 @@ async def lifespan(app: AdelphosApp):
     async with app.cond:
         app.cond.notify_all()
     gCon.log("Please wait for adelphos shutdown")
+    await app.conn_hndl.stop()
     await ses_worker
     await daemon_worker
     app.dao.close()

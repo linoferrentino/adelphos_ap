@@ -43,6 +43,12 @@ class CachedActorDto:
         return CachedActorDto._base_get(ctx, field_to_seek, value_to_seek)
 
 
+    @staticmethod
+    def get_from_fediverse_id(ctx, preferred_username, hostname):
+
+        pass
+
+
     # this is used by the query that asks for the actor.
     @staticmethod
     def get_from_hostname(ctx, hostname):
