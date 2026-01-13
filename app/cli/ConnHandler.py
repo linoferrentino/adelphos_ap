@@ -8,18 +8,29 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from websockets.asyncio.server import broadcast
 from app.logging import gCon
+from app.api.Dispatcher import send_msg_to_alias
 import asyncio
+
+
+# the class that holds the data relative to a client
+class WebSocketContext:
+    pass
+
 
 # this is the client that will do the cycle to process the messages
 class ClientWs:
 
 
-    def __init__(self, websocket):
+    def __init__(self, app, websocket):
+        self.wsctx = WebSocketContext()
+        self.wsctx.app = app
         self.websocket = websocket
         self.running = True
 
 
     async def _internal_serve(self):
+
+
         while True:
             try:
 
@@ -27,10 +38,12 @@ class ClientWs:
                     self.websocket.receive_text(), 10)
 
             except asyncio.TimeoutError:
-                data = "are you still there?"
+                #data = "are you still there?"
+                continue
 
             gCon.log(f"received {data}")
-            await self.websocket.send_text(f"Message text was: {data}")
+            answer = await send_msg_to_alias(self.wsctx)
+            await self.websocket.send_text(f"remote answers {answer}")
 
 
     async def serve(self):
@@ -68,7 +81,7 @@ class ConnHandler:
     async def accept(self, websocket):
 
         await websocket.accept()
-        client = ClientWs(websocket)
+        client = ClientWs(self.app, websocket)
         self.clients.append(client)
         return client
 
@@ -79,7 +92,7 @@ class ConnHandler:
         #wslist = [ ws.websocket for ws in self.clients]
         #broadcast(wslist, "The server is going dow NOW!")
 
-        for ws in self.clients:
-            await ws.websocket.send_text(f"System is going down!")
-            await ws.stop()
+        #for ws in self.clients:
+            #await ws.websocket.send_text(f"System is going down!")
+            #await ws.stop()
 

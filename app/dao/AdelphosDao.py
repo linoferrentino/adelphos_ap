@@ -120,10 +120,14 @@ create table trust_line(
 
         condition = []
 
+        list_sql_fields = ", ".join(fields_to_ask)
+
         for field_to_seek in fields_to_seek:
-            condition.append(" {field_to_seek} = ? ")
+            condition.append(f" {field_to_seek} = ? ")
 
         condition_str = " and ". join(condition)
+
+        gCon.log(f"the condition is {condition_str}")
 
 
         sql_get = f"""
@@ -136,8 +140,7 @@ select {list_sql_fields} from {table_name} where {condition_str}
         cur.close()
 
         if (row is None):
-            gCon.log(f"No row in {table_name} for {field_to_seek} \
-= {value_to_seek}")
+            gCon.log(f"No row in {table_name} with |{condition_str}|")
             return None
 
 

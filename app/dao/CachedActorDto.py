@@ -22,39 +22,42 @@ class CachedActorDto:
 
 
     @staticmethod
-    def _base_get(ctx, field_to_seek, value_to_seek):
+    def _base_get(ctx, fields_to_seek, values_to_seek):
         global table_name
 
         fields_to_ask = ('actor_id', 'preferred_username', 'hostname', 
                          'actor_uri', 'inbox_uri', 
                          'public_key', 'date_created')
 
-        dto = ctx.app.dao.get_dto(table_name, fields_to_ask, field_to_seek, 
-                            value_to_seek, CachedActorDto)
+        dto = ctx.app.dao.get_dto_ex(table_name, fields_to_ask, 
+                                     fields_to_seek, 
+                            values_to_seek, CachedActorDto)
         return dto      
 
 
     @staticmethod
     def get_from_name(ctx, actor_uri):
 
-        field_to_seek = 'actor_uri'
-        value_to_seek = actor_uri 
+        field_to_seek = ('actor_uri',)
+        value_to_seek = (actor_uri ,)
 
         return CachedActorDto._base_get(ctx, field_to_seek, value_to_seek)
 
 
     @staticmethod
     def get_from_fediverse_id(ctx, preferred_username, hostname):
+        fields_to_seek = ('preferred_username', 'hostname')
+        values_to_seek = (preferred_username, hostname)
 
-        pass
+        return CachedActorDto._base_get(ctx, fields_to_seek, values_to_seek)
 
 
     # this is used by the query that asks for the actor.
     @staticmethod
     def get_from_hostname(ctx, hostname):
         
-        field_to_seek = 'hostname'
-        value_to_seek = hostname
+        field_to_seek = ('hostname',)
+        value_to_seek = (hostname, )
 
         return CachedActorDto._base_get(ctx, field_to_seek, value_to_seek)
 

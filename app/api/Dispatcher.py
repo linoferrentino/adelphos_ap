@@ -7,6 +7,8 @@ from .RequestCtx import RequestCtx
 from app.logging import gCon
 from app.api.OutgressGateway import post_response
 from app.api.OutgressGateway import post_daemon_req
+from app.api.OutgressGateway import post_response_inbox
+from app.api.OutgressGateway import post_to_actor_inbox
 from app.api.params import get_param_safe
 from app.ap_api.daemon_qa import daemon_remote_query
 from app.ap_api.daemon_qa import daemon_a
@@ -136,44 +138,59 @@ async def tl_create_handler(ctx):
     return f"create trust line to {alias_to} initiated, waiting for confirmation"
 
 
-async def create_remote_daemon(ctx, rem_instance):
+
+# gets from local database or queries the webfinger endpoint
+async def get_or_discover_actor(ctx, preferred_username, rem_instance):
+
+    actor = CachedActorDto.get_from_fediverse_id(ctx, preferred_username,
+                                                 rem_instance)
+    if (actor is not None):
+        return actor
+
+    return await find_remote_actor(ctx, preferred_username, rem_instance)
+
+
+# this function will query a remote actor in Activity Pub; it is working
+# for a daemon too, which is only another actore.
+async def find_remote_actor(ctx, preferred_username, rem_instance):
 
     daemon_query = f"https://{rem_instance}/.well-known/webfinger?\
-resource=acct:{USER_ID}@{rem_instance}"
+resource=acct:{preferred_username}@{rem_instance}"
 
     daemon_res = AsyncGetReq(daemon_query)
     await ctx.app.async_req_wait(daemon_res)
 
     if (daemon_res.status_code != 200):
         raise AdelphosException(
-            f"remote daemon not responding {rem_instance}")
+                f"remote instance not responding: {rem_instance}")
 
     daemon_ob = json.loads(daemon_res.text)
 
     subject = daemon_ob['subject']
-    if ( subject != f"acct:{USER_ID}@{rem_instance}"):
+    if ( subject != f"acct:{preferred_username}@{rem_instance}"):
         raise AdelphosException(f"got {subject} instead!")
 
-    ctx.daemon = CachedActorDto()
-    ctx.daemon.hostname = rem_instance
-    ctx.daemon.actor_uri = daemon_ob['links'][0]['href']
+    actor = CachedActorDto()
+    actor.hostname = rem_instance
+    actor.actor_uri = daemon_ob['links'][0]['href']
     
     # Now we do the request for the actor
-    daemon_actor = AsyncGetReq(ctx.daemon.actor_uri)
+    daemon_actor = AsyncGetReq(actor.actor_uri)
     await ctx.app.async_req_wait(daemon_actor)
 
     if (daemon_actor.status_code != 200):
         raise AdelphosException(
-            f"remote daemon misconfigured {ctx.daemon.endpoint}")
+            f"remote instance misconfigured {actor.actor_uri}")
 
     daemon_ob = json.loads(daemon_actor.text)
 
     # OK, we can now take the inbox and the public key.
-    ctx.daemon.inbox_uri = daemon_ob['inbox']
-    ctx.daemon.public_key = daemon_ob['publicKey']['publicKeyPem']
-    ctx.daemon.preferred_username = USER_ID
+    actor.inbox_uri = daemon_ob['inbox']
+    actor.public_key = daemon_ob['publicKey']['publicKeyPem']
+    actor.preferred_username = preferred_username 
 
-    ctx.daemon.store(ctx)
+    actor.store(ctx)
+    return actor
 
 
 async def rem_echo_handler(ctx):
@@ -185,10 +202,7 @@ async def rem_echo_handler(ctx):
     # I have to query the dao to get the remote, in this case (only in this
     # case) the hostname is sufficient to get the actor, because the
     # preferred username is fixed to `daemon'
-    ctx.daemon = CachedActorDto.get_from_hostname(ctx, rem_instance)
-
-    if (ctx.daemon is None):
-        await create_remote_daemon(ctx, rem_instance)
+    ctx.daemon = await get_or_discover_actor(ctx, USER_ID, rem_instance)
 
     # Now I have the daemon.
     gCon.log(f"remote daemon {ctx.daemon.actor_uri} OK")
@@ -201,9 +215,6 @@ async def rem_echo_handler(ctx):
     ctx.daemon_post_ob = rcmd
 
     await daemon_remote_query(ctx)
-
-
-
 
 
 # I have here the command parsers.
@@ -248,6 +259,21 @@ async def cmd_parse(ctx):
     ctx.answer_txt = await handler(ctx)
 
 
+# this context is not a request context, but a web socket context.
+async def send_msg_to_alias(wsctx):
+
+    # here I hard code the actor and I try to post to him
+    wsctx.actor = await get_or_discover_actor(wsctx, "lino_ferre",
+                                          "mastodon.uno")
+
+    gCon.log(f"I have found the remote actor {wsctx.actor}")
+
+    await post_to_actor_inbox(wsctx, "this is a test!")
+
+    return "this is OK!"
+
+
+# this function is called by activity pub but also by the web sockets.
 async def dispatch_request(ctx):
     gCon.rule("--- dispatch request ---")
     gCon.log(f"The message is {ctx.clean_content}")

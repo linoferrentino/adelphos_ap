@@ -112,12 +112,7 @@ async def check_message(ctx):
         body_str.encode('utf-8')).digest())
 
     digest_body_total = "SHA-256=" + digest_body.decode('utf-8')
-
-    #gCon.log(f"I expect {digest_body_total} as digest in headers")
-
     digest_sign = headers['digest']
-
-    #gCon.log(f"I got {digest_sign} as digest in headers")
 
     if (digest_body_total != digest_sign):
         gCon.log("digest mismatch, go away")
@@ -126,13 +121,7 @@ async def check_message(ctx):
     ####### 2nd check date
     date_str = headers['date']
 
-    #gCon.log(f"date [{date_str}]")
-
-    #date_str = date_str_kv.split("=")[1][1:-1]
-
     date_val = datetime.strptime(date_str, '%a, %d %b %Y %H:%M:%S GMT')
-
-    #gCon.log(f"this is the date sent {date_val}")
 
     current_date = datetime.now()
 
@@ -140,10 +129,8 @@ async def check_message(ctx):
 
     total_secs = abs(time_diff.total_seconds())
 
-    #gCon.log(f"this is the difference {time_diff}, secs {total_secs}")
-
     if (total_secs > 30):
-        gCon.log("Too late!")
+        gCon.log("Too much drift in time!")
         return False
 
     # first of all we build the signature string to validate
@@ -225,8 +212,6 @@ async def ingress_request(ctx) -> int:
     if (content is None):
         gCon.log(f"No content in object {ctx.object_body}")
         return 401
-
-    #content = ctx.object_body['content']
 
     # remove HTML tags
     ctx.clean_content = re.sub('<[^<]+?>', '', content) 

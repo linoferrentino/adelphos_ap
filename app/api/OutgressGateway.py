@@ -17,12 +17,10 @@ from cryptography.hazmat.primitives import hashes
 from app.ap_api.AsyncRequest import AsyncPostReq
 
 
-ADELPHOS_ERROR_CODES = {
-
-
-
-}
-
+#ADELPHOS_ERROR_CODES = {
+#
+#}
+#
 
 
 async def post_response(ctx):
@@ -32,6 +30,12 @@ async def post_response(ctx):
     msg = ctx.answer_txt
 
     return await post_response_inbox(ctx, actor_str, actor_inbox, msg)
+
+
+async def post_to_actor_inbox(ctx, msg):
+
+    return await post_response_inbox(ctx, ctx.actor.actor_uri,
+                                     ctx.actor.inbox_uri, msg)
 
 
 async def post_daemon_req(ctx):
