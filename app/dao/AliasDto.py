@@ -11,21 +11,21 @@ table_name = "alias"
 @dataclass
 class AliasDto:
 
-    alias_id: int = 0
-    actor_fk: int = 0
-    alias: str = None
+    alias_uri: str = None
+    actor_fk: str = None
     password: str = None
-    date_created: str = None
+    timestamp: str = None
 
     @staticmethod
-    def get_from_alias(ctx, alias):
+    def get_from_alias_uri(ctx, alias_uri):
 
         global table_name
 
-        fields_to_ask = ('alias_id', 'actor_fk', 
-                         'alias', 'password', 'date_created')
-        field_to_seek = 'alias'
-        value_to_seek = alias 
+        fields_to_ask = ('alias_uri', 'actor_fk', 
+                         'password', 'timestamp')
+
+        field_to_seek = 'alias_uri'
+        value_to_seek = alias_uri
 
         dto = ctx.app.dao.get_dto(table_name, fields_to_ask, field_to_seek, 
                             value_to_seek, AliasDto)
@@ -35,18 +35,14 @@ class AliasDto:
     def store(self, ctx):
         global table_name
 
-        fields_stored = {'actor_fk' : self.actor_fk,
-                         'alias': self.alias,
+        fields_stored = {
+                         'alias_uri': self.alias_uri,
+                         'actor_fk' : self.actor_fk,
                          'password': self.password,
                          }
 
-        new_id = ctx.app.dao.insert_dto(ctx, table_name, fields_stored)
+        ctx.app.dao.insert_dto(ctx, table_name, fields_stored)
 
-        gCon.log(f"Created new alias {self.alias} with id {new_id}")
-
-        self.alias_id = new_id
-
-
-
+        gCon.log(f"Created new alias {self.alias_uri}")
 
 

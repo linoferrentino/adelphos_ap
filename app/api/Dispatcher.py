@@ -17,7 +17,7 @@ from app.ap_api.daemon_qa import daemon_a_handler
 from app.consts import USER_ID
 from app.api.AdelphosException import AdelphosException
 from app.dao.AliasDto import AliasDto
-from app.dao.CachedActorDto import CachedActorDto
+from app.dao.ActorDto import ActorDto
 from app.consts import USER_ID
 from app.ap_api.AsyncRequest import AsyncGetReq
 from fastapi.encoders import jsonable_encoder
@@ -31,9 +31,10 @@ from argon2 import PasswordHasher
 
 def validate_local_alias(alias):
 
-    if (re.match("[a-z0-9][a-z0-9_.]+", alias, re.IGNORECASE) is None):
+    if (re.match("[a-z0-9][a-z0-9_.]+[a-z0-9]+", alias, 
+                 re.IGNORECASE) is None):
         raise AdelphosException(f"Invalid alias {alias}, \
-it must begin with a letter or a digit.")
+it must begin and end with a letter or a digit.")
 
     if (len(alias) < 2 or len(alias) > 64):
         raise AdelphosException(f"Alias length incorrect")
@@ -45,7 +46,10 @@ async def alias_create_handler(ctx):
     alias = get_param_safe(ctx, 'alias')
     password = get_param_safe(ctx, 'password')
 
-    ctx.alias = AliasDto.get_from_alias(ctx, alias)
+    host = ctx.app.config['General']['host']
+    alias_uri = f"ad1.alias.{alias}@{host}"
+
+    ctx.alias = AliasDto.get_from_alias_uri(ctx, alias_uri)
 
     if (ctx.alias is not None):
         raise AdelphosException(f"{alias} already existing, cannot insert")
@@ -55,8 +59,8 @@ async def alias_create_handler(ctx):
     # If I am here I can create a new alias
     ctx.alias = AliasDto()
 
-    ctx.alias.alias = alias
-    ctx.alias.actor_fk = ctx.actor.actor_id
+    ctx.alias.alias_uri = alias_uri
+    ctx.alias.actor_fk = ctx.actor.actor_uri
     ph = PasswordHasher()
     ctx.alias.password = ph.hash(password)
 
@@ -66,10 +70,8 @@ async def alias_create_handler(ctx):
     # OK, let't try to add it to the database
     ctx.alias.store(ctx)
 
-    host = ctx.app.config['General']['host']
-
     return f"Created alias {alias} successfully.\
-Your nick in adelphos fediverse is #{alias}@{host}"
+Your global identifier in adelphos fediverse is {alias_uri}"
 
 
 def sudo_cmd(func):
@@ -142,7 +144,7 @@ async def tl_create_handler(ctx):
 # gets from local database or queries the webfinger endpoint
 async def get_or_discover_actor(ctx, preferred_username, rem_instance):
 
-    actor = CachedActorDto.get_from_fediverse_id(ctx, preferred_username,
+    actor = ActorDto.get_from_canonical_name(ctx, preferred_username,
                                                  rem_instance)
     if (actor is not None):
         return actor
@@ -170,7 +172,7 @@ resource=acct:{preferred_username}@{rem_instance}"
     if ( subject != f"acct:{preferred_username}@{rem_instance}"):
         raise AdelphosException(f"got {subject} instead!")
 
-    actor = CachedActorDto()
+    actor = ActorDto()
     actor.hostname = rem_instance
     actor.actor_uri = daemon_ob['links'][0]['href']
     
@@ -191,6 +193,12 @@ resource=acct:{preferred_username}@{rem_instance}"
 
     actor.store(ctx)
     return actor
+
+
+# this function will query a distant adelphos instance to get an alias, if
+# present.
+async def rem_alias_get(ctx):
+    pass
 
 
 async def rem_echo_handler(ctx):

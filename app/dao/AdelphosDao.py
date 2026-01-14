@@ -8,12 +8,25 @@ from ..logging import good_bye
 import os
 from pathlib import Path
 import sqlite3
-from app.dao.AliasDto import AliasDto
 from app.api.AdelphosException import AdelphosException
-from app.dao.CachedActorDto import CachedActorDto
 
 
 class AdelphosDao:
+
+    # the ids in adelphos are in the form
+    # ad1.$type.$val@host
+    # where type is one of 'alias', 'group', 'cheque', 'trust_line' etc.
+    # there are no numeric ids, because the database is distributed.
+    # local instances are free to cache local values as numeric
+
+    # every identifier has a $home, which is the host where it has been
+    # created and only that server is allowed to modfify it.
+
+    # the distributed db is distributed equally: we do not alter the rows,
+    # only the various adelphos' instances have a different set of rows and
+    # they share the responsability to update it.
+
+    # the database is consistent
 
 
     def _create_schema(self):
@@ -21,50 +34,34 @@ class AdelphosDao:
 
         create_schema_sql = """
 
--- this is a local table: all the actors can be erased, except
--- the ones who hold a local alias in adelphos.
-create table cached_actor (
-        actor_id integer primary key,
-        preferred_username text,
-        hostname text,
-        actor_uri text unique on conflict abort,
+-- this is the table that bridges adelphos with activity pub.
+-- here the ids are URIs which are unique enforced by ActivityPub
+create table actor (
+        actor_uri text primary key,
+        canonical_name text, 
         inbox_uri text,
         public_key text,
-        date_created text default current_timestamp,
-        unique (preferred_username, hostname) on conflict abort
-);
+        timestamp text default current_timestamp,
+        unique (canonical_name) on conflict abort
+) without rowid;
 
 
--- this is a local table, it lists my aliases: other table in
--- adelphos are distributed.
 create table alias(
-        alias_id integer primary key,
-        actor_fk integer references cached_actor(actor_id)
-        on delete restrict,
+        alias_uri text primary key,
+        actor_fk text references actor(actor_uri) on delete restrict,
         password text,
-        alias text unique on conflict abort,
-        date_created text default current_timestamp
-        ); 
-
--- this is a cached trust line, it can be recomputed
-create table cached_tl(
-    alias_fk integer references alias(alias_id),
-    tl_fk integer references trust_line(tl_id)
-);
+        timestamp text default current_timestamp
+) without rowid; 
 
 
--- this is a distributed table; the same line in different servers could
--- have a different id, but this is not a problem, because the computation
--- does not depend on it.
 create table trust_line(
-        tl_id integer primary key,
-        alias_from integer references alias(alias_id),
+        tl_uri text primary key,
+        alias_from text,
         alias_to text,
         trust_val real,
-        date_created text default current_timestamp,
+        timestamp text default current_timestamp,
         unique (alias_from, alias_to) on conflict abort
-);
-
+) without rowid;
 
 
 """
@@ -188,15 +185,12 @@ insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
 """
 
         gCon.log(f"executing {sql_insert}")
+
         cur = self._conn.cursor()
         cur.execute(sql_insert, dto_as_dict)
-
-        new_id = cur.lastrowid
         cur.close()
 
         ctx.need_commit = True
-
-        return new_id
         
 
     def close(self):
@@ -209,38 +203,4 @@ insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
     def commit(self):
         self._conn.commit()
 
-    # execs the cursor and close it
-    def _exec_cursor_safe(self, ctx, cur, sql, pars):
 
-        try:
-            cur.execute(sql, pars)
-        except sqlite3.Error as err:
-            raise AdelphosException(f"db error {err}")
-
-
-    def create_alias(self, ctx):
-
-        create_alias = """
-insert into alias(alias, ext_name, inbox, password, public_key)
-values (?, ?, ?, ?, ?);
-"""
-
-        cur = self._conn.cursor()
-
-        alias = ctx.alias
-
-        self._exec_cursor_safe(ctx, cur, 
-                    create_alias, (alias.alias, alias.ext_name,
-                    alias.inbox, alias.password,
-                    alias.public_key))
-
-        alias.alias_id = cur.lastrowid
-
-        ctx.need_commit = True
-
-        cur.close()
-        
-
-
-    def update_alias():
-        pass

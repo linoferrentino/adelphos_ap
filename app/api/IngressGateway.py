@@ -16,7 +16,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 import asyncio
 from app.dao.AliasDto import AliasDto
-from app.dao.CachedActorDto import CachedActorDto
+from app.dao.ActorDto import ActorDto
 from app.ap_api.AsyncRequest import AsyncGetReq
 from urllib.parse import urlparse
 
@@ -24,12 +24,11 @@ from urllib.parse import urlparse
 # this function will fetch the public key of the actor
 async def create_tentative_actor(ctx, keyId):
     gCon.log(f"Create here a cached actor {ctx.actor_str}")
-    ctx.actor = CachedActorDto()
+    ctx.actor = ActorDto()
     ctx.actor.actor_uri = ctx.actor_str
 
     # get the part for the hostname
     parsed = urlparse(ctx.actor_str)
-    ctx.actor.hostname = parsed.hostname
 
     # Now we try to get the public key 
     key_id_val = keyId.split("=")[1][1:-1] #remove the quotes
@@ -65,7 +64,9 @@ async def create_tentative_actor(ctx, keyId):
 
     # maybe we can store the inbox only if different.
     ctx.actor.inbox_uri = ctx.key_ob['inbox']
-    ctx.actor.preferred_username = ctx.key_ob['preferredUsername']
+    preferred_username = ctx.key_ob['preferredUsername']
+    ctx.actor.canonical_name = f"@{preferred_username}@{parsed.hostname}"
+
 
     ctx.actor.store(ctx)
 
@@ -100,7 +101,7 @@ async def check_message(ctx):
     gCon.log(f"Try to get the cached actor's key {ctx.actor_str}")
 
     # get the alias!
-    ctx.actor = CachedActorDto.get_from_name(ctx, ctx.actor_str)
+    ctx.actor = ActorDto.get_from_name(ctx, ctx.actor_str)
 
     if (ctx.actor is None):
         res_actor = await create_tentative_actor(ctx, keyId)
