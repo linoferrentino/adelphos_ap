@@ -10,6 +10,7 @@ from app.api.OutgressGateway import post_daemon_req
 from app.api.OutgressGateway import post_response_inbox
 from app.api.OutgressGateway import post_to_actor_inbox
 from app.api.params import get_param_safe
+from app.api.params import make_cmd_params
 from app.ap_api.daemon_qa import daemon_remote_query
 from app.ap_api.daemon_qa import daemon_a
 from app.ap_api.daemon_qa import daemon_q_handler
@@ -225,7 +226,7 @@ async def rem_echo_handler(ctx):
     await daemon_remote_query(ctx)
 
 
-# I have here the command parsers.
+# I have here the command handler for the activity pub interface.
 cmd_handlers = {
         "alias_create": alias_create_handler,
         "dump_db": dump_db,
@@ -235,13 +236,6 @@ cmd_handlers = {
         "daemon_a": daemon_a_handler, 
 }
 
-
-def make_cmd_params(ctx):
-    ctx.cmd_dict = {}
-    while (len(ctx.cmd_splits) > 1):
-        val = ctx.cmd_splits.pop()
-        key = ctx.cmd_splits.pop()
-        ctx.cmd_dict[key] = val
 
 
 async def cmd_parse(ctx):

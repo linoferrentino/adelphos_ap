@@ -9,12 +9,42 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from websockets.asyncio.server import broadcast
 from app.logging import gCon
 from app.api.Dispatcher import send_msg_to_alias
+from app.api.params import make_cmd_params
 import asyncio
 
 
 # the class that holds the data relative to a client
+# this holds a session state for the socket.
 class WebSocketContext:
+
+    def __init__(self, app, websocket):
+        # at first there is not a login.
+        self.actor = None
+        pass
+
+def login_required(func):
+
+    def check_login(ctx):
+        return func(ctx)
+
+    return check_login
+
+
+async def login_hndl_ws(wsctx):
     pass
+
+
+@login_required
+async def login_hndl_ws(wsctx):
+    pass
+
+
+# these are the commands recognized by the web socket.
+ws_cmd_handlers = {
+        "create_group": create_group_hndl,
+        "login" : login_hndl,
+}
+
 
 
 # this is the client that will do the cycle to process the messages
@@ -26,10 +56,15 @@ class ClientWs:
         self.wsctx.app = app
         self.websocket = websocket
         self.running = True
+        # this is a one pad token which the user is asked to give.
+        self.token = None
+
+
+    async def web_socket_parse(self):
+        pass
 
 
     async def _internal_serve(self):
-
 
         while True:
             try:
@@ -41,7 +76,15 @@ class ClientWs:
                 #data = "are you still there?"
                 continue
 
-            gCon.log(f"received {data}")
+            self.wsctx.cmd_splits = data.split()
+            self.wsctx.cmd = data.pop(0)
+            make_cmd_params(wsctx)
+            gCon.log(f"received {data} command is {self.wsctx.cmd}")
+
+            if (self.wsctx.actor is None):
+                # no login
+                pass
+
             answer = await send_msg_to_alias(self.wsctx)
             await self.websocket.send_text(f"remote answers {answer}")
 

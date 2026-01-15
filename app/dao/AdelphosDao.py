@@ -54,6 +54,40 @@ create table alias(
 ) without rowid; 
 
 
+create table currency(
+        currency_uri text primary key,
+        friendly_name text,
+        human_value real,
+        timestamp text default current_timestamp
+) without rowid;
+
+
+create table group(
+        group_uri text primary key,
+        level integer,
+
+        timestamp text default current_timestamp
+) without rowid;
+
+
+create table cheque(
+        cheque_uri text primary key,
+        amount integer,
+        date_issued text,
+        issuer_uri_fk text,
+        currency_fk text
+        timestamp text default current_timestamp
+) without rowid;
+
+
+create table session(
+        alias_uri text primary key;
+        token text;
+        confirmed integer;
+        timestamp text default current_timestamp,
+) without rowid;
+
+
 create table trust_line(
         tl_uri text primary key,
         alias_from text,
