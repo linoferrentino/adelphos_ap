@@ -46,6 +46,14 @@ create table actor (
 ) without rowid;
 
 
+create table ad_group(
+        group_uri text primary key,
+        parent_group_fk text references ad_group(group_uri),
+        level integer,
+        timestamp text default current_timestamp
+) without rowid;
+
+
 create table alias(
         alias_uri text primary key,
         actor_fk text references actor(actor_uri) on delete restrict,
@@ -62,14 +70,6 @@ create table currency(
 ) without rowid;
 
 
-create table group(
-        group_uri text primary key,
-        level integer,
-
-        timestamp text default current_timestamp
-) without rowid;
-
-
 create table cheque(
         cheque_uri text primary key,
         amount integer,
@@ -81,10 +81,10 @@ create table cheque(
 
 
 create table session(
-        alias_uri text primary key;
-        token text;
-        confirmed integer;
-        timestamp text default current_timestamp,
+        alias_uri text primary key,
+        token text,
+        confirmed integer,
+        timestamp text default current_timestamp
 ) without rowid;
 
 
@@ -171,7 +171,8 @@ select {list_sql_fields} from {table_name} where {condition_str}
         cur.close()
 
         if (row is None):
-            gCon.log(f"No row in {table_name} with |{condition_str}|")
+            gCon.log(f"No {table_name} with |{condition_str}| \
+{values_to_seek}")
             return None
 
 

@@ -65,7 +65,7 @@ class ActorDto:
 
         ctx.app.dao.insert_dto(ctx, table_name, fields_stored)
 
-        gCon.log(f"Created new cached actor with id {self.actor_uri}")
+        gCon.log(f"stored {self.actor_uri} canonical {self.canonical_name}")
 
 
     def update(self, ctx):

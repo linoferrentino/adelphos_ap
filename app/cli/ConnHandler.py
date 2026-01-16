@@ -10,17 +10,10 @@ from websockets.asyncio.server import broadcast
 from app.logging import gCon
 from app.api.Dispatcher import send_msg_to_alias
 from app.api.params import make_cmd_params
+from app.api.AppCtx import WebSocketContext
 import asyncio
 
 
-# the class that holds the data relative to a client
-# this holds a session state for the socket.
-class WebSocketContext:
-
-    def __init__(self, app, websocket):
-        # at first there is not a login.
-        self.actor = None
-        pass
 
 def login_required(func):
 
@@ -39,10 +32,14 @@ async def login_hndl_ws(wsctx):
     pass
 
 
+async def create_group_hndl(wsctx):
+    pass
+
+
 # these are the commands recognized by the web socket.
 ws_cmd_handlers = {
         "create_group": create_group_hndl,
-        "login" : login_hndl,
+        "login" : login_hndl_ws,
 }
 
 
@@ -52,12 +49,12 @@ class ClientWs:
 
 
     def __init__(self, app, websocket):
-        self.wsctx = WebSocketContext()
-        self.wsctx.app = app
+        self.wsctx = WebSocketContext(app, websocket)
+        #self.wsctx.app = app
         self.websocket = websocket
         self.running = True
         # this is a one pad token which the user is asked to give.
-        self.token = None
+        #self.token = None
 
 
     async def web_socket_parse(self):
@@ -77,13 +74,13 @@ class ClientWs:
                 continue
 
             self.wsctx.cmd_splits = data.split()
-            self.wsctx.cmd = data.pop(0)
-            make_cmd_params(wsctx)
+            self.wsctx.cmd = self.wsctx.cmd_splits.pop(0)
+            make_cmd_params(self.wsctx)
             gCon.log(f"received {data} command is {self.wsctx.cmd}")
 
-            if (self.wsctx.actor is None):
-                # no login
-                pass
+            #if (self.wsctx.actor is None):
+            #    # no login
+            #    pass
 
             answer = await send_msg_to_alias(self.wsctx)
             await self.websocket.send_text(f"remote answers {answer}")

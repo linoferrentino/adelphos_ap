@@ -13,6 +13,7 @@ class AliasDto:
 
     alias_uri: str = None
     actor_fk: str = None
+    group_fk: str = None
     password: str = None
     timestamp: str = None
 

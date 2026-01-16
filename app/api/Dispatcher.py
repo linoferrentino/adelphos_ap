@@ -191,6 +191,7 @@ resource=acct:{preferred_username}@{rem_instance}"
     actor.inbox_uri = daemon_ob['inbox']
     actor.public_key = daemon_ob['publicKey']['publicKeyPem']
     actor.preferred_username = preferred_username 
+    actor.canonical_name = f"@{preferred_username}@{rem_instance}"
 
     actor.store(ctx)
     return actor

@@ -65,6 +65,7 @@ async def create_tentative_actor(ctx, keyId):
     # maybe we can store the inbox only if different.
     ctx.actor.inbox_uri = ctx.key_ob['inbox']
     preferred_username = ctx.key_ob['preferredUsername']
+    gCon.log("I have set the canonical name")
     ctx.actor.canonical_name = f"@{preferred_username}@{parsed.hostname}"
 
 
