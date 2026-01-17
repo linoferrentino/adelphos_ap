@@ -3,6 +3,10 @@
 
 from dataclasses import dataclass
 from app.logging import gCon
+from app.ap_api.AsyncRequest import AsyncGetReq
+from app.api.AdelphosException import AdelphosException
+from urllib.parse import urlparse
+import json
 
 table_name = "actor"
 
@@ -91,15 +95,13 @@ resource=acct:{preferred_username}@{rem_instance}"
 
 
     # this function will fetch the public key of the actor
-    async def create_from_uri(ctx, key_uri):
+    async def create_from_uri(ctx, actor_uri, key_parsed):
 
-        gCon.log(f"Create here a cached actor {ctx.actor_str}")
+        gCon.log(f"Create here a cached actor {actor_uri}")
         actor = ActorDto()
-        actor.key_uri = ctx.actor_str
+        actor.actor_uri = actor_uri
 
-
-
-        res_key = AsyncGetReq(key_id_val)
+        res_key = AsyncGetReq(actor_uri)
         await ctx.app.async_req_wait(res_key)
 
         if (res_key.status_code != 200):
@@ -110,7 +112,7 @@ resource=acct:{preferred_username}@{rem_instance}"
 
         key_ob = json.loads(key_ob_text)
 
-        gCon.log(f"this is the actor {ctx.key_ob}")
+        gCon.log(f"this is the actor {key_ob}")
 
         pub_key_ob = key_ob['publicKey']
 
@@ -118,20 +120,22 @@ resource=acct:{preferred_username}@{rem_instance}"
         actor.public_key = pub_key_ob['publicKeyPem']
 
         # are they the same?
-        if (pub_key_ob_id != key_id_val):
-            gCon.log(f"Error, got {pub_key_ob_id} key exp {key_id_val}")
-            return False
+        #if (pub_key_ob_id != actor_uri):
+        #    gCon.log(f"Error, got {pub_key_ob_id} key exp {actor_uri}")
+        #    return False
 
         # is the owner?
-        if (pub_key_ob['owner'] != actor_str):
-            gCon.log("Error, owner different")
-            return False
+        owner = pub_key_ob['owner'] 
+        if (owner != actor_uri):
+            gCon.log(f"This is bad {pub_key_ob}")
+            gCon.log(f"Error, {owner} different from {actor_uri}")
+            raise AdelphosException("Bad key")
 
         # maybe we can store the inbox only if different.
-        actor.inbox_uri = ctx.key_ob['inbox']
-        preferred_username = ctx.key_ob['preferredUsername']
+        actor.inbox_uri = key_ob['inbox']
+        preferred_username = key_ob['preferredUsername']
         gCon.log("I have set the canonical name")
-        actor.canonical_name = f"@{preferred_username}@{parsed.hostname}"
+        actor.canonical_name = f"@{preferred_username}@{key_parsed.hostname}"
 
 
         actor.store(ctx)
@@ -140,12 +144,17 @@ resource=acct:{preferred_username}@{rem_instance}"
 
 
     @staticmethod
-    def get_or_discover_from_uri(ctx, actor_uri):
+    async def get_or_discover_from_uri(ctx, key_id_val):
 
-        actor = ActorDto.get_from_uri(actor_uri)
+        key_parsed = urlparse(key_id_val)
+        parsed = key_parsed._replace(fragment = "")
+        actor_uri = parsed.geturl()
+
+        actor = ActorDto.get_from_uri(ctx, actor_uri)
 
         if (actor is None):
-            actor = await Actor.Dto.create_from_uri(ctx, actor_uri)
+            actor = await ActorDto.create_from_uri(ctx, actor_uri, 
+                                                   key_parsed)
         return actor
 
 

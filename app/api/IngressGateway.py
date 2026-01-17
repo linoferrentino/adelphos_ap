@@ -50,15 +50,12 @@ async def check_message(ctx):
 
     # Now we try to get the public key 
     key_id_val = keyId.split("=")[1][1:-1] #remove the quotes
-    parsed = urlparse(key_id_val)
-    parsed._replace(fragment = "")
-    actor_uri = parsed.geturl()
 
-    gCon.log(f"Get the public key {actor_uri}")
+    gCon.log(f"Get the public key {key_id_val}")
     gCon.log(f"Try to get the cached actor's key {ctx.actor_str}")
 
     # get the alias!
-    ctx.actor = ActorDto.get_or_discover_from_uri(ctx, actor_uri)
+    ctx.actor = await ActorDto.get_or_discover_from_uri(ctx, key_id_val)
 
 
     ####### 1st, Check the digest
