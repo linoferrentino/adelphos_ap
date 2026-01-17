@@ -21,6 +21,62 @@ class ActorDto:
     timestamp: str = None
 
 
+    # gets from local database or queries the webfinger endpoint
+    @staticmethod
+    async def get_or_discover_actor(ctx, preferred_username, rem_instance):
+
+        actor = ActorDto.get_from_canonical_name(ctx, preferred_username,
+                                                 rem_instance)
+        if (actor is not None):
+            return actor
+
+        return await find_remote_actor(ctx, preferred_username, rem_instance)
+
+
+    # this function will query a remote actor in Activity Pub; it is working
+    # for a daemon too, which is only another actore.
+    @staticmethod
+    async def find_remote_actor(ctx, preferred_username, rem_instance):
+
+        actor_query = f"https://{rem_instance}/.well-known/webfinger?\
+resource=acct:{preferred_username}@{rem_instance}"
+
+        actor_res = AsyncGetReq(actor_query)
+        await ctx.app.async_req_wait(actor_res)
+
+        if (actor_res.status_code != 200):
+            raise AdelphosException(
+                    f"remote instance not responding: {rem_instance}")
+
+        actor_ob = json.loads(actor_res.text)
+
+        subject = actor_ob['subject']
+        if ( subject != f"acct:{preferred_username}@{rem_instance}"):
+            raise AdelphosException(f"got {subject} instead!")
+
+        actor = ActorDto()
+        actor_uri = actor_ob['links'][0]['href']
+        
+        # Now we do the request for the actor
+        daemon_actor = AsyncGetReq(actor.actor_uri)
+        await ctx.app.async_req_wait(daemon_actor)
+
+        if (daemon_actor.status_code != 200):
+            raise AdelphosException(
+                f"remote instance misconfigured {actor.actor_uri}")
+
+        actor_ob = json.loads(daemon_actor.text)
+
+        # OK, we can now take the inbox and the public key.
+        actor.inbox_uri = actor_ob['inbox']
+        actor.public_key = actor_ob['publicKey']['publicKeyPem']
+        actor.preferred_username = preferred_username 
+        actor.canonical_name = f"@{preferred_username}@{rem_instance}"
+
+        actor.store(ctx)
+        return actor
+
+
     @staticmethod
     def _base_get(ctx, fields_to_seek, values_to_seek):
         global table_name
@@ -34,8 +90,67 @@ class ActorDto:
         return dto      
 
 
+    # this function will fetch the public key of the actor
+    async def create_from_uri(ctx, key_uri):
+
+        gCon.log(f"Create here a cached actor {ctx.actor_str}")
+        actor = ActorDto()
+        actor.key_uri = ctx.actor_str
+
+
+
+        res_key = AsyncGetReq(key_id_val)
+        await ctx.app.async_req_wait(res_key)
+
+        if (res_key.status_code != 200):
+            gCon.log(f"Could not fetch the public key {res_key.status_code}")
+            return False
+
+        key_ob_text = res_key.text
+
+        key_ob = json.loads(key_ob_text)
+
+        gCon.log(f"this is the actor {ctx.key_ob}")
+
+        pub_key_ob = key_ob['publicKey']
+
+        pub_key_ob_id = pub_key_ob['id']
+        actor.public_key = pub_key_ob['publicKeyPem']
+
+        # are they the same?
+        if (pub_key_ob_id != key_id_val):
+            gCon.log(f"Error, got {pub_key_ob_id} key exp {key_id_val}")
+            return False
+
+        # is the owner?
+        if (pub_key_ob['owner'] != actor_str):
+            gCon.log("Error, owner different")
+            return False
+
+        # maybe we can store the inbox only if different.
+        actor.inbox_uri = ctx.key_ob['inbox']
+        preferred_username = ctx.key_ob['preferredUsername']
+        gCon.log("I have set the canonical name")
+        actor.canonical_name = f"@{preferred_username}@{parsed.hostname}"
+
+
+        actor.store(ctx)
+
+        return actor 
+
+
     @staticmethod
-    def get_from_name(ctx, actor_uri):
+    def get_or_discover_from_uri(ctx, actor_uri):
+
+        actor = ActorDto.get_from_uri(actor_uri)
+
+        if (actor is None):
+            actor = await Actor.Dto.create_from_uri(ctx, actor_uri)
+        return actor
+
+
+    @staticmethod
+    def get_from_uri(ctx, actor_uri):
 
         field_to_seek = ('actor_uri',)
         value_to_seek = (actor_uri ,)

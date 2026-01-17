@@ -142,59 +142,7 @@ async def tl_create_handler(ctx):
 
 
 
-# gets from local database or queries the webfinger endpoint
-async def get_or_discover_actor(ctx, preferred_username, rem_instance):
 
-    actor = ActorDto.get_from_canonical_name(ctx, preferred_username,
-                                                 rem_instance)
-    if (actor is not None):
-        return actor
-
-    return await find_remote_actor(ctx, preferred_username, rem_instance)
-
-
-# this function will query a remote actor in Activity Pub; it is working
-# for a daemon too, which is only another actore.
-async def find_remote_actor(ctx, preferred_username, rem_instance):
-
-    daemon_query = f"https://{rem_instance}/.well-known/webfinger?\
-resource=acct:{preferred_username}@{rem_instance}"
-
-    daemon_res = AsyncGetReq(daemon_query)
-    await ctx.app.async_req_wait(daemon_res)
-
-    if (daemon_res.status_code != 200):
-        raise AdelphosException(
-                f"remote instance not responding: {rem_instance}")
-
-    daemon_ob = json.loads(daemon_res.text)
-
-    subject = daemon_ob['subject']
-    if ( subject != f"acct:{preferred_username}@{rem_instance}"):
-        raise AdelphosException(f"got {subject} instead!")
-
-    actor = ActorDto()
-    actor.hostname = rem_instance
-    actor.actor_uri = daemon_ob['links'][0]['href']
-    
-    # Now we do the request for the actor
-    daemon_actor = AsyncGetReq(actor.actor_uri)
-    await ctx.app.async_req_wait(daemon_actor)
-
-    if (daemon_actor.status_code != 200):
-        raise AdelphosException(
-            f"remote instance misconfigured {actor.actor_uri}")
-
-    daemon_ob = json.loads(daemon_actor.text)
-
-    # OK, we can now take the inbox and the public key.
-    actor.inbox_uri = daemon_ob['inbox']
-    actor.public_key = daemon_ob['publicKey']['publicKeyPem']
-    actor.preferred_username = preferred_username 
-    actor.canonical_name = f"@{preferred_username}@{rem_instance}"
-
-    actor.store(ctx)
-    return actor
 
 
 # this function will query a distant adelphos instance to get an alias, if
