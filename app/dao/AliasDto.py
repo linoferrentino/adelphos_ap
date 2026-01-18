@@ -8,6 +8,15 @@ from dataclasses import dataclass
 
 table_name = "alias"
 
+# The alias seems to belong to one group: in reality he belongs to several
+# groups, but we list here only the innermost group, because every group
+# has only one parent, from the l-zero group we can go up to all levels.
+
+class AdelphosObject:
+    # an object in adelphos has a global identifier (which is global in all
+    # the instances) and various control fields to acquire it on demand.
+    pass
+
 @dataclass
 class AliasDto:
 

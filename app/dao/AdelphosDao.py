@@ -88,6 +88,7 @@ create table session(
 ) without rowid;
 
 
+-- we do not have here the foreign key, because the alias could be remote
 create table trust_line(
         tl_uri text primary key,
         alias_from text,

@@ -150,11 +150,6 @@ payload {remote_payload_str}"
     return rem_id
 
 
-    # Now I will post it, if it is an answer I only post the response,
-    # otherwise I have to create an async context and wait for it.
-
-
-
 # this function will create the payload with a new id and post it
 async def daemon_remote_query(ctx):
     rem_id = build_remote_string(ctx)

@@ -14,14 +14,9 @@ table_name = "actor"
 class ActorDto:
 
     actor_uri: str = None
-
-    # these are fields which are stored in db.
     canonical_name: str = None 
     inbox_uri: str = None
     public_key: str = None
-
-    # this field is computed by the Db, it is not part of the schema, it is
-    # useful to prune old records.
     timestamp: str = None
 
 
@@ -34,7 +29,8 @@ class ActorDto:
         if (actor is not None):
             return actor
 
-        return await find_remote_actor(ctx, preferred_username, rem_instance)
+        return await ActorDto.find_remote_actor(ctx,
+                        preferred_username, rem_instance)
 
 
     # this function will query a remote actor in Activity Pub; it is working
@@ -59,7 +55,7 @@ resource=acct:{preferred_username}@{rem_instance}"
             raise AdelphosException(f"got {subject} instead!")
 
         actor = ActorDto()
-        actor_uri = actor_ob['links'][0]['href']
+        actor.actor_uri = actor_ob['links'][0]['href']
         
         # Now we do the request for the actor
         daemon_actor = AsyncGetReq(actor.actor_uri)

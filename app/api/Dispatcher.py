@@ -106,44 +106,6 @@ async def dump_db(ctx):
     return "dump db OK"
 
 
-async def tl_create_handler(ctx):
-    alias_from = get_param_safe(ctx, 'alias_from')
-    alias_to = get_param_safe(ctx, 'alias_to')
-    trust = get_param_safe(ctx, 'trust')
-
-    # first of all I have to get the actor from the alias.
-    # the alias must be local.
-    ctx.alias_from = AliasDto.get_from_alias(ctx, alias_from)
-    if (ctx.alias_ob is None):
-        raise AdelphosException(f"unknown alias {alias_from}")
-
-    # does the alias belong to the user?
-    if (ctx.alias_from.actor_fk != ctx.actor.actor_id):
-        raise AdelphosException(
-                f"The alias {alias_from} does not belong to you.")
-
-    # OK, now for the outer alias.
-    if (alias_to[0] == '#'):
-        # this is a remote alias.
-        raise AdelphosException(f"implementation to remote alias to do")
-
-
-    # this is a local alias, so I can create here the trust line, but
-    # only if the other alias agrees.
-    post_message_to_other_alias(ctx, "do you really want?")
-    
-
-    # I have to parse the alias to.
-
-    # remove the dollar.
-    #alias_to = alias_to[1:]
-
-    return f"create trust line to {alias_to} initiated, waiting for confirmation"
-
-
-
-
-
 
 # this function will query a distant adelphos instance to get an alias, if
 # present.
@@ -160,10 +122,11 @@ async def rem_echo_handler(ctx):
     # I have to query the dao to get the remote, in this case (only in this
     # case) the hostname is sufficient to get the actor, because the
     # preferred username is fixed to `daemon'
-    ctx.daemon = await get_or_discover_actor(ctx, USER_ID, rem_instance)
+    ctx.daemon = await ActorDto.get_or_discover_actor(ctx, USER_ID,
+                                                       rem_instance)
 
     # Now I have the daemon.
-    gCon.log(f"remote daemon {ctx.daemon.actor_uri} OK")
+    gCon.log(f"remote daemon {rem_instance} OK")
 
     # OK, I now have the message to the remote instance
     rcmd = {
@@ -175,16 +138,15 @@ async def rem_echo_handler(ctx):
     await daemon_remote_query(ctx)
 
 
-# I have here the command handler for the activity pub interface.
+# I have here the command handler for the activity pub interface, actually
+# the activity pub interface is very simple.
 cmd_handlers = {
         "alias_create": alias_create_handler,
         "dump_db": dump_db,
-        "tl_create": tl_create_handler,
         "recho": rem_echo_handler,
         "daemon_q": daemon_q_handler, 
         "daemon_a": daemon_a_handler, 
 }
-
 
 
 async def cmd_parse(ctx):

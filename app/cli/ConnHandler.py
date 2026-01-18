@@ -36,12 +36,47 @@ async def create_group_hndl(wsctx):
     pass
 
 
+async def tl_create_handler(ctx):
+    alias_from = get_param_safe(ctx, 'alias_from')
+    alias_to = get_param_safe(ctx, 'alias_to')
+    trust = get_param_safe(ctx, 'trust')
+
+    # first of all I have to get the actor from the alias.
+    # the alias must be local.
+    ctx.alias_from = AliasDto.get_from_alias(ctx, alias_from)
+    if (ctx.alias_ob is None):
+        raise AdelphosException(f"unknown alias {alias_from}")
+
+    # does the alias belong to the user?
+    if (ctx.alias_from.actor_fk != ctx.actor.actor_id):
+        raise AdelphosException(
+                f"The alias {alias_from} does not belong to you.")
+
+    # OK, now for the outer alias.
+    if (alias_to[0] == '#'):
+        # this is a remote alias.
+        raise AdelphosException(f"implementation to remote alias to do")
+
+
+    # this is a local alias, so I can create here the trust line, but
+    # only if the other alias agrees.
+    post_message_to_other_alias(ctx, "do you really want?")
+    
+
+    # I have to parse the alias to.
+
+    # remove the dollar.
+    #alias_to = alias_to[1:]
+
+    return f"create trust line to {alias_to} initiated, waiting for confirmation"
+
+
 # these are the commands recognized by the web socket.
 ws_cmd_handlers = {
         "create_group": create_group_hndl,
         "login" : login_hndl_ws,
+        "tl_create": tl_create_handler,
 }
-
 
 
 # this is the client that will do the cycle to process the messages
