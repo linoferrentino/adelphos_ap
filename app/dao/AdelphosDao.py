@@ -11,6 +11,112 @@ import sqlite3
 from app.api.AdelphosException import AdelphosException
 
 
+
+create_schema_sql = [('actor',
+
+"""
+-- this is the table that bridges adelphos with activity pub.
+-- here the ids are URIs which are unique enforced by ActivityPub
+create table actor (
+        actor_uri text primary key,
+        canonical_name text, 
+        inbox_uri text,
+        public_key text,
+        timestamp text default current_timestamp,
+        unique (canonical_name) on conflict abort
+) without rowid;"""),
+('instance', """
+-- this is the table that caches the instances here in adelphos, there is
+-- a one to one mapping between an instance and the daemon actor that this
+-- instance exposes.
+create table instance (
+    
+    instance_id integer primary key,
+    -- some other flags...
+    authorized integer
+
+);"""),
+('adelphos_ob', """
+-- this is the common part for all the objects in adelphos
+create table adelphos_ob (
+        -- this is a **local** id, used only to join other tables.
+        local_id integer primary key,
+
+        remote_id integer,
+        instance_fk integer references instance(instance_id),
+
+        adelphos_uri text unique,
+        created text default current_timestamp,
+        cloned_on text default current_timestamp,
+        -- if the object is pinned cannot be garbage collected.
+        pinned integer,
+        -- an object which has not a reference to its home
+        orphaned integer
+        -- maybe other flags? permissions, tags, etc.
+);"""),
+('group_data', """
+create table group_data(
+        --group_uri text primary key,
+        local_fk integer primary key references adelphos_ob(local_id),
+        parent_group_fk text references ad_group(local_fk),
+        level integer
+        --,
+        --timestamp text default current_timestamp
+
+) without rowid;"""),
+('alias_data', """
+create table alias_data(
+        local_id integer primary key references adelphos_ob (local_id),
+        actor_fk text references actor(actor_uri) on delete restrict,
+        alias text,
+        password text
+        --timestamp text default current_timestamp
+); """)]
+
+#curre
+#
+#
+#create table currency(
+#        adelphos_uri text primary key,
+#        friendly_name text,
+#        human_value real,
+#        timestamp text default current_timestamp
+#) without rowid;
+#
+#
+#create table cheque(
+#        adelphos_uri text primary key,
+#        amount integer,
+#        date_issued text,
+#        issuer_uri_fk text,
+#        currency_fk text
+#        timestamp text default current_timestamp
+#) without rowid;
+#
+#
+#create table session(
+#        alias_uri text primary key,
+#        token text,
+#        confirmed integer,
+#        timestamp text default current_timestamp
+#) without rowid;
+#
+#
+#-- we do not have here the foreign key, because the alias could be remote
+#create table trust_line(
+#        adelphos_uri text primary key,
+#        alias_from text,
+#        alias_to text,
+#        trust_val real,
+#        timestamp text default current_timestamp,
+#        unique (alias_from, alias_to) on conflict abort
+#) without rowid;
+#
+#
+#"""
+
+
+
 class AdelphosDao:
 
     # the ids in adelphos are in the form
@@ -32,78 +138,13 @@ class AdelphosDao:
     def _create_schema(self):
         gCon.log("Creating schema...")
 
-        create_schema_sql = """
 
--- this is the table that bridges adelphos with activity pub.
--- here the ids are URIs which are unique enforced by ActivityPub
-create table actor (
-        actor_uri text primary key,
-        canonical_name text, 
-        inbox_uri text,
-        public_key text,
-        timestamp text default current_timestamp,
-        unique (canonical_name) on conflict abort
-) without rowid;
-
-
-create table ad_group(
-        group_uri text primary key,
-        parent_group_fk text references ad_group(group_uri),
-        level integer,
-        timestamp text default current_timestamp
-) without rowid;
-
-
-create table alias(
-        alias_uri text primary key,
-        actor_fk text references actor(actor_uri) on delete restrict,
-        password text,
-        timestamp text default current_timestamp
-) without rowid; 
-
-
-create table currency(
-        currency_uri text primary key,
-        friendly_name text,
-        human_value real,
-        timestamp text default current_timestamp
-) without rowid;
-
-
-create table cheque(
-        cheque_uri text primary key,
-        amount integer,
-        date_issued text,
-        issuer_uri_fk text,
-        currency_fk text
-        timestamp text default current_timestamp
-) without rowid;
-
-
-create table session(
-        alias_uri text primary key,
-        token text,
-        confirmed integer,
-        timestamp text default current_timestamp
-) without rowid;
-
-
--- we do not have here the foreign key, because the alias could be remote
-create table trust_line(
-        tl_uri text primary key,
-        alias_from text,
-        alias_to text,
-        trust_val real,
-        timestamp text default current_timestamp,
-        unique (alias_from, alias_to) on conflict abort
-) without rowid;
-
-
-"""
-
+        # the schema is an array of statements with a comment
         cursor = self._conn.cursor()
 
-        cursor.executescript(create_schema_sql)
+        for cmd in create_schema_sql:
+            gCon.log(f"Will create table {cmd[0]}")
+            cursor.execute(cmd[1])
 
         cursor.close()
 
@@ -140,10 +181,19 @@ create table trust_line(
 
         if (create_schema == True):
             self._create_schema()
+            
 
     def dump_database(self):
         for line in self._conn.iterdump():
             gCon.log(f"{line}")
+
+
+    def export_to_remote_dto(ctx):
+        pass
+
+
+    def import_from_dao_remote(ctx):
+        pass
 
 
     # this has a list of queries, and they are combined
@@ -161,7 +211,6 @@ create table trust_line(
 
         gCon.log(f"the condition is {condition_str}")
 
-
         sql_get = f"""
 select {list_sql_fields} from {table_name} where {condition_str} 
 
@@ -176,9 +225,15 @@ select {list_sql_fields} from {table_name} where {condition_str}
 {values_to_seek}")
             return None
 
-
         # I simply get the dto 
         return constructor_dto(*row)
+
+
+    # this is the entry point for the distributed adelphos database,
+    # from the uri we can determine the object type and its location.
+    # for now every adelphos instance is equal.
+    def get_or_import(self, uri):
+        pass
 
 
     def get_dto(self, table_name, fields_to_ask, field_to_seek, 

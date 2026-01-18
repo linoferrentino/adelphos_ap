@@ -12,19 +12,37 @@ table_name = "alias"
 # groups, but we list here only the innermost group, because every group
 # has only one parent, from the l-zero group we can go up to all levels.
 
+
+# this is an abstract class.
 class AdelphosObject:
     # an object in adelphos has a global identifier (which is global in all
     # the instances) and various control fields to acquire it on demand.
-    pass
+    object_uri: str = None
+
+    timestamp: str = None 
+
+
+    # every adelphos object has a residence (the place --- instance ---
+    # where it is born), but can be cloned in other places, other adelphos
+    # instances.
+
+    def export_to(ctx, instance_uri):
+        pass
+
+
+    def import_from(ctx):
+        pass
+
 
 @dataclass
-class AliasDto:
+class AliasDto(AdelphosObject):
 
-    alias_uri: str = None
+    #alias_uri: str = None
     actor_fk: str = None
     group_fk: str = None
     password: str = None
-    timestamp: str = None
+    #timestamp: str = None
+
 
     @staticmethod
     def get_from_alias_uri(ctx, alias_uri):

@@ -14,9 +14,11 @@ table_name = "actor"
 class ActorDto:
 
     actor_uri: str = None
+
     canonical_name: str = None 
     inbox_uri: str = None
     public_key: str = None
+
     timestamp: str = None
 
 
