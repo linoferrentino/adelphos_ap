@@ -25,35 +25,49 @@ create table actor (
         timestamp text default current_timestamp,
         unique (canonical_name) on conflict abort
 ) without rowid;"""),
-('instance', """
+
+# this is the table that stores the adelphos instances. There
+# are not activity pub instances.
+
+            ('instance', """
 -- this is the table that caches the instances here in adelphos, there is
 -- a one to one mapping between an instance and the daemon actor that this
 -- instance exposes.
 create table instance (
     
     instance_id integer primary key,
+    -- an instance has the foreign key to the actor's table
+    actor_fk text references actor(actor_uri),
     -- some other flags...
     authorized integer
 
 );"""),
+
 ('adelphos_ob', """
 -- this is the common part for all the objects in adelphos
 create table adelphos_ob (
-        -- this is a **local** id, used only to join other tables.
-        local_id integer primary key,
 
-        remote_id integer,
+        -- this is a local key, the integer keys cannot be shared between
+        -- different instances, but the object can.
+        adelphos_id integer primary key,
+
+        -- I DO NOT need to know the remote ID, it's like to know
+        -- the memory address of a remote process.
         instance_fk integer references instance(instance_id),
 
-        adelphos_uri text unique,
+        -- adelphos_uri text unique,
+
         created text default current_timestamp,
         cloned_on text default current_timestamp,
         -- if the object is pinned cannot be garbage collected.
         pinned integer,
         -- an object which has not a reference to its home
-        orphaned integer
+        orphaned integer,
         -- maybe other flags? permissions, tags, etc.
-);"""),
+        primary key (adelphos_id, instance_fk)
+
+);""") ,
+
 ('group_data', """
 create table group_data(
         --group_uri text primary key,
@@ -64,56 +78,40 @@ create table group_data(
         --timestamp text default current_timestamp
 
 ) without rowid;"""),
+
+# the table for the alias, this table has a foreign key to the
+# adelphos object.
+
+# 1, 'http:///....', linus, pass
+# example of a remote alias 
+
+# 
+# 32, 'http:///....', john, pass
+# and in adelphos object
+# 32, 2, NULL, Jan 19th
+# this means that the user john
+# and in instance
+# 2, www.ny-adelphos.usa
+# I can operate on the alias as it were local but it isn't
+#
+#
+# I DO NOT need the password or the actor. The message is
+# sent to the other instance.
+
+# the problem is to have a database where the object can be anywhere
+# but each federated object can know where to find it.
+
+# I can use the password if I allow a user to login here.
+# is this possible? Maybe not.
+
 ('alias_data', """
 create table alias_data(
-        local_id integer primary key references adelphos_ob (local_id),
+        local_fk integer references adelphos_ob(adelphos_id),
         actor_fk text references actor(actor_uri) on delete restrict,
         alias text,
         password text
         --timestamp text default current_timestamp
 ); """)]
-
-#curre
-#
-#
-#create table currency(
-#        adelphos_uri text primary key,
-#        friendly_name text,
-#        human_value real,
-#        timestamp text default current_timestamp
-#) without rowid;
-#
-#
-#create table cheque(
-#        adelphos_uri text primary key,
-#        amount integer,
-#        date_issued text,
-#        issuer_uri_fk text,
-#        currency_fk text
-#        timestamp text default current_timestamp
-#) without rowid;
-#
-#
-#create table session(
-#        alias_uri text primary key,
-#        token text,
-#        confirmed integer,
-#        timestamp text default current_timestamp
-#) without rowid;
-#
-#
-#-- we do not have here the foreign key, because the alias could be remote
-#create table trust_line(
-#        adelphos_uri text primary key,
-#        alias_from text,
-#        alias_to text,
-#        trust_val real,
-#        timestamp text default current_timestamp,
-#        unique (alias_from, alias_to) on conflict abort
-#) without rowid;
-#
-#
-#"""
 
 
 

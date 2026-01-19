@@ -41,6 +41,20 @@ it must begin and end with a letter or a digit.")
         raise AdelphosException(f"Alias length incorrect")
 
 
+def err_middleware(func):
+
+    async def func_safe(ctx):
+        try:
+            return await func(ctx)
+        except AdelphosException as err:
+            return f"Error during command: {str(err)}"
+        except Exception as err_ex:
+            return f"Server error during command: {str(err_ex)}"
+
+    return func_safe 
+
+
+@err_middleware
 async def alias_create_handler(ctx):
 
     # first of all let's see if the alias is lready present
@@ -147,6 +161,7 @@ cmd_handlers = {
         "daemon_q": daemon_q_handler, 
         "daemon_a": daemon_a_handler, 
 }
+
 
 
 async def cmd_parse(ctx):
