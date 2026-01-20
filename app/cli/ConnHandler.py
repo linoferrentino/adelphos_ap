@@ -53,7 +53,7 @@ async def tl_create_handler(ctx):
                 f"The alias {alias_from} does not belong to you.")
 
     # OK, now for the outer alias.
-    if (alias_to[0] == '#'):
+    if (alias_to[0] == '$'):
         # this is a remote alias.
         raise AdelphosException(f"implementation to remote alias to do")
 

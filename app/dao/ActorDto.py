@@ -10,6 +10,8 @@ import json
 
 table_name = "actor"
 
+# the actor is NOT an adelphos object.
+
 @dataclass
 class ActorDto:
 

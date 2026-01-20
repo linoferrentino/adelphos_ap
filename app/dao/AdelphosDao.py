@@ -29,7 +29,7 @@ create table actor (
 # this is the table that stores the adelphos instances. There
 # are not activity pub instances.
 
-            ('instance', """
+('instance', """
 -- this is the table that caches the instances here in adelphos, there is
 -- a one to one mapping between an instance and the daemon actor that this
 -- instance exposes.
@@ -42,6 +42,13 @@ create table instance (
     authorized integer
 
 );"""),
+
+
+# I create the local instance, this has index zero.
+(
+    'create_instance', """insert into instance(actor_fk, authorized)
+    values(NULL, 1);"""
+),
 
 ('adelphos_ob', """
 -- this is the common part for all the objects in adelphos
@@ -62,22 +69,72 @@ create table adelphos_ob (
         -- if the object is pinned cannot be garbage collected.
         pinned integer,
         -- an object which has not a reference to its home
-        orphaned integer,
+        orphaned integer
         -- maybe other flags? permissions, tags, etc.
-        primary key (adelphos_id, instance_fk)
 
 );""") ,
 
+# a group has only one parent, like a file system. We do not support
+# a mesh like ripple, even if a ripple can be created by following
+# the trust lines.
+
+# a person can be thought as a level zero, even if we do have
+# different levels.
+
 ('group_data', """
 create table group_data(
-        --group_uri text primary key,
+
         local_fk integer primary key references adelphos_ob(local_id),
+
+        boss_fk integer references adelphos(local_id),
+
+        cashier_fk integer references adelphos(local_id),
+
         parent_group_fk text references ad_group(local_fk),
+
         level integer
         --,
         --timestamp text default current_timestamp
 
 ) without rowid;"""),
+
+# the family data is the basic unit in adelphos
+# the level is zero implicit.
+# it has a boss and a equity 
+
+
+('family_data', """
+create table family_data(
+
+        local_fk integer primary key references adelphos_ob(local_id),
+
+        parent_group_fk text references ad_group(local_fk),
+
+        equity real
+
+        --,
+        --timestamp text default current_timestamp
+
+) without rowid;"""),
+
+
+
+# why do I need to have the alias in another pc? It is a federated
+# database, so I need...
+
+# let's do an example, create a trust line.
+# I need to create the object @tl$838@www.adelphos.it
+# this object stays local in my instance, but needs to be
+# used also by the other instance.
+# some objects are shared, but they maintain the origin where
+# they have been created.
+
+
+# the alias is the only table which is NOT shared, because we do
+# not allow the alias to move (we might), there could be a message
+# to allow the moving of the object.
+
+
 
 # the table for the alias, this table has a foreign key to the
 # adelphos object.
@@ -104,14 +161,39 @@ create table group_data(
 # I can use the password if I allow a user to login here.
 # is this possible? Maybe not.
 
+# the alias belong to a group 0, every group has a single parent
+
+
 ('alias_data', """
 create table alias_data(
+
         local_fk integer references adelphos_ob(adelphos_id),
         actor_fk text references actor(actor_uri) on delete restrict,
+        group_zero_fk integer references adelphos_ob(adelphos_id),
         alias text,
         password text
         --timestamp text default current_timestamp
-); """)]
+); """),
+
+
+# the trust line can be from two points in adelphos
+
+('trust_line', """
+
+ create table trust_line(
+
+        local_fk integer primary key references adelphos_ob(local_id),
+        alias_from_fk integer references adelphos_ob(local_id),
+        alias_to_fk integer references adelphos_ob(local_id),
+
+        comment text,
+        trust_level real
+
+ );
+
+"""),
+
+]
 
 
 

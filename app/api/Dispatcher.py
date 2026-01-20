@@ -114,6 +114,7 @@ def sudo_cmd(func):
     return check_root
 
 
+@err_middleware
 @sudo_cmd
 async def dump_db(ctx):
     ctx.app.dao.dump_database()

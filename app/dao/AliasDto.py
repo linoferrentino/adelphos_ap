@@ -2,6 +2,8 @@
 
 from app.logging import gCon
 from dataclasses import dataclass
+from app.dao.ActorDto import ActorDto
+from app.dao.AdelphosDto import AdelphosDto
 
 # This is the class which models an alias in adelphos, usually this is a
 # real person in the fediverse.
@@ -13,35 +15,16 @@ table_name = "alias"
 # has only one parent, from the l-zero group we can go up to all levels.
 
 
-# this is an abstract class.
-class AdelphosObject:
-    # an object in adelphos has a global identifier (which is global in all
-    # the instances) and various control fields to acquire it on demand.
-    object_uri: str = None
-
-    timestamp: str = None 
-
-
-    # every adelphos object has a residence (the place --- instance ---
-    # where it is born), but can be cloned in other places, other adelphos
-    # instances.
-
-    def export_to(ctx, instance_uri):
-        pass
-
-
-    def import_from(ctx):
-        pass
-
-
 @dataclass
-class AliasDto(AdelphosObject):
+class AliasDto(AdelphosDto):
 
-    #alias_uri: str = None
-    actor_fk: str = None
+    #actor_fk: str = None
+
+    # every alias is linked to an actor in activity pub.
+
+    actor_fk: ActorDto = None
     group_fk: str = None
     password: str = None
-    #timestamp: str = None
 
 
     @staticmethod
