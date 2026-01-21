@@ -11,6 +11,7 @@ from app.logging import gCon
 from app.api.Dispatcher import send_msg_to_alias
 from app.api.params import make_cmd_params
 from app.api.AppCtx import WebSocketContext
+from app.dao.AliasDto import AliasDao
 import asyncio
 
 
@@ -43,7 +44,7 @@ async def tl_create_handler(ctx):
 
     # first of all I have to get the actor from the alias.
     # the alias must be local.
-    ctx.alias_from = AliasDto.get_from_alias(ctx, alias_from)
+    ctx.alias_from = AliasDao.get_from_uri(ctx, alias_from)
     if (ctx.alias_ob is None):
         raise AdelphosException(f"unknown alias {alias_from}")
 
@@ -85,11 +86,8 @@ class ClientWs:
 
     def __init__(self, app, websocket):
         self.wsctx = WebSocketContext(app, websocket)
-        #self.wsctx.app = app
         self.websocket = websocket
         self.running = True
-        # this is a one pad token which the user is asked to give.
-        #self.token = None
 
 
     async def web_socket_parse(self):
@@ -117,7 +115,8 @@ class ClientWs:
             #    # no login
             #    pass
 
-            answer = await send_msg_to_alias(self.wsctx)
+            #answer = await send_msg_to_alias(self.wsctx)
+            answer = "test ok"
             await self.websocket.send_text(f"remote answers {answer}")
 
 

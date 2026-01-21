@@ -36,9 +36,7 @@ create table actor (
 create table instance (
     
     instance_id integer primary key,
-    -- an instance has the foreign key to the actor's table
-    actor_fk text references actor(actor_uri),
-    -- some other flags...
+    endpoint text references actor(actor_uri),
     authorized integer
 
 );"""),
@@ -46,7 +44,7 @@ create table instance (
 
 # I create the local instance, this has index zero.
 (
-    'create_instance', """insert into instance(actor_fk, authorized)
+    'create_instance', """insert into instance(endpoint, authorized)
     values(NULL, 1);"""
 ),
 
@@ -54,23 +52,12 @@ create table instance (
 -- this is the common part for all the objects in adelphos
 create table adelphos_ob (
 
-        -- this is a local key, the integer keys cannot be shared between
-        -- different instances, but the object can.
         adelphos_id integer primary key,
-
-        -- I DO NOT need to know the remote ID, it's like to know
-        -- the memory address of a remote process.
         instance_fk integer references instance(instance_id),
-
-        -- adelphos_uri text unique,
-
         created text default current_timestamp,
         cloned_on text default current_timestamp,
-        -- if the object is pinned cannot be garbage collected.
         pinned integer,
-        -- an object which has not a reference to its home
         orphaned integer
-        -- maybe other flags? permissions, tags, etc.
 
 );""") ,
 
@@ -93,10 +80,8 @@ create table group_data(
         parent_group_fk text references ad_group(local_fk),
 
         level integer
-        --,
-        --timestamp text default current_timestamp
 
-) without rowid;"""),
+);"""),
 
 # the family data is the basic unit in adelphos
 # the level is zero implicit.
@@ -110,12 +95,12 @@ create table family_data(
 
         parent_group_fk text references ad_group(local_fk),
 
+        currency_fk integer,
+
         equity real
 
-        --,
-        --timestamp text default current_timestamp
 
-) without rowid;"""),
+);"""),
 
 
 
@@ -172,7 +157,7 @@ create table alias_data(
         group_zero_fk integer references adelphos_ob(adelphos_id),
         alias text,
         password text
-        --timestamp text default current_timestamp
+
 ); """),
 
 
@@ -183,6 +168,9 @@ create table alias_data(
  create table trust_line(
 
         local_fk integer primary key references adelphos_ob(local_id),
+
+        name text,
+
         alias_from_fk integer references adelphos_ob(local_id),
         alias_to_fk integer references adelphos_ob(local_id),
 
@@ -272,8 +260,25 @@ class AdelphosDao:
         pass
 
 
-    def import_from_dao_remote(ctx):
-        pass
+    # this function will query a remote DAO to get the object (it will
+    # be saved locally as a cache)
+    async def import_from_dao_remote(ctx, object_uri):
+
+        # I have to split the uri, get the local and the remote part.
+        object_splits = object_uri.split('@')
+
+        # Now I have to gquery the remote db.
+        local_uri = object_splits[0]
+        ctx.rem_instance = object_splits[1]
+        
+        rcmd = {
+
+                'cmd' : 'daoq'
+                'local_uri': local_uri
+                }
+
+        ctx.daemon_post_ob = rcmd
+        await daemon_remote_query(ctx)
 
 
     # this has a list of queries, and they are combined

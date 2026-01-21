@@ -57,17 +57,19 @@ def err_middleware(func):
 @err_middleware
 async def alias_create_handler(ctx):
 
-    # first of all let's see if the alias is lready present
+    # first of all let's see if the alias is already present
     alias = get_param_safe(ctx, 'alias')
     password = get_param_safe(ctx, 'password')
 
     host = ctx.app.config['General']['host']
     alias_uri = f"ad1.alias.{alias}@{host}"
 
-    ctx.alias = AliasDto.get_from_alias_uri(ctx, alias_uri)
+    # this function question the database using the local alias, so
+    # it means that the instance is local.
+    ctx.alias = AliasDto.get_from_local_alias(ctx, alias)
 
     if (ctx.alias is not None):
-        raise AdelphosException(f"{alias} already existing, cannot insert")
+        raise AdelphosException(f"{alias} already existing in this instance")
 
     validate_local_alias(alias)
 
@@ -192,7 +194,7 @@ async def cmd_parse(ctx):
 async def send_msg_to_alias(wsctx):
 
     # here I hard code the actor and I try to post to him
-    wsctx.actor = await get_or_discover_actor(wsctx, "lino_ferre",
+    wsctx.actor = await ActorDto.get_or_discover_actor(wsctx, "lino_ferre",
                                           "mastodon.uno")
 
     gCon.log(f"I have found the remote actor {wsctx.actor}")

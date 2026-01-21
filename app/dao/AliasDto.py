@@ -18,19 +18,46 @@ table_name = "alias"
 @dataclass
 class AliasDto(AdelphosDto):
 
-    #actor_fk: str = None
+    # the name is migrated to the base class.
+    #alias: str = None
 
-    # every alias is linked to an actor in activity pub.
+    # every local alias is linked to an actor in activity pub.
+    actor_fk: int = 0
 
-    actor_fk: ActorDto = None
-    group_fk: str = None
+    # every alias is linked to a family, level zero.
+    #family_fk: FamilyDto = None
+    family_fk: int = 0
+
     password: str = None
 
 
+# this is the utility class that handles the business logic
+# for an alias object.
+class AliasDao:
+
+    @staticmethod
+    def exists_local_alias(ctx, alias):
+
+        cur = ctx.app.dao._conn.cursor()
+        cur.execute("select local_fk from alias_data where alias = ?",
+                    (alias,))
+        row = cur.fetchone()
+        cur.close()
+        if (row is None):
+            return False
+        return True
+
+
+    def get_from_uri(ctx, alias_uri):
+
+        pass
+
+
+
+    # this method is able to query the fediverse in order to obtain the
+    # object also remotely.
     @staticmethod
     def get_from_alias_uri(ctx, alias_uri):
-
-        global table_name
 
         fields_to_ask = ('alias_uri', 'actor_fk', 
                          'password', 'timestamp')
@@ -44,7 +71,6 @@ class AliasDto(AdelphosDto):
 
 
     def store(self, ctx):
-        global table_name
 
         fields_stored = {
                          'alias_uri': self.alias_uri,

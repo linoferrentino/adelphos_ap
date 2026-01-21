@@ -90,32 +90,46 @@ async def daemon_a_handler(ctx):
     ctx.answer_txt = None
 
 
+def marshall_daemon_query(ctx):
+    cmd = remote_json['cmd']
+    gCon.log(f"I will marshall the command {cmd}")
 
-# this is the entry point for the remote API
-async def daemon_q_handler(ctx):
-    # OK, now I get the message.
-    # msg = get_param_safe(ctx, "msg")
-    ctx.rem_id = get_param_safe(ctx, "api_id")
+    match cmd:
+        case 'recho':
 
-    # I have to get the payload, and decode it.
-
-    remote_json = extract_payload(ctx)
-
-    gCon.log(f"I will marshall the command {remote_json['cmd']}")
-
-    # Now I simulate only the echo command
-    # here an exception local will be translated to an error code.
-    ctx.daemon_post_ob = {
+            # Now I simulate only the echo command
+            # here an exception local will be translated to an error code.
+            ctx.daemon_post_ob = {
             "res" : 0,
             "msg" : f"I have received: {remote_json['msg']}"
             }
 
-    # and get the command, now I have to dispatch the command
+        case _:
+            ctx.daemon_post_ob = {
+            "res" : 0,
+            "msg" : f"you want me to process command {cmd}"
+            }
 
-    # I build the response
-    #response = f"@{USER_ID} daemon_a api_id {rem_id} msg parsed_{msg}_good"
 
-    #gCon.log(f"Got {msg} I will respond with {response}")
+
+# this is the entry point for the remote API
+async def daemon_q_handler(ctx):
+    # OK, now I get the message.
+    ctx.rem_id = get_param_safe(ctx, "api_id")
+
+    # I have to get the payload, and decode it.
+    ctx.remote_json = extract_payload(ctx)
+
+    #
+    # here I can have a remote query to the database.
+    # the remote query can be something like
+    # 
+    # rquery alias @john@<host>      ; this with the human name
+    # rquery alias #al#-99@<host>    ; this with the id
+    # 
+    
+    # this is a synchronous function
+    marshall_daemon_query(ctx)
 
     await daemon_remote_answer(ctx)
 
