@@ -15,8 +15,9 @@ table_name = "actor"
 @dataclass
 class ActorDto:
 
-    actor_uri: str = None
+    actor_id: int = None
 
+    actor_uri: str = None
     canonical_name: str = None 
     inbox_uri: str = None
     public_key: str = None
@@ -77,7 +78,7 @@ resource=acct:{preferred_username}@{rem_instance}"
         actor.preferred_username = preferred_username 
         actor.canonical_name = f"@{preferred_username}@{rem_instance}"
 
-        actor.store(ctx)
+        actor.id = actor.store(ctx)
         return actor
 
 
@@ -120,9 +121,9 @@ resource=acct:{preferred_username}@{rem_instance}"
         actor.public_key = pub_key_ob['publicKeyPem']
 
         # are they the same?
-        #if (pub_key_ob_id != actor_uri):
-        #    gCon.log(f"Error, got {pub_key_ob_id} key exp {actor_uri}")
-        #    return False
+        if (pub_key_ob_id != actor_uri):
+            gCon.log(f"Error, got {pub_key_ob_id} key exp {actor_uri}")
+            return False
 
         # is the owner?
         owner = pub_key_ob['owner'] 
@@ -131,14 +132,12 @@ resource=acct:{preferred_username}@{rem_instance}"
             gCon.log(f"Error, {owner} different from {actor_uri}")
             raise AdelphosException("Bad key")
 
-        # maybe we can store the inbox only if different.
         actor.inbox_uri = key_ob['inbox']
         preferred_username = key_ob['preferredUsername']
         gCon.log("I have set the canonical name")
         actor.canonical_name = f"@{preferred_username}@{key_parsed.hostname}"
 
-
-        actor.store(ctx)
+        actor.actor_id = actor.store(ctx)
 
         return actor 
 
@@ -187,9 +186,12 @@ resource=acct:{preferred_username}@{rem_instance}"
                          'public_key': self.public_key,
                          }
 
-        ctx.app.dao.insert_dto(ctx, table_name, fields_stored)
+        newid = ctx.app.dao.insert_dto(ctx, table_name, fields_stored)
 
-        gCon.log(f"stored {self.actor_uri} canonical {self.canonical_name}")
+        gCon.log(f"stored {self.actor_uri} canonical {self.canonical_name}\
+ his id {newid}")
+
+        return newid
 
 
     def update(self, ctx):

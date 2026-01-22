@@ -18,6 +18,7 @@ from app.ap_api.daemon_qa import daemon_a_handler
 from app.consts import USER_ID
 from app.api.AdelphosException import AdelphosException
 from app.dao.AliasDto import AliasDto
+from app.dao.AliasDto import AliasDao
 from app.dao.ActorDto import ActorDto
 from app.consts import USER_ID
 from app.ap_api.AsyncRequest import AsyncGetReq
@@ -60,18 +61,23 @@ async def alias_create_handler(ctx):
     # first of all let's see if the alias is already present
     alias = get_param_safe(ctx, 'alias')
     password = get_param_safe(ctx, 'password')
+    currency = get_param_safe(ctx, 'currency')
+    equity = get_param_safe(ctx, 'equity')
 
     host = ctx.app.config['General']['host']
-    alias_uri = f"ad1.alias.{alias}@{host}"
+    #alias_uri = f"ad1.alias.{alias}@{host}"
 
     # this function question the database using the local alias, so
     # it means that the instance is local.
-    ctx.alias = AliasDto.get_from_local_alias(ctx, alias)
+    ctx.alias = AliasDao.exists_local_alias(ctx, alias)
 
     if (ctx.alias is not None):
-        raise AdelphosException(f"{alias} already existing in this instance")
+        raise AdelphosException(
+f"alias: {alias} already existing in this instance")
 
     validate_local_alias(alias)
+
+    # OK, now I have to create the adelphos object.
 
     # If I am here I can create a new alias
     ctx.alias = AliasDto()

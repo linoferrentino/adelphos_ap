@@ -8,7 +8,7 @@ from app.dao.AdelphosDto import AdelphosDto
 # This is the class which models an alias in adelphos, usually this is a
 # real person in the fediverse.
 
-table_name = "alias"
+#table_name = "alias"
 
 # The alias seems to belong to one group: in reality he belongs to several
 # groups, but we list here only the innermost group, because every group
@@ -16,19 +16,18 @@ table_name = "alias"
 
 
 @dataclass
-class AliasDto(AdelphosDto):
+class AliasDto:
 
-    # the name is migrated to the base class.
-    #alias: str = None
-
-    # every local alias is linked to an actor in activity pub.
-    actor_fk: int = 0
+    # every *local* alias is linked to an actor in activity pub.
+    actor_fk: int
 
     # every alias is linked to a family, level zero.
-    #family_fk: FamilyDto = None
-    family_fk: int = 0
+    family_fk: int
 
-    password: str = None
+    # every *local* alias has the password.
+    password: str
+
+    adelphos_id: int = None
 
 
 # this is the utility class that handles the business logic
@@ -39,7 +38,7 @@ class AliasDao:
     def exists_local_alias(ctx, alias):
 
         cur = ctx.app.dao._conn.cursor()
-        cur.execute("select local_fk from alias_data where alias = ?",
+        cur.execute("select adelphos_id from alias_full where name = ?",
                     (alias,))
         row = cur.fetchone()
         cur.close()

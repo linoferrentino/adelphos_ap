@@ -18,21 +18,18 @@ create_schema_sql = [('actor',
 -- this is the table that bridges adelphos with activity pub.
 -- here the ids are URIs which are unique enforced by ActivityPub
 create table actor (
-        actor_uri text primary key,
-        canonical_name text, 
+        actor_id integer primary key,
+        actor_uri text not null unique on conflict abort,
+        canonical_name text not null unique on conflict abort, 
         inbox_uri text,
         public_key text,
-        timestamp text default current_timestamp,
-        unique (canonical_name) on conflict abort
-) without rowid;"""),
+        timestamp text default current_timestamp
+);"""),
 
 # this is the table that stores the adelphos instances. There
 # are not activity pub instances.
 
 ('instance', """
--- this is the table that caches the instances here in adelphos, there is
--- a one to one mapping between an instance and the daemon actor that this
--- instance exposes.
 create table instance (
     
     instance_id integer primary key,
@@ -43,9 +40,11 @@ create table instance (
 
 
 # I create the local instance, this has index zero.
+# this holds data for the object in the local host.
+# for the other instances I store here the federated daemon endpoint
 (
-    'create_instance', """insert into instance(endpoint, authorized)
-    values(NULL, 1);"""
+    'create_instance', """insert into instance(instance_id, endpoint, authorized)
+    values(0, NULL, 1);"""
 ),
 
 ('adelphos_ob', """
@@ -53,6 +52,7 @@ create table instance (
 create table adelphos_ob (
 
         adelphos_id integer primary key,
+        name text,
         instance_fk integer references instance(instance_id),
         created text default current_timestamp,
         cloned_on text default current_timestamp,
@@ -153,13 +153,21 @@ create table family_data(
 create table alias_data(
 
         local_fk integer references adelphos_ob(adelphos_id),
-        actor_fk text references actor(actor_uri) on delete restrict,
+        actor_fk integer references actor(actor_id) on delete restrict,
         group_zero_fk integer references adelphos_ob(adelphos_id),
-        alias text,
         password text
 
 ); """),
 
+
+('view alias_view', """
+
+create view alias_full as select adelphos_id, instance_fk,
+ created_on, cloned_on, pinned, orphaned, actor_fk, group_zero_fk,
+ password from adelphos_ob, alias_data where
+ adelphos_id = local_fk;
+
+"""),
 
 # the trust line can be from two points in adelphos
 
@@ -211,7 +219,7 @@ class AdelphosDao:
         cursor = self._conn.cursor()
 
         for cmd in create_schema_sql:
-            gCon.log(f"Will create table {cmd[0]}")
+            gCon.log(f"Will exec -> {cmd[0]}")
             cursor.execute(cmd[1])
 
         cursor.close()
@@ -273,7 +281,7 @@ class AdelphosDao:
         
         rcmd = {
 
-                'cmd' : 'daoq'
+                'cmd' : 'daoq',
                 'local_uri': local_uri
                 }
 
@@ -364,9 +372,11 @@ insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
 
         cur = self._conn.cursor()
         cur.execute(sql_insert, dto_as_dict)
+        newid = cur.lastrowid
         cur.close()
 
         ctx.need_commit = True
+        return newid
         
 
     def close(self):
