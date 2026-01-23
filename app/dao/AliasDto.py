@@ -38,7 +38,7 @@ class AliasDao:
     def exists_local_alias(ctx, alias):
 
         cur = ctx.app.dao._conn.cursor()
-        cur.execute("select adelphos_id from alias_full where name = ?",
+        cur.execute("select adelphos_id from alias_local where name = ?",
                     (alias,))
         row = cur.fetchone()
         cur.close()

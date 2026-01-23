@@ -9,6 +9,7 @@ from app.dao.AdelphosDto import AdelphosDto
 # Every one does belong to a family
 
 
+# this is the basic object, not with all the fields.
 @dataclass
 class FamilyDto:
 
@@ -24,19 +25,27 @@ class FamilyDto:
 
 
 
+# this is the class with all the fields.
+@dataclass
+class FamilyRawDto(AdelphosDto):
+
+    pass
+
+
+
 class FamilyDao:
 
     # this searches for a local family
     @staticmethod
-    def exists_local_family(ctx, family_name):
+    def get_local_family(ctx, family_name):
 
         cur = ctx.app.dao._conn.cursor()
-        cur.execute("select adelphos_id from alias_full where name = ?",
+        cur.execute("select * from family_local_raw where name = ?",
                     (alias,))
         row = cur.fetchone()
         cur.close()
         if (row is None):
-            return False
-        return True
+            return None 
+        return FamilyRawDto(*row) 
 
 

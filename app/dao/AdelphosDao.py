@@ -42,6 +42,9 @@ create table instance (
 # I create the local instance, this has index zero.
 # this holds data for the object in the local host.
 # for the other instances I store here the federated daemon endpoint
+# this is the only hard coded value in the DB.
+# instance zero is the local instance.
+# From this identity we can infer if an object is local or not
 (
     'create_instance', """insert into instance(instance_id, endpoint, authorized)
     values(0, NULL, 1);"""
@@ -54,10 +57,11 @@ create table adelphos_ob (
         adelphos_id integer primary key,
         name text,
         instance_fk integer references instance(instance_id),
-        created text default current_timestamp,
+        created_on text default current_timestamp,
         cloned_on text default current_timestamp,
         pinned integer,
         orphaned integer
+
 
 );""") ,
 
@@ -73,19 +77,35 @@ create table group_data(
 
         local_fk integer primary key references adelphos_ob(local_id),
 
-        boss_fk integer references adelphos(local_id),
+        boss_fk integer references alias_data(local_fk),
 
-        cashier_fk integer references adelphos(local_id),
+        cashier_fk integer references alias_data(local_fk),
 
-        parent_group_fk text references ad_group(local_fk),
+        parent_group_fk integer references group_data(local_fk),
+
+        equity real,
 
         level integer
 
 );"""),
 
-# the family data is the basic unit in adelphos
+
+('currency_data', """
+create table currency_data(
+
+        local_fk integer primary key references adelphos_ob(local_id),
+
+        symbol text,
+
+        human_value real
+
+
+);"""),
+
+
+
+# the family is the basic group in adelphos
 # the level is zero implicit.
-# it has a boss and a equity 
 
 
 ('family_data', """
@@ -95,13 +115,33 @@ create table family_data(
 
         parent_group_fk text references ad_group(local_fk),
 
-        currency_fk integer,
+        currency_fk integer references currency_data(local_fk),
 
         equity real
 
 
 );"""),
 
+
+('view family_raw', """
+create view family_raw as select adelphos_id, name, instance_fk, created_on,
+ pinned, orphaned, parent_group_fk, currency_fk, equity from
+ family_data, adelphos_ob where
+ ( (family_data.local_fk = adelphos_ob.adelphos_id) and
+   (adelphos_ob.instance_fk = 0) );
+"""),
+
+
+
+
+('view family_local', """
+create view family_local as select adelphos_id, name, created_on,
+ pinned, orphaned, parent_group_fk, currency_fk, equity from
+ family_data, adelphos_ob where
+ ( (family_data.local_fk = adelphos_ob.adelphos_id) and
+   (adelphos_ob.instance_fk = 0) );
+
+"""),
 
 
 # why do I need to have the alias in another pc? It is a federated
@@ -154,7 +194,7 @@ create table alias_data(
 
         local_fk integer references adelphos_ob(adelphos_id),
         actor_fk integer references actor(actor_id) on delete restrict,
-        group_zero_fk integer references adelphos_ob(adelphos_id),
+        family_fk integer references adelphos_ob(adelphos_id),
         password text
 
 ); """),
@@ -162,12 +202,24 @@ create table alias_data(
 
 ('view alias_view', """
 
-create view alias_full as select adelphos_id, instance_fk,
+create view alias_full as select adelphos_id, name, instance_fk,
  created_on, cloned_on, pinned, orphaned, actor_fk, group_zero_fk,
  password from adelphos_ob, alias_data where
  adelphos_id = local_fk;
 
 """),
+
+
+('view alias_local', """
+
+create view alias_local as select adelphos_id, name, 
+ created_on, cloned_on, pinned, orphaned, actor_fk, group_zero_fk,
+ password from adelphos_ob, alias_data where
+ (adelphos_id = local_fk) and (alias_data.instance_fk = 0)
+
+"""),
+
+
 
 # the trust line can be from two points in adelphos
 

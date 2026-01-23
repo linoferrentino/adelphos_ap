@@ -33,7 +33,7 @@ from argon2 import PasswordHasher
 
 def validate_local_alias(alias):
 
-    if (re.match("[a-z0-9][a-z0-9_.]+[a-z0-9]+", alias, 
+    if (re.match("[a-z0-9][a-z0-9_-]+[a-z0-9]+", alias, 
                  re.IGNORECASE) is None):
         raise AdelphosException(f"Invalid alias {alias}, \
 it must begin and end with a letter or a digit.")
@@ -59,25 +59,46 @@ def err_middleware(func):
 async def alias_create_handler(ctx):
 
     # first of all let's see if the alias is already present
-    alias = get_param_safe(ctx, 'alias')
+    alias_complete = get_param_safe(ctx, 'alias')
     password = get_param_safe(ctx, 'password')
     currency = get_param_safe(ctx, 'currency')
     equity = get_param_safe(ctx, 'equity')
 
     host = ctx.app.config['General']['host']
-    #alias_uri = f"ad1.alias.{alias}@{host}"
+
+    alias_family_splits = alias_complete.split(".")
+    if (len(alias_family_splits) == 1):
+        raise AdelphosException(
+f"I need the alias written in the form alias.family, with a '.' \
+in the middle")
+
+    if (len(alias_family_splits) > 1):
+        raise AdelphosException(
+f"Too many dots in the alias! {alias_complete}, Only one is allowed")
+
+    (alias, family_name) = alias_family_splits
+
+    # the family MUST NOT already exist, we cannot create two families in
+    # the same instance with the same name.
+    family_raw = FamilyDao.get_local_family(ctx, family_name)
+
+    if (family_raw is not None):
+        raise AdelphosException(
+f"family {family_raw.name} is already existing in this instance")
 
     # this function question the database using the local alias, so
     # it means that the instance is local.
-    ctx.alias = AliasDao.exists_local_alias(ctx, alias)
+    #ctx.alias = AliasDao.exists_local_alias(ctx, alias)
 
-    if (ctx.alias is not None):
-        raise AdelphosException(
-f"alias: {alias} already existing in this instance")
+    #if (ctx.alias is not None):
+    #    raise AdelphosException(
+#f"alias: {alias} already existing in this instance")
 
     validate_local_alias(alias)
 
-    # OK, now I have to create the adelphos object.
+    validate_local_alias(family_name)
+
+    # OK, now I have to create the Family and Alias objects.
 
     # If I am here I can create a new alias
     ctx.alias = AliasDto()
