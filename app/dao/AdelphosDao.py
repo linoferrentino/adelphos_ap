@@ -47,7 +47,7 @@ create table instance (
 # From this identity we can infer if an object is local or not
 (
     'create_instance', """insert into instance(instance_id, endpoint, authorized)
-    values(0, NULL, 1);"""
+    values(0, "local adelphos instance", 1);"""
 ),
 
 ('adelphos_ob', """
@@ -57,10 +57,7 @@ create table adelphos_ob (
         adelphos_id integer primary key,
         name text,
         instance_fk integer references instance(instance_id),
-        created_on text default current_timestamp,
-        cloned_on text default current_timestamp,
-        pinned integer,
-        orphaned integer
+        created_on text default current_timestamp
 
 
 );""") ,

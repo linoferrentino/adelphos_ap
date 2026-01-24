@@ -1,47 +1,24 @@
+######################################################
+#
+# Adelphos AP: the fractal trust network
+#
+# Activity Pub implementation
+#
+# © 2026 Lino Ferrentino
+# lino.ferrentino@gmail.com
+#
+# This is free software. Licensed with GPL version 3
+#
+######################################################
+#
 # this is the base class for all the objects in adelphos
+
 
 from dataclasses import dataclass
 
 from app.dao.InstanceDto import InstanceDto
 
 
-# the format of an adelphos URI is dependent on the type
-# for the alias, the URI is simplified as`
-
-# this is the mechanical URI
-# $<type>$<local_id>@<host>
-
-
-
-# I can query the database as this.
-
-# then I have the human URI
-
-# for example an alias is
-# ##alias.family@host in human form
-# or
-# ##$392@host in mechanical form
-# 
-# the single @ is for a local alias
-# alias
-
-# this is a currency
-# #cu#euro@www.adelphos.it
-
-# this is a group
-# #gr#terrible_cats@www.adelphos.it
-
-# Or with the numeric ID
-# #gr#$1818@www.adelphos.it
-
-# a family (a group of level zero)
-# #gr0#ferrentino@www.adelphos.it
-
-# this is a place
-# #pl#stadium_north@www.adelphos.it
-
-# this is an item.
-# #ob#used_pc99@www.adelphos.it
 
 
 # this is an abstract class.
@@ -61,9 +38,9 @@ class AdelphosDto:
     # this is given by the db engine.
     adelphos_id: int = None
 
+    # the timestamp of this object, created.
     time_created: str = None 
 
-    time_cloned: str = None
 
     # every adelphos object has a residence (the place --- instance ---
     # where it is born), but can be cloned in other places, other adelphos

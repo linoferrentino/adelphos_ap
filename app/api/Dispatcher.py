@@ -31,15 +31,15 @@ import re
 from argon2 import PasswordHasher
 
 
-def validate_local_alias(alias):
+def validate_local_name(alias):
 
     if (re.match("[a-z0-9][a-z0-9_-]+[a-z0-9]+", alias, 
                  re.IGNORECASE) is None):
-        raise AdelphosException(f"Invalid alias {alias}, \
+        raise AdelphosException(f"Invalid name {alias}, \
 it must begin and end with a letter or a digit.")
 
     if (len(alias) < 2 or len(alias) > 64):
-        raise AdelphosException(f"Alias length incorrect")
+        raise AdelphosException(f"name length incorrect")
 
 
 def err_middleware(func):
@@ -86,6 +86,9 @@ f"Too many dots in the alias! {alias_complete}, Only one is allowed")
         raise AdelphosException(
 f"family {family_raw.name} is already existing in this instance")
 
+    # this must not fail, unless there is an exception.
+    currency_raw = CurrencyDao.get_or_create_currency(ctx, currency)
+
     # this function question the database using the local alias, so
     # it means that the instance is local.
     #ctx.alias = AliasDao.exists_local_alias(ctx, alias)
@@ -94,11 +97,18 @@ f"family {family_raw.name} is already existing in this instance")
     #    raise AdelphosException(
 #f"alias: {alias} already existing in this instance")
 
-    validate_local_alias(alias)
+    validate_local_name(alias)
 
-    validate_local_alias(family_name)
+    validate_local_name(family_name)
 
     # OK, now I have to create the Family and Alias objects.
+
+    
+    
+    # of course the instance for these objects will be zero, it is the
+    # local instance.l
+
+    # first the family object.
 
     # If I am here I can create a new alias
     ctx.alias = AliasDto()

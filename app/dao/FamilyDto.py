@@ -19,9 +19,9 @@ class FamilyDto:
     # every family has an equity and a currency
     equity: float = None
 
-
     # Then I have the possibility to have the adelphos object,
     # like for every other item.
+
 
 
 
