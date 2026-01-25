@@ -118,10 +118,10 @@ Only one dot is allowed ")
     return alias_family_splits
 
 
-def _parse_object_part(object_part):
+# to parse the object part we need the uri_type, because not
+# all the types can have the family part.
+def _parse_object_part(object_part, uri_type):
     # I have to know if this is in mechanical or human form
-
-    gCon.log(f"Hello339 {object_part}")
 
     if (object_part[0] == '$'):
         # this is a mechanical form, so we have to remove the
@@ -138,6 +138,17 @@ def _parse_object_part(object_part):
 
      # this is human form, so we simply divide in alias and family
     (alias, family) = _divide_uri_alias_family(object_part)
+
+    if (uri_type == EAdelphosType.ALIAS_TYPE):
+        if (family is None):
+            raise AdelphosException(
+f"An alias must have a family! {alias_match.group(1)} has not one.")
+    else:
+        if (family is not None):
+            raise AdelphosException(
+f"Illegal identifier {type_name_match.group(2)}: \
+Only aliases can have a family.")
+
     return (alias, family, None)
 
 
@@ -169,13 +180,22 @@ def _parse_uri_type(uri_type_str):
     return uri_type
 
 
-# this function will parse an URI in adelphos and return the
-# parsed object
-# there is not much error handling (yet)
-def uriparse(uri):
+# this function is used to parse an URI with the
+# type already fixed.
+# for example
 
-    gCon.log(f"Hello 1 {uri}")
+def uriparse_type(uri, uri_type):
 
+    (object_part, host_part) = _divide_local_host_part(uri)
+    (name, family, mechanical_id) = _parse_object_part(object_part,
+                                                           uri_type)
+
+    # OK, now I can return the object
+    return _create_parsed_uri(uri_type, object_part, host_part,
+                              name, family, mechanical_id)
+
+
+def _divide_local_host_part(uri):
     # first of all I need to know if this uri is local or remote.
     local_remote_splits = uri.split('@')
     if (len(local_remote_splits) > 2):
@@ -189,27 +209,32 @@ more than one '@'")
 
     object_part = local_remote_splits[0]
 
+    return (object_part, host_part)
+
+
+# this function will parse an URI in adelphos and return the
+# parsed object
+# there is not much error handling (yet)
+def uriparse(uri):
+
+
+    (object_part, host_part) = _divide_local_host_part(uri)
+
+
     #Now we have to divide the object part.
     # first of all is it an alias?
     alias_match = re.match(r"##(.*)", object_part)
-
-    gCon.log(f"Hello 2 {alias_match}")
 
     if (alias_match is not None):
 
         uri_type = EAdelphosType.ALIAS_TYPE
         object_part = alias_match.group(1)
-        gCon.log(f"hello 3939 parsing {object_part}")
-        (name, family, mechanical_id) = _parse_object_part(object_part)
-
-        if (family is None):
-            raise AdelphosException(
-f"An alias must have a family! {alias_match.group(1)} has not one.")
+        (name, family, mechanical_id) = _parse_object_part(object_part,
+                                                           uri_type)
         
     else:
 
         # this is an object, which has not a family
-
         # first of all we derive the type
         type_name_match = re.match(
 r"#([a-z0-9\.-_]{2})#([^#]*)$", object_part)
@@ -221,13 +246,14 @@ I was expecting something like #<type>#<name> or #<type>#$<id>")
         uri_type = _parse_uri_type(type_name_match.group(1))
 
         (name, family, mechanical_id) = _parse_object_part(
-                type_name_match.group(2))
+                type_name_match.group(2), uri_type)
+    
+    return _create_parsed_uri(uri_type, object_part, host_part,
+                              name, family, mechanical_id)
 
-        if (uri_type != EAdelphosType.ALIAS_TYPE):
-            if (family is not None):
-                raise AdelphosException(
-f"Illegal identifier {type_name_match.group(2)}: \
-Only aliases can have a family.")
+
+def _create_parsed_uri(uri_type, object_part, host_part, name,
+                       family, mechanical_id):
 
 
     # Ok now we can create the object
@@ -240,6 +266,5 @@ Only aliases can have a family.")
 
     # return the parsed object
     return adelphos_uri
-
 
 

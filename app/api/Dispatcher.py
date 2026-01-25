@@ -34,6 +34,8 @@ from app.dao.AliasDto import AliasDto
 from app.dao.AliasDto import AliasDao
 from app.dao.ActorDto import ActorDto
 from app.dao.AdelphosUri import uriparse
+from app.dao.AdelphosUri import uriparse_type
+from app.dao.AdelphosUri import EAdelphosType
 from app.consts import USER_ID
 from app.ap_api.AsyncRequest import AsyncGetReq
 from fastapi.encoders import jsonable_encoder
@@ -83,6 +85,14 @@ async def alias_create_handler(ctx):
     alias_uri = uriparse(alias_complete)
 
     gCon.log(f"alias uri created {alias_uri}")
+
+    # OK, now I can try to create the alias.
+    # first of all I get the local currency
+
+    # as I know that the currency is a currency I can add the type.
+    currency_uri = uriparse_type(currency, EAdelphosType.CURRENCY_TYPE)
+
+    gCon.log(f"currency uri is {currency_uri}")
 
     return f"Created alias {alias_uri.name} successfully.\
 Your global identifier in adelphos fediverse is {alias_uri}"
