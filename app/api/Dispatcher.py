@@ -1,3 +1,16 @@
+######################################################
+#
+# Adelphos AP: the fractal trust network
+#
+# Activity Pub implementation
+#
+# © 2025-26 Lino Ferrentino
+# lino.ferrentino@gmail.com
+#
+# This is free software. Licensed with GPL version 3
+#
+######################################################
+#
 # this is the dispatcher that understands the Adelphos' API.
 
 # this dispatcher answers to local commands only: remote commands from
@@ -20,6 +33,7 @@ from app.api.AdelphosException import AdelphosException
 from app.dao.AliasDto import AliasDto
 from app.dao.AliasDto import AliasDao
 from app.dao.ActorDto import ActorDto
+from app.dao.AdelphosUri import uriparse
 from app.consts import USER_ID
 from app.ap_api.AsyncRequest import AsyncGetReq
 from fastapi.encoders import jsonable_encoder
@@ -65,6 +79,14 @@ async def alias_create_handler(ctx):
     equity = get_param_safe(ctx, 'equity')
 
     host = ctx.app.config['General']['host']
+
+    alias_uri = uriparse(alias_complete)
+
+    gCon.log(f"alias uri created {alias_uri}")
+
+    return f"Created alias {alias_uri.name} successfully.\
+Your global identifier in adelphos fediverse is {alias_uri}"
+
 
     alias_family_splits = alias_complete.split(".")
     if (len(alias_family_splits) == 1):

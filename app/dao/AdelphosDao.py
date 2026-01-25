@@ -1,3 +1,17 @@
+######################################################
+#
+# Adelphos AP: the fractal trust network
+#
+# Activity Pub implementation
+#
+# © 2025-26 Lino Ferrentino
+# lino.ferrentino@gmail.com
+#
+# This is free software. Licensed with GPL version 3
+#
+######################################################
+#
+
 # the entry point for the database in adelphos_ap.
 
 # the database for now is a simple sqlite database.

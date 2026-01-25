@@ -4,7 +4,7 @@
 #
 # Activity Pub implementation
 #
-# © 2026 Lino Ferrentino
+# © 2025-26 Lino Ferrentino
 # lino.ferrentino@gmail.com
 #
 # This is free software. Licensed with GPL version 3
@@ -21,6 +21,7 @@ import dataclasses
 import re
 
 from app.api.AdelphosException import AdelphosException
+from app.logging import gCon
 
 
 # the format of an adelphos URI is dependent on the type
@@ -103,18 +104,25 @@ class AdelphosUri:
 
 
 # to divide I have to look for a point
-def _divide_uri_alias_family(alias_family):
+def _divide_uri_alias_family(object_part):
 
-    alias_family_splits = alias_family.split(".")
-    if (len(alias_family_splits) != 2):
-        raise AdelphosException(f"Illegal alias_family {alias_family}. I \
-need a full stop between alias and family")
-    
+    alias_family_splits = object_part.split(".")
+    if (len(alias_family_splits) > 2):
+        raise AdelphosException(f"Illegal alias_family {alias_family}. \
+Only one dot is allowed ")
+
+    if (len(alias_family_splits) == 1):
+        # the family is null.
+        return (alias_family_splits[0], None)
+
     return alias_family_splits
 
 
 def _parse_object_part(object_part):
     # I have to know if this is in mechanical or human form
+
+    gCon.log(f"Hello339 {object_part}")
+
     if (object_part[0] == '$'):
         # this is a mechanical form, so we have to remove the
         # dollar and see the integer inside.
@@ -129,8 +137,8 @@ def _parse_object_part(object_part):
         return (None, None, mechanical_id)
 
      # this is human form, so we simply divide in alias and family
-     (alias, family) = _divide_uri_alias_family(object_part)
-     return (alias, family, None)
+    (alias, family) = _divide_uri_alias_family(object_part)
+    return (alias, family, None)
 
 
 def _parse_uri_type(uri_type_str):
@@ -166,6 +174,8 @@ def _parse_uri_type(uri_type_str):
 # there is not much error handling (yet)
 def uriparse(uri):
 
+    gCon.log(f"Hello 1 {uri}")
+
     # first of all I need to know if this uri is local or remote.
     local_remote_splits = uri.split('@')
     if (len(local_remote_splits) > 2):
@@ -182,11 +192,19 @@ more than one '@'")
     #Now we have to divide the object part.
     # first of all is it an alias?
     alias_match = re.match(r"##(.*)", object_part)
+
+    gCon.log(f"Hello 2 {alias_match}")
+
     if (alias_match is not None):
 
         uri_type = EAdelphosType.ALIAS_TYPE
-        (name, family, mechanical_id) = _parse_object_part(
-            alias_match.group(1))
+        object_part = alias_match.group(1)
+        gCon.log(f"hello 3939 parsing {object_part}")
+        (name, family, mechanical_id) = _parse_object_part(object_part)
+
+        if (family is None):
+            raise AdelphosException(
+f"An alias must have a family! {alias_match.group(1)} has not one.")
         
     else:
 
@@ -194,11 +212,11 @@ more than one '@'")
 
         # first of all we derive the type
         type_name_match = re.match(
-r"#([a-z0-9\.-_]{2}#([^#]*)$", object_part)
+r"#([a-z0-9\.-_]{2})#([^#]*)$", object_part)
 
         if (type_name_match is None):
             raise AdelphosException(f"Illegal URI {object_part} \
-I was expecting something like #<type>#<name or id>")
+I was expecting something like #<type>#<name> or #<type>#$<id>")
 
         uri_type = _parse_uri_type(type_name_match.group(1))
 

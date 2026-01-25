@@ -86,12 +86,13 @@ resource=acct:{preferred_username}@{rem_instance}"
     def _base_get(ctx, fields_to_seek, values_to_seek):
         global table_name
 
-        fields_to_ask = ('actor_uri', 'canonical_name', 
+        fields_to_ask = ('actor_id', 'actor_uri', 'canonical_name', 
                          'inbox_uri', 'public_key', 'timestamp')
 
         dto = ctx.app.dao.get_dto_ex(table_name, fields_to_ask, 
                                      fields_to_seek, 
                             values_to_seek, ActorDto)
+        gCon.log(f"I have grabbed {dto} from db")
         return dto      
 
 
@@ -121,9 +122,9 @@ resource=acct:{preferred_username}@{rem_instance}"
         actor.public_key = pub_key_ob['publicKeyPem']
 
         # are they the same?
-        if (pub_key_ob_id != actor_uri):
-            gCon.log(f"Error, got {pub_key_ob_id} key exp {actor_uri}")
-            return False
+        if (pub_key_ob_id != key_parsed.geturl()):
+            raise AdelphosException(f"Error, got {pub_key_ob_id} key \
+exp {actor_uri}")
 
         # is the owner?
         owner = pub_key_ob['owner'] 
