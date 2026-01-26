@@ -17,3 +17,13 @@ class InstanceDto:
     # we could have various level of trust
     authorized: bool = True
 
+
+
+# the Instance table is different from the other objects because
+# it has not a uri, the table is not federated like the others.
+class InstanceDao:
+
+
+    
+    def get_from_host(host_name):
+        pass

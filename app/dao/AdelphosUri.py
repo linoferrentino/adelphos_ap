@@ -86,7 +86,6 @@ class EAdelphosType(StrEnum):
     TRUST_LINE = 'tl'
 
 
-# this is a frozen dataclass
 @dataclass
 class AdelphosUri:
 
@@ -204,6 +203,9 @@ more than one '@'")
         
     if (len(local_remote_splits) == 2):
         host_part = local_remote_splits[1]
+
+        # here I should know the current adelphos
+        # instance's addresse
     else:
         host_part = None
 

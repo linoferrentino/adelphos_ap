@@ -23,14 +23,21 @@ import os
 from pathlib import Path
 import sqlite3
 from app.api.AdelphosException import AdelphosException
+from app.dao.CurrencyDto import CurrencyDao
+
+# I import here the specialized DAOs to access the federated objects.
 
 
 
-create_schema_sql = [('actor',
+create_schema_sql = \
+[
+        
+# the actor zero is the local actor, it corresponds to the local adelphos
+# instance.
+
+('actor',
 
 """
--- this is the table that bridges adelphos with activity pub.
--- here the ids are URIs which are unique enforced by ActivityPub
 create table actor (
         actor_id integer primary key,
         actor_uri text not null unique on conflict abort,
@@ -46,9 +53,9 @@ create table actor (
 ('instance', """
 create table instance (
     
-    instance_id integer primary key,
-    endpoint text references actor(actor_uri),
-    authorized integer
+    instance_id,
+    actor_fk integer primary key references actor(actor_id),
+    comment text
 
 );"""),
 
@@ -60,15 +67,21 @@ create table instance (
 # instance zero is the local instance.
 # From this identity we can infer if an object is local or not
 (
-    'create_instance', """insert into instance(instance_id, endpoint, authorized)
-    values(0, "local adelphos instance", 1);"""
+    'create_instance', """insert into instance(instance_id, actor_fk,
+    comment, , authorized)
+    values(0, NULL, "local adelphos instance");"""
 ),
 
+
+# every object in adelphos (apart from the aliases) has a creator who
+# is an alias. The alias has a creator who is an actor.
+# The alias is the bridge between the world of adelphos and the
+# the world of Activity Pub
 ('adelphos_ob', """
--- this is the common part for all the objects in adelphos
 create table adelphos_ob (
 
         adelphos_id integer primary key,
+        creator integer references adelphos_ob(adelphos_id),
         name text,
         instance_fk integer references instance(instance_id),
         created_on text default current_timestamp
@@ -255,24 +268,8 @@ create view alias_local as select adelphos_id, name,
 ]
 
 
-
+# this is the entrance point to the federated database in adelphos.
 class AdelphosDao:
-
-    # the ids in adelphos are in the form
-    # ad1.$type.$val@host
-    # where type is one of 'alias', 'group', 'cheque', 'trust_line' etc.
-    # there are no numeric ids, because the database is distributed.
-    # local instances are free to cache local values as numeric
-
-    # every identifier has a $home, which is the host where it has been
-    # created and only that server is allowed to modfify it.
-
-    # the distributed db is distributed equally: we do not alter the rows,
-    # only the various adelphos' instances have a different set of rows and
-    # they share the responsability to update it.
-
-    # the database is consistent
-
 
     def _create_schema(self):
         gCon.log("Creating schema...")
@@ -292,6 +289,7 @@ class AdelphosDao:
 
     # for testing I can also create the file in memory
     def __init__(self, config):
+
 
         db_name = config['General']['db_name']
 
@@ -320,11 +318,20 @@ class AdelphosDao:
 
         if (create_schema == True):
             self._create_schema()
+
+
+        # I create the specialized DAOs
+        self.cur_dao = CurrencyDao(self)
             
 
     def dump_database(self):
         for line in self._conn.iterdump():
             gCon.log(f"{line}")
+
+
+    # I can have differenct DAOs which are linked to me.
+    def currency_dao(self):
+        return self.cur_dao
 
 
     def export_to_remote_dto(ctx):
