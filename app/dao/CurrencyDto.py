@@ -45,7 +45,7 @@ class CurrencyDao(AdelphosObjectDao):
 
 
     # the uri here is parsed.
-    def get_from_uri(uri):
+    def get_from_uri(ctx, uri):
         # Of course the uri must be of the right type
         pass
 

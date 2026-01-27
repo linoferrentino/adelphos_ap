@@ -24,6 +24,7 @@ from pathlib import Path
 import sqlite3
 from app.api.AdelphosException import AdelphosException
 from app.dao.CurrencyDto import CurrencyDao
+from app.consts import USER_ID
 
 # I import here the specialized DAOs to access the federated objects.
 
@@ -32,30 +33,71 @@ from app.dao.CurrencyDto import CurrencyDao
 create_schema_sql = \
 [
         
-# the actor zero is the local actor, it corresponds to the local adelphos
+
+# we store here the information about the activity pub servers
+# around us.
+# For the purpose of adelphos a server is just a container of actors.
+# adelphos itself is an activity pub server, but a special one, because
+# it has only one published actor, the adelphos daemon.
+
+# the server zero is the local server, it corresponds to the local adelphos
 # instance.
+
+# an adelphos server is also an activity pub server, but the contrary
+# is not true.
+# all the adelphos servers join the federated adelphos database.
+('activity_pub_server',
+"""
+create table ap_server (
+    server_id integer primary key,
+    host_name text not null unique on conflict abort,
+    --user_path text,
+    --inbox_postfix text,
+    timestamp text default current_timestamp
+);
+
+
+"""),
+
 
 ('actor',
 
 """
-create table actor (
+create table ap_actor (
         actor_id integer primary key,
-        actor_uri text not null unique on conflict abort,
-        canonical_name text not null unique on conflict abort, 
-        inbox_uri text,
+        server_fk integer references ap_server(server_id),
+        user_path text,
+        inbox_path text,
+        preferred_name text,
+        --actor_uri text not null unique on conflict abort,
+        --canonical_name text not null unique on conflict abort, 
+        --inbox_uri text,
         public_key text,
-        timestamp text default current_timestamp
+        timestamp text default current_timestamp,
+        unique (server_fk, user_path) on conflict abort
 );"""),
 
-# this is the table that stores the adelphos instances. There
-# are not activity pub instances.
 
+# this is the view that joins the two tables.
+('view actor_server',
+ """
+ create view ap_server_actor as select
+ actor_id, host_name, user_path, inbox_path, preferred_name,
+ public_key, ap_actor.timestamp from ap_server, ap_actor where
+ server_id = server_fk;
+
+"""),
+
+# this is the table that stores the adelphos instances. These
+# are not activity pub instances.
+# However every adelphos instance is linked to an activity pub actor
+# which is its endpoint for the fediverse.
 ('instance', """
-create table instance (
-    
-    instance_id,
-    actor_fk integer primary key references actor(actor_id),
-    comment text
+create table ad_instance (
+    actor_fk integer primary key references ap_actor(actor_id),
+    authorized text,
+    comment text,
+    timestamp text default current_timestamp
 
 );"""),
 
@@ -66,22 +108,23 @@ create table instance (
 # this is the only hard coded value in the DB.
 # instance zero is the local instance.
 # From this identity we can infer if an object is local or not
-(
-    'create_instance', """insert into instance(instance_id, actor_fk,
-    comment, , authorized)
-    values(0, NULL, "local adelphos instance");"""
-),
+#(
+#    'create_instance', """insert into instance(instance_id, actor_fk,
+#    comment)
+#    values(0, 0, "local adelphos instance");"""
+#),
 
 
 # every object in adelphos (apart from the aliases) has a creator who
 # is an alias. The alias has a creator who is an actor.
 # The alias is the bridge between the world of adelphos and the
 # the world of Activity Pub
+# every adelphos object has a home instance, from it we define its URI
 ('adelphos_ob', """
-create table adelphos_ob (
+create table adelphos_ob(
 
         adelphos_id integer primary key,
-        creator integer references adelphos_ob(adelphos_id),
+        creator_fk integer references adelphos_ob(adelphos_id),
         name text,
         instance_fk integer references instance(instance_id),
         created_on text default current_timestamp
@@ -271,7 +314,7 @@ create view alias_local as select adelphos_id, name,
 # this is the entrance point to the federated database in adelphos.
 class AdelphosDao:
 
-    def _create_schema(self):
+    def _create_schema(self, config):
         gCon.log("Creating schema...")
 
 
@@ -281,6 +324,11 @@ class AdelphosDao:
         for cmd in create_schema_sql:
             gCon.log(f"Will exec -> {cmd[0]}")
             cursor.execute(cmd[1])
+
+        # Now I store the initial data (for example the zero actor,
+        # which is myself)
+        #host = app.config['General']['host']
+        
 
         cursor.close()
 
@@ -317,7 +365,7 @@ class AdelphosDao:
         self._conn = sqlite3.connect(db_name_complete, autocommit=False)
 
         if (create_schema == True):
-            self._create_schema()
+            self._create_schema(config)
 
 
         # I create the specialized DAOs
@@ -343,7 +391,7 @@ class AdelphosDao:
     async def import_from_dao_remote(ctx, object_uri):
 
         # I have to split the uri, get the local and the remote part.
-        object_splits = object_uri.split('@')
+        #object_splits = object_uri.split('@')
 
         # Now I have to gquery the remote db.
         local_uri = object_splits[0]

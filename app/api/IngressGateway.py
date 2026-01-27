@@ -54,9 +54,8 @@ async def check_message(ctx):
     gCon.log(f"Get the public key {key_id_val}")
     gCon.log(f"Try to get the cached actor's key {ctx.actor_str}")
 
-    # get the alias!
-    ctx.actor = await ActorDto.get_or_discover_from_uri(ctx, key_id_val)
-
+    # get the actor object, or create one
+    ctx.actor = await ActorDto.get_or_discover_from_pk_id(ctx, key_id_val)
 
     ####### 1st, Check the digest
     digest_body = base64.b64encode(hashlib.sha256(

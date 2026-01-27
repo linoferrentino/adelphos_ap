@@ -12,15 +12,25 @@ table_name = "actor"
 
 # the actor is NOT an adelphos object.
 
+
+# this is the base class for the activity pub actors.
 @dataclass
 class ActorDto:
 
     actor_id: int = None
 
-    actor_uri: str = None
-    canonical_name: str = None 
-    inbox_uri: str = None
-    public_key: str = None
+    server_fk: int = None
+
+    #actor_uri: str = None
+    #canonical_name: str = None 
+    #inbox_uri: str = None
+    #public_key: str = None
+
+    # this is the user name imposed by the server (for example mastodon
+    # imposes a long integer id)
+    user_server_name: str = None
+    # this is the preferred name, like @<user>@<host>
+    preferred_name: str = None
 
     timestamp: str = None
 
@@ -144,9 +154,15 @@ exp {actor_uri}")
 
 
     @staticmethod
-    async def get_or_discover_from_uri(ctx, key_id_val):
+    async def get_or_discover_from_pk_id(ctx, key_id_val):
+
+        # OK, I have the public key identifier, now I have to decompose it
+        # in host, path and fragment (the last one is usually removed)
 
         key_parsed = urlparse(key_id_val)
+
+        gCon.log(f"the Activity Pub host is {key_parsed.netloc}")
+
         parsed = key_parsed._replace(fragment = "")
         actor_uri = parsed.geturl()
 

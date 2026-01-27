@@ -62,6 +62,8 @@ class AdelphosDto:
 class AdelphosObjectDao(ABC):
 
 
+    # the context is needed because I need to know if the host is
+    # the local host.
     def __init__(self, ctx):
         self.ctx = ctx
 
@@ -70,7 +72,7 @@ class AdelphosObjectDao(ABC):
     # it will go to the outside world.
     # the URI here is parsed.
     @abstractmethod
-    def get_from_uri(uri):
+    async def get_from_uri(ctx, uri):
         pass
 
 
