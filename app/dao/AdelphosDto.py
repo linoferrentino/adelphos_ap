@@ -62,10 +62,8 @@ class AdelphosDto:
 class AdelphosObjectDao(ABC):
 
 
-    # the context is needed because I need to know if the host is
-    # the local host.
-    def __init__(self, ctx):
-        self.ctx = ctx
+    def __init__(self, dao):
+        self.dao = dao 
 
 
     # this method gets the object from this instance or, if not present,

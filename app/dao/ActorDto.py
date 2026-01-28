@@ -24,15 +24,45 @@ class ActorDto:
     #actor_uri: str = None
     #canonical_name: str = None 
     #inbox_uri: str = None
-    #public_key: str = None
+
+    user_path: str = None
+    preferred_name: str = None
+    inbox_path: str = None
+    public_key: str = None
 
     # this is the user name imposed by the server (for example mastodon
     # imposes a long integer id)
-    user_server_name: str = None
+    #user_server_name: str = None
     # this is the preferred name, like @<user>@<host>
-    preferred_name: str = None
 
     timestamp: str = None
+
+
+# this is the class that holds the data for an actor and a server
+# at the same time, it queries the actor_server view. 
+@dataclass
+class ActorServerDto:
+    actor_id: int = None
+    host_name: str = None
+
+    user_path: str = None
+    preferred_name: str = None
+    inbox_path: str = None
+    public_key: str = None
+    timestamp: str = None
+
+
+
+# this is the class that holds the logic to query and to
+# instantiate actor DTOs
+# This Dao does not derive from AdelphosObjectDao because
+# the actors are not part of the adelphos federated DB
+class ActorDao:
+
+
+    # I can set here the context.
+    def __init__(self, dao):
+        self.dao = dao
 
 
     # gets from local database or queries the webfinger endpoint
@@ -153,20 +183,26 @@ exp {actor_uri}")
         return actor 
 
 
-    @staticmethod
-    async def get_or_discover_from_pk_id(ctx, key_id_val):
+    # this function tries to get an actor from
+    # the local db using the hostname and 
+    def get_local_from_parsed_uri(self, ctx, key_parsed):
+        # I have to query the view.
+        gCon.log(f"this actor's Activity Pub host is {key_parsed.netloc}")
+        gCon.log(f"his path is  is {key_parsed.path}")
+        return None
+
+
+    async def get_or_discover_from_pk_id(self, ctx, key_id_val):
 
         # OK, I have the public key identifier, now I have to decompose it
         # in host, path and fragment (the last one is usually removed)
 
         key_parsed = urlparse(key_id_val)
 
-        gCon.log(f"the Activity Pub host is {key_parsed.netloc}")
-
         parsed = key_parsed._replace(fragment = "")
         actor_uri = parsed.geturl()
 
-        actor = ActorDto.get_from_uri(ctx, actor_uri)
+        actor = self.get_local_from_parsed_uri(ctx, key_parsed)
 
         if (actor is None):
             actor = await ActorDto.create_from_uri(ctx, actor_uri, 

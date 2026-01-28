@@ -24,6 +24,7 @@ from pathlib import Path
 import sqlite3
 from app.api.AdelphosException import AdelphosException
 from app.dao.CurrencyDto import CurrencyDao
+from app.dao.ActorDto import ActorDao
 from app.consts import USER_ID
 
 # I import here the specialized DAOs to access the federated objects.
@@ -369,7 +370,8 @@ class AdelphosDao:
 
 
         # I create the specialized DAOs
-        self.cur_dao = CurrencyDao(self)
+        self.currency_dao = CurrencyDao(self)
+        self.actor_dao = ActorDao(self)
             
 
     def dump_database(self):
@@ -378,8 +380,12 @@ class AdelphosDao:
 
 
     # I can have differenct DAOs which are linked to me.
-    def currency_dao(self):
-        return self.cur_dao
+    #def currency_dao(self):
+    #    return self.cur_dao
+
+
+    #def actor_dao(self):
+    #    return self.actor_dao
 
 
     def export_to_remote_dto(ctx):
