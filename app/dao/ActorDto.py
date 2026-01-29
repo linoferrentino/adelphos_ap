@@ -8,9 +8,7 @@ from app.api.AdelphosException import AdelphosException
 from urllib.parse import urlparse
 import json
 
-table_name = "actor"
 
-# the actor is NOT an adelphos object.
 
 
 # this is the base class for the activity pub actors.
@@ -137,7 +135,10 @@ resource=acct:{preferred_username}@{rem_instance}"
 
 
     # this function will fetch the public key of the actor
-    async def create_from_uri(ctx, actor_uri, key_parsed):
+    async def create_from_uri(self, ctx, actor_uri, key_parsed):
+
+        # I must know if I have to create also the server.
+        # maybe this is the first actor from this Activity Pub server.
 
         gCon.log(f"Create here a cached actor {actor_uri}")
         actor = ActorDto()
@@ -189,6 +190,32 @@ exp {actor_uri}")
         # I have to query the view.
         gCon.log(f"this actor's Activity Pub host is {key_parsed.netloc}")
         gCon.log(f"his path is  is {key_parsed.path}")
+
+        # first of all I need to know if I have a server
+        ctx.server = ctx.app.dao.server_dao.get_from_hostname(ctx,
+                                            key_parsed.netloc)
+
+        # if the server is not existing there is no point in searching
+        # the actor.
+        if (ctx.server is None):
+            gCon.log("server not existing")
+            return None
+
+
+        table_name = "actor_server"
+
+        fields_to_ask = ('actor_id', 'host_name', 'user_path', 
+                         'inbox_path', 'preferred_name',
+                         'public_key', 'timestamp')
+
+        fields_to_seek = ('host_name', 'user_path')
+        values_to_seek = ( key_parsed.netloc, key_parsed.path)
+
+        dto = ctx.app.dao.get_dto_ex(table_name, fields_to_ask, 
+                                     fields_to_seek, 
+                            values_to_seek, ActorServerDto)
+        gCon.log(f"I have grabbed {dto} from db")
+ 
         return None
 
 
@@ -199,13 +226,20 @@ exp {actor_uri}")
 
         key_parsed = urlparse(key_id_val)
 
+        # I grab or create the server: this is a local object.
+        ctx.server = ctx.app.dao.server_dao\
+                .get_or_create_from_host_name(key_parsed.netloc)
+
+        # this is OK, now I can create the actor.
+
+
         parsed = key_parsed._replace(fragment = "")
         actor_uri = parsed.geturl()
 
         actor = self.get_local_from_parsed_uri(ctx, key_parsed)
 
         if (actor is None):
-            actor = await ActorDto.create_from_uri(ctx, actor_uri, 
+            actor = await self.create_from_uri(ctx, actor_uri, 
                                                    key_parsed)
         return actor
 

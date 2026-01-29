@@ -25,6 +25,7 @@ import sqlite3
 from app.api.AdelphosException import AdelphosException
 from app.dao.CurrencyDto import CurrencyDao
 from app.dao.ActorDto import ActorDao
+from app.dao.ServerDto import ServerDao
 from app.consts import USER_ID
 
 # I import here the specialized DAOs to access the federated objects.
@@ -82,9 +83,9 @@ create table ap_actor (
 # this is the view that joins the two tables.
 ('view actor_server',
  """
- create view ap_server_actor as select
+ create view actor_server as select
  actor_id, host_name, user_path, inbox_path, preferred_name,
- public_key, ap_actor.timestamp from ap_server, ap_actor where
+ public_key, ap_actor.timestamp as timestamp from ap_server, ap_actor where
  server_id = server_fk;
 
 """),
@@ -372,6 +373,7 @@ class AdelphosDao:
         # I create the specialized DAOs
         self.currency_dao = CurrencyDao(self)
         self.actor_dao = ActorDao(self)
+        self.server_dao = ServerDao(self)
             
 
     def dump_database(self):
