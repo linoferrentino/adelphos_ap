@@ -480,6 +480,7 @@ select {list_sql_fields} from {table_name} where {field_to_seek} = ?
         return constructor_dto(*row)
 
 
+    # A generic function to insert a data object.
     def insert_dto(self, ctx, table_name, dto_as_dict):
 
         fields = dto_as_dict.keys()

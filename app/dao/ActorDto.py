@@ -179,7 +179,7 @@ exp {actor_uri}")
         gCon.log("I have set the canonical name")
         actor.canonical_name = f"@{preferred_username}@{key_parsed.hostname}"
 
-        actor.actor_id = actor.store(ctx)
+        self.store(ctx, actor)
 
         return actor 
 
@@ -192,26 +192,26 @@ exp {actor_uri}")
         gCon.log(f"his path is  is {key_parsed.path}")
 
         # first of all I need to know if I have a server
-        ctx.server = ctx.app.dao.server_dao.get_from_hostname(ctx,
-                                            key_parsed.netloc)
+        #ctx.server = ctx.app.dao.server_dao.get_from_hostname(ctx,
+        #                                    key_parsed.netloc)
 
-        # if the server is not existing there is no point in searching
-        # the actor.
-        if (ctx.server is None):
-            gCon.log("server not existing")
-            return None
+        ## if the server is not existing there is no point in searching
+        ## the actor.
+        #if (ctx.server is None):
+        #    gCon.log("server not existing")
+        #    return None
 
+        # server here is already instantiated in ctx.server_dto
+        table_name = "ap_actor"
 
-        table_name = "actor_server"
-
-        fields_to_ask = ('actor_id', 'host_name', 'user_path', 
+        fields_to_ask = ('actor_id', 'server_fk', 'user_path', 
                          'inbox_path', 'preferred_name',
                          'public_key', 'timestamp')
 
-        fields_to_seek = ('host_name', 'user_path')
-        values_to_seek = ( key_parsed.netloc, key_parsed.path)
+        fields_to_seek = ('server_fk', 'user_path')
+        values_to_seek = ( ctx.server_dto.server_id, key_parsed.path)
 
-        dto = ctx.app.dao.get_dto_ex(table_name, fields_to_ask, 
+        dto = self.dao.get_dto_ex(table_name, fields_to_ask, 
                                      fields_to_seek, 
                             values_to_seek, ActorServerDto)
         gCon.log(f"I have grabbed {dto} from db")
@@ -227,12 +227,10 @@ exp {actor_uri}")
         key_parsed = urlparse(key_id_val)
 
         # I grab or create the server: this is a local object.
-        ctx.server = ctx.app.dao.server_dao\
-                .get_or_create_from_host_name(key_parsed.netloc)
+        ctx.server_dto = self.dao.server_dao\
+                .get_or_create_from_host_name(ctx, key_parsed.netloc)
 
         # this is OK, now I can create the actor.
-
-
         parsed = key_parsed._replace(fragment = "")
         actor_uri = parsed.geturl()
 
