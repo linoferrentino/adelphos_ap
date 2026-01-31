@@ -21,7 +21,7 @@ from app.logging import gCon
 from app.api.OutgressGateway import post_response
 from app.api.OutgressGateway import post_daemon_req
 from app.api.OutgressGateway import post_response_inbox
-from app.api.OutgressGateway import post_to_actor_inbox
+#from app.api.OutgressGateway import post_to_actor_inbox
 from app.api.params import get_param_safe
 from app.api.params import make_cmd_params
 from app.ap_api.daemon_qa import daemon_remote_query
@@ -94,32 +94,32 @@ async def alias_create_handler(ctx):
 
     gCon.log(f"currency uri is {currency_uri}")
 
-    return f"Created alias {alias_uri.name} successfully.\
-Your global identifier in adelphos fediverse is {alias_uri}"
+    # this is a fail fast response.
+#    return f"Created alias {alias_uri.name} successfully.\
+#Your global identifier in adelphos fediverse is {alias_uri}"
 
+#    alias_family_splits = alias_complete.split(".")
+#    if (len(alias_family_splits) == 1):
+#        raise AdelphosException(
+#f"I need the alias written in the form alias.family, with a '.' \
+#in the middle")
 
-    alias_family_splits = alias_complete.split(".")
-    if (len(alias_family_splits) == 1):
-        raise AdelphosException(
-f"I need the alias written in the form alias.family, with a '.' \
-in the middle")
-
-    if (len(alias_family_splits) > 1):
-        raise AdelphosException(
-f"Too many dots in the alias! {alias_complete}, Only one is allowed")
-
-    (alias, family_name) = alias_family_splits
+#    if (len(alias_family_splits) > 1):
+#        raise AdelphosException(
+#f"Too many dots in the alias! {alias_complete}, Only one is allowed")
+#
+#    (alias, family_name) = alias_family_splits
 
     # the family MUST NOT already exist, we cannot create two families in
     # the same instance with the same name.
-    family_raw = FamilyDao.get_local_family(ctx, family_name)
+    family_dto = FamilyDao.get_local_family(ctx, alias_uri.family)
 
-    if (family_raw is not None):
+    if (family is not None):
         raise AdelphosException(
-f"family {family_raw.name} is already existing in this instance")
+f"family {alias_uri.family} is already existing in this instance")
 
     # this must not fail, unless there is an exception.
-    currency_raw = CurrencyDao.get_or_create_currency(ctx, currency)
+    ctx.currency_dto = CurrencyDao.get_or_create_currency(ctx, currency)
 
     # this function question the database using the local alias, so
     # it means that the instance is local.
@@ -133,20 +133,13 @@ f"family {family_raw.name} is already existing in this instance")
 
     validate_local_name(family_name)
 
-    # OK, now I have to create the Family and Alias objects.
-
-    
-    
-    # of course the instance for these objects will be zero, it is the
-    # local instance.l
-
     # first the family object.
 
     # If I am here I can create a new alias
     ctx.alias = AliasDto()
 
     ctx.alias.alias_uri = alias_uri
-    ctx.alias.actor_fk = ctx.actor.actor_uri
+    ctx.alias.actor_fk = ctx.actor_dto.actor_id
     ph = PasswordHasher()
     ctx.alias.password = ph.hash(password)
 
@@ -263,10 +256,11 @@ async def cmd_parse(ctx):
 async def send_msg_to_alias(wsctx):
 
     # here I hard code the actor and I try to post to him
-    wsctx.actor = await ActorDto.get_or_discover_actor(wsctx, "lino_ferre",
+    wsctx.actor_dto = await ActorDto.get_or_discover_actor(wsctx, 
+                                          "lino_ferre",
                                           "mastodon.uno")
 
-    gCon.log(f"I have found the remote actor {wsctx.actor}")
+    gCon.log(f"I have found the remote actor {wsctx.actor_dto}")
 
     await post_to_actor_inbox(wsctx, "this is a test!")
 

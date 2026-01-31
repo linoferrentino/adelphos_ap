@@ -48,11 +48,12 @@ class ServerDao:
         server_dto = self.get_from_hostname(ctx, host_name)
 
         if (server_dto is not None):
-            return
+            return server_dto
 
         # at this point I have to create it.
-        ctx.server_dto = ServerDto(host_name)
-        self.store(ctx, ctx.server_dto)
+        server_dto = ServerDto(host_name)
+        self.store(ctx, server_dto)
+        gCon.log(f"I return {server_dto}")
         return server_dto
 
 
@@ -79,5 +80,5 @@ class ServerDao:
 
         gCon.log(f"stored {server.host_name} his id {newid}")
 
-        server.id = newid
+        server.server_id = newid
 

@@ -25,30 +25,36 @@ from app.ap_api.AsyncRequest import AsyncPostReq
 
 async def post_response(ctx):
 
-    actor_inbox = ctx.actor.inbox_uri
-    actor_str = ctx.actor.actor_uri
     msg = ctx.answer_txt
 
-    return await post_response_inbox(ctx, actor_str, actor_inbox, msg)
+    return await post_response_inbox(ctx, ctx.actor_dto, ctx.server_dto, msg)
 
 
-async def post_to_actor_inbox(ctx, msg):
-
-    return await post_response_inbox(ctx, ctx.actor.actor_uri,
-                                     ctx.actor.inbox_uri, msg)
+#async def post_to_actor_inbox(ctx, msg):
+#
+#    return await post_response_inbox(ctx, ctx.actor.actor_uri,
+#                                     ctx.actor.inbox_uri, msg)
 
 
 async def post_daemon_req(ctx):
 
-    actor_inbox = ctx.daemon.inbox_uri
-    actor_str = ctx.daemon.actor_uri
     msg = ctx.query_txt 
 
-    return await post_response_inbox(ctx, actor_str, actor_inbox, msg)
+    return await post_response_inbox(ctx, ctx.daemon_dto,
+                                     ctx.daemon_server_dto, msg)
+
+
+async def post_response_inbox(ctx, actor, server, msg):
+    actor_uri = f"https://{ctx.server_dto.host_name}/\
+{ctx.actor_dto.user_path}"
+    inbox_uri = f"https://{ctx.server_dto.host_name}\
+{ctx.actor_dto.inbox_path}"
+    return await post_response_inbox_impl(ctx, actor_uri, inbox_uri, msg)
+
 
 
 # we can pass messages to other inbox, for example a daemon inbox 
-async def post_response_inbox(ctx, actor_str, inbox, msg):
+async def post_response_inbox_impl(ctx, actor_str, inbox, msg):
 
 
     host = ctx.app.config['General']['host']

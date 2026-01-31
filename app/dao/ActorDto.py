@@ -15,24 +15,17 @@ import json
 @dataclass
 class ActorDto:
 
+
+    # these cannot be NULL
+    server_fk: int
+    user_path: str
+    preferred_username: str
+    inbox_path: str
+    public_key: str
+
+
+    # these can be NULL, they are set by the database.
     actor_id: int = None
-
-    server_fk: int = None
-
-    #actor_uri: str = None
-    #canonical_name: str = None 
-    #inbox_uri: str = None
-
-    user_path: str = None
-    preferred_name: str = None
-    inbox_path: str = None
-    public_key: str = None
-
-    # this is the user name imposed by the server (for example mastodon
-    # imposes a long integer id)
-    #user_server_name: str = None
-    # this is the preferred name, like @<user>@<host>
-
     timestamp: str = None
 
 
@@ -116,7 +109,7 @@ resource=acct:{preferred_username}@{rem_instance}"
         actor.preferred_username = preferred_username 
         actor.canonical_name = f"@{preferred_username}@{rem_instance}"
 
-        actor.id = actor.store(ctx)
+        self.store(ctx, actor)
         return actor
 
 
@@ -141,8 +134,8 @@ resource=acct:{preferred_username}@{rem_instance}"
         # maybe this is the first actor from this Activity Pub server.
 
         gCon.log(f"Create here a cached actor {actor_uri}")
-        actor = ActorDto()
-        actor.actor_uri = actor_uri
+        #actor = ActorDto()
+        #actor.actor_uri = actor_uri
 
         res_key = AsyncGetReq(actor_uri)
         await ctx.app.async_req_wait(res_key)
@@ -160,7 +153,7 @@ resource=acct:{preferred_username}@{rem_instance}"
         pub_key_ob = key_ob['publicKey']
 
         pub_key_ob_id = pub_key_ob['id']
-        actor.public_key = pub_key_ob['publicKeyPem']
+        #actor.public_key = pub_key_ob['publicKeyPem']
 
         # are they the same?
         if (pub_key_ob_id != key_parsed.geturl()):
@@ -174,10 +167,26 @@ exp {actor_uri}")
             gCon.log(f"Error, {owner} different from {actor_uri}")
             raise AdelphosException("Bad key")
 
-        actor.inbox_uri = key_ob['inbox']
+        inbox_uri = key_ob['inbox']
         preferred_username = key_ob['preferredUsername']
-        gCon.log("I have set the canonical name")
-        actor.canonical_name = f"@{preferred_username}@{key_parsed.hostname}"
+
+        # I parse the inbox.
+        inbox_parsed = urlparse(inbox_uri)
+
+        # the inbox and the actor uri should belong to the same server,
+        # if not there is a problem
+        if (inbox_parsed.netloc != key_parsed.netloc):
+            raise AdelphosException(
+f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
+
+        #gCon.log("I have set the canonical name")
+        #actor.canonical_name = f"@{preferred_username}@{key_parsed.hostname}"
+        # OK, now I can create the actor
+        actor = ActorDto(ctx.server_dto.server_id,
+                         key_parsed.path,
+                         preferred_username,
+                         inbox_parsed.path,
+                         pub_key_ob['publicKeyPem'])
 
         self.store(ctx, actor)
 
@@ -191,32 +200,22 @@ exp {actor_uri}")
         gCon.log(f"this actor's Activity Pub host is {key_parsed.netloc}")
         gCon.log(f"his path is  is {key_parsed.path}")
 
-        # first of all I need to know if I have a server
-        #ctx.server = ctx.app.dao.server_dao.get_from_hostname(ctx,
-        #                                    key_parsed.netloc)
-
-        ## if the server is not existing there is no point in searching
-        ## the actor.
-        #if (ctx.server is None):
-        #    gCon.log("server not existing")
-        #    return None
-
         # server here is already instantiated in ctx.server_dto
         table_name = "ap_actor"
 
-        fields_to_ask = ('actor_id', 'server_fk', 'user_path', 
-                         'inbox_path', 'preferred_name',
-                         'public_key', 'timestamp')
+        fields_to_ask = ('server_fk', 'user_path', 
+                         'preferred_username','inbox_path',
+                         'public_key','actor_id', 'timestamp')
 
         fields_to_seek = ('server_fk', 'user_path')
         values_to_seek = ( ctx.server_dto.server_id, key_parsed.path)
 
         dto = self.dao.get_dto_ex(table_name, fields_to_ask, 
                                      fields_to_seek, 
-                            values_to_seek, ActorServerDto)
+                            values_to_seek, ActorDto)
         gCon.log(f"I have grabbed {dto} from db")
  
-        return None
+        return dto
 
 
     async def get_or_discover_from_pk_id(self, ctx, key_id_val):
@@ -242,47 +241,45 @@ exp {actor_uri}")
         return actor
 
 
-    @staticmethod
-    def get_from_uri(ctx, actor_uri):
+    #@staticmethod
+    #def get_from_uri(ctx, actor_uri):
 
-        field_to_seek = ('actor_uri',)
-        value_to_seek = (actor_uri ,)
+    #    field_to_seek = ('actor_uri',)
+    #    value_to_seek = (actor_uri ,)
 
-        return ActorDto._base_get(ctx, field_to_seek, value_to_seek)
-
-
-    @staticmethod
-    def get_from_canonical_name(ctx, preferred_username, hostname):
-        canonical_name = f"@{preferred_username}@{hostname}"
-        fields_to_seek = ('canonical_name', )
-        values_to_seek = (canonical_name, )
-
-        return ActorDto._base_get(ctx, fields_to_seek, values_to_seek)
+    #    return ActorDto._base_get(ctx, field_to_seek, value_to_seek)
 
 
-    def store(self, ctx):
+    #@staticmethod
+    #def get_from_canonical_name(ctx, preferred_username, hostname):
+    #    canonical_name = f"@{preferred_username}@{hostname}"
+    #    fields_to_seek = ('canonical_name', )
+    #    values_to_seek = (canonical_name, )
 
-        global table_name
+    #    return ActorDto._base_get(ctx, fields_to_seek, values_to_seek)
+
+
+    def store(self, ctx, actor):
+
+        table_name = "ap_actor"
 
         fields_stored = {
-                         'actor_uri': self.actor_uri,
-                         'canonical_name': self.canonical_name,
-                         'inbox_uri': self.inbox_uri,
-                         'public_key': self.public_key,
+                         'server_fk': actor.server_fk,
+                         'user_path': actor.user_path,
+                         'preferred_username': actor.preferred_username,
+                         'inbox_path': actor.inbox_path,
+                         'public_key': actor.public_key,
                          }
 
-        newid = ctx.app.dao.insert_dto(ctx, table_name, fields_stored)
-
-        gCon.log(f"stored {self.actor_uri} canonical {self.canonical_name}\
- his id {newid}")
-
-        return newid
+        newid = self.dao.insert_dto(ctx, table_name, fields_stored)
+        actor.actor_id = newid
+        gCon.log(f"stored new actor {actor}")
 
 
-    def update(self, ctx):
-        pass
+    #def update(self, ctx):
+    #    pass
 
 
-    def delete(self, ctx):
-        pass
+    #def delete(self, ctx):
+    #    pass
 

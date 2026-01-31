@@ -55,7 +55,7 @@ async def check_message(ctx):
     gCon.log(f"Try to get the cached actor's key {ctx.actor_str}")
 
     # get the actor object, or create one
-    ctx.actor = await ctx.app.dao.actor_dao\
+    ctx.actor_dto = await ctx.app.dao.actor_dao\
             .get_or_discover_from_pk_id(ctx, key_id_val)
 
     ####### 1st, Check the digest
@@ -118,7 +118,7 @@ async def check_message(ctx):
     signature_text_bin = signature_text.encode('utf-8')
 
     remote_public_key = crypto_serialization.load_pem_public_key(
-            ctx.actor.public_key.encode(),
+            ctx.actor_dto.public_key.encode(),
             backend=crypto_default_backend()
     )
 

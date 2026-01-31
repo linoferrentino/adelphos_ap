@@ -53,11 +53,8 @@ create_schema_sql = \
 create table ap_server (
     server_id integer primary key,
     host_name text not null unique on conflict abort,
-    --user_path text,
-    --inbox_postfix text,
     timestamp text default current_timestamp
 );
-
 
 """),
 
@@ -70,10 +67,7 @@ create table ap_actor (
         server_fk integer references ap_server(server_id),
         user_path text,
         inbox_path text,
-        preferred_name text,
-        --actor_uri text not null unique on conflict abort,
-        --canonical_name text not null unique on conflict abort, 
-        --inbox_uri text,
+        preferred_username text,
         public_key text,
         timestamp text default current_timestamp,
         unique (server_fk, user_path) on conflict abort
@@ -128,7 +122,7 @@ create table adelphos_ob(
         adelphos_id integer primary key,
         creator_fk integer references adelphos_ob(adelphos_id),
         name text,
-        instance_fk integer references instance(instance_id),
+        instance_fk not null integer references ad_instance(actor_fk),
         created_on text default current_timestamp
 
 
