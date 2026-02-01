@@ -59,7 +59,7 @@ create table ap_server (
 """),
 
 
-('actor',
+('activity pub actor',
 
 """
 create table ap_actor (
@@ -84,6 +84,7 @@ create table ap_actor (
 
 """),
 
+
 # this is the table that stores the adelphos instances. These
 # are not activity pub instances.
 # However every adelphos instance is linked to an activity pub actor
@@ -98,17 +99,97 @@ create table ad_instance (
 );"""),
 
 
-# I create the local instance, this has index zero.
-# this holds data for the object in the local host.
-# for the other instances I store here the federated daemon endpoint
-# this is the only hard coded value in the DB.
-# instance zero is the local instance.
-# From this identity we can infer if an object is local or not
-#(
-#    'create_instance', """insert into instance(instance_id, actor_fk,
-#    comment)
-#    values(0, 0, "local adelphos instance");"""
-#),
+# The basis of the adelphos federated database is the adelphos object:
+# the adelphos object is linked to an adelphos instance and to an alias
+# in the same instance.
+# an alias belong to an instance and all the object he creates belong
+# there.
+
+# users, groups and families are alive
+# objects are... objects.
+
+
+# this is the base class for all the 'alive' objects in adelphos,
+# they can be participant in transactions and be creators and stores
+# of objects.
+# they can be linked, and they belong to an instance.
+# all the objects an actor creates are stored in that instance.
+# if the actor moves the objects he has created move with him.
+('fd_actor', """
+    fd_actor_id integer primary key,
+    name text,
+    instance_fk integer not null integer references ad_instance(actor_fk),
+    timestamp text default current_timestamp
+ """),
+
+
+# this is the base class for all the 'inert' objects in adelphos.
+# they are created by an actor, and they follow him if he moves.
+('fd_object', """
+    fd_object_id integer primary key,
+    name text,
+    creator_fk integer references fd_actor(fd_actor_id) on delete restrict,
+    timestamp text default current_timestamp
+ """),
+
+
+# the currency is the base of exchange. In adelphos we do not have a
+# centralized value exchange, the exchange rates are decided by the actor
+# themselves.
+('currency', """
+create table fd_currency(
+
+        local_fk integer primary key references fd_object(local_id),
+        symbol text,
+        human_value real
+
+);"""),
+
+
+# the federated group can have a parent and many children
+# it has a boss and a cashier
+# the parent group need not to belong to the same instance
+# (the same for its members!).
+('group', """
+create table fd_group(
+
+        local_fk integer primary key references adelphos_ob(local_id),
+        boss_fk integer references fd_actor(fd_actor_id),
+        cashier_fk integer references fd_actor(fd_actor_id),
+        parent_group_fk integer references fd_group(local_fk),
+        equity real,
+        level integer
+
+);"""),
+
+
+
+# here we have the federated family and the federated alias, they are all
+# "actors", in the sense that they are 'alive'
+
+
+# there are three types of alive objects in adelphos: the group, the
+# family and the alias: they form the trust web.
+
+
+
+
+# the family is the base class for all the 
+
+
+# the alias is the link between adelphos and activity pub; this means
+# that we have both the links.
+('fd_alias', """
+create table fd_alias(
+
+        local_fk integer references fd_actor(fd_actor_id),
+        actor_fk integer references ap_actor(actor_id) on delete restrict,
+        family_fk integer references adelphos_ob(adelphos_id),
+        password text
+
+); """),
+
+
 
 
 # every object in adelphos (apart from the aliases) has a creator who
@@ -116,17 +197,22 @@ create table ad_instance (
 # The alias is the bridge between the world of adelphos and the
 # the world of Activity Pub
 # every adelphos object has a home instance, from it we define its URI
-('adelphos_ob', """
-create table adelphos_ob(
 
-        adelphos_id integer primary key,
-        creator_fk integer references adelphos_ob(adelphos_id),
-        name text,
-        instance_fk not null integer references ad_instance(actor_fk),
-        created_on text default current_timestamp
+# The fact is that every ALIAS has an instance: the objects are tied
+# to the alias, probably not every object needs to have a instance,
+# but only the alias.
 
-
-);""") ,
+#('adelphos_ob', """
+#create table adelphos_ob(
+#
+#        adelphos_id integer primary key,
+#        creator_fk integer references alias(adelphos_id),
+#        name text,
+#        instance_fk not null integer references ad_instance(actor_fk),
+#        created_on text default current_timestamp
+#
+#
+#);""") ,
 
 # a group has only one parent, like a file system. We do not support
 # a mesh like ripple, even if a ripple can be created by following
@@ -135,35 +221,7 @@ create table adelphos_ob(
 # a person can be thought as a level zero, even if we do have
 # different levels.
 
-('group_data', """
-create table group_data(
 
-        local_fk integer primary key references adelphos_ob(local_id),
-
-        boss_fk integer references alias_data(local_fk),
-
-        cashier_fk integer references alias_data(local_fk),
-
-        parent_group_fk integer references group_data(local_fk),
-
-        equity real,
-
-        level integer
-
-);"""),
-
-
-('currency_data', """
-create table currency_data(
-
-        local_fk integer primary key references adelphos_ob(local_id),
-
-        symbol text,
-
-        human_value real
-
-
-);"""),
 
 
 
@@ -186,123 +244,69 @@ create table family_data(
 );"""),
 
 
-('view family_raw', """
-create view family_raw as select adelphos_id, name, instance_fk, created_on,
- pinned, orphaned, parent_group_fk, currency_fk, equity from
- family_data, adelphos_ob where
- ( (family_data.local_fk = adelphos_ob.adelphos_id) and
-   (adelphos_ob.instance_fk = 0) );
-"""),
+#('view family_raw', """
+#create view family_raw as select adelphos_id, name, instance_fk, created_on,
+# pinned, orphaned, parent_group_fk, currency_fk, equity from
+# family_data, adelphos_ob where
+# ( (family_data.local_fk = adelphos_ob.adelphos_id) and
+#   (adelphos_ob.instance_fk = 0) );
+#"""),
 
 
 
 
-('view family_local', """
-create view family_local as select adelphos_id, name, created_on,
- pinned, orphaned, parent_group_fk, currency_fk, equity from
- family_data, adelphos_ob where
- ( (family_data.local_fk = adelphos_ob.adelphos_id) and
-   (adelphos_ob.instance_fk = 0) );
-
-"""),
-
-
-# why do I need to have the alias in another pc? It is a federated
-# database, so I need...
-
-# let's do an example, create a trust line.
-# I need to create the object @tl$838@www.adelphos.it
-# this object stays local in my instance, but needs to be
-# used also by the other instance.
-# some objects are shared, but they maintain the origin where
-# they have been created.
-
-
-# the alias is the only table which is NOT shared, because we do
-# not allow the alias to move (we might), there could be a message
-# to allow the moving of the object.
-
-
-
-# the table for the alias, this table has a foreign key to the
-# adelphos object.
-
-# 1, 'http:///....', linus, pass
-# example of a remote alias 
-
-# 
-# 32, 'http:///....', john, pass
-# and in adelphos object
-# 32, 2, NULL, Jan 19th
-# this means that the user john
-# and in instance
-# 2, www.ny-adelphos.usa
-# I can operate on the alias as it were local but it isn't
+#('view family_local', """
+#create view family_local as select adelphos_id, name, created_on,
+# pinned, orphaned, parent_group_fk, currency_fk, equity from
+# family_data, adelphos_ob where
+# ( (family_data.local_fk = adelphos_ob.adelphos_id) and
+#   (adelphos_ob.instance_fk = 0) );
+#
+#"""),
 #
 #
-# I DO NOT need the password or the actor. The message is
-# sent to the other instance.
-
-# the problem is to have a database where the object can be anywhere
-# but each federated object can know where to find it.
-
-# I can use the password if I allow a user to login here.
-# is this possible? Maybe not.
-
-# the alias belong to a group 0, every group has a single parent
-
-
-('alias_data', """
-create table alias_data(
-
-        local_fk integer references adelphos_ob(adelphos_id),
-        actor_fk integer references actor(actor_id) on delete restrict,
-        family_fk integer references adelphos_ob(adelphos_id),
-        password text
-
-); """),
-
-
-('view alias_view', """
-
-create view alias_full as select adelphos_id, name, instance_fk,
- created_on, cloned_on, pinned, orphaned, actor_fk, group_zero_fk,
- password from adelphos_ob, alias_data where
- adelphos_id = local_fk;
-
-"""),
-
-
-('view alias_local', """
-
-create view alias_local as select adelphos_id, name, 
- created_on, cloned_on, pinned, orphaned, actor_fk, group_zero_fk,
- password from adelphos_ob, alias_data where
- (adelphos_id = local_fk) and (alias_data.instance_fk = 0)
-
-"""),
-
-
-
-# the trust line can be from two points in adelphos
-
-('trust_line', """
-
- create table trust_line(
-
-        local_fk integer primary key references adelphos_ob(local_id),
-
-        name text,
-
-        alias_from_fk integer references adelphos_ob(local_id),
-        alias_to_fk integer references adelphos_ob(local_id),
-
-        comment text,
-        trust_level real
-
- );
-
-"""),
+#
+#
+#('view alias_view', """
+#
+#create view alias_full as select adelphos_id, name, instance_fk,
+# created_on, cloned_on, pinned, orphaned, actor_fk, group_zero_fk,
+# password from adelphos_ob, alias_data where
+# adelphos_id = local_fk;
+#
+#"""),
+#
+#
+#('view alias_local', """
+#
+#create view alias_local as select adelphos_id, name, 
+# created_on, cloned_on, pinned, orphaned, actor_fk, group_zero_fk,
+# password from adelphos_ob, alias_data where
+# (adelphos_id = local_fk) and (alias_data.instance_fk = 0)
+#
+#"""),
+#
+#
+#
+## the trust line can be from two points in adelphos
+#
+#('trust_line', """
+#
+# create table trust_line(
+#
+#        local_fk integer primary key references adelphos_ob(local_id),
+#
+#        name text,
+#
+#        alias_from_fk integer references adelphos_ob(local_id),
+#        alias_to_fk integer references adelphos_ob(local_id),
+#
+#        comment text,
+#        trust_level real
+#
+# );
+#
+#"""),
 
 ]
 

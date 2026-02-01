@@ -1,3 +1,18 @@
+######################################################
+#
+# Adelphos AP: the fractal trust network
+#
+# Activity Pub implementation
+#
+# © 2025-26 Lino Ferrentino
+# lino.ferrentino@gmail.com
+#
+# This is free software. Licensed with GPL version 3
+#
+######################################################
+#
+# The family in adelphos is the base for the fractal trust network
+
 
 from app.logging import gCon
 from dataclasses import dataclass
@@ -13,14 +28,13 @@ from app.dao.AdelphosDto import AdelphosDto
 @dataclass
 class FamilyDto:
 
-
-    currency_fk: int = None
+    local_fk: int
 
     # every family has an equity and a currency
-    equity: float = None
+    currency_fk: int
 
-    # Then I have the possibility to have the adelphos object,
-    # like for every other item.
+
+    equity: float
 
 
 
