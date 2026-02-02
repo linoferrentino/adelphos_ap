@@ -71,7 +71,7 @@ class AdelphosApp(FastAPI):
 
 @asynccontextmanager
 async def lifespan(app: AdelphosApp):
-    app.dao = AdelphosDao(app.config)
+    app.dao = AdelphosDao(app)
     ses_worker = asyncio.create_task(session_worker(app))
     daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
     app.conn_hndl = ConnHandler(app)

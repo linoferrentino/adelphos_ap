@@ -117,6 +117,21 @@ Only one dot is allowed ")
     return alias_family_splits
 
 
+def validate_local_name(local_name):
+
+    # a NULL is valid (
+    if (local_name is None):
+        return
+
+    if (re.match("[a-z0-9][a-z0-9_-]+[a-z0-9]+", local_name, 
+                 re.IGNORECASE) is None):
+        raise AdelphosException(f"Invalid name {local_name}, \
+it must begin and end with a letter or a digit.")
+
+    if (len(alias) < 2 or len(alias) > 64):
+        raise AdelphosException(f"name {local_name} length incorrect")
+
+
 # to parse the object part we need the uri_type, because not
 # all the types can have the family part.
 def _parse_object_part(object_part, uri_type):
@@ -135,7 +150,7 @@ def _parse_object_part(object_part, uri_type):
 
         return (None, None, mechanical_id)
 
-     # this is human form, so we simply divide in alias and family
+     # this is human form, so we simply divide the name and family
     (alias, family) = _divide_uri_alias_family(object_part)
 
     if (uri_type == EAdelphosType.ALIAS_TYPE):
@@ -147,6 +162,10 @@ f"An alias must have a family! {alias_match.group(1)} has not one.")
             raise AdelphosException(
 f"Illegal identifier {type_name_match.group(2)}: \
 Only aliases can have a family.")
+
+    # here I must validate the names
+    validate_local_name(alias)
+    validate_local_name(family)
 
     return (alias, family, None)
 
@@ -254,17 +273,17 @@ I was expecting something like #<type>#<name> or #<type>#$<id>")
                               name, family, mechanical_id)
 
 
-def _create_parsed_uri(uri_type, object_part, host_part, name,
+def _create_parsed_uri(uri_type, object_part, host_name, name,
                        family, mechanical_id):
 
 
     # Ok now we can create the object
     if (mechanical_id is not None):
         adelphos_uri = AdelphosUri(uri_type,
-                        True, host_part, numeric_id = mechanical_id)
+                        True, host_name, numeric_id = mechanical_id)
     else:
         adelphos_uri = AdelphosUri(uri_type,
-                        False, host_part, name = name, family = family)
+                        False, host_name, name = name, family = family)
 
     # return the parsed object
     return adelphos_uri

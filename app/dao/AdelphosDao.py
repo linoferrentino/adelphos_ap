@@ -27,6 +27,7 @@ from app.dao.CurrencyDto import CurrencyDao
 from app.dao.ActorDto import ActorDao
 from app.dao.ServerDto import ServerDao
 from app.consts import USER_ID
+from app.consts import API_POINT
 
 # I import here the specialized DAOs to access the federated objects.
 
@@ -48,6 +49,13 @@ create_schema_sql = \
 # an adelphos server is also an activity pub server, but the contrary
 # is not true.
 # all the adelphos servers join the federated adelphos database.
+
+#('enable foreign keys',
+# """
+# PRAGMA foreign_keys = ON;
+# """),
+
+
 ('activity_pub_server',
 """
 create table ap_server (
@@ -91,11 +99,11 @@ create table ap_actor (
 # which is its endpoint for the fediverse.
 ('instance', """
 create table ad_instance (
-    actor_fk integer primary key references ap_actor(actor_id),
+    actor_fk integer primary key,
     authorized text,
     comment text,
-    timestamp text default current_timestamp
-
+    timestamp text default current_timestamp,
+    foreign key (actor_fk) references ap_actor(actor_id)
 );"""),
 
 
@@ -116,21 +124,25 @@ create table ad_instance (
 # all the objects an actor creates are stored in that instance.
 # if the actor moves the objects he has created move with him.
 ('fd_actor', """
+
+create table fd_actor(
     fd_actor_id integer primary key,
     name text,
-    instance_fk integer not null integer references ad_instance(actor_fk),
+    instance_fk integer not null references ad_instance(actor_fk),
     timestamp text default current_timestamp
+    );
  """),
 
 
-# this is the base class for all the 'inert' objects in adelphos.
-# they are created by an actor, and they follow him if he moves.
+# this is the base class for all the 'inert' objects in adelphos.  they are
+# created by a federated actor (an alias), and they follow him if he moves.
 ('fd_object', """
+create table fd_object(
     fd_object_id integer primary key,
     name text,
-    creator_fk integer references fd_actor(fd_actor_id) on delete restrict,
+    creator_fk integer references fd_alias(local_fk) on delete restrict,
     timestamp text default current_timestamp
- """),
+ );"""),
 
 
 # the currency is the base of exchange. In adelphos we do not have a
@@ -150,10 +162,10 @@ create table fd_currency(
 # it has a boss and a cashier
 # the parent group need not to belong to the same instance
 # (the same for its members!).
-('group', """
+('fd group', """
 create table fd_group(
 
-        local_fk integer primary key references adelphos_ob(local_id),
+        local_fk integer primary key references fd_actor(local_id),
         boss_fk integer references fd_actor(fd_actor_id),
         cashier_fk integer references fd_actor(fd_actor_id),
         parent_group_fk integer references fd_group(local_fk),
@@ -162,6 +174,54 @@ create table fd_group(
 
 );"""),
 
+# the family is the basic group in adelphos
+# the level is zero implicit.
+
+
+('family', """
+create table fd_family (
+
+        local_fk integer primary key references fd_object(local_id),
+        parent_group_fk text references fd_group(local_fk),
+        currency_fk integer references fd_currency(local_fk),
+        equity real
+
+
+);"""),
+
+
+# this view joins the family with the actor and the adelphos object 
+('view family_actor_raw', """
+
+
+ create view family_raw as select fd_object_id, name, creator_fk,
+    timestamp, act.name, act.instance_fk, act.timestamp,
+    parent_group_fk, currency_fk, equity from
+    fd_object, fd_family, fd_actor as act where
+    ( (local_fk = fd_object_id)
+    and
+    (creator_fk = fd_actor_id)
+    );
+
+ """),
+
+
+# this view selects all the local families.
+# the instance zero is by definition the local adelphos instance.
+('view family_local_raw', """
+
+
+ create view family_local_raw as select fd_object_id, name, creator_fk,
+    timestamp, parent_group_fk, currency_fk, equity from
+    fd_object, fd_family, fd_actor  where
+    ( (local_fk = fd_object_id)
+    and
+    (creator_fk = fd_actor_id)
+    and
+    (instance_fk = 0)
+    );
+
+ """),
 
 
 # here we have the federated family and the federated alias, they are all
@@ -171,142 +231,27 @@ create table fd_group(
 # there are three types of alive objects in adelphos: the group, the
 # family and the alias: they form the trust web.
 
-
-
-
 # the family is the base class for all the 
 
 
 # the alias is the link between adelphos and activity pub; this means
 # that we have both the links.
+# an actor can have different aliases in different families.
+# an actor cannot have two aliases in the same family
+# lino.ferrentino, lino_ferre@mastodon.uno OK
+# lino1.ferrentino, lino_ferre@mastodon.uno NO
 ('fd_alias', """
 create table fd_alias(
 
         local_fk integer references fd_actor(fd_actor_id),
         actor_fk integer references ap_actor(actor_id) on delete restrict,
-        family_fk integer references adelphos_ob(adelphos_id),
-        password text
+        family_fk integer references fd_family(local_fk),
+        password text,
+        primary key (local_fk, actor_fk, family_fk)
 
-); """),
-
-
-
-
-# every object in adelphos (apart from the aliases) has a creator who
-# is an alias. The alias has a creator who is an actor.
-# The alias is the bridge between the world of adelphos and the
-# the world of Activity Pub
-# every adelphos object has a home instance, from it we define its URI
-
-# The fact is that every ALIAS has an instance: the objects are tied
-# to the alias, probably not every object needs to have a instance,
-# but only the alias.
-
-#('adelphos_ob', """
-#create table adelphos_ob(
-#
-#        adelphos_id integer primary key,
-#        creator_fk integer references alias(adelphos_id),
-#        name text,
-#        instance_fk not null integer references ad_instance(actor_fk),
-#        created_on text default current_timestamp
-#
-#
-#);""") ,
-
-# a group has only one parent, like a file system. We do not support
-# a mesh like ripple, even if a ripple can be created by following
-# the trust lines.
-
-# a person can be thought as a level zero, even if we do have
-# different levels.
+) without rowid; """),
 
 
-
-
-
-# the family is the basic group in adelphos
-# the level is zero implicit.
-
-
-('family_data', """
-create table family_data(
-
-        local_fk integer primary key references adelphos_ob(local_id),
-
-        parent_group_fk text references ad_group(local_fk),
-
-        currency_fk integer references currency_data(local_fk),
-
-        equity real
-
-
-);"""),
-
-
-#('view family_raw', """
-#create view family_raw as select adelphos_id, name, instance_fk, created_on,
-# pinned, orphaned, parent_group_fk, currency_fk, equity from
-# family_data, adelphos_ob where
-# ( (family_data.local_fk = adelphos_ob.adelphos_id) and
-#   (adelphos_ob.instance_fk = 0) );
-#"""),
-
-
-
-
-#('view family_local', """
-#create view family_local as select adelphos_id, name, created_on,
-# pinned, orphaned, parent_group_fk, currency_fk, equity from
-# family_data, adelphos_ob where
-# ( (family_data.local_fk = adelphos_ob.adelphos_id) and
-#   (adelphos_ob.instance_fk = 0) );
-#
-#"""),
-#
-#
-#
-#
-#('view alias_view', """
-#
-#create view alias_full as select adelphos_id, name, instance_fk,
-# created_on, cloned_on, pinned, orphaned, actor_fk, group_zero_fk,
-# password from adelphos_ob, alias_data where
-# adelphos_id = local_fk;
-#
-#"""),
-#
-#
-#('view alias_local', """
-#
-#create view alias_local as select adelphos_id, name, 
-# created_on, cloned_on, pinned, orphaned, actor_fk, group_zero_fk,
-# password from adelphos_ob, alias_data where
-# (adelphos_id = local_fk) and (alias_data.instance_fk = 0)
-#
-#"""),
-#
-#
-#
-## the trust line can be from two points in adelphos
-#
-#('trust_line', """
-#
-# create table trust_line(
-#
-#        local_fk integer primary key references adelphos_ob(local_id),
-#
-#        name text,
-#
-#        alias_from_fk integer references adelphos_ob(local_id),
-#        alias_to_fk integer references adelphos_ob(local_id),
-#
-#        comment text,
-#        trust_level real
-#
-# );
-#
-#"""),
 
 ]
 
@@ -314,11 +259,15 @@ create table family_data(
 # this is the entrance point to the federated database in adelphos.
 class AdelphosDao:
 
-    def _create_schema(self, config):
+    def _create_schema(self, app):
         gCon.log("Creating schema...")
 
+        # I can add the foreign key constraints only without a transaction.
+        self._conn.execute("pragma foreign_keys = ON;")
 
-        # the schema is an array of statements with a comment
+        gCon.log("I restore the autocommit")
+        self._conn.autocommit = False
+
         cursor = self._conn.cursor()
 
         for cmd in create_schema_sql:
@@ -327,8 +276,32 @@ class AdelphosDao:
 
         # Now I store the initial data (for example the zero actor,
         # which is myself)
-        #host = app.config['General']['host']
-        
+        host = app.config['General']['host']
+
+        # I insert myself as the instance zero
+        # here interpolating the SQL is safe, the values do not come
+        # from the outside.
+        sql_insert = f"""
+insert into ap_server(server_id, host_name) values (0, '{host}');"""
+        cursor.execute(sql_insert)
+
+        user_path = API_POINT + f"/users/{USER_ID}"
+        user_inbox = user_path + "/inbox"
+
+        sql_insert = f"""
+insert into ap_actor (actor_id, server_fk, user_path, inbox_path,
+preferred_username, public_key) values(0, 0, "{user_path}",
+"{user_inbox}", "{USER_ID}", "{app.public_key}")
+
+        """
+        cursor.execute(sql_insert)
+
+        sql_insert = f"""
+
+insert into ad_instance(actor_fk, authorized, comment) values
+(0, 1, "Local adelphos instance")
+        """
+        cursor.execute(sql_insert)
 
         cursor.close()
 
@@ -336,8 +309,9 @@ class AdelphosDao:
 
 
     # for testing I can also create the file in memory
-    def __init__(self, config):
+    def __init__(self, app):
 
+        config = app.config
 
         db_name = config['General']['db_name']
 
@@ -362,30 +336,24 @@ class AdelphosDao:
             self.mem_db = False
 
         # create the connection.
-        self._conn = sqlite3.connect(db_name_complete, autocommit=False)
+        self._conn = sqlite3.connect(db_name_complete,
+                                     autocommit=True)
+        #self._conn = sqlite3.connect(db_name_complete )
 
         if (create_schema == True):
-            self._create_schema(config)
+            self._create_schema(app)
 
 
         # I create the specialized DAOs
         self.currency_dao = CurrencyDao(self)
         self.actor_dao = ActorDao(self)
         self.server_dao = ServerDao(self)
+        self.family_dao = FamilyDao(self)
             
 
     def dump_database(self):
         for line in self._conn.iterdump():
             gCon.log(f"{line}")
-
-
-    # I can have differenct DAOs which are linked to me.
-    #def currency_dao(self):
-    #    return self.cur_dao
-
-
-    #def actor_dao(self):
-    #    return self.actor_dao
 
 
     def export_to_remote_dto(ctx):

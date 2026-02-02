@@ -42,20 +42,7 @@ from fastapi.encoders import jsonable_encoder
 import json
 import asyncio
 import re
-
-
 from argon2 import PasswordHasher
-
-
-def validate_local_name(alias):
-
-    if (re.match("[a-z0-9][a-z0-9_-]+[a-z0-9]+", alias, 
-                 re.IGNORECASE) is None):
-        raise AdelphosException(f"Invalid name {alias}, \
-it must begin and end with a letter or a digit.")
-
-    if (len(alias) < 2 or len(alias) > 64):
-        raise AdelphosException(f"name length incorrect")
 
 
 def err_middleware(func):
@@ -84,35 +71,25 @@ async def alias_create_handler(ctx):
 
     alias_uri = uriparse(alias_complete)
 
+    if (alias_uri.is_numeric == True):
+        raise AdelphosException("Cannot create a numeric alias")
+
     gCon.log(f"alias uri created {alias_uri}")
 
     # OK, now I can try to create the alias.
-    # first of all I get the local currency
-
     # as I know that the currency is a currency I can add the type.
     currency_uri = uriparse_type(currency, EAdelphosType.CURRENCY_TYPE)
 
+    if (currency_uri.is_numeric == True):
+        raise AdelphosException("Cannot create a numeric currency")
+
     gCon.log(f"currency uri is {currency_uri}")
 
-    # this is a fail fast response.
-#    return f"Created alias {alias_uri.name} successfully.\
-#Your global identifier in adelphos fediverse is {alias_uri}"
-
-#    alias_family_splits = alias_complete.split(".")
-#    if (len(alias_family_splits) == 1):
-#        raise AdelphosException(
-#f"I need the alias written in the form alias.family, with a '.' \
-#in the middle")
-
-#    if (len(alias_family_splits) > 1):
-#        raise AdelphosException(
-#f"Too many dots in the alias! {alias_complete}, Only one is allowed")
-#
-#    (alias, family_name) = alias_family_splits
+    # If I am here the two URIs have been parsed.
 
     # the family MUST NOT already exist, we cannot create two families in
     # the same instance with the same name.
-    family_dto = FamilyDao.get_local_family(ctx, alias_uri.family)
+    family_dto = ctx.app.dao.family_dao.get_local_family(ctx, alias_uri.family)
 
     if (family is not None):
         raise AdelphosException(
@@ -121,17 +98,10 @@ f"family {alias_uri.family} is already existing in this instance")
     # this must not fail, unless there is an exception.
     ctx.currency_dto = CurrencyDao.get_or_create_currency(ctx, currency)
 
-    # this function question the database using the local alias, so
-    # it means that the instance is local.
-    #ctx.alias = AliasDao.exists_local_alias(ctx, alias)
 
-    #if (ctx.alias is not None):
-    #    raise AdelphosException(
-#f"alias: {alias} already existing in this instance")
-
-    validate_local_name(alias)
-
-    validate_local_name(family_name)
+    # the validation is performed when the uris are parsed.
+    #validate_local_name(alias)
+    #validate_local_name(family_name)
 
     # first the family object.
 

@@ -22,7 +22,8 @@ from app.dao.InstanceDto import InstanceDto
 
 
 
-# this is an abstract class.
+# this is an abstract class, this is the base class for all the
+# inanimate objects in adelphos
 @dataclass
 class AdelphosDto:
 
@@ -31,9 +32,8 @@ class AdelphosDto:
     # this could be None
     name: str
 
-    # every object has an instance associated, local objects have the
-    # 'None' instance which is the local one.
-    instance_id: int
+    # the creator is an alias
+    creator_fk: int
 
     # every object in adelphos has a local id.
     # this is given by the db engine.
@@ -43,16 +43,12 @@ class AdelphosDto:
     time_created: str = None 
 
 
-    # every adelphos object has a residence (the place --- instance ---
-    # where it is born), but can be cloned in other places, other adelphos
-    # instances.
-
-    def export_to(ctx, instance_uri):
-        pass
+    #def export_to(ctx, instance_uri):
+    #    pass
 
 
-    def import_from(ctx):
-        pass
+    #def import_from(ctx):
+    #    pass
 
 
 # the base class for the data access to the federated db in adelphos.
@@ -62,6 +58,8 @@ class AdelphosDto:
 class AdelphosObjectDao(ABC):
 
 
+    # every federated table in the db has a 1:1 mapping with the
+    # adelphos object table. Here we have the common code.
     def __init__(self, dao):
         self.dao = dao 
 
@@ -74,7 +72,16 @@ class AdelphosObjectDao(ABC):
         pass
 
 
-    def _get_local_uri(uri):
+    # this method forces the locality of this uri, of course it must be
+    # local.
+    def get_object_local(ctx, uri):
+
+        if (uri.host_name is not None):
+            if (uri.host_name != ctx.app.config['General']['Host']):
+                raise AdelphosException(f"uri {uri} is not local")
+
+        # OK, now I can grab the adelphos object.
+
         # if the URI is local then I need to differentiate between
         # a mechanical uri and a text one
         if (uri.is_numeric):
