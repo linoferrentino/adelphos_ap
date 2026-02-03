@@ -43,14 +43,6 @@ class AdelphosDto:
     time_created: str = None 
 
 
-    #def export_to(ctx, instance_uri):
-    #    pass
-
-
-    #def import_from(ctx):
-    #    pass
-
-
 # the base class for the data access to the federated db in adelphos.
 # this class has the logic to query the other federated instances
 # the serialized representation of a remote object or to give it
@@ -60,8 +52,36 @@ class AdelphosObjectDao(ABC):
 
     # every federated table in the db has a 1:1 mapping with the
     # adelphos object table. Here we have the common code.
-    def __init__(self, dao):
+    def __init__(self, dao, ftbl, ftbl_col_list):
         self.dao = dao 
+        self.ftbl = ftbl
+        self.ftbl_col_list = ftbl_col_list
+
+
+    @abstractmethod
+    def create_schema(self, app, cursor):
+        pass
+
+
+    # this is the query to have the local objects: remember that
+    # this creates the raw local objects.
+    # the actor is necessary because the actor has the instance
+    raw_local_query = """
+
+    select fdo.fd_object_id, fdo.name, fdo.creator_fk, 
+    fdo.timestamp, fda.name, fda.instance_fk, 
+    fda.timestamp, {ftbl_col_list} from {ftbl} as ftbl,
+    fd_object as fdo, fd_actor as fda
+    where (
+    (ftbl.local_fk = fdo.fd_object_id)
+    and
+    (fdo.creator_fk = fad.fd_actor_id)
+    and
+    (fda.instance_fk = 0),
+    and
+    (ftbl.local_fk = ?))
+
+    """
 
 
     # this method gets the object from this instance or, if not present,
@@ -72,8 +92,14 @@ class AdelphosObjectDao(ABC):
         pass
 
 
+    # The local uri needs to query the raw_view table.
+    def _get_local_numeri_uri(ctx, uri):
+        pass
+
+
+
     # this method forces the locality of this uri, of course it must be
-    # local.
+    # local: the function is sync, as it needs not to go to the outside.
     def get_object_local(ctx, uri):
 
         if (uri.host_name is not None):

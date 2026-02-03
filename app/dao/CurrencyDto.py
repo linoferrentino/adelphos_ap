@@ -28,11 +28,12 @@ from app.dao.AdelphosDto import AdelphosObjectDao
 @dataclass
 class CurrencyDto:
 
-    local_fk: int = None
+    # the id is not here, because we always have a 1:1 mapping to
+    # currencies and adelphos objects.
 
-    symbol: str = None
+    symbol: str
 
-    human_value: str = None
+    human_value: float
 
 
 
@@ -42,6 +43,10 @@ class CurrencyDao(AdelphosObjectDao):
 
     def __init__(self, ctx):
         super().__init__(ctx)
+
+
+    def create_schema(self, app, cursor):
+        pass
 
 
     # the uri here is parsed.

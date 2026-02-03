@@ -259,6 +259,7 @@ create table fd_alias(
 # this is the entrance point to the federated database in adelphos.
 class AdelphosDao:
 
+
     def _create_schema(self, app):
         gCon.log("Creating schema...")
 
@@ -335,21 +336,22 @@ insert into ad_instance(actor_fk, authorized, comment) values
 
             self.mem_db = False
 
-        # create the connection.
+        # create the connection, autocommit will be False after we
+        # set the primary keys
         self._conn = sqlite3.connect(db_name_complete,
                                      autocommit=True)
-        #self._conn = sqlite3.connect(db_name_complete )
 
+        # I create the specialized DAOs
+        self.daos = {}
+        self.daos['currency'] = CurrencyDao(self)
+        self.daos['actor']  = ActorDao(self)
+        self.daos['server']  = ServerDao(self)
+        self.daos['family']  = FamilyDao(self)
+ 
         if (create_schema == True):
             self._create_schema(app)
 
-
-        # I create the specialized DAOs
-        self.currency_dao = CurrencyDao(self)
-        self.actor_dao = ActorDao(self)
-        self.server_dao = ServerDao(self)
-        self.family_dao = FamilyDao(self)
-            
+           
 
     def dump_database(self):
         for line in self._conn.iterdump():
