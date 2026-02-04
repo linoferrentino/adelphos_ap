@@ -2,7 +2,7 @@
 
 from app.logging import gCon
 from dataclasses import dataclass
-from app.dao.ActorDto import ActorDto
+#from app.dao.ActorDto import ActorDto
 from app.dao.AdelphosDto import AdelphosDto
 
 # This is the class which models an alias in adelphos, usually this is a

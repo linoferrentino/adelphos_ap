@@ -16,9 +16,7 @@
 
 from app.logging import gCon
 from dataclasses import dataclass
-from app.dao.ActorDto import ActorDto
-from app.dao.AdelphosDto import AdelphosDto
-from app.dao.AdelphosDto import AdelphosObjectDao
+from app.dao.FdActorDto import FdActorDto
 
 
 # The family is a level zero group.
@@ -27,13 +25,10 @@ from app.dao.AdelphosDto import AdelphosObjectDao
 
 # this is the basic object, not with all the fields.
 @dataclass
-class FamilyDto:
-
-    local_fk: int
+class FamilyDto(FdActorDto):
 
     # every family has an equity and a currency
     currency_fk: int
-
 
     equity: float
 
@@ -42,32 +37,10 @@ class FamilyDto:
 
 # this is the class with all the fields, it inherits
 # from both the base adelphos object and the family object.
-@dataclass
-class FamilyRawDto(AdelphosDto, FamilyDto):
+#@dataclass
+#class FamilyRawDto(AdelphosDto, FamilyDto):
+#
+#    pass
 
-    pass
-
-
-# this is the specialized Dao used for the Family
-class FamilyDao(AdelphosObjectDao):
-
-
-    def create_schema(self, app, cursor):
-        # this will create the schema (tables and views)
-        pass
-
-
-    ## this searches for a local family
-    #@staticmethod
-    #def get_local_family(ctx, family_name):
-
-    #    cur = ctx.app.dao._conn.cursor()
-    #    cur.execute("select * from family_local_raw where name = ?",
-    #                (alias,))
-    #    row = cur.fetchone()
-    #    cur.close()
-    #    if (row is None):
-    #        return None 
-    #    return FamilyRawDto(*row) 
 
 

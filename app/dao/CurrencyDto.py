@@ -22,7 +22,7 @@
 # *everything* in adelphos is ultimately linked to trust.
 
 from dataclasses import dataclass
-from app.dao.AdelphosDto import AdelphosObjectDao
+from app.dao.AdelphosObjectDao import AdelphosObjectDao
 
 
 @dataclass
@@ -36,13 +36,13 @@ class CurrencyDto:
     human_value: float
 
 
-
 # this class will handle the logic to get and store currency objects.
 class CurrencyDao(AdelphosObjectDao):
 
 
-    def __init__(self, ctx):
-        super().__init__(ctx)
+    def __init__(self, dao):
+        super().__init__(dao, 'fd_currency',
+            ('local_fk', 'symbol', 'human_value'))
 
 
     def create_schema(self, app, cursor):

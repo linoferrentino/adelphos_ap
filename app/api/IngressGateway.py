@@ -16,7 +16,6 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 import asyncio
 from app.dao.AliasDto import AliasDto
-from app.dao.ActorDto import ActorDto
 from app.ap_api.AsyncRequest import AsyncGetReq
 from urllib.parse import urlparse
 

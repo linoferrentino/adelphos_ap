@@ -16,7 +16,6 @@
 
 # the database for now is a simple sqlite database.
 
-
 from ..logging import gCon
 from ..logging import good_bye
 import os
@@ -24,14 +23,18 @@ from pathlib import Path
 import sqlite3
 from app.api.AdelphosException import AdelphosException
 from app.dao.CurrencyDto import CurrencyDao
-from app.dao.ActorDto import ActorDao
-from app.dao.ServerDto import ServerDao
+
+# the actor is ambiguous, we can have the activity pub actor
+# or the adelphos actor
+from app.dao.ApActorDao import ApActorDao
+#from app.dao.ApActorDao import ApActorDao
+
+from app.dao.ServerDao import ServerDao
+from app.dao.FamilyDao import FamilyDao
 from app.consts import USER_ID
 from app.consts import API_POINT
 
 # I import here the specialized DAOs to access the federated objects.
-
-
 
 create_schema_sql = \
 [
@@ -165,9 +168,9 @@ create table fd_currency(
 ('fd group', """
 create table fd_group(
 
-        local_fk integer primary key references fd_actor(local_id),
-        boss_fk integer references fd_actor(fd_actor_id),
-        cashier_fk integer references fd_actor(fd_actor_id),
+        local_fk integer primary key references fd_actor(fd_actor_id),
+        boss_fk integer references fd_alias(local_fk),
+        cashier_fk integer references fd_alias(local_fk),
         parent_group_fk integer references fd_group(local_fk),
         equity real,
         level integer
@@ -181,11 +184,11 @@ create table fd_group(
 ('family', """
 create table fd_family (
 
-        local_fk integer primary key references fd_object(local_id),
+        local_fk integer primary key references fd_actor(fd_actor_id),
+        family_chief_fk integer references fd_alias(local_fk),
         parent_group_fk text references fd_group(local_fk),
         currency_fk integer references fd_currency(local_fk),
         equity real
-
 
 );"""),
 
@@ -344,7 +347,7 @@ insert into ad_instance(actor_fk, authorized, comment) values
         # I create the specialized DAOs
         self.daos = {}
         self.daos['currency'] = CurrencyDao(self)
-        self.daos['actor']  = ActorDao(self)
+        self.daos['ap.actor']  = ApActorDao(self)
         self.daos['server']  = ServerDao(self)
         self.daos['family']  = FamilyDao(self)
  

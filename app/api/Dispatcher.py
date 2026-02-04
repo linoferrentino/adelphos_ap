@@ -32,7 +32,7 @@ from app.consts import USER_ID
 from app.api.AdelphosException import AdelphosException
 from app.dao.AliasDto import AliasDto
 from app.dao.AliasDto import AliasDao
-from app.dao.ActorDto import ActorDto
+from app.dao.ApActorDto import ApActorDto
 from app.dao.AdelphosUri import uriparse
 from app.dao.AdelphosUri import uriparse_type
 from app.dao.AdelphosUri import EAdelphosType
@@ -89,7 +89,8 @@ async def alias_create_handler(ctx):
 
     # the family MUST NOT already exist, we cannot create two families in
     # the same instance with the same name.
-    family_dto = ctx.app.dao.family_dao.get_local_family(ctx, alias_uri.family)
+    family_dto = ctx.app.dao.family_dao.get_local_family(ctx,
+                        alias_uri.family)
 
     if (family is not None):
         raise AdelphosException(
