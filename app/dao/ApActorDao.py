@@ -13,6 +13,12 @@
 #
 # The DAO relative to the Activity Pub Actor
 
+from urllib.parse import urlparse
+from app.logging import gCon
+from app.dao.ApActorDto import ApActorDto
+from app.ap_api.AsyncRequest import AsyncGetReq
+import json
+
 # this is the class that holds the logic to query and to
 # instantiate actor DTOs
 # This Dao does not derive from AdelphosObjectDao because
@@ -151,7 +157,7 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
         #gCon.log("I have set the canonical name")
         #actor.canonical_name = f"@{preferred_username}@{key_parsed.hostname}"
         # OK, now I can create the actor
-        actor = ActorDto(ctx.server_dto.server_id,
+        actor = ApActorDto(ctx.server_dto.server_id,
                          key_parsed.path,
                          preferred_username,
                          inbox_parsed.path,
@@ -179,9 +185,9 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
         fields_to_seek = ('server_fk', 'user_path')
         values_to_seek = ( ctx.server_dto.server_id, key_parsed.path)
 
-        dto = self.dao.get_dto_ex(table_name, fields_to_ask, 
+        dto = self.dao.db.get_dto_ex(table_name, fields_to_ask, 
                                      fields_to_seek, 
-                            values_to_seek, ActorDto)
+                            values_to_seek, ApActorDto)
         gCon.log(f"I have grabbed {dto} from db")
  
         return dto
@@ -240,15 +246,9 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
                          'public_key': actor.public_key,
                          }
 
-        newid = self.dao.insert_dto(ctx, table_name, fields_stored)
+        newid = self.dao.db.insert_dto(ctx, table_name, fields_stored)
         actor.actor_id = newid
         gCon.log(f"stored new actor {actor}")
 
 
-    #def update(self, ctx):
-    #    pass
-
-
-    #def delete(self, ctx):
-    #    pass
 

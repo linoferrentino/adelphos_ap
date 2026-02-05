@@ -15,10 +15,18 @@ from app.cli.ConnHandler import ConnHandler
 from app.config import load_conf
 from app.keys import load_keys
 
-from app.dao.AdelphosDao import AdelphosDao
+from app.dao.AdelphosDb import AdelphosDb
 from contextlib import asynccontextmanager
 import aiohttp
 import asyncio
+
+# the actor is ambiguous, we can have the activity pub actor
+# or the adelphos actor
+from app.dao.ApActorDao import ApActorDao
+
+from app.dao.ServerDao import ServerDao
+from app.dao.FamilyDao import FamilyDao
+from app.dao.CurrencyDao import CurrencyDao 
 
 app = None
 
@@ -69,9 +77,37 @@ class AdelphosApp(FastAPI):
         gCon.log(f"got result {ar.status_code} in client request!")
 
 
+# A simple container for all the DAOs in the system
+class MasterAdelphosDao:
+
+
+    def __init__(self, app):
+        gCon.log("Creating the Master DAO, first the connection")
+        self.db = AdelphosDb(app)
+        # I take a reference to the application for the configuration
+        self.app = app
+
+        gCon.log("Creating here the specialized DAOs")
+
+        # I create the specialized DAOs
+        self.cur_dao = CurrencyDao(self)
+        self.ap_actor_dao  = ApActorDao(self)
+        self.server_dao   = ServerDao(self)
+        self.family_dao  = FamilyDao(self)
+
+
+    def close(self):
+        self.db.close()
+
+
+    def commit(self):
+        self.db.commit()
+
+
+
 @asynccontextmanager
 async def lifespan(app: AdelphosApp):
-    app.dao = AdelphosDao(app)
+    app.dao = MasterAdelphosDao(app)
     ses_worker = asyncio.create_task(session_worker(app))
     daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
     app.conn_hndl = ConnHandler(app)

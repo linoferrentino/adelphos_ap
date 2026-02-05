@@ -17,7 +17,6 @@ from cryptography.hazmat.primitives.asymmetric import padding
 import asyncio
 from app.dao.AliasDto import AliasDto
 from app.ap_api.AsyncRequest import AsyncGetReq
-from urllib.parse import urlparse
 
 
 
@@ -41,7 +40,6 @@ async def check_message(ctx):
     signature_field_raw = signature_field_list[1]
     signature_field = signature_field_raw[1:-1]
 
-    # we support only sha-256 algo
     algo_id_val = algorithm.split("=")[1][1:-1]
     if (algo_id_val != "rsa-sha256"):
         gCon.log(f"unsupported algo {algo_id_val}")
@@ -54,7 +52,7 @@ async def check_message(ctx):
     gCon.log(f"Try to get the cached actor's key {ctx.actor_str}")
 
     # get the actor object, or create one
-    ctx.actor_dto = await ctx.app.dao.actor_dao\
+    ctx.actor_dto = await ctx.app.dao.ap_actor_dao\
             .get_or_discover_from_pk_id(ctx, key_id_val)
 
     ####### 1st, Check the digest

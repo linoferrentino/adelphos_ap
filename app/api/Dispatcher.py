@@ -260,6 +260,7 @@ async def dispatch_request(ctx):
             ctx.app.dao.commit()
 
     except AdelphosException as ex:
+        gCon.log(ex)
         ctx.answer_txt = f"Error! {ex}" 
 
     # No async, I can give immediately the response

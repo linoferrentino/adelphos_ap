@@ -16,18 +16,16 @@ from abc import ABC
 from abc import abstractmethod
 from app.dao.BaseAdelphosDao import BaseAdelphosDao
 
+
 # this is the base class for all the "alive" DAOs in adelphos
 # alias, family, group
-# maybe we can have a common dao for the alive objects and the
-# inanimate objects.
-
 class FdActorDao(BaseAdelphosDao):
 
 
     # I am initialized with the common DAO, the one
     # which stores the connection
-    def __init__(self, dao):
-        self.dao = dao
+    def __init__(self, dao, ftbl, ftbl_col_list):
+        super().__init__(dao, ftbl, ftbl_col_list)
 
 
     # the difference from getting from uri an object and an alive

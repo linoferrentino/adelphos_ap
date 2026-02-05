@@ -15,6 +15,9 @@
 # the DataAccessObject for the Server table
 # the Server here is synonymous for an ActivityPub server.
 
+from app.dao.ServerDto import ServerDto
+from app.logging import gCon
+
 
 # the server dao has the logic to query and store servers
 class ServerDao:
@@ -48,7 +51,7 @@ class ServerDao:
         fields_to_seek = ('host_name', )
         values_to_seek = ( host_name, )
 
-        dto = ctx.app.dao.get_dto_ex(self.table_name, fields_to_ask, 
+        dto = self.dao.db.get_dto_ex(self.table_name, fields_to_ask, 
                                      fields_to_seek, 
                             values_to_seek, ServerDto)
         return dto
@@ -60,7 +63,7 @@ class ServerDao:
                          'host_name': server.host_name,
                          }
 
-        newid = self.dao.insert_dto(ctx, self.table_name, fields_stored)
+        newid = self.dao.db.insert_dto(ctx, self.table_name, fields_stored)
 
         gCon.log(f"stored {server.host_name} his id {newid}")
 

@@ -22,15 +22,6 @@ import os
 from pathlib import Path
 import sqlite3
 from app.api.AdelphosException import AdelphosException
-from app.dao.CurrencyDto import CurrencyDao
-
-# the actor is ambiguous, we can have the activity pub actor
-# or the adelphos actor
-from app.dao.ApActorDao import ApActorDao
-#from app.dao.ApActorDao import ApActorDao
-
-from app.dao.ServerDao import ServerDao
-from app.dao.FamilyDao import FamilyDao
 from app.consts import USER_ID
 from app.consts import API_POINT
 
@@ -260,7 +251,7 @@ create table fd_alias(
 
 
 # this is the entrance point to the federated database in adelphos.
-class AdelphosDao:
+class AdelphosDb:
 
 
     def _create_schema(self, app):
@@ -344,13 +335,7 @@ insert into ad_instance(actor_fk, authorized, comment) values
         self._conn = sqlite3.connect(db_name_complete,
                                      autocommit=True)
 
-        # I create the specialized DAOs
-        self.daos = {}
-        self.daos['currency'] = CurrencyDao(self)
-        self.daos['ap.actor']  = ApActorDao(self)
-        self.daos['server']  = ServerDao(self)
-        self.daos['family']  = FamilyDao(self)
- 
+      
         if (create_schema == True):
             self._create_schema(app)
 

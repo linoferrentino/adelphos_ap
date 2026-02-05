@@ -36,29 +36,4 @@ class CurrencyDto:
     human_value: float
 
 
-# this class will handle the logic to get and store currency objects.
-class CurrencyDao(AdelphosObjectDao):
-
-
-    def __init__(self, dao):
-        super().__init__(dao, 'fd_currency',
-            ('local_fk', 'symbol', 'human_value'))
-
-
-    def create_schema(self, app, cursor):
-        pass
-
-
-    # the uri here is parsed.
-    def get_from_uri(ctx, uri):
-        # Of course the uri must be of the right type
-        pass
-
-
-    def get_from_uri_str(uri):
-        pass
-
-
-    def get_or_create_from_uri(uri):
-        pass
 

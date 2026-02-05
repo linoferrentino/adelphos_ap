@@ -13,8 +13,6 @@ from cryptography.hazmat.backends import default_backend as crypto_default_backe
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
-
-
 from typing import Union
 import asyncio
 
@@ -25,11 +23,8 @@ from fastapi import APIRouter, Request, Depends, Query, HTTPException, status, R
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
-#from app.keys import load_keys, public_key, private_key
 from app.logging import gCon
 from app.config import load_conf
-#from app.config import get_config
-from app.dao.AdelphosDao import AdelphosDao
 import uvicorn
 import re
 from app.api.RequestCtx import RequestCtx
