@@ -90,7 +90,7 @@ class MasterAdelphosDao:
         gCon.log("Creating here the specialized DAOs")
 
         # I create the specialized DAOs
-        self.cur_dao = CurrencyDao(self)
+        self.currency_dao = CurrencyDao(self)
         self.ap_actor_dao  = ApActorDao(self)
         self.server_dao   = ServerDao(self)
         self.family_dao  = FamilyDao(self)
@@ -102,6 +102,10 @@ class MasterAdelphosDao:
 
     def commit(self):
         self.db.commit()
+
+
+    def rollback(self):
+        self.db.rollback()
 
 
 

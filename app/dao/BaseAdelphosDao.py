@@ -100,6 +100,12 @@ class BaseAdelphosDao(ABC):
         pass
 
 
+    # creates a dto from a uri (using the initialization provided)
+    # the arguments are passed to the dto constructor
+    def create_from_uri(self, uri, *args, **kvargs):
+        pass
+
+
     # Not all objects have a default constructor, so this might fail
     #@abstractmethod
     def get_or_create_from_uri(uri):

@@ -13,22 +13,23 @@
 #
 # The DAO relative to the family
 
-from app.dao.FdActorDao import FdActorDao
+from app.dao.BaseFractalGroupDao import BaseFractalGroupDao
 
 
 # this is the specialized Dao used for the Family
-# the family is NOT an object!
-class FamilyDao(FdActorDao):
+# the family is part of the living part of adelphos db
+
+
+# the family is at level zero trust.
+# an alias can belong only to one family.
+# a family can cross instances, that is it can have a parent in
+# another instance and have members in different instances.
+class FamilyDao(BaseFractalGroupDao):
 
 
     def __init__(self, dao):
         super().__init__(dao, "fd_family", ("local_fk",
                 "parent_group_fk", "currency_fk", "equity"))
-
-
-    def create_schema(self, app, cursor):
-        # this will create the schema (tables and views)
-        pass
 
 
 

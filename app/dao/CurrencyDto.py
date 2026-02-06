@@ -22,18 +22,14 @@
 # *everything* in adelphos is ultimately linked to trust.
 
 from dataclasses import dataclass
-from app.dao.AdelphosObjectDao import AdelphosObjectDao
+from app.dao.FdObjectDto import FdObjectDto
 
 
 @dataclass
-class CurrencyDto:
-
-    # the id is not here, because we always have a 1:1 mapping to
-    # currencies and adelphos objects.
+class CurrencyDto(FdObjectDto):
 
     symbol: str
 
     human_value: float
-
 
 

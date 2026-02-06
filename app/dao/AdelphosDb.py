@@ -139,6 +139,9 @@ create table fd_object(
  );"""),
 
 
+# I must create an index on name, as I will sometimes query on this.
+
+
 # the currency is the base of exchange. In adelphos we do not have a
 # centralized value exchange, the exchange rates are decided by the actor
 # themselves.
@@ -152,80 +155,37 @@ create table fd_currency(
 );"""),
 
 
+#('fd base_fractal_group', """
+#
+#create table fd_base_fractal_group(
+#
+#        local_fk integer primary key references fd_actor(fd_actor_id),
+#        parent_group_fk integer references fd_group(local_fk),
+#        equity real,
+#
+#);
+#
+# """),
+
+
 # the federated group can have a parent and many children
 # it has a boss and a cashier
 # the parent group need not to belong to the same instance
 # (the same for its members!).
+# this table is for families (level 0) and groups (level > 0)
+# this is a concrete table where the discriminator column is level.
 ('fd group', """
-create table fd_group(
+create table fd_group_family(
 
-        local_fk integer primary key references fd_actor(fd_actor_id),
-        boss_fk integer references fd_alias(local_fk),
+        local_fk integer primary key references 
+             fd_actor(fd_actor_id),
+        boss_or_founder_fk integer references fd_alias(local_fk),
         cashier_fk integer references fd_alias(local_fk),
-        parent_group_fk integer references fd_group(local_fk),
-        equity real,
-        level integer
-
-);"""),
-
-# the family is the basic group in adelphos
-# the level is zero implicit.
-
-
-('family', """
-create table fd_family (
-
-        local_fk integer primary key references fd_actor(fd_actor_id),
-        family_chief_fk integer references fd_alias(local_fk),
-        parent_group_fk text references fd_group(local_fk),
         currency_fk integer references fd_currency(local_fk),
+        level integer,
         equity real
 
 );"""),
-
-
-# this view joins the family with the actor and the adelphos object 
-('view family_actor_raw', """
-
-
- create view family_raw as select fd_object_id, name, creator_fk,
-    timestamp, act.name, act.instance_fk, act.timestamp,
-    parent_group_fk, currency_fk, equity from
-    fd_object, fd_family, fd_actor as act where
-    ( (local_fk = fd_object_id)
-    and
-    (creator_fk = fd_actor_id)
-    );
-
- """),
-
-
-# this view selects all the local families.
-# the instance zero is by definition the local adelphos instance.
-('view family_local_raw', """
-
-
- create view family_local_raw as select fd_object_id, name, creator_fk,
-    timestamp, parent_group_fk, currency_fk, equity from
-    fd_object, fd_family, fd_actor  where
-    ( (local_fk = fd_object_id)
-    and
-    (creator_fk = fd_actor_id)
-    and
-    (instance_fk = 0)
-    );
-
- """),
-
-
-# here we have the federated family and the federated alias, they are all
-# "actors", in the sense that they are 'alive'
-
-
-# there are three types of alive objects in adelphos: the group, the
-# family and the alias: they form the trust web.
-
-# the family is the base class for all the 
 
 
 # the alias is the link between adelphos and activity pub; this means
@@ -239,11 +199,73 @@ create table fd_alias(
 
         local_fk integer references fd_actor(fd_actor_id),
         actor_fk integer references ap_actor(actor_id) on delete restrict,
-        family_fk integer references fd_family(local_fk),
+        family_fk integer references fd_group_family(local_fk),
         password text,
         primary key (local_fk, actor_fk, family_fk)
 
 ) without rowid; """),
+
+
+
+# the family is the basic group in adelphos
+# the level is zero implicit.
+
+
+#('family', """
+#create table fd_family (
+#
+#        local_fk integer primary key references fd_actor(fd_actor_id),
+#        family_chief_fk integer references fd_alias(local_fk),
+#        parent_group_fk text references fd_group(local_fk),
+#        currency_fk integer references fd_currency(local_fk),
+#        equity real
+#
+#);"""),
+#
+#
+## this view joins the family with the actor and the adelphos object 
+#('view family_actor_raw', """
+#
+#
+# create view family_raw as select fd_object_id, name, creator_fk,
+#    timestamp, act.name, act.instance_fk, act.timestamp,
+#    parent_group_fk, currency_fk, equity from
+#    fd_object, fd_family, fd_actor as act where
+#    ( (local_fk = fd_object_id)
+#    and
+#    (creator_fk = fd_actor_id)
+#    );
+#
+# """),
+#
+#
+## this view selects all the local families.
+## the instance zero is by definition the local adelphos instance.
+#('view family_local_raw', """
+#
+#
+# create view family_local_raw as select fd_object_id, name, creator_fk,
+#    timestamp, parent_group_fk, currency_fk, equity from
+#    fd_object, fd_family, fd_actor  where
+#    ( (local_fk = fd_object_id)
+#    and
+#    (creator_fk = fd_actor_id)
+#    and
+#    (instance_fk = 0)
+#    );
+#
+# """),
+
+
+# here we have the federated family and the federated alias, they are all
+# "actors", in the sense that they are 'alive'
+
+
+# there are three types of alive objects in adelphos: the group, the
+# family and the alias: they form the trust web.
+
+# the family is the base class for all the 
+
 
 
 
@@ -473,3 +495,5 @@ insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
         self._conn.commit()
 
 
+    def rollback(self):
+        self._conn.rollback()

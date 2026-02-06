@@ -43,6 +43,7 @@ import json
 import asyncio
 import re
 from argon2 import PasswordHasher
+import traceback
 
 
 def err_middleware(func):
@@ -51,9 +52,12 @@ def err_middleware(func):
         try:
             return await func(ctx)
         except AdelphosException as err:
+            # this is a normal exception
+            gCon.log(f"{traceback.format_exc()}")
             return f"Error during command: {str(err)}"
         except Exception as err_ex:
-            return f"Server error during command: {str(err_ex)}"
+            gCon.log(f"{traceback.format_exc()}")
+            return f"500 Server error during command! We apologize."
 
     return func_safe 
 
@@ -89,15 +93,16 @@ async def alias_create_handler(ctx):
 
     # the family MUST NOT already exist, we cannot create two families in
     # the same instance with the same name.
-    family_dto = ctx.app.dao.family_dao.get_local_family(ctx,
-                        alias_uri.family)
+    family_dto = ctx.app.dao.family_dao.get_from_local_name(alias_uri.family)
 
-    if (family is not None):
+    if (family_dto is not None):
         raise AdelphosException(
 f"family {alias_uri.family} is already existing in this instance")
 
     # this must not fail, unless there is an exception.
-    ctx.currency_dto = CurrencyDao.get_or_create_currency(ctx, currency)
+    # the 
+    currency_dto = ctx.app.dao.currency_dao\
+            .get_or_create(currency_uri)
 
 
     # the validation is performed when the uris are parsed.
@@ -262,6 +267,8 @@ async def dispatch_request(ctx):
     except AdelphosException as ex:
         gCon.log(ex)
         ctx.answer_txt = f"Error! {ex}" 
+        # everything in database is rolled back
+        ctx.app.dao.rollback()
 
     # No async, I can give immediately the response
     if (ctx.answer_txt is not None):

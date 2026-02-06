@@ -128,7 +128,7 @@ def validate_local_name(local_name):
         raise AdelphosException(f"Invalid name {local_name}, \
 it must begin and end with a letter or a digit.")
 
-    if (len(alias) < 2 or len(alias) > 64):
+    if (len(local_name) < 2 or len(local_name) > 64):
         raise AdelphosException(f"name {local_name} length incorrect")
 
 
