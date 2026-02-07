@@ -14,32 +14,47 @@
 # This is the base class than handles the fractal groups in adelphos
 
 from app.dao.FdActorDao import FdActorDao
+from ..logging import gCon
 
 class BaseFractalGroupDao(FdActorDao):
 
 
-    def __init__(self, dao, ftbl, ftbl_col_list):
-        super().__init__(dao, ftbl, ftbl_col_list)
+    def __init__(self, dao, ftbl_col_list, level_constraint_sql = None):
+        self.level_constraint_sql = level_constraint_sql
+        super().__init__(dao, "fd_group_family" , ftbl_col_list)
 
 
-    # the local family by definition belongs to instance zero,
+    # the local family by definition belongs to instance zero and level zero
     # 
-    select_local = """
-    select {ftbl_col_list} from fd_group_family, fd_actor
-
+    select_local_name = """
+    select {self.ftbl_col_list} from fd_group_family as fdg, fd_actor as fdo
 
     where 
 
     (
-    ()
+    (fdg.name = ?)
     and
     (fdo.instance_fk = 0)
-    and
-    (fdg.level = 0)
+
+     {self.level_constraint_sql}
+    
     )
 
 
     """
+
+    #@abstractmethod
+    #def _get_level_constraint(self):
+
+    # OK; this is a way to query the db on the local name
+    def get_from_local_name(self, name):
+        gCon.rule("This is the query!")
+        sql_to_do = BaseFractalGroupDao.select_local_name.format(self = self)
+        gCon.log(f"This is my query {sql_to_do}")
+        return None
+                 
+
+    # Instead a group can have different levels
 
 
     # this returns the object from a local name

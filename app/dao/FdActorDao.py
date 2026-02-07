@@ -32,7 +32,6 @@ class FdActorDao(BaseAdelphosDao):
     # This is only valid for the alive objects which have not a
     # double name: the family and the group.
 
-    # the alias does not have this method.
     def get_from_local_name(self, name):
         pass
 

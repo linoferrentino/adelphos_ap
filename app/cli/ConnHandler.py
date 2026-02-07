@@ -11,7 +11,7 @@ from app.logging import gCon
 from app.api.Dispatcher import send_msg_to_alias
 from app.api.params import make_cmd_params
 from app.api.AppCtx import WebSocketContext
-from app.dao.AliasDto import AliasDao
+from app.dao.AliasDto import AliasDto
 import asyncio
 
 

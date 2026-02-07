@@ -17,6 +17,7 @@
 
 from app.logging import gCon
 from dataclasses import dataclass
+from dataclasses import field
 
 # here we have all the DTOs relative to the federated actor
 
@@ -28,10 +29,10 @@ class FdActorDto:
     # the (adelphos!) instance from which this federated actor comes
     instance_fk: int
 
-    # these are handled by the DB
-    fd_actor_id: int 
+    # these are handled by the DB, so I put there.
+    fd_actor_id: int = field(default = None, init = False) 
 
-    timestamp: str
+    timestamp: str = field(default = None, init = False)
 
 
 # this DTO is used when we create a new actor, some fields have

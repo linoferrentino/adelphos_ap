@@ -27,9 +27,11 @@ from app.dao.BaseFractalGroupDao import BaseFractalGroupDao
 class FamilyDao(BaseFractalGroupDao):
 
 
+    # the level for me is zero, this will be stored in the query.
     def __init__(self, dao):
-        super().__init__(dao, "fd_family", ("local_fk",
-                "parent_group_fk", "currency_fk", "equity"))
+        super().__init__(dao, ("local_fk",
+                "parent_group_fk", "boss_fk", "currency_fk", "equity"),
+                " and (fdg.level = 0)")
 
 
 

@@ -28,6 +28,12 @@ from app.dao.FdObjectDto import FdObjectDto
 @dataclass
 class CurrencyDto(FdObjectDto):
 
+    def __init__(self,  name, creator_fk, symbol, human_value):
+        super().__init__(name, creator_fk)
+        self.symbol = symbol
+        self.human_value = human_value
+
+
     symbol: str
 
     human_value: float

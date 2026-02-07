@@ -127,6 +127,12 @@ create table fd_actor(
     );
  """),
 
+('fd_actor index', """
+
+create index fdact_idx ON fd_actor(name);"""),
+
+
+
 
 # this is the base class for all the 'inert' objects in adelphos.  they are
 # created by a federated actor (an alias), and they follow him if he moves.
@@ -140,6 +146,12 @@ create table fd_object(
 
 
 # I must create an index on name, as I will sometimes query on this.
+('fd_object index', """
+
+create index fd_object_name_idx on fd_object(name);
+
+ """),
+
 
 
 # the currency is the base of exchange. In adelphos we do not have a
@@ -155,19 +167,6 @@ create table fd_currency(
 );"""),
 
 
-#('fd base_fractal_group', """
-#
-#create table fd_base_fractal_group(
-#
-#        local_fk integer primary key references fd_actor(fd_actor_id),
-#        parent_group_fk integer references fd_group(local_fk),
-#        equity real,
-#
-#);
-#
-# """),
-
-
 # the federated group can have a parent and many children
 # it has a boss and a cashier
 # the parent group need not to belong to the same instance
@@ -179,7 +178,8 @@ create table fd_group_family(
 
         local_fk integer primary key references 
              fd_actor(fd_actor_id),
-        boss_or_founder_fk integer references fd_alias(local_fk),
+        parent_group_fk integer references fd_group_family(local_fk),
+        boss_fk integer references fd_alias(local_fk),
         cashier_fk integer references fd_alias(local_fk),
         currency_fk integer references fd_currency(local_fk),
         level integer,

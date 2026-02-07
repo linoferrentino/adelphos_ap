@@ -16,32 +16,17 @@
 # this dispatcher answers to local commands only: remote commands from
 # other adelphos instances are dispatched in the remote dispatcher.
 
-from .RequestCtx import RequestCtx
-from app.logging import gCon
+from app.ap_api.daemon_qa import daemon_a_handler
+from app.ap_api.daemon_qa import daemon_q_handler
+from app.ap_api.daemon_qa import daemon_remote_query
+from app.api.AdelphosException import AdelphosException
 from app.api.OutgressGateway import post_response
-from app.api.OutgressGateway import post_daemon_req
-from app.api.OutgressGateway import post_response_inbox
-#from app.api.OutgressGateway import post_to_actor_inbox
 from app.api.params import get_param_safe
 from app.api.params import make_cmd_params
-from app.ap_api.daemon_qa import daemon_remote_query
-from app.ap_api.daemon_qa import daemon_a
-from app.ap_api.daemon_qa import daemon_q_handler
-from app.ap_api.daemon_qa import daemon_a_handler
 from app.consts import USER_ID
-from app.api.AdelphosException import AdelphosException
-from app.dao.AliasDto import AliasDto
-from app.dao.AliasDto import AliasDao
-from app.dao.ApActorDto import ApActorDto
 from app.dao.AdelphosUri import uriparse
-from app.dao.AdelphosUri import uriparse_type
-from app.dao.AdelphosUri import EAdelphosType
-from app.consts import USER_ID
-from app.ap_api.AsyncRequest import AsyncGetReq
-from fastapi.encoders import jsonable_encoder
-import json
-import asyncio
-import re
+from app.dao.AliasDto import AliasDto
+from app.logging import gCon
 from argon2 import PasswordHasher
 import traceback
 
@@ -68,8 +53,6 @@ async def alias_create_handler(ctx):
     # first of all let's see if the alias is already present
     alias_complete = get_param_safe(ctx, 'alias')
     password = get_param_safe(ctx, 'password')
-    currency = get_param_safe(ctx, 'currency')
-    equity = get_param_safe(ctx, 'equity')
 
     host = ctx.app.config['General']['host']
 
@@ -82,12 +65,12 @@ async def alias_create_handler(ctx):
 
     # OK, now I can try to create the alias.
     # as I know that the currency is a currency I can add the type.
-    currency_uri = uriparse_type(currency, EAdelphosType.CURRENCY_TYPE)
+    #currency_uri = uriparse_type(currency, EAdelphosType.CURRENCY_TYPE)
 
-    if (currency_uri.is_numeric == True):
-        raise AdelphosException("Cannot create a numeric currency")
+    #if (currency_uri.is_numeric == True):
+    #    raise AdelphosException("Cannot create a numeric currency")
 
-    gCon.log(f"currency uri is {currency_uri}")
+    #gCon.log(f"currency uri is {currency_uri}")
 
     # If I am here the two URIs have been parsed.
 
@@ -99,10 +82,16 @@ async def alias_create_handler(ctx):
         raise AdelphosException(
 f"family {alias_uri.family} is already existing in this instance")
 
+    return "OK, the family is not present, I can proceed"
+
+    # I have to create a currency like this, I do not know its default values
+    # Or I will create it in two steps.
+    #currency = CurrencyDto("Eur", 3, "€", 1.0)
+
     # this must not fail, unless there is an exception.
     # the 
-    currency_dto = ctx.app.dao.currency_dao\
-            .get_or_create(currency_uri)
+    #currency_dto = ctx.app.dao.currency_dao\
+    #        .get_or_create(currency_uri)
 
 
     # the validation is performed when the uris are parsed.
@@ -112,12 +101,13 @@ f"family {alias_uri.family} is already existing in this instance")
     # first the family object.
 
     # If I am here I can create a new alias
-    ctx.alias = AliasDto()
 
-    ctx.alias.alias_uri = alias_uri
-    ctx.alias.actor_fk = ctx.actor_dto.actor_id
+    #ctx.alias.alias_uri = alias_uri
+    #ctx.alias.actor_fk = ctx.actor_dto.actor_id
     ph = PasswordHasher()
-    ctx.alias.password = ph.hash(password)
+    pass_hashed = ph.hash(password)
+
+    alias_dto = AliasDto()
 
     # the alias for now has not a password, when we will have p2p
     # encryption then it will be sensible to have one.
@@ -144,9 +134,9 @@ def sudo_cmd(func):
         total_name = f"@{ctx.actor.preferred_username}@{ctx.actor.hostname}"
         gCon.log(f"You would like dump and you are {total_name}")
         expected_username = ctx.app.config['General']['root_user']
-        gCon.log(f"But I expect {expected_username}")
 
         if (total_name != expected_username):
+            gCon.log(f"But I expect {expected_username}")
             raise AdelphosException("Invalid username/password")
 
         return func(ctx)

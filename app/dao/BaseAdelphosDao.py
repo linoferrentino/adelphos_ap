@@ -40,6 +40,13 @@ class BaseAdelphosDao(ABC):
         pass
 
 
+    # I can query the adelphos db using the local name. All objects in adelphos
+    # have a name, the exception is the alias that has also the family.
+    def get_from_local_name(self, name):
+        pass
+
+
+
     # The local uri needs to query the raw_view table.
     def _get_local_numeri_uri(ctx, uri):
         pass
