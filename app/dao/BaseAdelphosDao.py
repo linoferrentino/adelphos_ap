@@ -23,8 +23,8 @@ class BaseAdelphosDao(ABC):
 
 
     # I store here the federated table name and its columns
-    def __init__(self, db, ftbl, ftbl_col_list):
-        self.db = db 
+    def __init__(self, dao, ftbl, ftbl_col_list):
+        self.dao = dao
         self.ftbl = ftbl
         self.ftbl_col_list = ftbl_col_list
 

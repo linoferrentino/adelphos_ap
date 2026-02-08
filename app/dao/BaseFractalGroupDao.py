@@ -22,45 +22,38 @@ class BaseFractalGroupDao(FdActorDao):
     def __init__(self, dao, ftbl_col_list, level_constraint_sql = None):
         self.level_constraint_sql = level_constraint_sql
         super().__init__(dao, "fd_group_family" , ftbl_col_list)
+        self.ftbl_clist_exp = ",".join(ftbl_col_list)
 
 
     # the local family by definition belongs to instance zero and level zero
     # 
     select_local_name = """
-    select {self.ftbl_col_list} from fd_group_family as fdg, fd_actor as fdo
+    select {self.ftbl_clist_exp} from fd_group_family as fdg, fd_actor as fda
 
     where 
-
     (
-    (fdg.name = ?)
+    (fdg.local_fk = fda.fd_actor_id)
     and
-    (fdo.instance_fk = 0)
-
-     {self.level_constraint_sql}
-    
+    (fda.name = ?)
+    and
+    (fda.instance_fk = 0)
+    {self.level_constraint_sql}
     )
-
 
     """
 
-    #@abstractmethod
-    #def _get_level_constraint(self):
 
     # OK; this is a way to query the db on the local name
     def get_from_local_name(self, name):
-        gCon.rule("This is the query!")
         sql_to_do = BaseFractalGroupDao.select_local_name.format(self = self)
         gCon.log(f"This is my query {sql_to_do}")
+
+        row = self.dao.db.execute_and_fetch_one(sql_to_do, (name,))
+
+        gCon.log(f"this is the row {row}")
+
         return None
                  
 
-    # Instead a group can have different levels
-
-
-    # this returns the object from a local name
-    # trust groups are unique in the same adelphos instance.
-    # (instead aliases are unique only in the same family)
-    def get_from_local_name(self, local_name):
-        pass
 
 

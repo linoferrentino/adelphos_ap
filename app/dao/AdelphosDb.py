@@ -277,7 +277,7 @@ class AdelphosDb:
 
 
     def _create_schema(self, app):
-        gCon.log("Creating schema...")
+        gCon.log(f"Creating schema... trans: {self._conn.in_transaction}")
 
         # I can add the foreign key constraints only without a transaction.
         self._conn.execute("pragma foreign_keys = ON;")
@@ -286,6 +286,8 @@ class AdelphosDb:
         self._conn.autocommit = False
 
         cursor = self._conn.cursor()
+
+        gCon.log(f"Now trans: {self._conn.in_transaction}")
 
         for cmd in create_schema_sql:
             gCon.log(f"Will exec -> {cmd[0]}")
@@ -323,6 +325,8 @@ insert into ad_instance(actor_fk, authorized, comment) values
         cursor.close()
 
         self._conn.commit()
+
+        gCon.log(f"After commit schema trans: {self._conn.in_transaction}")
 
 
     # for testing I can also create the file in memory
@@ -433,6 +437,15 @@ select {list_sql_fields} from {table_name} where {condition_str}
         pass
 
 
+    # executes a query and fetch the first result row.
+    def execute_and_fetch_one(self, sql, params):
+        cur = self._conn.cursor()
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        cur.close()
+        return row
+
+
     def get_dto(self, table_name, fields_to_ask, field_to_seek, 
                 value_to_seek, constructor_dto):
 
@@ -473,12 +486,14 @@ insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
 
 """
 
-        gCon.log(f"executing {sql_insert}")
+        gCon.log(f"executing {sql_insert} trans {self._conn.in_transaction}")
 
         cur = self._conn.cursor()
         cur.execute(sql_insert, dto_as_dict)
         newid = cur.lastrowid
         cur.close()
+
+        gCon.log(f"after insert trans {self._conn.in_transaction}")
 
         ctx.need_commit = True
         return newid
@@ -492,6 +507,7 @@ insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
 
 
     def commit(self):
+        gCon.rule("commit")
         self._conn.commit()
 
 

@@ -36,13 +36,18 @@ def err_middleware(func):
     async def func_safe(ctx):
         try:
             return await func(ctx)
+
+        # in case of exception I will discard everything, so need_commit will be
+        # false
         except AdelphosException as err:
-            # this is a normal exception
             gCon.log(f"{traceback.format_exc()}")
-            return f"Error during command: {str(err)}"
+            err_msg = f"Error during command: {str(err)}"
         except Exception as err_ex:
             gCon.log(f"{traceback.format_exc()}")
-            return f"500 Server error during command! We apologize."
+            err_msg = f"500 Server error during command! We apologize."
+
+        ctx.need_commit = False
+        return err_msg
 
     return func_safe 
 
@@ -238,26 +243,21 @@ async def dispatch_request(ctx):
     gCon.rule("--- dispatch request ---")
     gCon.log(f"The message is {ctx.clean_content}")
 
-    # I will have to parse it 
-    try:
+    # Exceptions are captured in the middleware
+    await cmd_parse(ctx)
 
-        await cmd_parse(ctx)
+    # I might be in a async context, so I wait for the response:
+    # this is done only when we are waiting for a post response.
+    if (hasattr(ctx, "async_ctx")):
+        gCon.log("I have to wait an async context")
+        await ctx.async_ctx
 
-        # I might be in a async context, so I wait for the response:
-        # this is done only when we are waiting for a post response.
-        if (hasattr(ctx, "async_ctx")):
-            gCon.log("I have to wait an async context")
-            await ctx.async_ctx
-
-        # If I am here without exceptions I can commit
-        if (ctx.need_commit == True):
-            gCon.log("I will commit")
-            ctx.app.dao.commit()
-
-    except AdelphosException as ex:
-        gCon.log(ex)
-        ctx.answer_txt = f"Error! {ex}" 
-        # everything in database is rolled back
+    # If I have arrived here here I can commit, if needed.
+    if (ctx.need_commit == True):
+        gCon.rule("[blue]Commit![/blue]")
+        ctx.app.dao.commit()
+    else:
+        gCon.rule("[red]Rollback![/red]")
         ctx.app.dao.rollback()
 
     # No async, I can give immediately the response
