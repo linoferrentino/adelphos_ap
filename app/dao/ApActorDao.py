@@ -17,13 +17,14 @@ from urllib.parse import urlparse
 from app.logging import gCon
 from app.dao.ApActorDto import ApActorDto
 from app.ap_api.AsyncRequest import AsyncGetReq
+from dataclasses import asdict
 import json
 
 # this is the class that holds the logic to query and to
 # instantiate actor DTOs
 # This Dao does not derive from AdelphosObjectDao because
 # the actors are not part of the adelphos federated DB
-class ApActorDao:
+class ApActorDao(BaseDao):
 
 
     # I can set here the context.
@@ -84,7 +85,7 @@ resource=acct:{preferred_username}@{rem_instance}"
         actor.preferred_username = preferred_username 
         actor.canonical_name = f"@{preferred_username}@{rem_instance}"
 
-        self.store(ctx, actor)
+        self.store(actor)
         return actor
 
 
@@ -163,7 +164,7 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
                          inbox_parsed.path,
                          pub_key_ob['publicKeyPem'])
 
-        self.store(ctx, actor)
+        self.store(actor)
 
         return actor 
 
@@ -234,19 +235,21 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
     #    return ActorDto._base_get(ctx, fields_to_seek, values_to_seek)
 
 
-    def store(self, ctx, actor):
+    def store(self, actor):
 
         table_name = "ap_actor"
 
-        fields_stored = {
-                         'server_fk': actor.server_fk,
-                         'user_path': actor.user_path,
-                         'preferred_username': actor.preferred_username,
-                         'inbox_path': actor.inbox_path,
-                         'public_key': actor.public_key,
-                         }
 
-        newid = self.dao.db.insert_dto(ctx, table_name, fields_stored)
+        #fields_stored = {
+        #                 'server_fk': actor.server_fk,
+        #                 'user_path': actor.user_path,
+        #                 'preferred_username': actor.preferred_username,
+        #                 'inbox_path': actor.inbox_path,
+        #                 'public_key': actor.public_key,
+        #                 }
+        actor_as_dict = asdict(actor)
+
+        newid = self.dao.db.insert_dto(table_name, actor_as_dict)
         actor.actor_id = newid
         gCon.log(f"stored new actor {actor}")
 

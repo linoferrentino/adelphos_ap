@@ -472,7 +472,7 @@ select {list_sql_fields} from {table_name} where {field_to_seek} = ?
 
 
     # A generic function to insert a data object.
-    def insert_dto(self, ctx, table_name, dto_as_dict):
+    def insert_dto(self, table_name, dto_as_dict):
 
         fields = dto_as_dict.keys()
         fields_colon = [ f":{field}" for field in fields ]
@@ -486,16 +486,16 @@ insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
 
 """
 
-        gCon.log(f"executing {sql_insert} trans {self._conn.in_transaction}")
+        gCon.log(f"executing {sql_insert}")
 
         cur = self._conn.cursor()
         cur.execute(sql_insert, dto_as_dict)
         newid = cur.lastrowid
         cur.close()
 
-        gCon.log(f"after insert trans {self._conn.in_transaction}")
+        #gCon.log(f"after insert trans {self._conn.in_transaction}")
 
-        ctx.need_commit = True
+        #ctx.need_commit = True
         return newid
         
 

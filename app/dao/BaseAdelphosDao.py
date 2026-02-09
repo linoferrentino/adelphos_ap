@@ -15,11 +15,13 @@
 # the abstract base dao for all the Adelphos Daos
 from abc import ABC
 from abc import abstractmethod
+from ..logging import gCon
+from dataclasses import asdict
 
 
 # This is the base class for all the objects in the federated
 # database, either alive or inanimated.
-class BaseAdelphosDao(ABC):
+class BaseAdelphosDao(BaseDao):
 
 
     # I store here the federated table name and its columns
@@ -27,6 +29,19 @@ class BaseAdelphosDao(ABC):
         self.dao = dao
         self.ftbl = ftbl
         self.ftbl_col_list = ftbl_col_list
+        self.ftbl_clist_exp = ",".join(ftbl_col_list)
+
+
+    # the basic store method in the adelphos database: this is for federated
+    # objects.
+    # from the point of view of the dao the dto is a simple dictionary.
+    # this simplifies all the inserts, but the user must be careful to
+    # the order, because there are the foreign key constraints.
+    def store(self, dto):
+        dto_as_dict = asdict(dto)
+        gCon.log(f"I will store {dto_as_dict} on table {self.ftbl}")
+        new_id = self.dao.db.insert_dto(self.ftbl, dto_as_dict)
+        return new_id
 
 
     # here there are the abstract methods common to all the

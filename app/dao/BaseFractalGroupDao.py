@@ -22,7 +22,6 @@ class BaseFractalGroupDao(FdActorDao):
     def __init__(self, dao, ftbl_col_list, level_constraint_sql = None):
         self.level_constraint_sql = level_constraint_sql
         super().__init__(dao, "fd_group_family" , ftbl_col_list)
-        self.ftbl_clist_exp = ",".join(ftbl_col_list)
 
 
     # the local family by definition belongs to instance zero and level zero

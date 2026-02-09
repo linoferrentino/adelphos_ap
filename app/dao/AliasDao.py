@@ -13,46 +13,50 @@
 #
 
 # The DAO for the alias
+from app.dao.FdActorDao import FdActorDao
+from ..logging import gCon
+
 
 # this is the utility class that handles the business logic
 # for an alias object.
-class AliasDao:
+class AliasDao(FdActorDao):
 
-    @staticmethod
-    def exists_local_alias(ctx, alias):
+    #@staticmethod
+    #def exists_local_alias(ctx, alias):
 
-        cur = ctx.app.dao._conn.cursor()
-        cur.execute("select adelphos_id from alias_local where name = ?",
-                    (alias,))
-        row = cur.fetchone()
-        cur.close()
-        if (row is None):
-            return False
-        return True
+    #    cur = ctx.app.dao._conn.cursor()
+    #    cur.execute("select adelphos_id from alias_local where name = ?",
+    #                (alias,))
+    #    row = cur.fetchone()
+    #    cur.close()
+    #    if (row is None):
+    #        return False
+    #    return True
 
 
-    def get_from_uri(ctx, alias_uri):
+    #def get_from_uri(ctx, alias_uri):
 
-        pass
+    #    pass
 
 
     # this method is able to query the fediverse in order to obtain the
     # object also remotely.
-    @staticmethod
-    def get_from_alias_uri(ctx, alias_uri):
+    #@staticmethod
+    #def get_from_alias_uri(ctx, alias_uri):
 
-        fields_to_ask = ('alias_uri', 'actor_fk', 
-                         'password', 'timestamp')
+    #    fields_to_ask = ('alias_uri', 'actor_fk', 
+    #                     'password', 'timestamp')
 
-        field_to_seek = 'alias_uri'
-        value_to_seek = alias_uri
+    #    field_to_seek = 'alias_uri'
+    #    value_to_seek = alias_uri
 
-        dto = ctx.app.dao.get_dto(table_name, fields_to_ask, field_to_seek, 
-                            value_to_seek, AliasDto)
-        return dto
+    #    dto = ctx.app.dao.get_dto(table_name, fields_to_ask, field_to_seek, 
+    #                        value_to_seek, AliasDto)
+    #    return dto
 
 
-    def store(self, ctx):
+    # here we have to change the fields.
+    def store(self, dto):
 
         fields_stored = {
                          'alias_uri': self.alias_uri,

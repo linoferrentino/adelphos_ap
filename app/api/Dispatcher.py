@@ -26,6 +26,7 @@ from app.api.params import make_cmd_params
 from app.consts import USER_ID
 from app.dao.AdelphosUri import uriparse
 from app.dao.AliasDto import AliasDto
+from app.dao.FamilyDto import FamilyDto
 from app.logging import gCon
 from argon2 import PasswordHasher
 import traceback
@@ -46,7 +47,8 @@ def err_middleware(func):
             gCon.log(f"{traceback.format_exc()}")
             err_msg = f"500 Server error during command! We apologize."
 
-        ctx.need_commit = False
+        # I won't commit!
+        ctx.in_error = True
         return err_msg
 
     return func_safe 
@@ -68,17 +70,6 @@ async def alias_create_handler(ctx):
 
     gCon.log(f"alias uri created {alias_uri}")
 
-    # OK, now I can try to create the alias.
-    # as I know that the currency is a currency I can add the type.
-    #currency_uri = uriparse_type(currency, EAdelphosType.CURRENCY_TYPE)
-
-    #if (currency_uri.is_numeric == True):
-    #    raise AdelphosException("Cannot create a numeric currency")
-
-    #gCon.log(f"currency uri is {currency_uri}")
-
-    # If I am here the two URIs have been parsed.
-
     # the family MUST NOT already exist, we cannot create two families in
     # the same instance with the same name.
     family_dto = ctx.app.dao.family_dao.get_from_local_name(alias_uri.family)
@@ -87,28 +78,17 @@ async def alias_create_handler(ctx):
         raise AdelphosException(
 f"family {alias_uri.family} is already existing in this instance")
 
-    return "OK, the family is not present, I can proceed"
+    #return "OK, the family is not present, I can proceed"
 
-    # I have to create a currency like this, I do not know its default values
-    # Or I will create it in two steps.
-    #currency = CurrencyDto("Eur", 3, "€", 1.0)
+    # let's create the family, for now it will have only a name, not a currency
+    family_dto = FamilyDto(alias_uri.family, 0, None, None)
 
-    # this must not fail, unless there is an exception.
-    # the 
-    #currency_dto = ctx.app.dao.currency_dao\
-    #        .get_or_create(currency_uri)
+    ctx.app.dao.family_dao.store(family_dto)
 
+    return "All OK, I have stored the family"
 
-    # the validation is performed when the uris are parsed.
-    #validate_local_name(alias)
-    #validate_local_name(family_name)
+    # I have now the id of the family and I can create the alias.
 
-    # first the family object.
-
-    # If I am here I can create a new alias
-
-    #ctx.alias.alias_uri = alias_uri
-    #ctx.alias.actor_fk = ctx.actor_dto.actor_id
     ph = PasswordHasher()
     pass_hashed = ph.hash(password)
 
@@ -118,10 +98,9 @@ f"family {alias_uri.family} is already existing in this instance")
     # encryption then it will be sensible to have one.
 
     # OK, let't try to add it to the database
-    ctx.alias.store(ctx)
+    ctx.app.dao.alias_dao.store(alias_dto)
 
-    return f"Created alias {alias} successfully.\
-Your global identifier in adelphos fediverse is {alias_uri}"
+    return f"Created alias {alias} successfully."
 
 
 def sudo_cmd(func):
@@ -253,7 +232,7 @@ async def dispatch_request(ctx):
         await ctx.async_ctx
 
     # If I have arrived here here I can commit, if needed.
-    if (ctx.need_commit == True):
+    if (ctx.in_error == False):
         gCon.rule("[blue]Commit![/blue]")
         ctx.app.dao.commit()
     else:

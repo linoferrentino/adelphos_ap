@@ -17,6 +17,7 @@
 
 from app.dao.ServerDto import ServerDto
 from app.logging import gCon
+from dataclasses import asdict
 
 
 # the server dao has the logic to query and store servers
@@ -39,7 +40,7 @@ class ServerDao:
 
         # at this point I have to create it.
         server_dto = ServerDto(host_name)
-        self.store(ctx, server_dto)
+        self.store(server_dto)
         gCon.log(f"I return {server_dto}")
         return server_dto
 
@@ -57,13 +58,14 @@ class ServerDao:
         return dto
 
 
-    def store(self, ctx, server):
+    def store(self, server):
 
-        fields_stored = {
-                         'host_name': server.host_name,
-                         }
+        #fields_stored = {
+        #                 'host_name': server.host_name,
+        #                 }
+        fields_stored = asdict(server)
 
-        newid = self.dao.db.insert_dto(ctx, self.table_name, fields_stored)
+        newid = self.dao.db.insert_dto(self.table_name, fields_stored)
 
         gCon.log(f"stored {server.host_name} his id {newid}")
 
