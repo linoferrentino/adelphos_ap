@@ -42,20 +42,20 @@ class FdActorDao(BaseAdelphosDao):
         pass
 
 
-    raw_local_query = """
+    #raw_local_query = """
 
-    select fdo.fd_object_id, fdo.name, fdo.creator_fk, 
-    fdo.timestamp, fda.name, fda.instance_fk, 
-    fda.timestamp, {ftbl_col_list} from {ftbl} as ftbl,
-    fd_object as fdo, fd_actor as fda
-    where (
-    (ftbl.local_fk = fdo.fd_object_id)
-    and
-    (fdo.creator_fk = fad.fd_actor_id)
-    and
-    (fda.instance_fk = 0),
-    and
-    (ftbl.local_fk = ?))
+    #select fdo.fd_object_id, fdo.name, fdo.creator_fk, 
+    #fdo.timestamp, fda.name, fda.instance_fk, 
+    #fda.timestamp, {ftbl_col_list} from {ftbl} as ftbl,
+    #fd_object as fdo, fd_actor as fda
+    #where (
+    #(ftbl.local_fk = fdo.fd_object_id)
+    #and
+    #(fdo.creator_fk = fad.fd_actor_id)
+    #and
+    #(fda.instance_fk = 0),
+    #and
+    #(ftbl.local_fk = ?))
 
-    """
+    #"""
 

@@ -277,17 +277,13 @@ class AdelphosDb:
 
 
     def _create_schema(self, app):
-        gCon.log(f"Creating schema... trans: {self._conn.in_transaction}")
+        gCon.log(f"Creating schema...")
 
         # I can add the foreign key constraints only without a transaction.
         self._conn.execute("pragma foreign_keys = ON;")
 
-        gCon.log("I restore the autocommit")
         self._conn.autocommit = False
-
         cursor = self._conn.cursor()
-
-        gCon.log(f"Now trans: {self._conn.in_transaction}")
 
         for cmd in create_schema_sql:
             gCon.log(f"Will exec -> {cmd[0]}")
@@ -471,10 +467,16 @@ select {list_sql_fields} from {table_name} where {field_to_seek} = ?
         return constructor_dto(*row)
 
 
-    # A generic function to insert a data object.
+    # A generic function to insert a data object: this will use all the
+    # keys inside the dictionary
     def insert_dto(self, table_name, dto_as_dict):
-
         fields = dto_as_dict.keys()
+        return self.insert_dto_fields(table_name, fields, dto_as_dict)
+
+
+    # this method will insert only the advertised fields in the db.
+    def insert_dto_fields(self, table_name, fields, dto_as_dict):
+
         fields_colon = [ f":{field}" for field in fields ]
 
         fields_list = ", ".join(fields)
@@ -493,9 +495,6 @@ insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
         newid = cur.lastrowid
         cur.close()
 
-        #gCon.log(f"after insert trans {self._conn.in_transaction}")
-
-        #ctx.need_commit = True
         return newid
         
 
