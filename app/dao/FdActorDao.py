@@ -15,6 +15,7 @@
 from abc import ABC
 from abc import abstractmethod
 from app.dao.BaseAdelphosDao import BaseAdelphosDao
+from app.logging import gCon
 
 
 # this is the base class for all the "alive" DAOs in adelphos
@@ -41,6 +42,12 @@ class FdActorDao(BaseAdelphosDao):
     def get_from_uri(self, uri):
         pass
 
+
+    def store_dict(self, dto_as_dict):
+        gCon.log("Store the fdActor Dao")
+        new_id = super().store_dict(dto_as_dict)
+        gCon.log("FdActorDao new id {new_id}")
+        return new_id
 
     #raw_local_query = """
 

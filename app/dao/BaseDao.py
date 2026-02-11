@@ -32,15 +32,22 @@ class BaseDao(ABC):
         self.ftbl_clist_exp = ",".join(ftbl_col_list)
 
 
+    # this method will be implemented by the concrete classes.
+    @abstractmethod
+    def store(self, dto):
+        pass
+
+
     # the basic store method in the adelphos database: this is for federated
     # objects.
     # from the point of view of the dao the dto is a simple dictionary.
     # this simplifies all the inserts, but the user must be careful to
     # the order, because there are the foreign key constraints.
-    def store(self, dto):
-        dto_as_dict = asdict(dto)
-        gCon.log(f"I will store {dto_as_dict} on table {self.ftbl}")
-        new_id = self.dao.db.insert_dto_fields(self.ftbl, 
-                        self.ftbl_col_list, dto_as_dict)
+    def store_dict(self, dto):
+        #gCon.log(f"I will store {dto_as_dict} on table {self.ftbl}")
+        #new_id = self.dao.db.insert_dto_fields(self.ftbl, 
+        #                self.ftbl_col_list, dto_as_dict)
+        gCon.log("Base dao, the new id is 99!")
+        new_id = 99
         return new_id
 

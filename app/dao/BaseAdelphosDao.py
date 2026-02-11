@@ -119,3 +119,11 @@ class BaseAdelphosDao(BaseDao):
     def get_or_create_from_uri(uri):
         pass
 
+
+    def store_dict(self, dto_as_dict):
+        gCon.log("Store the BaseAdelphosDao.")
+        new_id = super().store_dict(dto_as_dict)
+        gCon.log(f"New id for BaseAdelphosDao {new_id}")
+        return new_id
+
+

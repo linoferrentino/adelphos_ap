@@ -16,6 +16,7 @@
 from app.dao.BaseFractalGroupDao import BaseFractalGroupDao
 from app.logging import gCon
 
+from dataclasses import asdict
 
 # this is the specialized Dao used for the Family
 # the family is part of the living part of adelphos db
@@ -37,6 +38,17 @@ class FamilyDao(BaseFractalGroupDao):
                 " and (fdg.level = 0)")
 
 
+    def store_dict(self, dto_as_dict):
+        gCon.log("Start to store the family dto")
+        new_id = super().store_dict(dto_as_dict)
+        gCon.log(f"now the family dao with id {new_id}")
+        return new_id
+        
+
     # this is the basic store, I start from the base class and then I go up.
     def store(self, dto):
+        dto_as_dict = asdict(dto)
         gCon.log("Storing the family DAO!")
+        new_id = self = self.store_dict(dto_as_dict)
+        return new_id
+

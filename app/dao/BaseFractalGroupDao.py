@@ -54,5 +54,10 @@ class BaseFractalGroupDao(FdActorDao):
         return None
                  
 
+    def store_dict(self, dto_as_dict):
+        gCon.log("Storing the base fractal group dao")
+        new_id = super().store_dict(dto_as_dict)
+        gCon.log(f"now storing base Fractal group with id {new_id}")
+        return new_id
 
 

@@ -28,3 +28,5 @@ class CurrencyDao(AdelphosObjectDao):
 
 
 
+    def store(self, dto):
+        pass
