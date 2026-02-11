@@ -322,7 +322,7 @@ insert into ad_instance(actor_fk, authorized, comment) values
 
         self._conn.commit()
 
-        gCon.log(f"After commit schema trans: {self._conn.in_transaction}")
+        gCon.log(f"Schema created.")
 
 
     # for testing I can also create the file in memory

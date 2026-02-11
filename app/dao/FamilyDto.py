@@ -17,6 +17,7 @@
 from app.logging import gCon
 from dataclasses import dataclass
 from app.dao.FdActorDto import FdActorDto
+from app.dao.BaseGroupDto import BaseGroupDto
 
 
 # The family is a level zero group.
@@ -25,12 +26,12 @@ from app.dao.FdActorDto import FdActorDto
 
 # this is the basic object, not with all the fields.
 @dataclass
-class FamilyDto(FdActorDto):
+class FamilyDto(BaseGroupDto):
 
-    # every family has an equity and a currency
-    currency_fk: int
 
-    equity: float
+    # every family has by definition fractal level zero
+    def __post_init__(self):
+        self.level = 0
 
 
 

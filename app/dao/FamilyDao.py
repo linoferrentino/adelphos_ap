@@ -14,6 +14,7 @@
 # The DAO relative to the family
 
 from app.dao.BaseFractalGroupDao import BaseFractalGroupDao
+from app.logging import gCon
 
 
 # this is the specialized Dao used for the Family
@@ -36,4 +37,6 @@ class FamilyDao(BaseFractalGroupDao):
                 " and (fdg.level = 0)")
 
 
-
+    # this is the basic store, I start from the base class and then I go up.
+    def store(self, dto):
+        gCon.log("Storing the family DAO!")

@@ -1,0 +1,36 @@
+######################################################
+#
+# Adelphos AP: the fractal trust network
+#
+# Activity Pub implementation
+#
+# © 2025-26 Lino Ferrentino
+# lino.ferrentino@gmail.com
+#
+# This is free software. Licensed with GPL version 3
+#
+######################################################
+#
+# This is the base class for the groups and families in adelphos
+
+
+from app.logging import gCon
+from dataclasses import dataclass
+from dataclasses import field
+from app.dao.FdActorDto import FdActorDto
+
+
+@dataclass
+class BaseGroupDto(FdActorDto):
+
+
+    boss_fk: int
+
+    parent_group_fk: int
+
+    # equity and currenct can be set after: now we simply set the name
+    equity: float = None
+
+    currency_fk: int = None
+
+    level: int = field(init = False)
