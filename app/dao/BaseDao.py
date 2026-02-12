@@ -43,11 +43,11 @@ class BaseDao(ABC):
     # from the point of view of the dao the dto is a simple dictionary.
     # this simplifies all the inserts, but the user must be careful to
     # the order, because there are the foreign key constraints.
-    def store_dict(self, dto):
-        #gCon.log(f"I will store {dto_as_dict} on table {self.ftbl}")
-        #new_id = self.dao.db.insert_dto_fields(self.ftbl, 
-        #                self.ftbl_col_list, dto_as_dict)
-        gCon.log("Base dao, the new id is 99!")
-        new_id = 99
-        return new_id
+    #def store_dict(self, dto):
+    #    #gCon.log(f"I will store {dto_as_dict} on table {self.ftbl}")
+    #    #new_id = self.dao.db.insert_dto_fields(self.ftbl, 
+    #    #                self.ftbl_col_list, dto_as_dict)
+    #    gCon.log("Base dao, the new id is 99!")
+    #    new_id = 99
+    #    return new_id
 

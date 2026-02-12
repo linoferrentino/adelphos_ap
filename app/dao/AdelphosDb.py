@@ -179,7 +179,7 @@ create table fd_group_family(
         local_fk integer primary key references 
              fd_actor(fd_actor_id),
         parent_group_fk integer references fd_group_family(local_fk),
-        boss_fk integer references fd_alias(local_fk),
+        boss_fk integer null references fd_alias(local_fk),
         cashier_fk integer references fd_alias(local_fk),
         currency_fk integer references fd_currency(local_fk),
         level integer,
@@ -197,14 +197,17 @@ create table fd_group_family(
 ('fd_alias', """
 create table fd_alias(
 
-        local_fk integer references fd_actor(fd_actor_id),
+        local_fk integer primary key references fd_actor(fd_actor_id),
         actor_fk integer references ap_actor(actor_id) on delete restrict,
         family_fk integer references fd_group_family(local_fk),
-        password text,
-        primary key (local_fk, actor_fk, family_fk)
+        password text
 
-) without rowid; """),
+); """),
 
+# the index on the fd_alias table
+# create unique index on fd_alias(local_fk, actor_fk, family_fk)
+
+#        primary key (local_fk, actor_fk, family_fk)
 
 
 # the family is the basic group in adelphos

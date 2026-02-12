@@ -45,8 +45,12 @@ class FdActorDao(BaseAdelphosDao):
 
     def store_dict(self, dto_as_dict):
         gCon.log("Store the fdActor Dao")
-        new_id = super().store_dict(dto_as_dict)
-        gCon.log("FdActorDao new id {new_id}")
+
+        # Here I can store the fd_actor table
+        new_id = self.dao.db.insert_dto_fields('fd_actor',
+                ('name', 'instance_fk'), dto_as_dict)
+        
+        gCon.log(f"FdActorDao new id {new_id}")
         return new_id
 
     #raw_local_query = """
