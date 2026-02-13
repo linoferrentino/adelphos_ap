@@ -27,6 +27,7 @@ from app.dao.ApActorDao import ApActorDao
 from app.dao.ServerDao import ServerDao
 from app.dao.FamilyDao import FamilyDao
 from app.dao.CurrencyDao import CurrencyDao 
+from app.dao.AliasDao import AliasDao
 
 app = None
 
@@ -94,6 +95,7 @@ class MasterAdelphosDao:
         self.ap_actor_dao  = ApActorDao(self)
         self.server_dao   = ServerDao(self)
         self.family_dao  = FamilyDao(self)
+        self.alias_dao   = AliasDao(self)
 
 
     def close(self):

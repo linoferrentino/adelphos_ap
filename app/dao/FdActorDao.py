@@ -25,8 +25,8 @@ class FdActorDao(BaseAdelphosDao):
 
     # I am initialized with the common DAO, the one
     # which stores the connection
-    def __init__(self, dao, ftbl, ftbl_col_list):
-        super().__init__(dao, ftbl, ftbl_col_list)
+    def __init__(self, dao):
+        super().__init__(dao)
 
 
     # this is tha base method to get an "alive" object from the db.
@@ -43,7 +43,7 @@ class FdActorDao(BaseAdelphosDao):
         pass
 
 
-    def store_dict(self, dto_as_dict):
+    def store_dict(self, dto, dto_as_dict):
         gCon.log("Store the fdActor Dao")
 
         # Here I can store the fd_actor table
@@ -51,6 +51,7 @@ class FdActorDao(BaseAdelphosDao):
                 ('name', 'instance_fk'), dto_as_dict)
         
         gCon.log(f"FdActorDao new id {new_id}")
+        dto.fd_actor_id = new_id
         return new_id
 
     #raw_local_query = """

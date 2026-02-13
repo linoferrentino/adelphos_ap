@@ -55,7 +55,9 @@ class AliasDao(FdActorDao):
     #    return dto
 
 
+
     # here we have to change the fields.
+    # also in this case we do the hierarchical insert.
     def store(self, dto):
 
         fields_stored = {

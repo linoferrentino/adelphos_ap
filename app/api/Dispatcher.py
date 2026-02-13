@@ -83,24 +83,24 @@ f"family {alias_uri.family} is already existing in this instance")
     # let's create the family, for now it will have only a name, not a currency
     family_dto = FamilyDto(alias_uri.family, 0, None, None)
 
-    ctx.app.dao.family_dao.store(family_dto)
+    family_id = ctx.app.dao.family_dao.store(family_dto)
 
-    return "All OK, I have stored the family"
+    # "All OK, I have stored the family"
 
     # I have now the id of the family and I can create the alias.
 
     ph = PasswordHasher()
     pass_hashed = ph.hash(password)
 
-    alias_dto = AliasDto()
+    alias_dto = AliasDto(alias_uri.name, 0, family_id, pass_hashed)
 
     # the alias for now has not a password, when we will have p2p
     # encryption then it will be sensible to have one.
 
     # OK, let't try to add it to the database
-    ctx.app.dao.alias_dao.store(alias_dto)
+    new_id = ctx.app.dao.alias_dao.store(alias_dto)
 
-    return f"Created alias {alias} successfully."
+    return f"Created alias {alias_dto} successfully, with id {new_id}"
 
 
 def sudo_cmd(func):

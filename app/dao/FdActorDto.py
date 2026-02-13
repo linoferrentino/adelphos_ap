@@ -30,6 +30,8 @@ class FdActorDto:
     instance_fk: int
 
     # these are handled by the DB, so I put there.
+    # this primary key is relative to the "whole" object.
+    # the other one --- local_fk --- is only used to make a 1:1 mapping
     fd_actor_id: int = field(default = None, init = False) 
 
     timestamp: str = field(default = None, init = False)
@@ -37,17 +39,17 @@ class FdActorDto:
 
 # this DTO is used when we create a new actor, some fields have
 # default values
-@dataclass
-class FdActorDtoNew:
-
-    name: str
-
-    # the (adelphos!) instance from which this federated actor comes
-    instance_fk: int
-
-    # these are handled by the DB
-    fd_actor_id: int = None
-    timestamp: str = None
+#@dataclass
+#class FdActorDtoNew:
+#
+#    name: str
+#
+#    # the (adelphos!) instance from which this federated actor comes
+#    instance_fk: int
+#
+#    # these are handled by the DB
+#    fd_actor_id: int = None
+#    timestamp: str = None
 
 
 

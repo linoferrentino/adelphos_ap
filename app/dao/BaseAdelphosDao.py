@@ -26,8 +26,8 @@ class BaseAdelphosDao(BaseDao):
 
 
     # I store here the federated table name and its columns
-    def __init__(self, dao, ftbl, ftbl_col_list):
-        super().__init__(dao, ftbl, ftbl_col_list)
+    def __init__(self, dao):
+        super().__init__(dao)
 
 
     # here there are the abstract methods common to all the

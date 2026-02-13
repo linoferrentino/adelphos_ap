@@ -25,16 +25,23 @@ class BaseDao(ABC):
 
     # this is the basic initialization: the col_list is the list of columns which
     # are used to store, which can be different from the columns used to retrieve.
-    def __init__(self, dao, ftbl, ftbl_col_list):
+    def __init__(self, dao):
         self.dao = dao
-        self.ftbl = ftbl
-        self.ftbl_col_list = ftbl_col_list
-        self.ftbl_clist_exp = ",".join(ftbl_col_list)
+        #self.ftbl = ftbl
+        #self.ftbl_col_list = ftbl_col_list
+        #self.ftbl_clist_exp = ",".join(ftbl_col_list)
 
 
-    # this method will be implemented by the concrete classes.
-    @abstractmethod
+    # this method has here a default implementation, but we can override it
     def store(self, dto):
+        dto_as_dict = asdict(dto)
+        new_id = self.store_dict(dto, dto_as_dict)
+        return new_id
+
+
+    # this is the abstract method that derived classes must implement
+    @abstractmethod
+    def store_dict(self, dto, dto_as_dict):
         pass
 
 

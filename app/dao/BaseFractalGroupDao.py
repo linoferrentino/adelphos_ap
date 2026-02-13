@@ -19,9 +19,9 @@ from ..logging import gCon
 class BaseFractalGroupDao(FdActorDao):
 
 
-    def __init__(self, dao, ftbl_col_list, level_constraint_sql = None):
+    def __init__(self, dao, level_constraint_sql = None):
         self.level_constraint_sql = level_constraint_sql
-        super().__init__(dao, "fd_group_family" , ftbl_col_list)
+        super().__init__(dao)
 
 
     # the local family by definition belongs to instance zero and level zero

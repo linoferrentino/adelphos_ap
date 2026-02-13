@@ -33,4 +33,4 @@ class BaseGroupDto(FdActorDto):
 
     currency_fk: int = None
 
-    level: int = field(init = False)
+    level: int = field(default = -1, init = False)

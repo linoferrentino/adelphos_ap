@@ -28,14 +28,14 @@ class AdelphosObjectDao(BaseAdelphosDao):
 
     # every federated table in the db has a 1:1 mapping with the
     # adelphos object table. Here we have the common code.
-    def __init__(self, db, ftbl, ftbl_col_list):
-        super().__init__(db, ftbl, ftbl_col_list)
+    def __init__(self, db):
+        super().__init__(db)
 
 
-    # this method here is not abstract, it will create the
-    # base federated table.
-    def create_schema(self, app, cursor):
-        pass
+    ## this method here is not abstract, it will create the
+    ## base federated table.
+    #def create_schema(self, app, cursor):
+    #    pass
 
 
     # this is the query to have the local objects: remember that

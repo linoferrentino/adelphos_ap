@@ -37,8 +37,9 @@ class ApActorDao(BaseDao):
 
     # I can set here the context.
     def __init__(self, dao):
-        super().__init__(dao, 'ap_actor', ('server_fk', 'user_path', 'preferred_username',
-                               'inbox_path', 'public_key') )
+        super().__init__(dao)
+        #super().__init__(dao, 'ap_actor', ('server_fk', 'user_path', 'preferred_username',
+        #                       'inbox_path', 'public_key') )
 
 
     # gets from local database or queries the webfinger endpoint
@@ -244,21 +245,21 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
     #    return ActorDto._base_get(ctx, fields_to_seek, values_to_seek)
 
 
-    def store(self, actor):
+    def store_dict(self, actor, actor_as_dict):
 
         table_name = "ap_actor"
 
 
-        #fields_stored = {
-        #                 'server_fk': actor.server_fk,
-        #                 'user_path': actor.user_path,
-        #                 'preferred_username': actor.preferred_username,
-        #                 'inbox_path': actor.inbox_path,
-        #                 'public_key': actor.public_key,
-        #                 }
-        actor_as_dict = asdict(actor)
+        fields_stored = {
+                         'server_fk': actor.server_fk,
+                         'user_path': actor.user_path,
+                         'preferred_username': actor.preferred_username,
+                         'inbox_path': actor.inbox_path,
+                         'public_key': actor.public_key,
+                         }
+        #actor_as_dict = asdict(actor)
 
-        newid = self.dao.db.insert_dto(table_name, actor_as_dict)
+        newid = self.dao.db.insert_dto_fields(table_name, fields_stored, actor_as_dict)
         actor.actor_id = newid
         gCon.log(f"stored new actor {actor}")
 

@@ -22,11 +22,11 @@ class CurrencyDao(AdelphosObjectDao):
 
 
     # I create myself with the table and the local columns
-    def __init__(self, db):
-        super().__init__(db, 'fd_currency',
-            ('local_fk', 'symbol', 'human_value'))
+    def __init__(self, dao):
+        super().__init__(dao)
+        #super().__init__(db, 'fd_currency',
+        #    ('local_fk', 'symbol', 'human_value'))
 
 
-
-    def store(self, dto):
+    def store_dict(self, dto_as_dict):
         pass
