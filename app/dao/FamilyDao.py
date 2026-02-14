@@ -35,9 +35,9 @@ class FamilyDao(BaseFractalGroupDao):
 
 
     # this works backwards, inserting first the dependant tables
-    def store_dict(self, dto_as_dict):
+    def store_dict(self, dto, dto_as_dict):
         gCon.log("Start to store the family dto")
-        new_id = super().store_dict(dto_as_dict)
+        new_id = super().store_dict(dto, dto_as_dict)
         gCon.log(f"now the family dao with id {new_id}")
 
         # final store into the table, I can add the foreign key

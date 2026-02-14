@@ -81,7 +81,7 @@ f"family {alias_uri.family} is already existing in this instance")
     #return "OK, the family is not present, I can proceed"
 
     # let's create the family, for now it will have only a name, not a currency
-    family_dto = FamilyDto(alias_uri.family, 0, None, None)
+    family_dto = FamilyDto(alias_uri.family, 0, None, None, None)
 
     family_id = ctx.app.dao.family_dao.store(family_dto)
 
@@ -92,7 +92,10 @@ f"family {alias_uri.family} is already existing in this instance")
     ph = PasswordHasher()
     pass_hashed = ph.hash(password)
 
-    alias_dto = AliasDto(alias_uri.name, 0, family_id, pass_hashed)
+    # the instance is zero, it is local.
+    alias_dto = AliasDto(alias_uri.name, 0, 
+                         ctx.actor_dto.actor_id,
+                         family_id, pass_hashed)
 
     # the alias for now has not a password, when we will have p2p
     # encryption then it will be sensible to have one.

@@ -182,9 +182,8 @@ create table fd_group_family(
         boss_fk integer null references fd_alias(local_fk),
         cashier_fk integer references fd_alias(local_fk),
         currency_fk integer references fd_currency(local_fk),
-        level integer,
-        equity real
-
+        equity real,
+        level integer
 );"""),
 
 

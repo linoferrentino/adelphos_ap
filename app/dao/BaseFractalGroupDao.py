@@ -22,6 +22,10 @@ class BaseFractalGroupDao(FdActorDao):
     def __init__(self, dao, level_constraint_sql = None):
         self.level_constraint_sql = level_constraint_sql
         super().__init__(dao)
+        # I store here the list of fields
+        self.ftbl_col_list = ( "parent_group_fk", "boss_fk", "cashier_fk",
+                              "currency_fk", "equity", "level")
+        self.ftbl_clist_exp = ",".join(self.ftbl_col_list)
 
 
     # the local family by definition belongs to instance zero and level zero
@@ -55,9 +59,9 @@ class BaseFractalGroupDao(FdActorDao):
                  
 
     # Here it is a simple passby
-    def store_dict(self, dto_as_dict):
+    def store_dict(self, dto, dto_as_dict):
         gCon.log("Storing the base fractal group dao")
-        new_id = super().store_dict(dto_as_dict)
+        new_id = super().store_dict(dto, dto_as_dict)
         gCon.log(f"now storing base Fractal group with id {new_id}")
         return new_id
 

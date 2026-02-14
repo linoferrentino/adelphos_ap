@@ -23,14 +23,16 @@ from app.dao.FdActorDto import FdActorDto
 @dataclass
 class BaseGroupDto(FdActorDto):
 
+    parent_group_fk: int
 
     boss_fk: int
 
-    parent_group_fk: int
+    cashier_fk: int
+
+    currency_fk: int = None
 
     # equity and currenct can be set after: now we simply set the name
     equity: float = None
 
-    currency_fk: int = None
-
     level: int = field(default = -1, init = False)
+

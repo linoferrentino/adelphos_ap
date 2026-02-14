@@ -58,16 +58,23 @@ class AliasDao(FdActorDao):
 
     # here we have to change the fields.
     # also in this case we do the hierarchical insert.
-    def store(self, dto):
+    def store_dict(self, dto, dto_as_dict):
 
-        fields_stored = {
-                         'alias_uri': self.alias_uri,
-                         'actor_fk' : self.actor_fk,
-                         'password': self.password,
-                         }
+        # first of all I store the base table
 
-        ctx.app.dao.insert_dto(ctx, table_name, fields_stored)
+        new_id = super().store_dict(dto, dto_as_dict)
 
-        gCon.log(f"Created new alias {self.alias_uri}")
+        #fields_stored = {
+        #                 'alias_uri': self.alias_uri,
+        #                 'actor_fk' : self.actor_fk,
+        #                 'password': self.password,
+        #                 }
+
+        dto_as_dict['local_fk'] = new_id
+
+        self.dao.db.insert_dto_fields("fd_alias", ('local_fk', 'actor_fk',
+                                                   'family_fk', 'password'), dto_as_dict)
+
+        gCon.log(f"Created new alias {dto}")
 
 
