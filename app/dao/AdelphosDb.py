@@ -193,6 +193,9 @@ create table fd_group_family(
 # an actor cannot have two aliases in the same family
 # lino.ferrentino, lino_ferre@mastodon.uno OK
 # lino1.ferrentino, lino_ferre@mastodon.uno NO
+
+# the alias table has the session token
+
 ('fd_alias', """
 create table fd_alias(
 
@@ -203,70 +206,24 @@ create table fd_alias(
 
 ); """),
 
-# the index on the fd_alias table
-# create unique index on fd_alias(local_fk, actor_fk, family_fk)
 
-#        primary key (local_fk, actor_fk, family_fk)
+# this is the table that holds the session, the session is linked to
+# a particular alias, there is a 1:1 mapping.
+# the session is not persistent, and it is used to make a MFA login to adelphos
 
+('session_tokens', """
 
-# the family is the basic group in adelphos
-# the level is zero implicit.
+ create table sessions (
 
+    local_fk integer primary key references fd_alias(local_fk)
+    cur_session_token integer,
+    state_id integer,
+    timestamp text default current_timestamp
 
-#('family', """
-#create table fd_family (
-#
-#        local_fk integer primary key references fd_actor(fd_actor_id),
-#        family_chief_fk integer references fd_alias(local_fk),
-#        parent_group_fk text references fd_group(local_fk),
-#        currency_fk integer references fd_currency(local_fk),
-#        equity real
-#
-#);"""),
-#
-#
-## this view joins the family with the actor and the adelphos object 
-#('view family_actor_raw', """
-#
-#
-# create view family_raw as select fd_object_id, name, creator_fk,
-#    timestamp, act.name, act.instance_fk, act.timestamp,
-#    parent_group_fk, currency_fk, equity from
-#    fd_object, fd_family, fd_actor as act where
-#    ( (local_fk = fd_object_id)
-#    and
-#    (creator_fk = fd_actor_id)
-#    );
-#
-# """),
-#
-#
-## this view selects all the local families.
-## the instance zero is by definition the local adelphos instance.
-#('view family_local_raw', """
-#
-#
-# create view family_local_raw as select fd_object_id, name, creator_fk,
-#    timestamp, parent_group_fk, currency_fk, equity from
-#    fd_object, fd_family, fd_actor  where
-#    ( (local_fk = fd_object_id)
-#    and
-#    (creator_fk = fd_actor_id)
-#    and
-#    (instance_fk = 0)
-#    );
-#
-# """),
+ );
 
 
-# here we have the federated family and the federated alias, they are all
-# "actors", in the sense that they are 'alive'
-
-
-# there are three types of alive objects in adelphos: the group, the
-# family and the alias: they form the trust web.
-
-# the family is the base class for all the 
+ """),
 
 
 

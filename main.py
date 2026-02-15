@@ -56,16 +56,18 @@ async def get():
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Welcome to adelphos instance {instance} @ {host}</title>
+    <title>Welcome to adelphos instance {instance} @ {host}</title>
     </head>
     <body>
-        <h1>Daemon cli for adelphos {instance}@{host}</h1>
+        <h1>Adelphos daemon for instance: {instance} @ host {host}</h1>
         <form action="" onsubmit="sendMessage(event)">
-            <input type="text" id="messageText" autocomplete="off"/>
-            <button>Send</button>
+        <label>Security Token: <input type="text" id="token" autocomplete="off" value=""/></label>
+        <hr>
+        <input type="text" id="messageText" autocomplete="off"/>
+        <button>Send</button>
         </form>
         <ul id='messages'>
-        <li>Adelphos CLI: ready</li>
+        <li>Adelphos: login with command 'login alias password' to receive OTP token</li>
         </ul>
         <script>
             var ws = new WebSocket("wss://{host_api}/ws");"""
@@ -81,7 +83,9 @@ async def get():
                 messages.insertBefore(message, messages.firstChild)
             };
             function sendMessage(event) {
+                var token = document.getElementById('token')
                 var input = document.getElementById("messageText")
+                input += " tk " + token.value
                 ws.send(input.value)
                 input.value = ''
                 event.preventDefault()

@@ -39,7 +39,10 @@ class FdActorDao(BaseAdelphosDao):
 
     # the difference from getting from uri an object and an alive
     # person is that the query is different!
-    def get_from_uri(self, uri):
+
+    # this is the query from a local URI, so it is synchronous, because we
+    # do not go to the federated tables.
+    def get_from_local_uri(self, uri):
         pass
 
 

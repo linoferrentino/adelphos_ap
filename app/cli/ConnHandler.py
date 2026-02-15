@@ -8,10 +8,12 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from websockets.asyncio.server import broadcast
 from app.logging import gCon
-from app.api.Dispatcher import send_msg_to_alias
+from app.api.Dispatcher import send_msg_to_local_alias
 from app.api.params import make_cmd_params
 from app.api.AppCtx import WebSocketContext
 from app.dao.AliasDto import AliasDto
+from app.api.params import get_param_safe
+from app.dao.AdelphosUri import uriparse
 import asyncio
 
 
@@ -106,16 +108,18 @@ class ClientWs:
                 #data = "are you still there?"
                 continue
 
+            gCon.log(f"received {data} command")
+
             self.wsctx.cmd_splits = data.split()
             self.wsctx.cmd = self.wsctx.cmd_splits.pop(0)
             make_cmd_params(self.wsctx)
-            gCon.log(f"received {data} command is {self.wsctx.cmd}")
 
-            #if (self.wsctx.actor is None):
-            #    # no login
-            #    pass
+            alias = get_param_safe('alias')
+            # now I have to parse the uri, the alias is *always* in a format like
+            # ##name.family or #ad#name.family@...
+            self.wsctx.alias_uri = uriparse(alias)
 
-            #answer = await send_msg_to_alias(self.wsctx)
+            answer = await send_msg_to_local_alias(self.wsctx, alias, "hello world")
             answer = "test ok"
             await self.websocket.send_text(f"remote answers {answer}")
 
@@ -125,6 +129,10 @@ class ClientWs:
 
             await self._internal_serve()
 
+        except AdelphosException as err:
+
+            await self.websocket.send_text(f"Error in request {err}")
+
         except WebSocketDisconnect as wds:
 
             # this is called. No problem
@@ -132,6 +140,10 @@ class ClientWs:
 
             # this client will be garbage collected later.
             self.running = False
+
+        # this to catch all other errors, these are bugs :(
+        except Exception as ex:
+            await self.websocket.send_text(f"Server error, we apologize.")
 
 
     async def stop(self):

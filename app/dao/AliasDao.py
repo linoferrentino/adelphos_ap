@@ -34,11 +34,6 @@ class AliasDao(FdActorDao):
     #    return True
 
 
-    #def get_from_uri(ctx, alias_uri):
-
-    #    pass
-
-
     # this method is able to query the fediverse in order to obtain the
     # object also remotely.
     #@staticmethod
@@ -54,6 +49,8 @@ class AliasDao(FdActorDao):
     #                        value_to_seek, AliasDto)
     #    return dto
 
+    # this is synchronous: we get first the alias, then we query the actor.
+
 
 
     # here we have to change the fields.
@@ -64,17 +61,10 @@ class AliasDao(FdActorDao):
 
         new_id = super().store_dict(dto, dto_as_dict)
 
-        #fields_stored = {
-        #                 'alias_uri': self.alias_uri,
-        #                 'actor_fk' : self.actor_fk,
-        #                 'password': self.password,
-        #                 }
-
         dto_as_dict['local_fk'] = new_id
 
         self.dao.db.insert_dto_fields("fd_alias", ('local_fk', 'actor_fk',
                                                    'family_fk', 'password'), dto_as_dict)
-
         gCon.log(f"Created new alias {dto}")
 
 

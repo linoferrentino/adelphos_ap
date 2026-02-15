@@ -28,7 +28,7 @@ from app.logging import gCon
 # for the alias, the URI is simplified as`
 
 # this is the mechanical URI
-# $<type>$<local_id>@<host>
+# #<type>#<local_id>@<host>
 
 
 # I can query the database with this URI,

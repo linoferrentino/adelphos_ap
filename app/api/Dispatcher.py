@@ -205,17 +205,22 @@ async def cmd_parse(ctx):
     ctx.answer_txt = await handler(ctx)
 
 
-# this context is not a request context, but a web socket context.
-async def send_msg_to_alias(wsctx):
+# this function sends a message to a LOCAL alias, that is to the Activity Pub
+# actor who has created an alias in this adelphos instance.
+# the actor MUST be present locally, because it is linked by a foreign
+# key constraint here.
+async def send_msg_to_local_alias(ctx, alias, msg):
+
+    # I get from local name, like a family
 
     # here I hard code the actor and I try to post to him
-    wsctx.actor_dto = await ActorDto.get_or_discover_actor(wsctx, 
+    ctx.actor_dto = await ActorDto.get_or_discover_actor(ctx, 
                                           "lino_ferre",
                                           "mastodon.uno")
 
     gCon.log(f"I have found the remote actor {wsctx.actor_dto}")
 
-    await post_to_actor_inbox(wsctx, "this is a test!")
+    await post_to_actor_inbox(wsctx, msg)
 
     return "this is OK!"
 

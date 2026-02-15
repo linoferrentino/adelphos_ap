@@ -53,7 +53,7 @@ async def post_response_inbox(ctx, actor, server, msg):
 
 
 
-# we can pass messages to other inbox, for example a daemon inbox 
+# we can pass messages to other inboxes, for example a daemon inbox 
 async def post_response_inbox_impl(ctx, actor_str, inbox, msg):
 
 
