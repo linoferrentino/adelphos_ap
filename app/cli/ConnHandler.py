@@ -1,20 +1,31 @@
-# 
-# The class that manages the connections.
+######################################################
 #
-# 
-# 
-# 
+# Adelphos AP: the fractal trust network
+#
+# Activity Pub implementation
+#
+# © 2025-26 Lino Ferrentino
+# lino.ferrentino@gmail.com
+#
+# This is free software. Licensed with GPL version 3
+#
+######################################################
+#
+# The class that manages the connections.
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from websockets.asyncio.server import broadcast
 from app.logging import gCon
+from app.api.AdelphosException import AdelphosException
 from app.api.Dispatcher import send_msg_to_local_alias
 from app.api.params import make_cmd_params
 from app.api.AppCtx import WebSocketContext
 from app.dao.AliasDto import AliasDto
 from app.api.params import get_param_safe
 from app.dao.AdelphosUri import uriparse
+from app.api.AliasApi import AliasApi
 import asyncio
+import traceback
 
 
 
@@ -114,13 +125,21 @@ class ClientWs:
             self.wsctx.cmd = self.wsctx.cmd_splits.pop(0)
             make_cmd_params(self.wsctx)
 
-            alias = get_param_safe('alias')
+            alias = get_param_safe(self.wsctx, 'alias')
+            password = get_param_safe(self.wsctx, 'password')
+
             # now I have to parse the uri, the alias is *always* in a format like
             # ##name.family or #ad#name.family@...
-            self.wsctx.alias_uri = uriparse(alias)
+            alias_uri = uriparse(alias)
 
-            answer = await send_msg_to_local_alias(self.wsctx, alias, "hello world")
-            answer = "test ok"
+            gCon.log(f"You {self.wsctx.alias_uri} want to login!")
+
+            # first of all I have to check the password, if it is correct
+            # I send the OTP code.
+
+            answer = await send_msg_to_local_alias(self.wsctx, alias_uri,
+                                                   "hello world")
+            #answer = "test ok"
             await self.websocket.send_text(f"remote answers {answer}")
 
 
@@ -143,6 +162,7 @@ class ClientWs:
 
         # this to catch all other errors, these are bugs :(
         except Exception as ex:
+            traceback.print_exc()
             await self.websocket.send_text(f"Server error, we apologize.")
 
 

@@ -29,12 +29,6 @@ from app.dao.FdActorDto import FdActorDto
 @dataclass
 class AliasDto(FdActorDto):
 
-    # we need an init because the FdActorDto has some default values.
-    #def __init__(self, name, instance_id, family_id, password):
-    #    super().__init__(name, instance_id)
-    #    self.family_fk = family_id
-    #    self.password = password
-
     actor_fk: int
 
     # every alias is linked to a family, a level zero group

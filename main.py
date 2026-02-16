@@ -63,7 +63,7 @@ async def get():
         <form action="" onsubmit="sendMessage(event)">
         <label>Security Token: <input type="text" id="token" autocomplete="off" value=""/></label>
         <hr>
-        <input type="text" id="messageText" autocomplete="off"/>
+        <input type="text" id="messageText" autocomplete="off" style="width:500px"/>
         <button>Send</button>
         </form>
         <ul id='messages'>
@@ -85,8 +85,8 @@ async def get():
             function sendMessage(event) {
                 var token = document.getElementById('token')
                 var input = document.getElementById("messageText")
-                input += " tk " + token.value
-                ws.send(input.value)
+                msg_total = " tk " + token.value + input.value
+                ws.send(msg_total)
                 input.value = ''
                 event.preventDefault()
             }

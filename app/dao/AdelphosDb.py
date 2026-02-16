@@ -215,7 +215,7 @@ create table fd_alias(
 
  create table sessions (
 
-    local_fk integer primary key references fd_alias(local_fk)
+    local_fk integer primary key references fd_alias(local_fk),
     cur_session_token integer,
     state_id integer,
     timestamp text default current_timestamp
