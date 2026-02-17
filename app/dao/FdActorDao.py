@@ -29,14 +29,6 @@ class FdActorDao(BaseAdelphosDao):
         super().__init__(dao)
 
 
-    # this is tha base method to get an "alive" object from the db.
-    # This is only valid for the alive objects which have not a
-    # double name: the family and the group.
-
-    def get_from_local_name(self, name):
-        pass
-
-
     # the difference from getting from uri an object and an alive
     # person is that the query is different!
 

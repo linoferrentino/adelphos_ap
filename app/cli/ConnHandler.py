@@ -132,15 +132,22 @@ class ClientWs:
             # ##name.family or #ad#name.family@...
             alias_uri = uriparse(alias)
 
-            gCon.log(f"You {self.wsctx.alias_uri} want to login!")
+            gCon.log(f"You {alias_uri} want to login!")
+
+            # let's suppose that we want to login, first of all we create
+            # an AliasApi and we pass the message
+            self.wsctx.alias_api = AliasApi(alias_uri)
+            msg = self.wsctx.alias_api.login(self.wsctx, password)
+
 
             # first of all I have to check the password, if it is correct
             # I send the OTP code.
 
-            answer = await send_msg_to_local_alias(self.wsctx, alias_uri,
-                                                   "hello world")
+            #answer = await send_msg_to_local_alias(self.wsctx, alias_uri,
+            #                                       "hello world")
+
             #answer = "test ok"
-            await self.websocket.send_text(f"remote answers {answer}")
+            await self.websocket.send_text(f"remote answers {msg}")
 
 
     async def serve(self):

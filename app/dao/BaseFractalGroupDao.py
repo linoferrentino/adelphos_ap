@@ -23,7 +23,8 @@ class BaseFractalGroupDao(FdActorDao):
         self.level_constraint_sql = level_constraint_sql
         super().__init__(dao)
         # I store here the list of fields
-        self.ftbl_col_list = ( "parent_group_fk", "boss_fk", "cashier_fk",
+        self.ftbl_col_list = ( "local_fk", "parent_group_fk", 
+                              "boss_fk", "cashier_fk",
                               "currency_fk", "equity", "level")
         self.ftbl_clist_exp = ",".join(self.ftbl_col_list)
 

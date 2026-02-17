@@ -30,6 +30,9 @@ from app.logging import gCon
 # this is the mechanical URI
 # #<type>#<local_id>@<host>
 
+# the family (f0) does not exist independently from the alias.
+# That is, the family has at least one alias.
+# an empty family is not possible.
 
 # I can query the database with this URI,
 # the database is federated, I could see that
