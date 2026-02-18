@@ -106,7 +106,7 @@ async def websocket_endpoint(websocket: WebSocket):
     client = await app.conn_hndl.accept(websocket)
 
     # this is the never ending cycle.
-    await client.serve()
+    await client.serve_forever()
 
 
 @app.get("/.well-known/webfinger",

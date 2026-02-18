@@ -74,8 +74,19 @@ class AliasApi:
         self.n_family_dto = ctx.app.dao.family_dao\
                 .get_from_local_name(self.uri.family) 
 
+
+        if (self.n_family_dto is None):
+            raise AdelphosException("Invalid alias/password")
+
         # the family has a name, the alias has also a nick.
-        gCon.log(f"I have got the n_family {self.n_family_dto} with id")
+        gCon.log(f"I have n_family {self.n_family_dto}")
+
+        
+        # OK, now I have to get the alias
+
+        self.n_alias_dto = ctx.app.dao.alias_dao\
+                .get_from_name_family_id(self.uri.name, self.n_family_dto.local_fk)
+
 
         return "Login OK, please insert the token received on your Mastodon inbox"
 

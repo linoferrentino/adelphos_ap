@@ -29,12 +29,15 @@ from app.dao.FdActorDto import FdActorDto
 @dataclass
 class AliasDto(FdActorDto):
 
+    # this is the Activity Pub actor linked to this alias
     actor_fk: int
 
     # every alias is linked to a family, a level zero group
     family_fk: int
 
-    # every alias has a password, but we will have a MFA with Mastodon.
+    # every alias has a password, but we will have a 2FA with Mastodon.
     password: str
     
+    # the foreign key towards the fd_actor
+    local_fk: int = None
 

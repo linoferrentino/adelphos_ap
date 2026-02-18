@@ -15,6 +15,8 @@
 
 from app.dao.FdActorDao import FdActorDao
 from ..logging import gCon
+from app.dao.BaseGroupDto import BaseGroupDto
+
 
 class BaseFractalGroupDao(FdActorDao):
 
@@ -22,10 +24,13 @@ class BaseFractalGroupDao(FdActorDao):
     def __init__(self, dao, level_constraint_sql = None):
         self.level_constraint_sql = level_constraint_sql
         super().__init__(dao)
-        # I store here the list of fields
-        self.ftbl_col_list = ( "local_fk", "parent_group_fk", 
+        # I store here the list of fields, the list is coherent
+        # with BaseGroupDto
+        self.ftbl_col_list = ( "parent_group_fk", 
                               "boss_fk", "cashier_fk",
-                              "currency_fk", "equity", "level")
+                              "currency_fk", "equity", "level",
+                              "local_fk", "timestamp"
+                              )
         self.ftbl_clist_exp = ",".join(self.ftbl_col_list)
 
 
@@ -50,20 +55,25 @@ class BaseFractalGroupDao(FdActorDao):
     # OK; this is a way to query the db on the local name
     def get_from_local_name(self, name):
         sql_to_do = BaseFractalGroupDao.select_local_name.format(self = self)
-        gCon.log(f"This is my query {sql_to_do}")
+        gCon.log(f"This is my query {sql_to_do} with name {name}")
 
         row = self.dao.db.execute_and_fetch_one(sql_to_do, (name,))
 
+        if (row is None):
+            return None
+
         gCon.log(f"this is the row {row}")
 
-        return None
+        group = BaseGroupDto(*row) 
+        
+        gCon.log(f"this is the group {group}")
+
+        return group
                  
 
     # Here it is a simple passby
     def store_dict(self, dto, dto_as_dict):
-        gCon.log("Storing the base fractal group dao")
         new_id = super().store_dict(dto, dto_as_dict)
-        gCon.log(f"now storing base Fractal group with id {new_id}")
         return new_id
 
 

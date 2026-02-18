@@ -150,27 +150,45 @@ class ClientWs:
             await self.websocket.send_text(f"remote answers {msg}")
 
 
-    async def serve(self):
+    # this is the never ending loop which goes away only if the client
+    # disconnects.
+    async def serve_forever(self):
+
+        while True:
+            try:
+
+                await self.serve_a_cycle()
+                # If I am here, I just continue
+                continue
+
+            except WebSocketDisconnect as wds:
+
+                # No problem, come another time
+                gCon.log("disconnect")
+
+
+            # this to catch all other errors, these are bugs :(
+            except Exception as ex:
+                traceback.print_exc()
+                await self.websocket.send_text(f"Server error, we apologize.")
+
+            # if I arrive here there has been a problem, go away, the system
+            # might be in a bad state.
+            break
+
+        self.running = False
+
+
+    async def serve_a_cycle(self):
+
         try:
 
             await self._internal_serve()
 
         except AdelphosException as err:
 
+            # this is a "benign" error, we eat the exception and continue
             await self.websocket.send_text(f"Error in request {err}")
-
-        except WebSocketDisconnect as wds:
-
-            # this is called. No problem
-            gCon.log("disconnect")
-
-            # this client will be garbage collected later.
-            self.running = False
-
-        # this to catch all other errors, these are bugs :(
-        except Exception as ex:
-            traceback.print_exc()
-            await self.websocket.send_text(f"Server error, we apologize.")
 
 
     async def stop(self):

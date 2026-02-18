@@ -21,35 +21,28 @@ from dataclasses import field
 
 # here we have all the DTOs relative to the federated actor
 
+# every dataclass is used as a IN or an OUT class, the difference
+# is that the OUT class has values for the fields which are written by the DB
+
+
+# this class is in a certain sense abstract: you do not instantiate directly
+# a FdActorDto, but for convenience it is stored in the DB.
 @dataclass
 class FdActorDto:
 
+    # these are handled by the DB, so I put there.
+    # this primary key is relative to the "whole" object.
+    fd_actor_id: int 
+
+    # the name of this actor (in case of the alias it is composed of two objects),
+    # name and the family's name
     name: str
 
     # the (adelphos!) instance from which this federated actor comes
     instance_fk: int
 
-    # these are handled by the DB, so I put there.
-    # this primary key is relative to the "whole" object.
-    # the other one --- local_fk --- is only used to make a 1:1 mapping
-    fd_actor_id: int = field(default = None, init = False) 
-
-    timestamp: str = field(default = None, init = False)
-
-
-# this DTO is used when we create a new actor, some fields have
-# default values
-#@dataclass
-#class FdActorDtoNew:
-#
-#    name: str
-#
-#    # the (adelphos!) instance from which this federated actor comes
-#    instance_fk: int
-#
-#    # these are handled by the DB
-#    fd_actor_id: int = None
-#    timestamp: str = None
+    # this is set by the db engine.
+    timestamp: str 
 
 
 

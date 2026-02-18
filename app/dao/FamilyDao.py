@@ -36,15 +36,14 @@ class FamilyDao(BaseFractalGroupDao):
 
     # this works backwards, inserting first the dependant tables
     def store_dict(self, dto, dto_as_dict):
-        gCon.log("Start to store the family dto")
         new_id = super().store_dict(dto, dto_as_dict)
-        gCon.log(f"now the family dao with id {new_id}")
-
         # final store into the table, I can add the foreign key
         dto_as_dict['local_fk'] = new_id
-        gCon.log(f"self is now {self}")
+        dto.local_fk = new_id
         self.dao.db.insert_dto_fields("fd_group_family",
                 ('local_fk', 'level'), dto_as_dict)
+
+        gCon.log(f"Stored the family {dto}")
         return new_id
 
 

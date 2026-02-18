@@ -20,9 +20,9 @@ from dataclasses import field
 from app.dao.FdActorDto import FdActorDto
 
 
+# this is the dataclass used to create a new object.
 @dataclass
 class BaseGroupDto(FdActorDto):
-
 
     parent_group_fk: int
 
@@ -30,12 +30,10 @@ class BaseGroupDto(FdActorDto):
 
     cashier_fk: int
 
-    currency_fk: int = None
-
-    level_fk: int = None
+    currency_fk: int 
 
     # equity and currenct can be set after: now we simply set the name
-    equity: float = None
+    equity: float
 
-    level: int = field(default = -1, init = False)
+    level: int
 

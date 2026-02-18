@@ -24,24 +24,22 @@ from app.dao.BaseGroupDto import BaseGroupDto
 # Every one does belong to a family
 
 
-# this is the basic object, not with all the fields.
 @dataclass
 class FamilyDto(BaseGroupDto):
 
+    # for now we do not add new fields.
 
-    # every family has by definition fractal level zero
-    def __post_init__(self):
-        self.level = 0
+    # later we will have some other fields.
+
+    pass
 
 
 
 
-# this is the class with all the fields, it inherits
-# from both the base adelphos object and the family object.
-#@dataclass
-#class FamilyRawDto(AdelphosDto, FamilyDto):
-#
-#    pass
+# this is the constructor for a family.
+# it needs less fields, some will be initialized by the database 
+def family_dto_create(name, instance_fk, boss_fk):
 
+    pass
 
 

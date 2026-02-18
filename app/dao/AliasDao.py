@@ -21,6 +21,13 @@ from ..logging import gCon
 # for an alias object.
 class AliasDao(FdActorDao):
 
+
+    def __init__(self, dao):
+        super().__init__(dao)
+        # the columns are in the same order as AliasDto
+        self.ftbl_col_list = ('actor_fk', 'family_fk', 'password', 'local_fk')
+        self.ftbl_clist_exp = ",".join(self.ftbl_col_list)
+
     #@staticmethod
     #def exists_local_alias(ctx, alias):
 
@@ -52,19 +59,43 @@ class AliasDao(FdActorDao):
     # this is synchronous: we get first the alias, then we query the actor.
 
 
+    # this is a local function, 
+    def get_from_name_family_id(self, name, family_id):
+        select_local_name_family_id  = """
+        select {self.ftbl_clist_exp} from fd_alias as fd_al, fd_actor as fd_ac
+    where 
+    (
+    (fd_al.local_fk = fd_ac.fd_actor_id)
+    and
+    (fd_ac.name = ?)
+    and
+    (fd_al.family_fk = ?)
+    and
+    (fd_ac.instance_fk = 0)
+    )
+
+        """
+
+        sql_to_do = select_local_name_family_id.format(self = self)
+        row = self.dao.db.execute_and_fetch_one(sql_to_do, (name, family_fk))
+        if (row is None):
+            return None
+
+        return AliasDto(*row)
+
+
 
     # here we have to change the fields.
     # also in this case we do the hierarchical insert.
     def store_dict(self, dto, dto_as_dict):
 
         # first of all I store the base table
-
         new_id = super().store_dict(dto, dto_as_dict)
 
         dto_as_dict['local_fk'] = new_id
+        dto.local_fk = new_id
 
-        self.dao.db.insert_dto_fields("fd_alias", ('local_fk', 'actor_fk',
-                                                   'family_fk', 'password'), dto_as_dict)
+        self.dao.db.insert_dto_fields("fd_alias", self.ftbl_col_list, dto_as_dict)
         gCon.log(f"Created new alias {dto}")
 
 
