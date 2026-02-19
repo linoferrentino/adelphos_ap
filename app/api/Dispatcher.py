@@ -26,7 +26,9 @@ from app.api.params import make_cmd_params
 from app.consts import USER_ID
 from app.dao.AdelphosUri import uriparse
 from app.dao.AliasDto import AliasDto
+from app.dao.AliasDto import alias_dto_create_local
 from app.dao.FamilyDto import FamilyDto
+from app.dao.FamilyDto import family_dto_create_local
 from app.logging import gCon
 from argon2 import PasswordHasher
 import traceback
@@ -78,24 +80,19 @@ async def alias_create_handler(ctx):
         raise AdelphosException(
 f"family {alias_uri.family} is already existing in this instance")
 
-    #return "OK, the family is not present, I can proceed"
 
     # let's create the family, for now it will have only a name, not a currency
-    family_dto = FamilyDto(alias_uri.family, 0, None, None, None)
+    family_dto = family_dto_create_local(alias_uri.family)
 
     family_id = ctx.app.dao.family_dao.store(family_dto)
 
-    # "All OK, I have stored the family"
-
     # I have now the id of the family and I can create the alias.
-
     ph = PasswordHasher()
     pass_hashed = ph.hash(password)
 
     # the instance is zero, it is local.
-    alias_dto = AliasDto(alias_uri.name, 0, 
-                         ctx.actor_dto.actor_id,
-                         family_id, pass_hashed)
+    alias_dto = alias_dto_create_local(alias_uri.name,
+                                       ctx.actor_dto.actor_id, family_id, pass_hashed)
 
     # the alias for now has not a password, when we will have p2p
     # encryption then it will be sensible to have one.

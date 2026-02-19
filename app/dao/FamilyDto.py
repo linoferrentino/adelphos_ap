@@ -27,19 +27,22 @@ from app.dao.BaseGroupDto import BaseGroupDto
 @dataclass
 class FamilyDto(BaseGroupDto):
 
-    # for now we do not add new fields.
-
-    # later we will have some other fields.
+    # this class is only a place holder.
 
     pass
-
-
 
 
 # this is the constructor for a family.
 # it needs less fields, some will be initialized by the database 
-def family_dto_create(name, instance_fk, boss_fk):
+def family_dto_create_local(name):
 
-    pass
+    # the family has level zero
+
+    fam_dto = FamilyDto(
+            None, name, 0, None, #fd_actor fields
+            None, None, None, None, None, None, 0)
+
+    return fam_dto
+
 
 

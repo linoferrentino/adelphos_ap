@@ -38,6 +38,15 @@ class AliasDto(FdActorDto):
     # every alias has a password, but we will have a 2FA with Mastodon.
     password: str
     
-    # the foreign key towards the fd_actor
-    local_fk: int = None
+
+
+def alias_dto_create_local(name, actor_fk, family_id, pass_hashed):
+
+    alias_dto = AliasDto(
+            None, name, 0, None, # fd_actor fields
+            actor_fk, family_id, pass_hashed)
+
+    return alias_dto
+
+
 

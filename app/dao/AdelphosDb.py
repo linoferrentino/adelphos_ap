@@ -173,6 +173,9 @@ create table fd_currency(
 # (the same for its members!).
 # this table is for families (level 0) and groups (level > 0)
 # this is a concrete table where the discriminator column is level.
+# there are some fields which are valid only for level > 0
+# and some other fields which are valid only for level == 0
+# the other fields are common
 ('fd group', """
 create table fd_group_family(
 
@@ -181,6 +184,7 @@ create table fd_group_family(
         parent_group_fk integer references fd_group_family(local_fk),
         boss_fk integer null references fd_alias(local_fk),
         cashier_fk integer references fd_alias(local_fk),
+        judge_fk integer references fd_alias(local_fk),
         currency_fk integer references fd_currency(local_fk),
         equity real,
         level integer
