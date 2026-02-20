@@ -31,20 +31,8 @@ class FamilyDao(BaseFractalGroupDao):
 
     # the level for me is zero, this will be stored in the query.
     def __init__(self, dao):
-        super().__init__(dao, " and (fdg.level = 0)")
+        super().__init__(dao, " and (level = 0)")
 
-
-    # this works backwards, inserting first the dependant tables
-    def store_dict(self, dto, dto_as_dict):
-        new_id = super().store_dict(dto, dto_as_dict)
-        # final store into the table, I can add the foreign key
-        dto_as_dict['local_fk'] = new_id
-        dto.local_fk = new_id
-        self.dao.db.insert_dto_fields("fd_group_family",
-                ('local_fk', 'level'), dto_as_dict)
-
-        gCon.log(f"Stored the family {dto}")
-        return new_id
 
 
     # this is the basic store, I start from the base class and then I go up.

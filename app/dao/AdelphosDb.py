@@ -76,15 +76,15 @@ create table ap_actor (
 );"""),
 
 
-# this is the view that joins the two tables.
-('view actor_server',
- """
- create view actor_server as select
- actor_id, host_name, user_path, inbox_path, preferred_name,
- public_key, ap_actor.timestamp as timestamp from ap_server, ap_actor where
- server_id = server_fk;
-
-"""),
+## this is the view that joins the two tables.
+#('view actor_server',
+# """
+# create view actor_server as select
+# actor_id, host_name, user_path, inbox_path, preferred_name,
+# public_key, ap_actor.timestamp as timestamp from ap_server, ap_actor where
+# server_id = server_fk;
+#
+#"""),
 
 
 # this is the table that stores the adelphos instances. These
@@ -190,6 +190,18 @@ create table fd_group_family(
         level integer
 );"""),
 
+# now the view which does the join between fd_group_family and fd_actor
+('view fd_group_family_ex', """
+
+ create view fd_group_family_ex as select 
+ fda.fd_actor_id, fda.name, fda.instance_fk, fda.timestamp,
+ fdg.parent_group_fk, fdg.boss_fk, fdg.cashier_fk, fdg.judge_fk,
+ fdg.currency_fk, fdg.equity, fdg.level
+ from fd_actor as fda, fd_group_family as fdg
+ where fda.fd_actor_id = fdg.local_fk;
+
+ """),
+
 
 # the alias is the link between adelphos and activity pub; this means
 # that we have both the links.
@@ -209,6 +221,17 @@ create table fd_alias(
         password text
 
 ); """),
+
+
+('view fd_alias_ex', """
+
+ create view fd_alias_ex as select
+ fda.fd_actor_id, fda.name, fda.instance_fk, fda.timestamp,
+ fdl.actor_fk, fdl.family_fk, fdl.password
+ from fd_actor as fda, fd_alias as fdl
+ where fda.fd_actor_id = fdl.local_fk;
+
+ """),
 
 
 # this is the table that holds the session, the session is linked to
@@ -403,6 +426,28 @@ select {list_sql_fields} from {table_name} where {condition_str}
         row = cur.fetchone()
         cur.close()
         return row
+
+
+    # gets the full table(view) with a condition on a field
+    def get_full_dto(self, table_name, field_to_seek, 
+                value_to_seek, constructor_dto):
+
+        sql_get = f"""
+select * from {table_name} where {field_to_seek} = ?
+
+"""
+        cur = self._conn.cursor()
+        cur.execute(sql_get, (value_to_seek,))
+        row = cur.fetchone()
+        cur.close()
+
+        if (row is None):
+            gCon.log(f"No row in {table_name} for {field_to_seek} \
+= {value_to_seek}")
+            return None
+
+        # I simply get the dto 
+        return constructor_dto(*row)
 
 
     def get_dto(self, table_name, fields_to_ask, field_to_seek, 

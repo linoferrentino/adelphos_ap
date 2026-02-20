@@ -25,27 +25,24 @@ class BaseFractalGroupDao(FdActorDao):
         self.level_constraint_sql = level_constraint_sql
         super().__init__(dao)
         # I store here the list of fields, the list is coherent
-        # with BaseGroupDto
-        self.ftbl_col_list = ( "parent_group_fk", 
-                              "boss_fk", "cashier_fk",
-                              "currency_fk", "equity", "level",
-                              "local_fk", "timestamp"
-                              )
-        self.ftbl_clist_exp = ",".join(self.ftbl_col_list)
+        # with BaseGroupDto and FdActorDto
+        #self.ftbl_col_list = ( "parent_group_fk", 
+        #                      "boss_fk", "cashier_fk",
+        #                      "currency_fk", "equity", "level",
+        #                      "local_fk", "timestamp"
+        #                      )
+        #self.ftbl_clist_exp = ",".join(self.ftbl_col_list)
 
 
     # the local family by definition belongs to instance zero and level zero
     # 
     select_local_name = """
-    select {self.ftbl_clist_exp} from fd_group_family as fdg, fd_actor as fda
-
+    select * from fd_group_family_ex 
     where 
     (
-    (fdg.local_fk = fda.fd_actor_id)
+    (name = ?)
     and
-    (fda.name = ?)
-    and
-    (fda.instance_fk = 0)
+    (instance_fk = 0)
     {self.level_constraint_sql}
     )
 
@@ -62,18 +59,27 @@ class BaseFractalGroupDao(FdActorDao):
         if (row is None):
             return None
 
-        gCon.log(f"this is the row {row}")
-
         group = BaseGroupDto(*row) 
-        
-        gCon.log(f"this is the group {group}")
 
         return group
                  
 
-    # Here it is a simple passby
+    # this works backwards, inserting first the dependant tables
     def store_dict(self, dto, dto_as_dict):
         new_id = super().store_dict(dto, dto_as_dict)
+        # final store into the table, I can add the foreign key
+        dto_as_dict['local_fk'] = new_id
+        self.dao.db.insert_dto_fields("fd_group_family",
+                ('local_fk', 'level'), dto_as_dict)
+
+        gCon.log(f"Stored the group family {dto}")
         return new_id
+
+
+
+    ## I store myself as a dictionary
+    #def store_dict(self, dto, dto_as_dict):
+    #    new_id = super().store_dict(dto, dto_as_dict)
+    #    return new_id
 
 

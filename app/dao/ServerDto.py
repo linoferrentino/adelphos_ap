@@ -22,14 +22,23 @@ from dataclasses import dataclass
 # TODO create a string enumeration for the columns.
 
 
+# the fields are in the same order as the database
 @dataclass
 class ServerDto:
 
-    # this only has not a default value.
+    server_id: int
+
     host_name: str
 
-    server_id: int = None
-    timestamp: str = None
+    timestamp: str
+
+
+
+def create_ap_server(host_name):
+
+    ap_server = ServerDto(None, host_name, None)
+
+    return ap_server
 
 
 

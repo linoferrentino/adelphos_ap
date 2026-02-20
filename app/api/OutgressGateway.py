@@ -49,6 +49,16 @@ async def post_response_inbox(ctx, actor, server, msg):
 {ctx.actor_dto.user_path}"
     inbox_uri = f"https://{ctx.server_dto.host_name}\
 {ctx.actor_dto.inbox_path}"
+    gCon.log(f"INBOX {inbox_uri} host {ctx.server_dto.host_name} path {ctx.actor_dto.inbox_path}")
+    return await post_response_inbox_impl(ctx, actor_uri, inbox_uri, msg)
+
+
+async def post_to_ap_actor(ctx, server_dto, actor_dto, message):
+    actor_uri = f"https://{server_dto.host_name}/\
+{actor_dto.user_path}"
+    inbox_uri = f"https://{server_dto.host_name}\
+{actor_dto.inbox_path}"
+    gCon.log(f"INBOX {inbox_uri} host {server_dto.host_name} path {actor_dto.inbox_path}")
     return await post_response_inbox_impl(ctx, actor_uri, inbox_uri, msg)
 
 

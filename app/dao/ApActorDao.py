@@ -17,6 +17,7 @@ from urllib.parse import urlparse
 from app.logging import gCon
 from app.dao.BaseDao import BaseDao
 from app.dao.ApActorDto import ApActorDto
+from app.dao.ApActorDto import create_ap_actor
 from app.ap_api.AsyncRequest import AsyncGetReq
 from dataclasses import asdict
 import json
@@ -38,6 +39,16 @@ class ApActorDao(BaseDao):
     # I can set here the context.
     def __init__(self, dao):
         super().__init__(dao)
+
+        # the list is coherent with ApActorDto
+        self.ftbl_col_list = ( "server_fk", 
+                              "user_path", "preferred_username",
+                              "inbox_path", "public_key", "actor_id",
+                              "local_fk", "timestamp"
+                              )
+
+
+
         #super().__init__(dao, 'ap_actor', ('server_fk', 'user_path', 'preferred_username',
         #                       'inbox_path', 'public_key') )
 
@@ -168,15 +179,23 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
         #gCon.log("I have set the canonical name")
         #actor.canonical_name = f"@{preferred_username}@{key_parsed.hostname}"
         # OK, now I can create the actor
-        actor = ApActorDto(ctx.server_dto.server_id,
+        actor = create_ap_actor(ctx.server_dto.server_id,
                          key_parsed.path,
-                         preferred_username,
                          inbox_parsed.path,
+                         preferred_username,
                          pub_key_ob['publicKeyPem'])
 
         self.store(actor)
 
+        gCon.log(f"Created actor {actor}")
+
         return actor 
+
+
+    # this method returns the actor from a local id
+    def get_from_local_id(self, local_id):
+        return self.dao.db.get_full_dto("ap_actor", "actor_id", local_id,
+                                        ApActorDto)
 
 
     # this function tries to get an actor from
@@ -249,7 +268,6 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
         table_name = "ap_actor"
 
-
         fields_stored = {
                          'server_fk': actor.server_fk,
                          'user_path': actor.user_path,
@@ -257,14 +275,9 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
                          'inbox_path': actor.inbox_path,
                          'public_key': actor.public_key,
                          }
-        #actor_as_dict = asdict(actor)
 
         newid = self.dao.db.insert_dto_fields(table_name, fields_stored, actor_as_dict)
         actor.actor_id = newid
-        gCon.log(f"stored new actor {actor}")
-
 
     
-    #def store(self, dto):
-    #    pass
 

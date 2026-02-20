@@ -15,6 +15,7 @@
 # The DAO for the alias
 from app.dao.FdActorDao import FdActorDao
 from ..logging import gCon
+from app.dao.AliasDto import AliasDto
 
 
 # this is the utility class that handles the business logic
@@ -24,60 +25,28 @@ class AliasDao(FdActorDao):
 
     def __init__(self, dao):
         super().__init__(dao)
+
         # the columns are in the same order as AliasDto
         self.ftbl_col_list = ('actor_fk', 'family_fk', 'password', 'local_fk')
-        self.ftbl_clist_exp = ",".join(self.ftbl_col_list)
 
-    #@staticmethod
-    #def exists_local_alias(ctx, alias):
-
-    #    cur = ctx.app.dao._conn.cursor()
-    #    cur.execute("select adelphos_id from alias_local where name = ?",
-    #                (alias,))
-    #    row = cur.fetchone()
-    #    cur.close()
-    #    if (row is None):
-    #        return False
-    #    return True
-
-
-    # this method is able to query the fediverse in order to obtain the
-    # object also remotely.
-    #@staticmethod
-    #def get_from_alias_uri(ctx, alias_uri):
-
-    #    fields_to_ask = ('alias_uri', 'actor_fk', 
-    #                     'password', 'timestamp')
-
-    #    field_to_seek = 'alias_uri'
-    #    value_to_seek = alias_uri
-
-    #    dto = ctx.app.dao.get_dto(table_name, fields_to_ask, field_to_seek, 
-    #                        value_to_seek, AliasDto)
-    #    return dto
-
-    # this is synchronous: we get first the alias, then we query the actor.
 
 
     # this is a local function, 
     def get_from_name_family_id(self, name, family_id):
-        select_local_name_family_id  = """
-        select {self.ftbl_clist_exp} from fd_alias as fd_al, fd_actor as fd_ac
-    where 
+        sql_get_local_name_family = """
+        select  * from fd_alias_ex   where 
     (
-    (fd_al.local_fk = fd_ac.fd_actor_id)
+    (name = ?)
     and
-    (fd_ac.name = ?)
+    (family_fk = ?)
     and
-    (fd_al.family_fk = ?)
-    and
-    (fd_ac.instance_fk = 0)
+    (instance_fk = 0)
     )
 
         """
 
-        sql_to_do = select_local_name_family_id.format(self = self)
-        row = self.dao.db.execute_and_fetch_one(sql_to_do, (name, family_fk))
+        row = self.dao.db.execute_and_fetch_one(sql_get_local_name_family,
+                                                (name, family_id))
         if (row is None):
             return None
 

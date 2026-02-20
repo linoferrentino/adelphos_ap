@@ -15,6 +15,7 @@
 from app.api.AdelphosException import AdelphosException
 from app.dao.AdelphosUri import EAdelphosType
 from app.logging import gCon
+from argon2 import PasswordHasher
 
 
 # This can be "myself" in the context, so that we can "speak" to ourselves
@@ -81,11 +82,37 @@ class AliasApi:
         # the family has a name, the alias has also a nick.
         gCon.log(f"I have n_family {self.n_family_dto}")
 
-        
         # OK, now I have to get the alias
 
         self.n_alias_dto = ctx.app.dao.alias_dao\
-                .get_from_name_family_id(self.uri.name, self.n_family_dto.local_fk)
+                .get_from_name_family_id(self.uri.name,
+                                         self.n_family_dto.fd_actor_id)
+
+        if (self.n_alias_dto is None):
+            raise AdelphosException("Invalid alias/password")
+
+        gCon.log(f"got the alias {self.n_alias_dto}, now we verify")
+
+        ph = PasswordHasher()
+        try:
+            res = ph.verify(self.n_alias_dto.password, password)
+        except:
+            raise AdelphosException("Invalid username/password")
+
+        # OK, now we take the ActivityPub actor who is behind this alias
+        self.n_actor_dto = ctx.app.dao.ap_actor_dao.get_from_local_id(
+                self.n_alias_dto.actor_fk)
+
+        if (self.n_actor_dto is None):
+            raise Exception("Bug! there is not the actor corresponding")
+
+        gCon.log(f"I will send the token to {self.n_actor_dto}")
+        self.n_server_dto = ctx.app.dao.server_dao.
+
+        # Now we have to get the server dto
+
+        # just a random token.
+        token = "SUPER_SECRET"
 
 
         return "Login OK, please insert the token received on your Mastodon inbox"
