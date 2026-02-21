@@ -137,7 +137,7 @@ class ClientWs:
             # let's suppose that we want to login, first of all we create
             # an AliasApi and we pass the message
             self.wsctx.alias_api = AliasApi(alias_uri)
-            msg = self.wsctx.alias_api.login(self.wsctx, password)
+            msg = await self.wsctx.alias_api.login(self.wsctx, password)
 
 
             # first of all I have to check the password, if it is correct

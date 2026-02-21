@@ -19,8 +19,6 @@
 from ..logging import gCon
 from dataclasses import dataclass
 
-# TODO create a string enumeration for the columns.
-
 
 # the fields are in the same order as the database
 @dataclass
@@ -33,7 +31,7 @@ class ServerDto:
     timestamp: str
 
 
-
+# this function will create an Activity Pub Server objecct.
 def create_ap_server(host_name):
 
     ap_server = ServerDto(None, host_name, None)

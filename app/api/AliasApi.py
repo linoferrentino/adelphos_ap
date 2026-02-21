@@ -16,6 +16,7 @@ from app.api.AdelphosException import AdelphosException
 from app.dao.AdelphosUri import EAdelphosType
 from app.logging import gCon
 from argon2 import PasswordHasher
+from app.api.OutgressGateway import post_to_ap_actor
 
 
 # This can be "myself" in the context, so that we can "speak" to ourselves
@@ -69,7 +70,7 @@ class AliasApi:
 
     # login is a verb: it has only a subject.
 
-    def login(self, ctx, password):
+    async def login(self, ctx, password):
 
         # first of all I get the family, the alias needs the family.
         self.n_family_dto = ctx.app.dao.family_dao\
@@ -104,15 +105,22 @@ class AliasApi:
                 self.n_alias_dto.actor_fk)
 
         if (self.n_actor_dto is None):
-            raise Exception("Bug! there is not the actor corresponding")
+            raise AdelphosException("Bug! there is not the actor corresponding")
 
         gCon.log(f"I will send the token to {self.n_actor_dto}")
-        self.n_server_dto = ctx.app.dao.server_dao.
+        self.n_server_dto = ctx.app.dao.server_dao.get_from_id(
+                                            self.n_actor_dto.server_fk)
+
+        if (self.n_server_dto is None):
+            raise AdelphosException("Bug! there is not the server corresponding")
 
         # Now we have to get the server dto
 
         # just a random token.
-        token = "SUPER_SECRET"
+        token = "99_super_secret"
+
+        await post_to_ap_actor(ctx, self.n_server_dto,
+                               self.n_actor_dto, f"Your secret is {token}")
 
 
         return "Login OK, please insert the token received on your Mastodon inbox"
