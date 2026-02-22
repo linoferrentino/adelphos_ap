@@ -17,6 +17,8 @@ from app.dao.AdelphosUri import EAdelphosType
 from app.logging import gCon
 from argon2 import PasswordHasher
 from app.api.OutgressGateway import post_to_ap_actor
+import secrets
+from datetime import datetime
 
 
 # This can be "myself" in the context, so that we can "speak" to ourselves
@@ -100,6 +102,13 @@ class AliasApi:
         except:
             raise AdelphosException("Invalid username/password")
 
+        # Now we are here, the alias is authenticated. Is there already a session
+        # for this alias? If yes we try to know if it has expired, if not
+        # we ask the user to force the logout from the other session
+
+        # This maybe later, for now we simply do a memory session
+
+
         # OK, now we take the ActivityPub actor who is behind this alias
         self.n_actor_dto = ctx.app.dao.ap_actor_dao.get_from_local_id(
                 self.n_alias_dto.actor_fk)
@@ -116,11 +125,13 @@ class AliasApi:
 
         # Now we have to get the server dto
 
-        # just a random token.
-        token = "99_super_secret"
+        # just a random token, and I also save a timestamp.
+        self.token = secrets.token_urlsafe()
+        self.session_age = datetime.now()
 
         await post_to_ap_actor(ctx, self.n_server_dto,
-                               self.n_actor_dto, f"Your secret is {token}")
+                               self.n_actor_dto,
+        f"Your secret is {self.token} please paste it in the login page.")
 
 
         return "Login OK, please insert the token received on your Mastodon inbox"

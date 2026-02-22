@@ -26,6 +26,7 @@ from app.dao.AdelphosUri import uriparse
 from app.api.AliasApi import AliasApi
 import asyncio
 import traceback
+from datetime import datetime
 
 
 
@@ -37,13 +38,23 @@ def login_required(func):
     return check_login
 
 
-async def login_hndl_ws(wsctx):
-    pass
+async def login_hndl_ws(ctx):
 
+    alias = get_param_safe(ctx, 'alias')
+    password = get_param_safe(ctx, 'password')
 
-@login_required
-async def login_hndl_ws(wsctx):
-    pass
+    # now I have to parse the uri, the alias is *always* in a format like
+    # ##name.family or #ad#name.family@...
+    alias_uri = uriparse(alias)
+
+    gCon.log(f"You {alias_uri} want to login!")
+
+    # let's suppose that we want to login, first of all we create
+    # an AliasApi and we pass the message
+    ctx.alias_api = AliasApi(alias_uri)
+    msg = await ctx.alias_api.login(ctx, password)
+
+    return msg
 
 
 async def create_group_hndl(wsctx):
@@ -103,8 +114,24 @@ class ClientWs:
         self.running = True
 
 
-    async def web_socket_parse(self):
-        pass
+    async def _handle_cmdline(self, data):
+
+        self.wsctx.cmd_splits = data.split()
+        self.wsctx.cmd = self.wsctx.cmd_splits.pop(0)
+
+        # now the dispatcher.
+        handler = ws_cmd_handlers.get(self.wsctx.cmd)
+        if (handler is None):
+            raise AdelphosException(f"command {self.wsctx.cmd} not recognized")
+
+        make_cmd_params(self.wsctx)
+
+        response = await handler(self.wsctx)
+        
+        time_now = datetime.now()
+        time_str = time_now.strftime("%Y-%m-%d %H:%M")
+
+        await self.websocket.send_text(f"{time_str}: {response}")
 
 
     async def _internal_serve(self):
@@ -119,35 +146,9 @@ class ClientWs:
                 #data = "are you still there?"
                 continue
 
-            gCon.log(f"received {data} command")
+            gCon.log(f"received ]{data}[")
 
-            self.wsctx.cmd_splits = data.split()
-            self.wsctx.cmd = self.wsctx.cmd_splits.pop(0)
-            make_cmd_params(self.wsctx)
-
-            alias = get_param_safe(self.wsctx, 'alias')
-            password = get_param_safe(self.wsctx, 'password')
-
-            # now I have to parse the uri, the alias is *always* in a format like
-            # ##name.family or #ad#name.family@...
-            alias_uri = uriparse(alias)
-
-            gCon.log(f"You {alias_uri} want to login!")
-
-            # let's suppose that we want to login, first of all we create
-            # an AliasApi and we pass the message
-            self.wsctx.alias_api = AliasApi(alias_uri)
-            msg = await self.wsctx.alias_api.login(self.wsctx, password)
-
-
-            # first of all I have to check the password, if it is correct
-            # I send the OTP code.
-
-            #answer = await send_msg_to_local_alias(self.wsctx, alias_uri,
-            #                                       "hello world")
-
-            #answer = "test ok"
-            await self.websocket.send_text(f"remote answers {msg}")
+            await self._handle_cmdline(data)
 
 
     # this is the never ending loop which goes away only if the client
