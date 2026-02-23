@@ -19,6 +19,8 @@ from argon2 import PasswordHasher
 from app.api.OutgressGateway import post_to_ap_actor
 import secrets
 from datetime import datetime
+from enum import IntEnum
+from enum import auto
 
 
 # This can be "myself" in the context, so that we can "speak" to ourselves
@@ -56,6 +58,13 @@ from datetime import datetime
 # But in this case the actor is the adelphos instance that does the action.
 
 
+# these are the states for the user.
+class EUserState(IntEnum):
+    NOT_LOGGED = auto()
+    LOGGED_WITHOUT_TOKEN = auto()
+    LOGGED_AND_TOKEN = auto()
+
+
 class AliasApi:
 
 
@@ -65,6 +74,8 @@ class AliasApi:
         if (uri.obj_type != EAdelphosType.ALIAS_TYPE):
             raise AdelphosException(f"type mismatch wanted alias got {uri.obj_type}")
 
+        self.user_state = EUserState.NOT_LOGGED
+
 
     # this method will login the LOCAL alias.
     # it verifies the password and, if it matches, it sends to the actor
@@ -72,12 +83,26 @@ class AliasApi:
 
     # login is a verb: it has only a subject.
 
+    def is_logged_in(self, ctx):
+        if (self.user_state != EUserState.LOGGED_AND_TOKEN):
+            gCon.log(f"No logged {self.user_state}")
+            return False
+        gCon.log(f"YES logged {self.user_state}")
+        return True
+
+
+    def recv_token(self, ctx, token):
+        if (token != self.token):
+            raise AdelphosException("Invalid token")
+        self.user_state = EUserState.LOGGED_AND_TOKEN
+        return f"Token accepted, welcome to adelphos, {self.uri.name}."
+
+
     async def login(self, ctx, password):
 
         # first of all I get the family, the alias needs the family.
         self.n_family_dto = ctx.app.dao.family_dao\
                 .get_from_local_name(self.uri.family) 
-
 
         if (self.n_family_dto is None):
             raise AdelphosException("Invalid alias/password")
@@ -108,7 +133,6 @@ class AliasApi:
 
         # This maybe later, for now we simply do a memory session
 
-
         # OK, now we take the ActivityPub actor who is behind this alias
         self.n_actor_dto = ctx.app.dao.ap_actor_dao.get_from_local_id(
                 self.n_alias_dto.actor_fk)
@@ -131,11 +155,31 @@ class AliasApi:
 
         await post_to_ap_actor(ctx, self.n_server_dto,
                                self.n_actor_dto,
-        f"Your secret is {self.token} please paste it in the login page.")
+        f"token {self.token} \nplease paste it in the login page.")
+
+        self.user_state = EUserState.LOGGED_WITHOUT_TOKEN
+
+        return "Login OK, please paste the token received in your Mastodon inbox"
 
 
-        return "Login OK, please insert the token received on your Mastodon inbox"
+    def logout():
+        pass
 
 
+    def change_password():
+        pass
 
 
+    # this does not belong here!
+
+    # this is the function to buy an object, it will make the routing and create
+    # all the cheques.
+    # it returns a path or None if some conditions are not met.
+    def buy_object_or_service(object_sold):
+
+        # this is a path.
+        # the place and time of the object
+        # the price you will pay, in t0 or tX money
+        # the currency, etc.
+        
+        return "The object will arrive at @place@iii on Wednesday March 15th"

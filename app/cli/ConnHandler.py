@@ -38,7 +38,23 @@ def login_required(func):
     return check_login
 
 
+async def token_hndl_ws(ctx):
+    #if (ctx.alias_api.is_logged_in(ctx) == False):
+    #    raise AdelphosException("Please login first")
+    token = get_param_safe(ctx, 'token')
+
+    # this is local function, no need to await
+    msg = ctx.alias_api.recv_token(ctx, token)
+
+    return msg
+
+
+
 async def login_hndl_ws(ctx):
+
+    # If you already have a login then you cannot login another time
+    if (ctx.alias_api is not None):
+        raise AdelphosException("You have already logged in")
 
     alias = get_param_safe(ctx, 'alias')
     password = get_param_safe(ctx, 'password')
@@ -57,7 +73,7 @@ async def login_hndl_ws(ctx):
     return msg
 
 
-async def create_group_hndl(wsctx):
+async def create_group_hndl(ctx):
     pass
 
 
@@ -100,6 +116,7 @@ async def tl_create_handler(ctx):
 ws_cmd_handlers = {
         "create_group": create_group_hndl,
         "login" : login_hndl_ws,
+        "token" : token_hndl_ws,
         "tl_create": tl_create_handler,
 }
 
@@ -109,28 +126,31 @@ class ClientWs:
 
 
     def __init__(self, app, websocket):
-        self.wsctx = WebSocketContext(app, websocket)
+        self.ctx = WebSocketContext(app, websocket)
         self.websocket = websocket
         self.running = True
 
 
     async def _handle_cmdline(self, data):
 
-        self.wsctx.cmd_splits = data.split()
-        self.wsctx.cmd = self.wsctx.cmd_splits.pop(0)
-
-        # now the dispatcher.
-        handler = ws_cmd_handlers.get(self.wsctx.cmd)
-        if (handler is None):
-            raise AdelphosException(f"command {self.wsctx.cmd} not recognized")
-
-        make_cmd_params(self.wsctx)
-
-        response = await handler(self.wsctx)
-        
+        # first of all I remove the command.
         time_now = datetime.now()
         time_str = time_now.strftime("%Y-%m-%d %H:%M")
 
+        make_cmd_params(self.ctx, data)
+        #await self.websocket.send_text(f"{time_str}: cmd {self.ctx.cmd} => {self.ctx.cmd_dict}")
+        #return True
+
+        handler = ws_cmd_handlers.get(self.ctx.cmd)
+        if (handler is None):
+            raise AdelphosException(f"command {self.ctx.cmd} not recognized")
+
+        #if (len(cmd_and_rest_list) == 1):
+        #    rest_list = ""
+        #else:
+        #    rest_list = cmd_and_rest_list[1]
+        response = await handler(self.ctx)
+        
         await self.websocket.send_text(f"{time_str}: {response}")
 
 
@@ -189,7 +209,7 @@ class ClientWs:
         except AdelphosException as err:
 
             # this is a "benign" error, we eat the exception and continue
-            await self.websocket.send_text(f"Error in request {err}")
+            await self.websocket.send_text(f"Error: {err}")
 
 
     async def stop(self):

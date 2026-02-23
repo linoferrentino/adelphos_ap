@@ -189,11 +189,23 @@ async def get():
 </div>
 
       <script>
+
+
             var ws = new WebSocket("wss://{host_api}/ws");"""
 
     # here we have to change the string without the formatting because it
     # has the { parenthesis
     html_string += """
+
+
+document.getElementById('messageInput').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+
+
             ws.onmessage = function(event) {
                 const chat = document.getElementById("chat");
                 const msg = document.createElement('div');

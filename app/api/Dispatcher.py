@@ -182,23 +182,24 @@ cmd_handlers = {
 async def cmd_parse(ctx):
 
     # the first string is the @daemon
-    ctx.cmd_splits = ctx.clean_content.split()
+    #ctx.cmd_splits = ctx.clean_content.split()
+    (mention, rest_of_line) = ctx.clean_content.split(" ", 1)
 
-    mention = ctx.cmd_splits.pop(0)
+    #mention = ctx.cmd_splits.pop(0)
     if ( mention != f"@{USER_ID}"):
         gCon.log(f"This is not a message for me. {mention}")
         return
 
-    cmd = ctx.cmd_splits.pop(0)
+    make_cmd_params(ctx, rest_of_line)
 
-    gCon.log(f"Will do command {cmd}")
+    #cmd = ctx.cmd_splits.pop(0)
+    #gCon.log(f"Will do command {cmd}")
 
     # now the dispatcher.
-    handler = cmd_handlers.get(cmd)
+    handler = cmd_handlers.get(ctx.cmd)
     if (handler is None):
-        raise AdelphosException(f"command {cmd} not recognized")
+        raise AdelphosException(f"command {ctx.cmd} not recognized")
 
-    make_cmd_params(ctx)
     ctx.answer_txt = await handler(ctx)
 
 

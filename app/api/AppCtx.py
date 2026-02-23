@@ -1,3 +1,16 @@
+######################################################
+#
+# Adelphos AP: the fractal trust network
+#
+# Activity Pub implementation
+#
+# © 2025-26 Lino Ferrentino
+# lino.ferrentino@gmail.com
+#
+# This is free software. Licensed with GPL version 3
+#
+######################################################
+#
 # this is the main context used by all the clients,
 # either called from the web socket or by the client
 
@@ -6,8 +19,6 @@ class AppCtx:
 
     def __init__(self, app):
         self.app = app
-        # at first there is not a login.
-        self.token = None
 
 
 
@@ -17,7 +28,18 @@ class WebSocketContext(AppCtx):
 
     def __init__(self, app, websocket):
         super().__init__(app)
-        self.actor = None
         self.websocket = websocket
+        # the container for the logged user.
+
+        # here the web socket publicies the APIs relative
+        # to the objects.
+
+        # this is the Alias as view from the external world.
+        # It is ``myself'', the logged user.
+        self.alias_api = None
+
+        # these API will share the context
+        #self.place_api = PlaceApi(self)
+        #self.cheque_api = ChequeApi(self)
 
 

@@ -1,14 +1,42 @@
+######################################################
+#
+# Adelphos AP: the fractal trust network
+#
+# Activity Pub implementation
+#
+# © 2025-26 Lino Ferrentino
+# lino.ferrentino@gmail.com
+#
+# This is free software. Licensed with GPL version 3
+#
+######################################################
+#
+# utility functions for the parameters
 
 from app.api.AdelphosException import AdelphosException
+from app.logging import gCon
+import shlex
 
+# builds the command dictionary, it handles quotes and single quotes 
+def make_cmd_params(ctx, command_line):
 
-# builds the command dictionary.
-def make_cmd_params(ctx):
+    parsed_line = shlex.split(command_line)
+    ctx.cmd = None
     ctx.cmd_dict = {}
-    while (len(ctx.cmd_splits) > 1):
-        val = ctx.cmd_splits.pop()
-        key = ctx.cmd_splits.pop()
-        ctx.cmd_dict[key] = val
+    
+    # the first token is the command, the other are the parameters, in key-value
+    # pair
+    cur_key = None
+    for tk in parsed_line:
+        if (ctx.cmd is None):
+            ctx.cmd = tk
+            continue
+        if (cur_key is None):
+            cur_key = tk
+            continue
+        # I put the value
+        ctx.cmd_dict[cur_key] = tk
+        cur_key = None
 
 
 # this function gets the parameter, if not present it gives a default
