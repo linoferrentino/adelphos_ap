@@ -15,6 +15,7 @@ from datetime import datetime
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
 from app.ap_api.AsyncRequest import AsyncPostReq
+import re
 
 
 #ADELPHOS_ERROR_CODES = {
@@ -45,27 +46,38 @@ async def post_daemon_req(ctx):
 
 
 async def post_response_inbox(ctx, actor, server, msg):
-    actor_uri = f"https://{ctx.server_dto.host_name}/\
-{ctx.actor_dto.user_path}"
-    inbox_uri = f"https://{ctx.server_dto.host_name}\
-{ctx.actor_dto.inbox_path}"
-    gCon.log(f"INBOX {inbox_uri} host {ctx.server_dto.host_name} path {ctx.actor_dto.inbox_path}")
-    return await post_response_inbox_impl(ctx, actor_uri, inbox_uri, msg)
+    #    actor_uri = f"https://{ctx.server_dto.host_name}/\
+    #{ctx.actor_dto.user_path}"
+    #    inbox_uri = f"https://{ctx.server_dto.host_name}\
+    #{ctx.actor_dto.inbox_path}"
+    #    gCon.log(f"INBOX {inbox_uri} host {ctx.server_dto.host_name} path {ctx.actor_dto.inbox_path}")
+    return await post_response_inbox_impl(ctx, ctx.server_dto.host_name,
+                                          ctx.actor_dto.user_path,
+                                          ctx.actor_dto.inbox_path, msg)
 
 
 async def post_to_ap_actor(ctx, server_dto, actor_dto, message):
-    actor_uri = f"https://{server_dto.host_name}/\
-{actor_dto.user_path}"
-    inbox_uri = f"https://{server_dto.host_name}\
-{actor_dto.inbox_path}"
-    gCon.log(f"INBOX {inbox_uri} host {server_dto.host_name} path {actor_dto.inbox_path}")
-    return await post_response_inbox_impl(ctx, actor_uri, inbox_uri, message)
-
+    #    actor_uri = f"https://{server_dto.host_name}/\
+    #{actor_dto.user_path}"
+    #    inbox_uri = f"https://{server_dto.host_name}\
+    #{actor_dto.inbox_path}"
+    #    gCon.log(f"INBOX {inbox_uri} host {server_dto.host_name} path {actor_dto.inbox_path}")
+    return await post_response_inbox_impl(ctx, server_dto.host_name, 
+                                          actor_dto.user_path,
+                                          actor_dto.inbox_path, message)
 
 
 # we can pass messages to other inboxes, for example a daemon inbox 
-async def post_response_inbox_impl(ctx, actor_str, inbox, msg):
+async def post_response_inbox_impl(ctx, host_name, user_path, inbox_path, msg):
 
+
+    actor_uri = f"https://{host_name}{user_path}"
+    inbox_uri = f"https://{host_name}{inbox_path}"
+
+    # Simple format, just convert the new lines
+    #gCon.log(f"You want to send {msg}")
+    msg = re.sub("\n", "<p>", msg)
+    #gCon.log(f"Now you have {msg}")
 
     host = ctx.app.config['General']['host']
     host_api = host + API_POINT
@@ -75,10 +87,6 @@ async def post_response_inbox_impl(ctx, actor_str, inbox, msg):
 
     current_date = datetime.now().strftime(
             '%a, %d %b %Y %H:%M:%S GMT')
-
-    recipient_parsed = urlparse(inbox)
-    recipient_host = recipient_parsed.netloc
-    recipient_path = recipient_parsed.path
 
     id_message = uuid.uuid4()
 
@@ -91,7 +99,7 @@ async def post_response_inbox_impl(ctx, actor_str, inbox, msg):
                 "id": f"{sender_url}/posts/{id_message}",
                 "type": "Note",
                 "attributedTo": sender_url,
-                "to": [actor_str],
+                "to": [actor_uri],
                 "content": f"{msg}",
                 }
 
@@ -102,7 +110,7 @@ async def post_response_inbox_impl(ctx, actor_str, inbox, msg):
     digest = base64.b64encode(hashlib.sha256(
         new_message_str.encode('utf-8')).digest())
 
-    signature_text = b'(request-target): post %s\ndigest: SHA-256=%s\nhost: %s\ndate: %s' % (recipient_path.encode('utf-8'), digest, recipient_host.encode('utf-8'), current_date.encode('utf-8'))
+    signature_text = b'(request-target): post %s\ndigest: SHA-256=%s\nhost: %s\ndate: %s' % (inbox_path.encode('utf-8'), digest, host_name.encode('utf-8'), current_date.encode('utf-8'))
 
     sign_utf8 = signature_text.decode('utf-8')
 
@@ -119,14 +127,14 @@ async def post_response_inbox_impl(ctx, actor_str, inbox, msg):
     headers = {
             'Date': current_date,
             'Content-Type': 'application/activity+json',
-            'Host': recipient_host,
+            'Host': host_name,
             'Digest': "SHA-256="+digest.decode('utf-8'),
             'Signature': signature_header
             }
 
-
-    gCon.log(f"just before sending to {inbox}")
-    post_res  = AsyncPostReq(inbox, headers, new_message)
+    gCon.log(f"just before sending to {inbox_uri}")
+    gCon.log(f"{new_message}")
+    post_res  = AsyncPostReq(inbox_uri, headers, new_message)
     await ctx.app.async_req_push(post_res)
 
 

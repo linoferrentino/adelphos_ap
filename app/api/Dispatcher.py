@@ -55,6 +55,9 @@ def err_middleware(func):
 
     return func_safe 
 
+@err_middleware
+async def test_format_handler(ctx):
+    return f"this is a test\na Good test\nhello from me"
 
 @err_middleware
 async def alias_create_handler(ctx):
@@ -170,6 +173,7 @@ async def rem_echo_handler(ctx):
 # I have here the command handler for the activity pub interface, actually
 # the activity pub interface is very simple.
 cmd_handlers = {
+        "test_format": test_format_handler,
         "alias_create": alias_create_handler,
         "dump_db": dump_db,
         "recho": rem_echo_handler,

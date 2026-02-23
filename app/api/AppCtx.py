@@ -14,12 +14,12 @@
 # this is the main context used by all the clients,
 # either called from the web socket or by the client
 
-class AppCtx:
+from app.api.AliasApi import AliasApi
 
+class AppCtx:
 
     def __init__(self, app):
         self.app = app
-
 
 
 # the class that holds the data relative to a client
@@ -36,7 +36,7 @@ class WebSocketContext(AppCtx):
 
         # this is the Alias as view from the external world.
         # It is ``myself'', the logged user.
-        self.alias_api = None
+        self.alias_api = AliasApi(self)
 
         # these API will share the context
         #self.place_api = PlaceApi(self)

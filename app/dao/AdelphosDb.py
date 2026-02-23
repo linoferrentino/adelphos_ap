@@ -379,20 +379,29 @@ insert into ad_instance(actor_fk, authorized, comment) values
         await daemon_remote_query(ctx)
 
 
-    # this has a list of queries, and they are combined
-    def get_dto_ex(self, table_name, fields_to_ask, fields_to_seek, 
-                values_to_seek, constructor_dto):
-
+    def build_condition_str(self, fields_to_seek):
         condition = []
-
-        list_sql_fields = ", ".join(fields_to_ask)
-
         for field_to_seek in fields_to_seek:
             condition.append(f" {field_to_seek} = ? ")
 
         condition_str = " and ". join(condition)
-
         gCon.log(f"the condition is {condition_str}")
+        return condition_str
+
+
+
+    # this has a list of queries, and they are combined
+    def get_dto_ex(self, table_name, fields_to_ask, fields_to_seek, 
+                values_to_seek, constructor_dto):
+
+        list_sql_fields = ", ".join(fields_to_ask)
+
+        condition_str = self.build_condition_str(fields_to_seek)
+
+        #for field_to_seek in fields_to_seek:
+        #    condition.append(f" {field_to_seek} = ? ")
+        #condition_str = " and ". join(condition)
+        #gCon.log(f"the condition is {condition_str}")
 
         sql_get = f"""
 select {list_sql_fields} from {table_name} where {condition_str} 
@@ -426,6 +435,28 @@ select {list_sql_fields} from {table_name} where {condition_str}
         row = cur.fetchone()
         cur.close()
         return row
+
+
+    def get_full_dto_ex(self, table_name, fields_to_seek, 
+                values_to_seek, constructor_dto):
+        condition_str = self.build_condition_str(fields_to_seek)
+        sql_get = f"""
+select * from {table_name} where {condition_str}
+
+"""
+        cur = self._conn.cursor()
+        cur.execute(sql_get, values_to_seek)
+        row = cur.fetchone()
+        cur.close()
+
+        if (row is None):
+            gCon.log(f"No row in {table_name} for |{condition_str}| {values_to_seek}")
+            return None
+
+        # I simply get the dto 
+        return constructor_dto(*row)
+
+
 
 
     # gets the full table(view) with a condition on a field

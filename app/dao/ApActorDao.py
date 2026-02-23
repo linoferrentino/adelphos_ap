@@ -208,15 +208,14 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
         # server here is already instantiated in ctx.server_dto
         table_name = "ap_actor"
 
-        fields_to_ask = ('server_fk', 'user_path', 
-                         'preferred_username','inbox_path',
-                         'public_key','actor_id', 'timestamp')
+        #fields_to_ask = ('server_fk', 'user_path', 
+        #                 'preferred_username','inbox_path',
+        #                 'public_key','actor_id', 'timestamp')
 
         fields_to_seek = ('server_fk', 'user_path')
         values_to_seek = ( ctx.server_dto.server_id, key_parsed.path)
 
-        dto = self.dao.db.get_dto_ex(table_name, fields_to_ask, 
-                                     fields_to_seek, 
+        dto = self.dao.db.get_full_dto_ex(table_name,  fields_to_seek, 
                             values_to_seek, ApActorDto)
         gCon.log(f"I have grabbed {dto} from db")
  

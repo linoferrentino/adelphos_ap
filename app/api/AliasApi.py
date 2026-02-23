@@ -69,12 +69,15 @@ class AliasApi:
 
 
     # an alias can be built with an uri, or a string (which is then parsed)
-    def __init__(self, uri):
+    def __init__(self, ctx):
+        self.ctx = ctx
+        self.user_state = EUserState.NOT_LOGGED
+
+
+    def _set_uri(self, uri):
         self.uri = uri
         if (uri.obj_type != EAdelphosType.ALIAS_TYPE):
             raise AdelphosException(f"type mismatch wanted alias got {uri.obj_type}")
-
-        self.user_state = EUserState.NOT_LOGGED
 
 
     # this method will login the LOCAL alias.
@@ -83,7 +86,7 @@ class AliasApi:
 
     # login is a verb: it has only a subject.
 
-    def is_logged_in(self, ctx):
+    def is_logged_in(self ):
         if (self.user_state != EUserState.LOGGED_AND_TOKEN):
             gCon.log(f"No logged {self.user_state}")
             return False
@@ -91,17 +94,19 @@ class AliasApi:
         return True
 
 
-    def recv_token(self, ctx, token):
+    def recv_token(self, token):
         if (token != self.token):
             raise AdelphosException("Invalid token")
         self.user_state = EUserState.LOGGED_AND_TOKEN
         return f"Token accepted, welcome to adelphos, {self.uri.name}."
 
 
-    async def login(self, ctx, password):
+    async def login(self, uri, password):
+
+        self._set_uri(uri)
 
         # first of all I get the family, the alias needs the family.
-        self.n_family_dto = ctx.app.dao.family_dao\
+        self.n_family_dto = self.ctx.app.dao.family_dao\
                 .get_from_local_name(self.uri.family) 
 
         if (self.n_family_dto is None):
@@ -112,7 +117,7 @@ class AliasApi:
 
         # OK, now I have to get the alias
 
-        self.n_alias_dto = ctx.app.dao.alias_dao\
+        self.n_alias_dto = self.ctx.app.dao.alias_dao\
                 .get_from_name_family_id(self.uri.name,
                                          self.n_family_dto.fd_actor_id)
 
@@ -134,14 +139,14 @@ class AliasApi:
         # This maybe later, for now we simply do a memory session
 
         # OK, now we take the ActivityPub actor who is behind this alias
-        self.n_actor_dto = ctx.app.dao.ap_actor_dao.get_from_local_id(
+        self.n_actor_dto = self.ctx.app.dao.ap_actor_dao.get_from_local_id(
                 self.n_alias_dto.actor_fk)
 
         if (self.n_actor_dto is None):
             raise AdelphosException("Bug! there is not the actor corresponding")
 
         gCon.log(f"I will send the token to {self.n_actor_dto}")
-        self.n_server_dto = ctx.app.dao.server_dao.get_from_id(
+        self.n_server_dto = self.ctx.app.dao.server_dao.get_from_id(
                                             self.n_actor_dto.server_fk)
 
         if (self.n_server_dto is None):
@@ -153,13 +158,15 @@ class AliasApi:
         self.token = secrets.token_urlsafe()
         self.session_age = datetime.now()
 
-        await post_to_ap_actor(ctx, self.n_server_dto,
+        await post_to_ap_actor(self.ctx, self.n_server_dto,
                                self.n_actor_dto,
-        f"token {self.token} \nplease paste it in the login page.")
+f"Login OK, please copy the following line in adelphos chat\n\
+put_token tk {self.token}")
 
         self.user_state = EUserState.LOGGED_WITHOUT_TOKEN
 
-        return "Login OK, please paste the token received in your Mastodon inbox"
+        return "Login OK\nplease paste the line received\
+in your Mastodon inbox to finalize the login."
 
 
     def logout():

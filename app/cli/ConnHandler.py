@@ -33,28 +33,28 @@ from datetime import datetime
 def login_required(func):
 
     def check_login(ctx):
+        # I have to make sure that the user is logged.
+        if (ctx.alias_api.is_logged_in() == False):
+            raise AdelphosException("You have to login, first")
         return func(ctx)
 
     return check_login
 
 
 async def token_hndl_ws(ctx):
-    #if (ctx.alias_api.is_logged_in(ctx) == False):
-    #    raise AdelphosException("Please login first")
     token = get_param_safe(ctx, 'token')
 
     # this is local function, no need to await
-    msg = ctx.alias_api.recv_token(ctx, token)
+    msg = ctx.alias_api.recv_token(token)
 
     return msg
 
 
-
 async def login_hndl_ws(ctx):
 
-    # If you already have a login then you cannot login another time
-    if (ctx.alias_api is not None):
-        raise AdelphosException("You have already logged in")
+    # If you already have a login what are you doing?
+    if (ctx.alias_api.is_logged_in()):
+        raise AdelphosException("You already have logged in (logout first!)")
 
     alias = get_param_safe(ctx, 'alias')
     password = get_param_safe(ctx, 'password')
@@ -67,8 +67,8 @@ async def login_hndl_ws(ctx):
 
     # let's suppose that we want to login, first of all we create
     # an AliasApi and we pass the message
-    ctx.alias_api = AliasApi(alias_uri)
-    msg = await ctx.alias_api.login(ctx, password)
+    #ctx.alias_api = AliasApi(alias_uri)
+    msg = await ctx.alias_api.login(alias_uri, password)
 
     return msg
 
@@ -77,6 +77,7 @@ async def create_group_hndl(ctx):
     pass
 
 
+# the create trust line is a initiator command which begins with an alias
 async def tl_create_handler(ctx):
     alias_from = get_param_safe(ctx, 'alias_from')
     alias_to = get_param_safe(ctx, 'alias_to')
@@ -105,10 +106,6 @@ async def tl_create_handler(ctx):
     
 
     # I have to parse the alias to.
-
-    # remove the dollar.
-    #alias_to = alias_to[1:]
-
     return f"create trust line to {alias_to} initiated, waiting for confirmation"
 
 
@@ -116,7 +113,7 @@ async def tl_create_handler(ctx):
 ws_cmd_handlers = {
         "create_group": create_group_hndl,
         "login" : login_hndl_ws,
-        "token" : token_hndl_ws,
+        "put_token" : token_hndl_ws,
         "tl_create": tl_create_handler,
 }
 
@@ -138,17 +135,11 @@ class ClientWs:
         time_str = time_now.strftime("%Y-%m-%d %H:%M")
 
         make_cmd_params(self.ctx, data)
-        #await self.websocket.send_text(f"{time_str}: cmd {self.ctx.cmd} => {self.ctx.cmd_dict}")
-        #return True
 
         handler = ws_cmd_handlers.get(self.ctx.cmd)
         if (handler is None):
             raise AdelphosException(f"command {self.ctx.cmd} not recognized")
 
-        #if (len(cmd_and_rest_list) == 1):
-        #    rest_list = ""
-        #else:
-        #    rest_list = cmd_and_rest_list[1]
         response = await handler(self.ctx)
         
         await self.websocket.send_text(f"{time_str}: {response}")
