@@ -24,7 +24,7 @@ class AliasDao(FdActorDao):
 
 
     def __init__(self, dao):
-        super().__init__(dao)
+        super().__init__(dao, "fd_alias_ex", AliasDao)
 
         # the columns are in the same order as AliasDto
         self.ftbl_col_list = ('actor_fk', 'family_fk', 'password', 'local_fk')

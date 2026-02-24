@@ -59,7 +59,7 @@ async def get():
 <style>
     body {
         font-family: Arial, sans-serif;
-        background-color: #f2f2f2;
+        background-color: #8a8a8a;
         margin: 0;
         padding: 0;
         display: flex;
@@ -157,7 +157,7 @@ async def get():
     <title>Welcome to adelphos instance {instance} @ {host}</title>
     </head>
     <body>
-        <h1>Adelphos instance: {instance}@{host}</h1>
+        <h1>Adelphos instance: {instance}</h1><br><h2>{USER_ID}@{host}</h2>
 
 <div class="chat-container" id="chat">
     <div class="message received">
@@ -312,7 +312,7 @@ async def user(username : str):
         "id": f"https://{host_api}/users/{USER_ID}",
         "inbox": f"https://{host_api}/users/{USER_ID}/inbox",
         "outbox": f"https://{host_api}/users/{USER_ID}/outbox",
-        "type": "Person",
+        "type": "Bot",
         "name": f"Adelphos' daemon for instance {instance} @ {host}",
         "preferredUsername": USER_ID,
         "publicKey": {
@@ -331,7 +331,9 @@ async def user(username : str):
     return response
 
 
-# I take the raw request and this is the inbox
+# this is the entry point for the daemon in Activity Pub.
+# We support only one user.
+# the other users are only aliases of Mastodon users which enroll here.
 @app.post('/users/{username}/inbox')
 async def user_inbox(username: str, request: Request):
 

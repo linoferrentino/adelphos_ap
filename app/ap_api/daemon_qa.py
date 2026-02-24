@@ -5,7 +5,6 @@
 # divide the queries from other instances.
 
 from app.api.OutgressGateway import post_daemon_req
-from app.api.params import get_param_safe
 from app.consts import USER_ID
 import asyncio
 from app.logging import gCon
@@ -56,7 +55,7 @@ async def daemon_query_task(ctx):
 
 # a synchronous function to decode the payload and return the dictionary.
 def extract_payload(ctx):
-    remote_payload_b64str = get_param_safe(ctx, "payload")
+    remote_payload_b64str = ctx.get_param_safe("payload")
     remote_payload_b = base64.b64decode(remote_payload_b64str.encode())
     remote_payload_str = remote_payload_b.decode()
     remote_json = json.loads(remote_payload_str)
@@ -65,14 +64,12 @@ def extract_payload(ctx):
 
 async def daemon_a_handler(ctx):
 
-    #ctx.rem_id = get_param_safe(ctx, "api_id")
 
     # I have to extract the payload...
     gCon.log("................ extract payload")
     remote_json = extract_payload(ctx)
 
-    #msg = get_param_safe(ctx, "msg")
-    local_id = get_param_safe(ctx, "api_id")
+    local_id = ctx.get_param_safe("api_id")
     
     gCon.log(f"got msg {remote_json} for api {local_id}")
 
@@ -115,7 +112,7 @@ def marshall_daemon_query(ctx):
 # this is the entry point for the remote API
 async def daemon_q_handler(ctx):
     # OK, now I get the message.
-    ctx.rem_id = get_param_safe(ctx, "api_id")
+    ctx.rem_id = ctx.get_param_safe("api_id")
 
     # I have to get the payload, and decode it.
     ctx.remote_json = extract_payload(ctx)

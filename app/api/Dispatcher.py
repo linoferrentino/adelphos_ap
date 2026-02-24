@@ -21,8 +21,6 @@ from app.ap_api.daemon_qa import daemon_q_handler
 from app.ap_api.daemon_qa import daemon_remote_query
 from app.api.AdelphosException import AdelphosException
 from app.api.OutgressGateway import post_response
-from app.api.params import get_param_safe
-from app.api.params import make_cmd_params
 from app.consts import USER_ID
 from app.dao.AdelphosUri import uriparse
 from app.dao.AliasDto import AliasDto
@@ -38,6 +36,7 @@ def err_middleware(func):
 
     async def func_safe(ctx):
         try:
+
             return await func(ctx)
 
         # in case of exception I will discard everything, so need_commit will be
@@ -55,18 +54,25 @@ def err_middleware(func):
 
     return func_safe 
 
+
+# Just a test to render the new lines.
 @err_middleware
 async def test_format_handler(ctx):
     return f"this is a test\na Good test\nhello from me"
 
+
 @err_middleware
 async def alias_create_handler(ctx):
+    # I do not have to pass the context, because the API have it already.
+    return ctx.alias_api.create_from_ctx()
+
+
+@err_middleware
+async def alias_create_handler_OLD(ctx):
 
     # first of all let's see if the alias is already present
-    alias_complete = get_param_safe(ctx, 'alias')
-    password = get_param_safe(ctx, 'password')
-
-    host = ctx.app.config['General']['host']
+    alias_complete = ctx.get_param_safe('alias')
+    password = ctx.get_param_safe('password')
 
     alias_uri = uriparse(alias_complete)
 
@@ -93,12 +99,8 @@ f"family {alias_uri.family} is already existing in this instance")
     ph = PasswordHasher()
     pass_hashed = ph.hash(password)
 
-    # the instance is zero, it is local.
     alias_dto = alias_dto_create_local(alias_uri.name,
                                        ctx.actor_dto.actor_id, family_id, pass_hashed)
-
-    # the alias for now has not a password, when we will have p2p
-    # encryption then it will be sensible to have one.
 
     # OK, let't try to add it to the database
     new_id = ctx.app.dao.alias_dao.store(alias_dto)
@@ -109,7 +111,7 @@ f"family {alias_uri.family} is already existing in this instance")
 def sudo_cmd(func):
 
     def check_root(ctx):
-        pwd = get_param_safe(ctx, 'pwd')
+        pwd = ctx.get_param_safe('pwd')
         # I take the hashed password
         hashed = ctx.app.config['General']['root_password']
         ph = PasswordHasher()
@@ -146,8 +148,8 @@ async def rem_alias_get(ctx):
 
 
 async def rem_echo_handler(ctx):
-    rem_instance = get_param_safe(ctx, "remote-instance")
-    msg = get_param_safe(ctx, "msg")
+    rem_instance = ctx.get_param_safe("remote-instance")
+    msg = ctx.get_param_safe("msg")
 
     gCon.log(f"I have to do an echo to @{USER_ID}@{rem_instance}")
 
@@ -194,10 +196,7 @@ async def cmd_parse(ctx):
         gCon.log(f"This is not a message for me. {mention}")
         return
 
-    make_cmd_params(ctx, rest_of_line)
-
-    #cmd = ctx.cmd_splits.pop(0)
-    #gCon.log(f"Will do command {cmd}")
+    ctx.parse_cmd_line(rest_of_line)
 
     # now the dispatcher.
     handler = cmd_handlers.get(ctx.cmd)

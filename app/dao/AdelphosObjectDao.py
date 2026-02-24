@@ -38,6 +38,14 @@ class AdelphosObjectDao(BaseAdelphosDao):
     #    pass
 
 
+    def _try_get_local_numeric_uri(self, uri):
+        pass
+
+
+    def _try_get_local_human_uri(self, uri):
+        pass
+
+
     # this is the query to have the local objects: remember that
     # this creates the raw local objects.
     # the actor is necessary because the actor has the instance

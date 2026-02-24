@@ -20,22 +20,47 @@ from app.logging import gCon
 
 # this is the base class for all the "alive" DAOs in adelphos
 # alias, family, group
+# the DAO will take the name of the view that makes the join and takes all the fields.
 class FdActorDao(BaseAdelphosDao):
 
 
     # I am initialized with the common DAO, the one
     # which stores the connection
-    def __init__(self, dao):
+    def __init__(self, dao, view_name, constructor):
         super().__init__(dao)
+        # the class is used to 
+        self.view_name = view_name
+        self.constructor = constructor
+
+    # of course the local queries have instance == 0
+
+    def _try_get_local_numeric_uri(self, uri):
+
+        # I query from the local db, but the uri could be not local!
+        if (BaseAdelphosDao._is_local_uri(uri)):
+            instance_fk = 0
+        else:
+            # I have to get the adelphos instance.
+            server_dto = self.dao.server_dao.get_from_hostname(uri.host_name)
+            if (server_dto is None):
+                # This is fatal. The server is not existing, so it cannot be here the object
+                gCon.log(f"No server {uri.host_name}. This object {uri} cannot be here")
+                return None
+            instance_fk = server_dto.server_id
+
+        sql_get = f"""
+        select * from {self.view_name} where fd_actor_id = ? and instance_fk = 0
+        """
+
+        # Now I will try to get the object.
+        return None
 
 
-    # the difference from getting from uri an object and an alive
-    # person is that the query is different!
+    def _try_get_local_human_uri(self, uri):
+        sql_get = f"""
+        select * from {self.view_name} where name = ? and instance_fk = 0
+        """
 
-    # this is the query from a local URI, so it is synchronous, because we
-    # do not go to the federated tables.
-    def get_from_local_uri(self, uri):
-        pass
 
 
     def store_dict(self, dto, dto_as_dict):
@@ -49,20 +74,4 @@ class FdActorDao(BaseAdelphosDao):
         dto.fd_actor_id = new_id
         return new_id
 
-    #raw_local_query = """
-
-    #select fdo.fd_object_id, fdo.name, fdo.creator_fk, 
-    #fdo.timestamp, fda.name, fda.instance_fk, 
-    #fda.timestamp, {ftbl_col_list} from {ftbl} as ftbl,
-    #fd_object as fdo, fd_actor as fda
-    #where (
-    #(ftbl.local_fk = fdo.fd_object_id)
-    #and
-    #(fdo.creator_fk = fad.fd_actor_id)
-    #and
-    #(fda.instance_fk = 0),
-    #and
-    #(ftbl.local_fk = ?))
-
-    #"""
 

@@ -23,11 +23,14 @@ import asyncio
 # the actor is ambiguous, we can have the activity pub actor
 # or the adelphos actor
 from app.dao.ApActorDao import ApActorDao
+# also the server is ambiguous: we can have the ActivityPub server
+# and the adelphos server, which is an instance
 
 from app.dao.ServerDao import ServerDao
 from app.dao.FamilyDao import FamilyDao
 from app.dao.CurrencyDao import CurrencyDao 
 from app.dao.AliasDao import AliasDao
+from app.dao.AdInstanceDao import AdInstanceDao
 
 app = None
 
@@ -64,6 +67,13 @@ class AdelphosApp(FastAPI):
         async with self.cond:
             self.requests.append(ar)
             self.cond.notify_all()
+
+
+    # returns the internet name of this adelphos instance: this is used
+    # to differentiate local from federated objects.
+    def get_local_host():
+        # Just to not disperse too many hardcoded strings around.
+        return self.config['General']['host']
 
 
     # this is the blocking (async) GET request.

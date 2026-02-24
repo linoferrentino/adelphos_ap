@@ -1,10 +1,21 @@
-# this is the ingress gateway.
+######################################################
+#
+# Adelphos AP: the fractal trust network
+#
+# Activity Pub implementation
+#
+# © 2025-26 Lino Ferrentino
+# lino.ferrentino@gmail.com
+#
+# This is free software. Licensed with GPL version 3
+#
+######################################################
+#
+# This is the ingress gateway, the entry point for the Activity Pub posts to the daemon
 
-# this is called synchronously.
 from app.consts import USER_ID
 from app.logging import gCon
 from app.api.Dispatcher import dispatch_request
-#import requests
 import base64
 import json
 import re
@@ -19,8 +30,7 @@ from app.dao.AliasDto import AliasDto
 from app.ap_api.AsyncRequest import AsyncGetReq
 
 
-
-
+# checks the validity of the message received.
 async def check_message(ctx):
 
     request = ctx.request
@@ -138,10 +148,6 @@ async def check_message(ctx):
 async def ingress_request(ctx) -> int:
 
     ctx.body_str = ctx.body.decode()
-
-
-    # Now I should get the actor field and take the alias from the db, if
-    # present, otherwise I assume that this is a create activity
 
     ctx.body_ob = json.loads(ctx.body_str)
     ctx.actor_str = ctx.body_ob['actor']

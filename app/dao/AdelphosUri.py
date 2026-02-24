@@ -236,14 +236,18 @@ more than one '@'")
     return (object_part, host_part)
 
 
+def uriparse_type(uri, type_expected):
+    uri_ob = uriparse(uri)
+    if (uri_ob.obj_type != type_expected):
+        raise AdelphosException(f"Expecting {type_expected} found {uri_ob.obj_type}")
+
+
 # this function will parse an URI in adelphos and return the
 # parsed object
 # there is not much error handling (yet)
 def uriparse(uri):
 
-
     (object_part, host_part) = _divide_local_host_part(uri)
-
 
     #Now we have to divide the object part.
     # first of all is it an alias?
@@ -255,7 +259,6 @@ def uriparse(uri):
         object_part = alias_match.group(1)
         (name, family, mechanical_id) = _parse_object_part(object_part,
                                                            uri_type)
-        
     else:
 
         # this is an object, which has not a family

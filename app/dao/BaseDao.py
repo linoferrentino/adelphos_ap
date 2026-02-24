@@ -23,13 +23,8 @@ from ..logging import gCon
 class BaseDao(ABC):
 
 
-    # this is the basic initialization: the col_list is the list of columns which
-    # are used to store, which can be different from the columns used to retrieve.
     def __init__(self, dao):
         self.dao = dao
-        #self.ftbl = ftbl
-        #self.ftbl_col_list = ftbl_col_list
-        #self.ftbl_clist_exp = ",".join(ftbl_col_list)
 
 
     # this method has here a default implementation, but we can override it
@@ -44,17 +39,4 @@ class BaseDao(ABC):
     def store_dict(self, dto, dto_as_dict):
         pass
 
-
-    # the basic store method in the adelphos database: this is for federated
-    # objects.
-    # from the point of view of the dao the dto is a simple dictionary.
-    # this simplifies all the inserts, but the user must be careful to
-    # the order, because there are the foreign key constraints.
-    #def store_dict(self, dto):
-    #    #gCon.log(f"I will store {dto_as_dict} on table {self.ftbl}")
-    #    #new_id = self.dao.db.insert_dto_fields(self.ftbl, 
-    #    #                self.ftbl_col_list, dto_as_dict)
-    #    gCon.log("Base dao, the new id is 99!")
-    #    new_id = 99
-    #    return new_id
 

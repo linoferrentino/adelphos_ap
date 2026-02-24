@@ -11,17 +11,9 @@
 #
 ######################################################
 #
-# This class is the context for all the requests come from ActivityPub
+# This is the Adelphos instance. A Host which can talk
+# to other adelphos instances in the fediverse.
 
-from app.api.AppCtx import AppCtx
+class AdInstanceDao:
 
-
-class RequestCtx(AppCtx):
-
-
-    def __init__(self, app, request):
-        super().__init__(app)
-        self.request = request
-
-
-
+    pass

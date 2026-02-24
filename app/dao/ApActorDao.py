@@ -176,8 +176,6 @@ exp {actor_uri}")
             raise AdelphosException(
 f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
-        #gCon.log("I have set the canonical name")
-        #actor.canonical_name = f"@{preferred_username}@{key_parsed.hostname}"
         # OK, now I can create the actor
         actor = create_ap_actor(ctx.server_dto.server_id,
                          key_parsed.path,
@@ -208,10 +206,6 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
         # server here is already instantiated in ctx.server_dto
         table_name = "ap_actor"
 
-        #fields_to_ask = ('server_fk', 'user_path', 
-        #                 'preferred_username','inbox_path',
-        #                 'public_key','actor_id', 'timestamp')
-
         fields_to_seek = ('server_fk', 'user_path')
         values_to_seek = ( ctx.server_dto.server_id, key_parsed.path)
 
@@ -231,7 +225,7 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
         # I grab or create the server: this is a local object.
         ctx.server_dto = self.dao.server_dao\
-                .get_or_create_from_host_name(ctx, key_parsed.netloc)
+                .get_or_create_from_host_name(key_parsed.netloc)
 
         # this is OK, now I can create the actor.
         parsed = key_parsed._replace(fragment = "")
@@ -243,24 +237,6 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
             actor = await self.create_from_uri(ctx, actor_uri, 
                                                    key_parsed)
         return actor
-
-
-    #@staticmethod
-    #def get_from_uri(ctx, actor_uri):
-
-    #    field_to_seek = ('actor_uri',)
-    #    value_to_seek = (actor_uri ,)
-
-    #    return ActorDto._base_get(ctx, field_to_seek, value_to_seek)
-
-
-    #@staticmethod
-    #def get_from_canonical_name(ctx, preferred_username, hostname):
-    #    canonical_name = f"@{preferred_username}@{hostname}"
-    #    fields_to_seek = ('canonical_name', )
-    #    values_to_seek = (canonical_name, )
-
-    #    return ActorDto._base_get(ctx, fields_to_seek, values_to_seek)
 
 
     def store_dict(self, actor, actor_as_dict):

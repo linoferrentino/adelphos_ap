@@ -23,7 +23,7 @@ class BaseFractalGroupDao(FdActorDao):
 
     def __init__(self, dao, level_constraint_sql = None):
         self.level_constraint_sql = level_constraint_sql
-        super().__init__(dao)
+        super().__init__(dao, "fd_group_family_ex", BaseFractalGroupDao)
         # I store here the list of fields, the list is coherent
         # with BaseGroupDto and FdActorDto
         #self.ftbl_col_list = ( "parent_group_fk", 

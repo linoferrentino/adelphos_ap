@@ -22,20 +22,21 @@ from dataclasses import asdict
 from app.dao.BaseDao import BaseDao
 
 
-# the server dao has the logic to query and store servers
+# the server dao has the logic to query and store activity pub servers
+# this has to change name!
+# It must become ApServerDao
 class ServerDao(BaseDao):
 
 
     # I can set here the context.
     def __init__(self, dao):
         super().__init__(dao)
-        #self.dao = dao
         self.table_name = "ap_server"
 
 
     # this function is only local: we do not create servers
     # around.
-    def get_or_create_from_host_name(self, ctx, host_name):
+    def get_or_create_from_host_name(self, host_name):
         server_dto = self.get_from_hostname(host_name)
 
         if (server_dto is not None):
@@ -55,31 +56,14 @@ class ServerDao(BaseDao):
         return server_dto
 
 
+    # also this function is local
     def get_from_hostname(self, host_name):
         server_dto = self.dao.db.get_full_dto(self.table_name,
                         "host_name", host_name, ServerDto)
         return server_dto
 
 
-    def get_from_hostname_old(self, ctx, host_name):
-
-        fields_to_ask = ('host_name', 'server_id', 'timestamp')
-
-        fields_to_seek = ('host_name', )
-        values_to_seek = ( host_name, )
-
-        dto = self.dao.db.get_dto_ex(self.table_name, fields_to_ask, 
-                                     fields_to_seek, 
-                            values_to_seek, ServerDto)
-        return dto
-
-
     def store_dict(self, server, server_as_dict):
-
-        #fields_stored = {
-        #                 'host_name': server.host_name,
-        #                 }
-        #fields_stored = asdict(server)
 
         newid = self.dao.db.insert_dto_fields(self.table_name,
                             ('host_name',), server_as_dict)

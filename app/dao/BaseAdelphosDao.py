@@ -30,15 +30,71 @@ class BaseAdelphosDao(BaseDao):
         super().__init__(dao)
 
 
-    # here there are the abstract methods common to all the
-    # federated objects.
+    @staticmethod
+    def _is_local_uri(uri):
+        if uri.host_name is None:
+            return True
+
+        if (uri.host_name == self.dao.app.get_local_host()):
+            return True
+
+        return False
+
+
+    # `local' here means in the local db, but the object could be remote and cached here!
+    def _try_get_local(self, uri):
+        # the first difference is between a numeric uri and a normal uri
+        if (uri.is_numeric):
+            return self._try_get_local_numeric_uri(uri)
+
+        return self._try_get_local_human_uri(uri)
+
+
+    # here it is abstract, because we have two bases, the fd_actor and the fd_object
+    @abstractmethod
+    def _try_get_local_numeric_uri(self, uri):
+        pass
+
+
+    @abstractmethod
+    def _try_get_local_human_uri(self, uri):
+        pass
+
+
+    # this method will get the object from the federated db, so first of
+    # all I have to get the 
+    async def _get_from_remote_uri(self, uri):
+        pass
+
     
     # this method gets the object from this instance or, if not present,
     # it will go to the outside world.
     # the URI here is parsed.
     #@abstractmethod
-    async def get_from_uri(ctx, uri):
-        pass
+    # if maybe is True we don't complain if the object is not found.
+    async def get_from_uri(uri, maybe = False):
+
+        # first of all I try to know if this object is present in my db, remote or not
+        # this function is not async, because I do not leave the instance.
+        dto = self._try_get_local(uri)
+
+        if (dto is not None):
+            return dto
+
+        # I have not found it, if he uri is local this is a not recoverable error
+        local_uri = BaseAdelphosDao._is_local_uri(uri)
+
+        if (local_uri == False):
+            # I try to get the object from the federated db
+            dto = await self._get_from_remote_uri(uri)
+
+            if (dto is not None):
+                return dto
+
+        if (maybe == True):
+            return None
+
+        raise AdelphosException(f"Could not find URI {uri}")
 
 
     # I can query the adelphos db using the local name. All objects in adelphos
@@ -49,7 +105,7 @@ class BaseAdelphosDao(BaseDao):
 
 
     # The local uri needs to query the raw_view table.
-    def _get_local_numeri_uri(ctx, uri):
+    def _get_local_numeric_uri(ctx, uri):
         pass
 
 
@@ -118,12 +174,5 @@ class BaseAdelphosDao(BaseDao):
     #@abstractmethod
     def get_or_create_from_uri(uri):
         pass
-
-
-    #def store_dict(self, dto_as_dict):
-    #    gCon.log("Store the BaseAdelphosDao.")
-    #    new_id = super().store_dict(dto_as_dict)
-    #    gCon.log(f"New id for BaseAdelphosDao {new_id}")
-    #    return new_id
 
 

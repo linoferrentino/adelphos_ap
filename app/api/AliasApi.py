@@ -17,10 +17,13 @@ from app.dao.AdelphosUri import EAdelphosType
 from app.logging import gCon
 from argon2 import PasswordHasher
 from app.api.OutgressGateway import post_to_ap_actor
+from app.dao.AdelphosUri import uriparse
 import secrets
 from datetime import datetime
 from enum import IntEnum
 from enum import auto
+from app.dao.FamilyDto import family_dto_create_local
+from app.dao.AliasDto import alias_dto_create_local
 
 
 # This can be "myself" in the context, so that we can "speak" to ourselves
@@ -68,7 +71,7 @@ class EUserState(IntEnum):
 class AliasApi:
 
 
-    # an alias can be built with an uri, or a string (which is then parsed)
+    # The Alias Api can serve the Activity pub context or the Web socket context.
     def __init__(self, ctx):
         self.ctx = ctx
         self.user_state = EUserState.NOT_LOGGED
@@ -99,6 +102,55 @@ class AliasApi:
             raise AdelphosException("Invalid token")
         self.user_state = EUserState.LOGGED_AND_TOKEN
         return f"Token accepted, welcome to adelphos, {self.uri.name}."
+
+
+    # this method takes the parameters from the context.
+    # the actor and the server are already taken 
+    def create_from_ctx(self):
+
+        # first of all let's see if the alias is already present
+        alias_complete = self.ctx.get_param_safe('alias')
+        password = self.ctx.get_param_safe('password')
+
+        alias_uri = uriparse(alias_complete)
+
+        if (alias_uri.is_numeric == True):
+            raise AdelphosException("Cannot create a numeric alias")
+
+        gCon.log(f"alias uri created {alias_uri}")
+
+        # the family MUST NOT already exist, we cannot create two families in
+        # the same instance with the same name.
+        family_dto = self.ctx.app.dao.family_dao.get_from_local_name(alias_uri.family)
+
+        if (family_dto is not None):
+            raise AdelphosException(
+    f"family {alias_uri.family} is already existing in this instance")
+
+
+        # let's create the family, for now it will have only a name, not a currency
+        family_dto = family_dto_create_local(alias_uri.family)
+
+        family_id = self.ctx.app.dao.family_dao.store(family_dto)
+
+        # I have now the id of the family and I can create the alias.
+        ph = PasswordHasher()
+        pass_hashed = ph.hash(password)
+
+        alias_dto = alias_dto_create_local(alias_uri.name,
+                                           self.ctx.actor_dto.actor_id,
+                                           family_id, pass_hashed)
+
+        # OK, let't try to add it to the database
+        new_id = self.ctx.app.dao.alias_dao.store(alias_dto)
+
+        return f"Created alias {alias_dto} successfully, with id {new_id}"
+
+
+
+    # This method will get the parameters from the command line.
+    def create_pars():
+        pass
 
 
     async def login(self, uri, password):
@@ -143,14 +195,14 @@ class AliasApi:
                 self.n_alias_dto.actor_fk)
 
         if (self.n_actor_dto is None):
-            raise AdelphosException("Bug! there is not the actor corresponding")
+            raise Exception("Bug! there is not the actor corresponding")
 
         gCon.log(f"I will send the token to {self.n_actor_dto}")
         self.n_server_dto = self.ctx.app.dao.server_dao.get_from_id(
                                             self.n_actor_dto.server_fk)
 
         if (self.n_server_dto is None):
-            raise AdelphosException("Bug! there is not the server corresponding")
+            raise Exception("Bug! there is not the server corresponding")
 
         # Now we have to get the server dto
 
@@ -165,8 +217,9 @@ put_token tk {self.token}")
 
         self.user_state = EUserState.LOGGED_WITHOUT_TOKEN
 
-        return "Login OK\nplease paste the line received\
-in your Mastodon inbox to finalize the login."
+        return """Login OK.
+Please paste the line received
+in your Mastodon inbox to finalize the login."""
 
 
     def logout():

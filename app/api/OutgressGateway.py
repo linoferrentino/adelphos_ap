@@ -18,23 +18,11 @@ from app.ap_api.AsyncRequest import AsyncPostReq
 import re
 
 
-#ADELPHOS_ERROR_CODES = {
-#
-#}
-#
-
-
 async def post_response(ctx):
 
     msg = ctx.answer_txt
 
     return await post_response_inbox(ctx, ctx.actor_dto, ctx.server_dto, msg)
-
-
-#async def post_to_actor_inbox(ctx, msg):
-#
-#    return await post_response_inbox(ctx, ctx.actor.actor_uri,
-#                                     ctx.actor.inbox_uri, msg)
 
 
 async def post_daemon_req(ctx):
@@ -46,22 +34,12 @@ async def post_daemon_req(ctx):
 
 
 async def post_response_inbox(ctx, actor, server, msg):
-    #    actor_uri = f"https://{ctx.server_dto.host_name}/\
-    #{ctx.actor_dto.user_path}"
-    #    inbox_uri = f"https://{ctx.server_dto.host_name}\
-    #{ctx.actor_dto.inbox_path}"
-    #    gCon.log(f"INBOX {inbox_uri} host {ctx.server_dto.host_name} path {ctx.actor_dto.inbox_path}")
     return await post_response_inbox_impl(ctx, ctx.server_dto.host_name,
                                           ctx.actor_dto.user_path,
                                           ctx.actor_dto.inbox_path, msg)
 
 
 async def post_to_ap_actor(ctx, server_dto, actor_dto, message):
-    #    actor_uri = f"https://{server_dto.host_name}/\
-    #{actor_dto.user_path}"
-    #    inbox_uri = f"https://{server_dto.host_name}\
-    #{actor_dto.inbox_path}"
-    #    gCon.log(f"INBOX {inbox_uri} host {server_dto.host_name} path {actor_dto.inbox_path}")
     return await post_response_inbox_impl(ctx, server_dto.host_name, 
                                           actor_dto.user_path,
                                           actor_dto.inbox_path, message)
