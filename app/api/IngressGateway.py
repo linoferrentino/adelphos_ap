@@ -28,6 +28,8 @@ from cryptography.hazmat.primitives.asymmetric import padding
 import asyncio
 from app.dao.AliasDto import AliasDto
 from app.ap_api.AsyncRequest import AsyncGetReq
+from urllib.parse import urlparse
+from app.api.AppCtx import AppCtx
 
 
 # checks the validity of the message received.
@@ -61,9 +63,15 @@ async def check_message(ctx):
     gCon.log(f"Get the public key {key_id_val}")
     gCon.log(f"Try to get the cached actor's key {ctx.actor_str}")
 
-    # get the actor object, or create one
+    # get the actor and server objectx.
+    # I have the key, which is an URI, I parse it in its components.
+    key_parsed = urlparse(key_id_val)
+
+    ctx.server_dto = ctx.app.dao.ap_server_dao.get_or_create_from_uri(key_parsed)
+    gCon.log(f"This is my server {ctx.server_dto}")
+
     ctx.actor_dto = await ctx.app.dao.ap_actor_dao\
-            .get_or_discover_from_pk_id(ctx, key_id_val)
+            .get_or_discover_from_uri(ctx.server_dto, key_parsed)
 
     ####### 1st, Check the digest
     digest_body = base64.b64encode(hashlib.sha256(
@@ -145,8 +153,24 @@ async def check_message(ctx):
     return True
 
 
-async def ingress_request(ctx) -> int:
+# this is the object which will process the requests that come from
+# Activity Pub
+class ActivityPubIngressGateway(AppCtx):
 
+    def __init__(self, app, request):
+        super().__init__(app)
+        self.request = request
+
+    # the ``ingress'' in activity pub is one-shot. The protocol is stateless.
+    async def ingress(self):
+
+        return await _ingress_request(self)
+
+
+# here ctx is ``self'' (just a temporary hack)
+async def _ingress_request(ctx) -> int:
+
+    ctx.body = await ctx.request.body()
     ctx.body_str = ctx.body.decode()
 
     ctx.body_ob = json.loads(ctx.body_str)

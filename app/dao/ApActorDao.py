@@ -27,14 +27,6 @@ import json
 # This Dao does not derive from AdelphosObjectDao because
 # the actors are not part of the adelphos federated DB
 class ApActorDao(BaseDao):
-      #fields_stored = {
-        #                 'server_fk': actor.server_fk,
-        #                 'user_path': actor.user_path,
-        #                 'preferred_username': actor.preferred_username,
-        #                 'inbox_path': actor.inbox_path,
-        #                 'public_key': actor.public_key,
-        #                 }
-
 
     # I can set here the context.
     def __init__(self, dao):
@@ -46,12 +38,6 @@ class ApActorDao(BaseDao):
                               "inbox_path", "public_key", "actor_id",
                               "local_fk", "timestamp"
                               )
-
-
-
-        #super().__init__(dao, 'ap_actor', ('server_fk', 'user_path', 'preferred_username',
-        #                       'inbox_path', 'public_key') )
-
 
     # gets from local database or queries the webfinger endpoint
     @staticmethod
@@ -125,17 +111,12 @@ resource=acct:{preferred_username}@{rem_instance}"
 
 
     # this function will fetch the public key of the actor
-    async def create_from_uri(self, ctx, actor_uri, key_parsed):
-
-        # I must know if I have to create also the server.
-        # maybe this is the first actor from this Activity Pub server.
+    async def create_from_uri(self, server_dto, actor_uri, key_parsed):
 
         gCon.log(f"Create here a cached actor {actor_uri}")
-        #actor = ActorDto()
-        #actor.actor_uri = actor_uri
 
         res_key = AsyncGetReq(actor_uri)
-        await ctx.app.async_req_wait(res_key)
+        await self.dao.app.async_req_wait(res_key)
 
         if (res_key.status_code != 200):
             gCon.log(f"Could not fetch the public key {res_key.status_code}")
@@ -150,14 +131,13 @@ resource=acct:{preferred_username}@{rem_instance}"
         pub_key_ob = key_ob['publicKey']
 
         pub_key_ob_id = pub_key_ob['id']
-        #actor.public_key = pub_key_ob['publicKeyPem']
 
         # are they the same?
         if (pub_key_ob_id != key_parsed.geturl()):
             raise AdelphosException(f"Error, got {pub_key_ob_id} key \
 exp {actor_uri}")
 
-        # is the owner?
+        # is he the owner?
         owner = pub_key_ob['owner'] 
         if (owner != actor_uri):
             gCon.log(f"This is bad {pub_key_ob}")
@@ -177,7 +157,7 @@ exp {actor_uri}")
 f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
         # OK, now I can create the actor
-        actor = create_ap_actor(ctx.server_dto.server_id,
+        actor = create_ap_actor(server_dto.server_id,
                          key_parsed.path,
                          inbox_parsed.path,
                          preferred_username,
@@ -198,16 +178,15 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
     # this function tries to get an actor from
     # the local db using the hostname and 
-    def get_local_from_parsed_uri(self, ctx, key_parsed):
+    def get_local_from_parsed_uri(self, server_dto, key_parsed):
         # I have to query the view.
         gCon.log(f"this actor's Activity Pub host is {key_parsed.netloc}")
         gCon.log(f"his path is  is {key_parsed.path}")
 
-        # server here is already instantiated in ctx.server_dto
         table_name = "ap_actor"
 
         fields_to_seek = ('server_fk', 'user_path')
-        values_to_seek = ( ctx.server_dto.server_id, key_parsed.path)
+        values_to_seek = ( server_dto.server_id, key_parsed.path)
 
         dto = self.dao.db.get_full_dto_ex(table_name,  fields_to_seek, 
                             values_to_seek, ApActorDto)
@@ -215,8 +194,25 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
  
         return dto
 
+    
+    # this function will get from uri, the actor has been already taken.
+    async def get_or_discover_from_uri(self, server_dto, key_parsed):
 
-    async def get_or_discover_from_pk_id(self, ctx, key_id_val):
+        parsed = key_parsed._replace(fragment = "")
+        actor_uri = parsed.geturl()
+
+        ap_actor_dto = self.get_local_from_parsed_uri(server_dto, key_parsed)
+
+        if (ap_actor_dto is None):
+            ap_actor_dto = await self.create_from_uri(server_dto, actor_uri, 
+                                                   key_parsed)
+        return ap_actor_dto
+
+
+    # this function will get the Activity Pub Actor object from the database or
+    # it will query the remote server to get his data.
+    # It will return the data as a tuple (server, actor)
+    async def get_or_discover_from_pk_id_DEPRECATED(self, key_id_val):
 
         # OK, I have the public key identifier, now I have to decompose it
         # in host, path and fragment (the last one is usually removed)
@@ -224,19 +220,19 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
         key_parsed = urlparse(key_id_val)
 
         # I grab or create the server: this is a local object.
-        ctx.server_dto = self.dao.server_dao\
+        ap_server_dto = self.dao.ap_server_dao\
                 .get_or_create_from_host_name(key_parsed.netloc)
 
-        # this is OK, now I can create the actor.
+        # now I can create the actor.
         parsed = key_parsed._replace(fragment = "")
         actor_uri = parsed.geturl()
 
-        actor = self.get_local_from_parsed_uri(ctx, key_parsed)
+        ap_actor_dto = self.get_local_from_parsed_uri(ctx, key_parsed)
 
-        if (actor is None):
-            actor = await self.create_from_uri(ctx, actor_uri, 
+        if (ap_actor_dto is None):
+            ap_actor_dto = await self.create_from_uri(ctx, actor_uri, 
                                                    key_parsed)
-        return actor
+        return (ap_server_dto, ap_actor_dto)
 
 
     def store_dict(self, actor, actor_as_dict):

@@ -28,7 +28,7 @@ from app.config import load_conf
 import uvicorn
 import re
 from app.api.RequestCtx import RequestCtx
-from app.api.IngressGateway import ingress_request
+#from app.api.IngressGateway import ingress_request
 
 from app.AdelphosApp import AdelphosApp, get_app
 from app.consts import USER_ID
@@ -342,11 +342,10 @@ async def user_inbox(username: str, request: Request):
     res_code = 404
     if username == USER_ID:
 
+        # I create the Activity Pub Gateway
         ctx = RequestCtx(app, request)
 
-        ctx.body = await ctx.request.body()
-
-        res_code = await ingress_request(ctx)
+        res_code = await ctx.ingress_do()
         
     return Response(status_code = res_code)
 

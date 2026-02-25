@@ -226,7 +226,6 @@ async def send_msg_to_local_alias(ctx, alias, msg):
     return "this is OK!"
 
 
-# this function is called by activity pub but also by the web sockets.
 async def dispatch_request(ctx):
     gCon.rule("--- dispatch request ---")
     gCon.log(f"The message is {ctx.clean_content}")

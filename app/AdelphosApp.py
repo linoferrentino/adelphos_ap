@@ -26,7 +26,7 @@ from app.dao.ApActorDao import ApActorDao
 # also the server is ambiguous: we can have the ActivityPub server
 # and the adelphos server, which is an instance
 
-from app.dao.ServerDao import ServerDao
+from app.dao.ApServerDao import ApServerDao
 from app.dao.FamilyDao import FamilyDao
 from app.dao.CurrencyDao import CurrencyDao 
 from app.dao.AliasDao import AliasDao
@@ -59,6 +59,11 @@ class AdelphosApp(FastAPI):
         # this is the queue of requests that this daemon does
         # to the outside.
         self.requests = list()
+
+
+    def create_root_user(self):
+        # Now I have to discover the root actor.
+        pass
 
 
     # this is used for the put request.
@@ -103,7 +108,7 @@ class MasterAdelphosDao:
         # I create the specialized DAOs
         self.currency_dao = CurrencyDao(self)
         self.ap_actor_dao  = ApActorDao(self)
-        self.server_dao   = ServerDao(self)
+        self.ap_server_dao   = ApServerDao(self)
         self.family_dao  = FamilyDao(self)
         self.alias_dao   = AliasDao(self)
 

@@ -8,8 +8,11 @@
 
 [General]
 
+# this flag is used to relax some security checks. Do not use in production.
+debug = true
+
 # this is the port which this server uses, usually it is behind a
-# reverse proxy, like ngrok cor nginx.
+# reverse proxy, like ngrok or nginx.
 port = 8000
 
 # this is the name of the database, it can be ":memory:" to have
@@ -22,6 +25,9 @@ host = "example.instance.org"
 
 # this is the root user of this instance: it should be a fediverse account
 # in the form of @handle@host
+#
+# This user will have an alias in the instance ##admin.root_family
+# and that family will be reserved.
 root_user = "@user@host.org"
 
 # This is the root password, hashed by argon.

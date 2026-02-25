@@ -15,17 +15,15 @@
 # the DataAccessObject for the Server table
 # the Server here is synonymous for an ActivityPub server.
 
-from app.dao.ServerDto import ServerDto
-from app.dao.ServerDto import create_ap_server
+from app.dao.ApServerDto import ApServerDto
+from app.dao.ApServerDto import create_ap_server
 from app.logging import gCon
 from dataclasses import asdict
 from app.dao.BaseDao import BaseDao
 
 
 # the server dao has the logic to query and store activity pub servers
-# this has to change name!
-# It must become ApServerDao
-class ServerDao(BaseDao):
+class ApServerDao(BaseDao):
 
 
     # I can set here the context.
@@ -49,17 +47,20 @@ class ServerDao(BaseDao):
         return server_dto
 
 
+    def get_or_create_from_uri(self, uri):
+        return self.get_or_create_from_host_name(uri.netloc)
+
 
     def get_from_id(self, server_id):
         server_dto = self.dao.db.get_full_dto(self.table_name,
-                        "server_id", server_id, ServerDto)
+                        "server_id", server_id, ApServerDto)
         return server_dto
 
 
     # also this function is local
     def get_from_hostname(self, host_name):
         server_dto = self.dao.db.get_full_dto(self.table_name,
-                        "host_name", host_name, ServerDto)
+                        "host_name", host_name, ApServerDto)
         return server_dto
 
 

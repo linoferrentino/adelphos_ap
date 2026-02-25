@@ -24,14 +24,6 @@ class BaseFractalGroupDao(FdActorDao):
     def __init__(self, dao, level_constraint_sql = None):
         self.level_constraint_sql = level_constraint_sql
         super().__init__(dao, "fd_group_family_ex", BaseFractalGroupDao)
-        # I store here the list of fields, the list is coherent
-        # with BaseGroupDto and FdActorDto
-        #self.ftbl_col_list = ( "parent_group_fk", 
-        #                      "boss_fk", "cashier_fk",
-        #                      "currency_fk", "equity", "level",
-        #                      "local_fk", "timestamp"
-        #                      )
-        #self.ftbl_clist_exp = ",".join(self.ftbl_col_list)
 
 
     # the local family by definition belongs to instance zero and level zero
@@ -52,7 +44,7 @@ class BaseFractalGroupDao(FdActorDao):
     # OK; this is a way to query the db on the local name
     def get_from_local_name(self, name):
         sql_to_do = BaseFractalGroupDao.select_local_name.format(self = self)
-        gCon.log(f"This is my query {sql_to_do} with name {name}")
+        #gCon.log(f"This is my query {sql_to_do} with name {name}")
 
         row = self.dao.db.execute_and_fetch_one(sql_to_do, (name,))
 
@@ -74,12 +66,5 @@ class BaseFractalGroupDao(FdActorDao):
 
         gCon.log(f"Stored the group family {dto}")
         return new_id
-
-
-
-    ## I store myself as a dictionary
-    #def store_dict(self, dto, dto_as_dict):
-    #    new_id = super().store_dict(dto, dto_as_dict)
-    #    return new_id
 
 
