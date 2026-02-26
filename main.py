@@ -343,10 +343,11 @@ async def user_inbox(username: str, request: Request):
     if username == USER_ID:
 
         # I create the Activity Pub Gateway
-        gateway = RequestCtx(app)
-        #gateway = ActivityPubGateway(app, request)
+        #gateway = RequestCtx(app)
+        gateway = ActivityPubIngressGateway(app)
 
-        res_code = await gateway.ingress_do(request)
+        # this will return the return code and push the request inline.
+        res_code = await gateway.new_request(request)
 
         # the result code is given immediately, but the message is processed
         # asynchronously

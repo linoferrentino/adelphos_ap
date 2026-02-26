@@ -162,13 +162,18 @@ class ActivityPubIngressGateway(AppCtx):
 
     # the ``ingress'' in activity pub is one-shot. The protocol is stateless.
     # this returns a code.
-    async def ingress(self, request):
-        self.request = request
-        return await _ingress_request(self)
+    #async def ingress(self, request):
+    #    self.request = request
+    #    return await _ingress_request(self)
 
 
     # this is the procedural request, it is asynchrously
     async def proc_request(self):
+        pass
+
+
+    # this function will check the validity of the request and return a string
+    await def pre_process_request(self, request):
         pass
 
 
@@ -188,16 +193,16 @@ async def _ingress_request(ctx) -> int:
 
     if (isinstance(ctx.object_body, dict) == False):
         gCon.log(f"what is it? {str(ctx.object_body)}")
-        return 400
+        return (400, None)
 
     #gCon.log(f"{ctx.object_body}")
     content = ctx.object_body.get('content')
     if (content is None):
         gCon.log(f"No content in object {ctx.object_body}")
-        return 401
+        return (401, None)
 
     # remove HTML tags
-    ctx.clean_content = re.sub('<[^<]+?>', '', content) 
+    clean_content = re.sub('<[^<]+?>', '', content) 
 
     gCon.log(f"Message: [yellow]{ctx.clean_content}[/yellow]")
 
@@ -206,20 +211,20 @@ async def _ingress_request(ctx) -> int:
     # I only understand activity create post objects.
     if (ob_type != 'Create'):
         gCon.log(f"Unrecognized activity type {ob_type}")
-        return 400
+        return (400, None)
 
     object_body_type = ctx.object_body['type']
     if (object_body_type != 'Note'):
         gCon.log(f"Unrecognized object internal type {object_body_type}")
-        return 400
+        return (400, None)
 
     valid_ob = await check_message(ctx)
 
     if (valid_ob == False):
-        return 401
+        return (401, None)
     
-    asyncio.create_task(dispatch_request(ctx)) 
+    #asyncio.create_task(dispatch_request(ctx)) 
 
     # the message has been accepted, I will return the response after.
-    return 202
+    return (202, clean_content)
 

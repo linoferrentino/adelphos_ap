@@ -51,34 +51,49 @@ class AppCtx(ABC):
         # at the beginnin I do not have an async request (or I delete the previous one) 
         self.async_ctx = None
 
-        # this returns the request as string
-        req_str = await self.pre_process_request()
+        # this pre process can have two outcomes
+        # a status code and a string, in this case the status code
+        # is given immediately to the outside and the request as string
+        # is fed as a new task (if it is != None)
+        # otherwise the status code is None, in this case the request is
+        # processed serially.
+        (res_code, req_str) = await self.pre_process_request()
 
-        self.parse_cmd_line(req_str)
+        if (res_code is None):
+            # this is a serialized request, the output is the response
+            response = await self.proc_request(req_str)
+        else:
+            # this is a request that needs to be processed in another thread, and
+            # the return is the res_code
+            response = res_code
+            if (req_str is not None):
+                asyncio.create_task(proc_request(req_str))
 
         # this is the processing part of the request
         # the processing part of the request will then issue an outgress command.
-        res_code = await self.proc_request()
+        return response
 
-        return res_code
+
 
 
     # the request can be opaque here.
     @abstractmethod
-    await def pre_process_request(self, request):
+    async def pre_process_request(self, request):
         pass
 
 
     # here the method is not entirely abstract, we have to return a string.
-    await def proc_request(self):
+    async def proc_request(self, req_str):
+
+        self.parse_cmd_line(req_str)
 
         # I have first to call the real handler, this might produce an exception!
         msg_out = await self._proc_request_impl()
 
         # the request could have created an async context, in this case
-        # the real message will be overwritten.
+        # the real message will be available at the end of the async call
         if (self.async_ctx is not None):
-            await self.async_ctx
+            msg_out = await self.async_ctx
 
         # OK, now I will check if there has been an exception, if not I can commit
         if (self.in_error == False):
@@ -88,14 +103,13 @@ class AppCtx(ABC):
             gCon.rule("[red]Rollback![/red]")
             self.app.dao.rollback()
 
-        return msg_out
+        await self.outgress_result(msg_out)
 
 
     # this is an abstract method here, different gateways will implement it differently
     @abstractmethod
-    await def outgress_result(self, result):
+    async def outgress_result(self, result):
         pass
-
 
 
     # parse the parameters: they can come either from an Activity Pub message or
