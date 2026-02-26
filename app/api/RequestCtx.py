@@ -21,20 +21,20 @@ from app.api.IngressGateway import ActivityPubIngressGateway
 class RequestCtx:
 
 
-    def __init__(self, app, request):
+    def __init__(self, app):
         #super().__init__(app)
         #self.request = request
 
         # this is the entry point for all the requests that come to the daemon
         # by the ActivityPub world.
-        self.ingress_gateway = ActivityPubIngressGateway(app, request)
+        self.ingress_gateway = ActivityPubIngressGateway(app)
 
         # then I have also the OutgressGateway... later.
 
 
-    async def ingress_do(self):
+    async def ingress_do(self, request):
 
-        return await self.ingress_gateway.ingress()
+        return await self.ingress_gateway.ingress(request)
 
 
 

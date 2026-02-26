@@ -524,14 +524,10 @@ select {list_sql_fields} from {table_name} where {field_to_seek} = ?
         fields_list = ", ".join(fields)
         place_holders_list = ", ".join(fields_colon)
 
-
         sql_insert = f"""
 insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
 
-"""
-
-        gCon.log(f"executing {sql_insert}")
-
+        """
         cur = self._conn.cursor()
         cur.execute(sql_insert, dto_as_dict)
         newid = cur.lastrowid

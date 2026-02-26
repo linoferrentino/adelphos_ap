@@ -157,17 +157,22 @@ async def check_message(ctx):
 # Activity Pub
 class ActivityPubIngressGateway(AppCtx):
 
-    def __init__(self, app, request):
+    def __init__(self, app):
         super().__init__(app)
-        self.request = request
 
     # the ``ingress'' in activity pub is one-shot. The protocol is stateless.
-    async def ingress(self):
-
+    # this returns a code.
+    async def ingress(self, request):
+        self.request = request
         return await _ingress_request(self)
 
 
-# here ctx is ``self'' (just a temporary hack)
+    # this is the procedural request, it is asynchrously
+    async def proc_request(self):
+        pass
+
+
+# here ctx is ``self'' , an ActivityPubIngressGateway, (just a temporary hack)
 async def _ingress_request(ctx) -> int:
 
     ctx.body = await ctx.request.body()

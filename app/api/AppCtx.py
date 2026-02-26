@@ -17,10 +17,18 @@
 from app.api.AliasApi import AliasApi
 from app.api.TrustLineApi import TrustLineApi
 import shlex
+from abc import ABC
+from abc import abstractmethod
 
 # The application context holds the transient data to fulfill a request
 # or an interactive session with a client.
-class AppCtx:
+
+# this will be renamed in ApplicationGateway
+# the gateway to access the adelphos instance, using either an
+# ActivityPub post message or a web socket.
+# The Gateway is stateful, but an ActivityPub Gateway will be discarded after use.
+# the gateway has a set of APIs to control the system
+class AppCtx(ABC):
 
 
     # the application context has in common the Alias API.
@@ -29,7 +37,65 @@ class AppCtx:
         self.app = app
         # the flag is used to know if we later commit or not
         self.in_error = False
+        # the AliasApi is in common between the two gateways as we create an
+        # alias using the ActivityPub interface and we access the web socket
+        # using the alias created with activity pub
         self.alias_api = AliasApi(self)
+
+
+    # the gateway has this entry point common to all.
+    # the request could be ``anything'', for an ActivityPub Gateway it
+    # is a request, for a socket it is a line of text.
+    async def new_request(self, request):
+
+        # at the beginnin I do not have an async request (or I delete the previous one) 
+        self.async_ctx = None
+
+        # this returns the request as string
+        req_str = await self.pre_process_request()
+
+        self.parse_cmd_line(req_str)
+
+        # this is the processing part of the request
+        # the processing part of the request will then issue an outgress command.
+        res_code = await self.proc_request()
+
+        return res_code
+
+
+    # the request can be opaque here.
+    @abstractmethod
+    await def pre_process_request(self, request):
+        pass
+
+
+    # here the method is not entirely abstract, we have to return a string.
+    await def proc_request(self):
+
+        # I have first to call the real handler, this might produce an exception!
+        msg_out = await self._proc_request_impl()
+
+        # the request could have created an async context, in this case
+        # the real message will be overwritten.
+        if (self.async_ctx is not None):
+            await self.async_ctx
+
+        # OK, now I will check if there has been an exception, if not I can commit
+        if (self.in_error == False):
+            gCon.rule("[blue]Commit![/blue]")
+            self.app.dao.commit()
+        else:
+            gCon.rule("[red]Rollback![/red]")
+            self.app.dao.rollback()
+
+        return msg_out
+
+
+    # this is an abstract method here, different gateways will implement it differently
+    @abstractmethod
+    await def outgress_result(self, result):
+        pass
+
 
 
     # parse the parameters: they can come either from an Activity Pub message or
@@ -87,3 +153,5 @@ class WebSocketContext(AppCtx):
         #self.cheque_api = ChequeApi(self)
 
 
+    def proc_request(self, request):
+        pass
