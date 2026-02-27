@@ -76,7 +76,7 @@ class AdelphosApp(FastAPI):
 
     # returns the internet name of this adelphos instance: this is used
     # to differentiate local from federated objects.
-    def get_local_host():
+    def get_local_host(self):
         # Just to not disperse too many hardcoded strings around.
         return self.config['General']['host']
 

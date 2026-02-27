@@ -25,6 +25,8 @@ from fastapi.responses import JSONResponse
 
 from app.logging import gCon
 from app.config import load_conf
+from app.api.IngressGateway import ActivityPubGateway
+from app.api.IngressGateway import _ingress_request
 import uvicorn
 import re
 from app.api.RequestCtx import RequestCtx
@@ -343,18 +345,20 @@ async def user_inbox(username: str, request: Request):
     if username == USER_ID:
 
         # I create the Activity Pub Gateway
-        #gateway = RequestCtx(app)
-        gateway = ActivityPubIngressGateway(app)
+        #gateway = RequestCtx(app, request)
+        #(res_code, content) = await _ingress_request(gateway)
+        
+        gateway = ActivityPubGateway(app)
 
-        # this will return the return code and push the request inline.
+        # this will return the return code and will process the request asynchronously
         res_code = await gateway.new_request(request)
+
 
         # the result code is given immediately, but the message is processed
         # asynchronously
         #res_code = await gateway.accept(request)
         
     return Response(status_code = res_code)
-
 
 
 def main():

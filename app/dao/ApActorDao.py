@@ -126,7 +126,7 @@ resource=acct:{preferred_username}@{rem_instance}"
 
         key_ob = json.loads(key_ob_text)
 
-        gCon.log(f"this is the actor {key_ob}")
+        #gCon.log(f"this is the actor {key_ob}")
 
         pub_key_ob = key_ob['publicKey']
 

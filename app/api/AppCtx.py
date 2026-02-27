@@ -19,6 +19,8 @@ from app.api.TrustLineApi import TrustLineApi
 import shlex
 from abc import ABC
 from abc import abstractmethod
+from app.logging import gCon
+import asyncio
 
 # The application context holds the transient data to fulfill a request
 # or an interactive session with a client.
@@ -48,7 +50,7 @@ class AppCtx(ABC):
     # is a request, for a socket it is a line of text.
     async def new_request(self, request):
 
-        # at the beginnin I do not have an async request (or I delete the previous one) 
+        # at the beginning I do not have an async request (or I delete the previous one) 
         self.async_ctx = None
 
         # this pre process can have two outcomes
@@ -57,7 +59,7 @@ class AppCtx(ABC):
         # is fed as a new task (if it is != None)
         # otherwise the status code is None, in this case the request is
         # processed serially.
-        (res_code, req_str) = await self.pre_process_request()
+        (res_code, req_str) = await self.pre_process_request(request)
 
         if (res_code is None):
             # this is a serialized request, the output is the response
@@ -67,16 +69,15 @@ class AppCtx(ABC):
             # the return is the res_code
             response = res_code
             if (req_str is not None):
-                asyncio.create_task(proc_request(req_str))
+                gCon.log(f"Creating task for request -{req_str}-")
+                asyncio.create_task(self.proc_request(req_str))
 
         # this is the processing part of the request
         # the processing part of the request will then issue an outgress command.
         return response
 
 
-
-
-    # the request can be opaque here.
+    # the request can be anything here, a string or a HTTP request.
     @abstractmethod
     async def pre_process_request(self, request):
         pass
@@ -92,6 +93,8 @@ class AppCtx(ABC):
 
         # the request could have created an async context, in this case
         # the real message will be available at the end of the async call
+
+        # XXX maybe this wait can be moved.
         if (self.async_ctx is not None):
             msg_out = await self.async_ctx
 
@@ -109,6 +112,14 @@ class AppCtx(ABC):
     # this is an abstract method here, different gateways will implement it differently
     @abstractmethod
     async def outgress_result(self, result):
+        pass
+
+
+    # the request has been parsed, now we have only to process it
+    # this should return a string which is the result or, if the request
+    # is itself a result of another job it will return an async context.
+    @abstractmethod
+    async def _proc_request_impl(self):
         pass
 
 

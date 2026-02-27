@@ -544,7 +544,6 @@ insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
 
 
     def commit(self):
-        gCon.rule("commit")
         self._conn.commit()
 
 
