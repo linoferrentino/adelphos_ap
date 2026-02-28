@@ -30,7 +30,7 @@ class BaseApi:
 
         # I have to register the handlers
         for handler_name, handler_fn in handlers_dict.items():
-            gateway.add_handler(handler_name, handler_fn)
+            gateway.add_handler(handler_name, self, handler_fn)
 
 
 

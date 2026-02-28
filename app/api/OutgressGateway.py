@@ -39,14 +39,14 @@ async def post_response_inbox(ctx, actor, server, msg):
                                           ctx.actor_dto.inbox_path, msg)
 
 
-async def post_to_ap_actor(ctx, server_dto, actor_dto, message):
-    return await post_response_inbox_impl(ctx, server_dto.host_name, 
+async def post_to_ap_actor(app, server_dto, actor_dto, message):
+    return await post_response_inbox_impl(app, server_dto.host_name, 
                                           actor_dto.user_path,
                                           actor_dto.inbox_path, message)
 
 
 # we can pass messages to other inboxes, for example a daemon inbox 
-async def post_response_inbox_impl(ctx, host_name, user_path, inbox_path, msg):
+async def post_response_inbox_impl(app, host_name, user_path, inbox_path, msg):
 
 
     actor_uri = f"https://{host_name}{user_path}"
@@ -57,7 +57,7 @@ async def post_response_inbox_impl(ctx, host_name, user_path, inbox_path, msg):
     msg = re.sub("\n", "<p>", msg)
     #gCon.log(f"Now you have {msg}")
 
-    host = ctx.app.config['General']['host']
+    host = app.config['General']['host']
     host_api = host + API_POINT
 
     sender_url = f"https://{host_api}/users/{USER_ID}"
@@ -92,7 +92,7 @@ async def post_response_inbox_impl(ctx, host_name, user_path, inbox_path, msg):
 
     sign_utf8 = signature_text.decode('utf-8')
 
-    raw_signature = ctx.app.private_key.sign(
+    raw_signature = app.private_key.sign(
             signature_text,
             padding.PKCS1v15(),
             hashes.SHA256()
@@ -113,7 +113,7 @@ async def post_response_inbox_impl(ctx, host_name, user_path, inbox_path, msg):
     gCon.log(f"just before sending to {inbox_uri}")
     gCon.log(f"{new_message}")
     post_res  = AsyncPostReq(inbox_uri, headers, new_message)
-    await ctx.app.async_req_push(post_res)
+    await app.async_req_push(post_res)
 
 
 

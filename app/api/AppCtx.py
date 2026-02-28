@@ -22,6 +22,7 @@ from app.api.AdelphosException import AdelphosException
 from abc import abstractmethod
 from app.logging import gCon
 import asyncio
+import traceback
 
 # The application context holds the transient data to fulfill a request
 # or an interactive session with a client.
@@ -53,9 +54,9 @@ class AppCtx(ABC):
 
 
     # this message is called by an handler to register its functions.
-    def add_handler(self, command_str, handler):
+    def add_handler(self, command_str, other_self, handler):
         gCon.log(f"Adding handler for: {command_str}")
-        self.handlers[command_str] = handler
+        self.handlers[command_str] = (other_self, handler)
 
 
     # the gateway has this entry point common to all.
@@ -137,9 +138,11 @@ class AppCtx(ABC):
         try:
             msg_out = await self.proc_req_bare()
         except AdelphosException as adex:
+            traceback.print_exc()
             msg_out = f"User error: {adex}"
             self.in_error = True
         except Exception as ex:
+            traceback.print_exc()
             msg_out = f"Server error: {ex}"
             self.in_error = True
 
@@ -149,10 +152,10 @@ class AppCtx(ABC):
     async def proc_req_bare(self):
 
         # search for the handler for this command.
-        handler = self.handlers.get(self.cmd)
-        if handler is None:
+        handler_tuple = self.handlers.get(self.cmd)
+        if handler_tuple is None:
             raise AdelphosException(f"Not found command  {self.cmd}")
-        msg_out = await handler(self)
+        msg_out = await handler_tuple[1](handler_tuple[0])
         return msg_out
 
 
@@ -192,6 +195,7 @@ class AppCtx(ABC):
 
 # the class that holds the data relative to a client
 # this holds a session state for the socket.
+# this class will be renamed to WebSocketGateway
 class WebSocketContext(AppCtx):
 
     def __init__(self, app, websocket):
@@ -205,11 +209,19 @@ class WebSocketContext(AppCtx):
         # this is the Alias as view from the external world.
         # It is ``myself'', the logged user.
         self.tl_api = TrustLineApi(self)
+        self.alias_api = AliasApi(self)
 
         # these API will share the context
         #self.place_api = PlaceApi(self)
         #self.cheque_api = ChequeApi(self)
 
 
-    def proc_request(self, request):
-        pass
+    # here it is trivial, but it must return a None as a result code
+    # because we want the process to be synchronously
+    async def pre_process_request(self, request):
+        return (None, str(request))
+
+
+    # also the outgress is trivial
+    async def outgress_result(self, result):
+        await self.websocket.send_text(result)

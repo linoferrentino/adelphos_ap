@@ -15,6 +15,12 @@
 # In Activity Pub realm we only create an alias. 
 
 from app.api.BaseApi import BaseApi
+from app.dao.AdelphosUri import uriparse
+from app.api.AdelphosException import AdelphosException
+from app.logging import gCon
+from app.dao.FamilyDto import family_dto_create_local
+from argon2 import PasswordHasher
+from app.dao.AliasDto import alias_dto_create_local
 
 class ApAliasApi(BaseApi):
 
@@ -25,7 +31,40 @@ class ApAliasApi(BaseApi):
 
     # here we define the handlers.
     async def _hndl_ap_alias_create(self):
-        return "It works! _hndl_create_ap_alias"
+
+        alias_complete = self.gateway.get_param_safe('alias')
+        password = self.gateway.get_param_safe('password')
+
+        alias_uri = uriparse(alias_complete)
+
+        if (alias_uri.is_numeric == True):
+            raise AdelphosException("Cannot create a numeric alias")
+
+        gCon.log(f"alias uri created {alias_uri}")
+
+        family_dto = self.gateway.app.dao.family_dao.get_from_local_name(
+                alias_uri.family)
+
+        if (family_dto is not None):
+            raise AdelphosException(
+f"family {alias_uri.family} is already existing in this instance")
+
+        # let's create the family, for now it will have only a name, not a currency
+        family_dto = family_dto_create_local(alias_uri.family)
+
+        family_id = self.gateway.app.dao.family_dao.store(family_dto)
+
+        ph = PasswordHasher()
+        pass_hashed = ph.hash(password)
+
+        # I use the activity pub actor object to link to the alias
+        alias_dto = alias_dto_create_local(alias_uri.name,
+                   self.gateway.actor_dto.actor_id, family_id, pass_hashed)
+
+        # OK, let't try to add it to the database
+        new_id = self.gateway.app.dao.alias_dao.store(alias_dto)
+
+        return f"Created alias {alias_uri} successfully. You can login, now."
 
 
 # this table is valid for all the objects

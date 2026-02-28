@@ -160,7 +160,9 @@ class ClientWs:
 
             gCon.log(f"received ]{data}[")
 
-            await self._handle_cmdline(data)
+            #await self._handle_cmdline(data)
+            # I handle it to the gateway
+            await self.ctx.new_request(data)
 
 
     # this is the never ending loop which goes away only if the client

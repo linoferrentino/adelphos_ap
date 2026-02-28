@@ -75,8 +75,8 @@ class AliasApi(BaseApi):
 
 
     # The Alias Api can serve the Activity pub context or the Web socket context.
-    def __init__(self, ctx):
-        self.ctx = ctx
+    def __init__(self, gateway):
+        super().__init__(gateway, HANDLERS)
         self.user_state = EUserState.NOT_LOGGED
 
 
@@ -109,51 +109,72 @@ class AliasApi(BaseApi):
 
     # this method takes the parameters from the context.
     # the actor and the server are already taken 
-    def create_from_ctx(self):
-
-        # first of all let's see if the alias is already present
-        alias_complete = self.ctx.get_param_safe('alias')
-        password = self.ctx.get_param_safe('password')
-
-        alias_uri = uriparse(alias_complete)
-
-        if (alias_uri.is_numeric == True):
-            raise AdelphosException("Cannot create a numeric alias")
-
-        gCon.log(f"alias uri created {alias_uri}")
-
-        # the family MUST NOT already exist, we cannot create two families in
-        # the same instance with the same name.
-        family_dto = self.ctx.app.dao.family_dao.get_from_local_name(alias_uri.family)
-
-        if (family_dto is not None):
-            raise AdelphosException(
-    f"family {alias_uri.family} is already existing in this instance")
-
-
-        # let's create the family, for now it will have only a name, not a currency
-        family_dto = family_dto_create_local(alias_uri.family)
-
-        family_id = self.ctx.app.dao.family_dao.store(family_dto)
-
-        # I have now the id of the family and I can create the alias.
-        ph = PasswordHasher()
-        pass_hashed = ph.hash(password)
-
-        alias_dto = alias_dto_create_local(alias_uri.name,
-                                           self.ctx.actor_dto.actor_id,
-                                           family_id, pass_hashed)
-
-        # OK, let't try to add it to the database
-        new_id = self.ctx.app.dao.alias_dao.store(alias_dto)
-
-        return f"Created alias {alias_dto} successfully, with id {new_id}"
+#    def create_from_ctx(self):
+#
+#        # first of all let's see if the alias is already present
+#        alias_complete = self.ctx.get_param_safe('alias')
+#        password = self.ctx.get_param_safe('password')
+#
+#        alias_uri = uriparse(alias_complete)
+#
+#        if (alias_uri.is_numeric == True):
+#            raise AdelphosException("Cannot create a numeric alias")
+#
+#        gCon.log(f"alias uri created {alias_uri}")
+#
+#        # the family MUST NOT already exist, we cannot create two families in
+#        # the same instance with the same name.
+#        family_dto = self.ctx.app.dao.family_dao.get_from_local_name(alias_uri.family)
+#
+#        if (family_dto is not None):
+#            raise AdelphosException(
+#    f"family {alias_uri.family} is already existing in this instance")
+#
+#
+#        # let's create the family, for now it will have only a name, not a currency
+#        family_dto = family_dto_create_local(alias_uri.family)
+#
+#        family_id = self.ctx.app.dao.family_dao.store(family_dto)
+#
+#        # I have now the id of the family and I can create the alias.
+#        ph = PasswordHasher()
+#        pass_hashed = ph.hash(password)
+#
+#        alias_dto = alias_dto_create_local(alias_uri.name,
+#                                           self.ctx.actor_dto.actor_id,
+#                                           family_id, pass_hashed)
+#
+#        # OK, let't try to add it to the database
+#        new_id = self.ctx.app.dao.alias_dao.store(alias_dto)
+#
+#        return f"Created alias {alias_dto} successfully, with id {new_id}"
 
 
 
     # This method will get the parameters from the command line.
-    def create_pars():
-        pass
+#    def create_pars():
+#        pass
+
+
+    async def _hndl_login(self):
+        alias = self.gateway.get_param_safe('alias')
+        password = self.gateway.get_param_safe('password')
+
+        alias_uri = uriparse(alias)
+
+        gCon.log(f"You {alias_uri} want to login! {self}")
+
+        # let's suppose that we want to login, first of all we create
+        # an AliasApi and we pass the message
+        #ctx.alias_api = AliasApi(alias_uri)
+        msg = await self.login(alias_uri, password)
+
+        return msg
+
+
+    async def _hndl_put_token(self):
+        token = self.gateway.get_param_safe('tk')
+        return self.recv_token(token)
 
 
     async def login(self, uri, password):
@@ -161,7 +182,7 @@ class AliasApi(BaseApi):
         self._set_uri(uri)
 
         # first of all I get the family, the alias needs the family.
-        self.n_family_dto = self.ctx.app.dao.family_dao\
+        self.n_family_dto = self.gateway.app.dao.family_dao\
                 .get_from_local_name(self.uri.family) 
 
         if (self.n_family_dto is None):
@@ -172,7 +193,7 @@ class AliasApi(BaseApi):
 
         # OK, now I have to get the alias
 
-        self.n_alias_dto = self.ctx.app.dao.alias_dao\
+        self.n_alias_dto = self.gateway.app.dao.alias_dao\
                 .get_from_name_family_id(self.uri.name,
                                          self.n_family_dto.fd_actor_id)
 
@@ -194,14 +215,14 @@ class AliasApi(BaseApi):
         # This maybe later, for now we simply do a memory session
 
         # OK, now we take the ActivityPub actor who is behind this alias
-        self.n_actor_dto = self.ctx.app.dao.ap_actor_dao.get_from_local_id(
+        self.n_actor_dto = self.gateway.app.dao.ap_actor_dao.get_from_local_id(
                 self.n_alias_dto.actor_fk)
 
         if (self.n_actor_dto is None):
             raise Exception("Bug! there is not the actor corresponding")
 
         gCon.log(f"I will send the token to {self.n_actor_dto}")
-        self.n_server_dto = self.ctx.app.dao.server_dao.get_from_id(
+        self.n_server_dto = self.gateway.app.dao.ap_server_dao.get_from_id(
                                             self.n_actor_dto.server_fk)
 
         if (self.n_server_dto is None):
@@ -213,7 +234,7 @@ class AliasApi(BaseApi):
         self.token = secrets.token_urlsafe()
         self.session_age = datetime.now()
 
-        await post_to_ap_actor(self.ctx, self.n_server_dto,
+        await post_to_ap_actor(self.gateway.app, self.n_server_dto,
                                self.n_actor_dto,
 f"Login OK, please copy the following line in adelphos chat\n\
 put_token tk {self.token}")
@@ -233,16 +254,22 @@ in your Mastodon inbox to finalize the login."""
         pass
 
 
+# here the handlers for this API
+HANDLERS = {
+     'login' : AliasApi._hndl_login,
+     'put_token' : AliasApi._hndl_put_token
+}
+
     # this does not belong here!
 
     # this is the function to buy an object, it will make the routing and create
     # all the cheques.
     # it returns a path or None if some conditions are not met.
-    def buy_object_or_service(object_sold):
-
-        # this is a path.
-        # the place and time of the object
-        # the price you will pay, in t0 or tX money
-        # the currency, etc.
-        
-        return "The object will arrive at @place@iii on Wednesday March 15th"
+#    def buy_object_or_service(object_sold):
+#
+#        # this is a path.
+#        # the place and time of the object
+#        # the price you will pay, in t0 or tX money
+#        # the currency, etc.
+#        
+#        return "The object will arrive at @place@iii on Wednesday March 15th"

@@ -191,18 +191,18 @@ class ActivityPubGateway(AppCtx):
 
 
     # this is the procedural request, it is asynchrously
-    async def _proc_request_impl(self):
+    #async def _proc_request_impl(self):
 
-        # actually the activity pub gateway has only three important messages.
-        # the alias create, the daemon_q and daemon_a, all the others are
-        # handled by the web context.
+    #    # actually the activity pub gateway has only three important messages.
+    #    # the alias create, the daemon_q and daemon_a, all the others are
+    #    # handled by the web context.
 
-        gCon.log("proc request in another thread.")
-        await asyncio.sleep(3)
-        gCon.log("After waiting I send the result")
+    #    gCon.log("proc request in another thread.")
+    #    await asyncio.sleep(3)
+    #    gCon.log("After waiting I send the result")
 
-        # maybe here I can wait the async context.
-        return "ALL DONE"
+    #    # maybe here I can wait the async context.
+    #    return "ALL DONE"
 
 
     # check an ActivityPub message using the W3C reccomendations
