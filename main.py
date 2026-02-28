@@ -1,3 +1,19 @@
+######################################################
+#
+# Adelphos AP: the fractal trust network
+#
+# Activity Pub implementation
+#
+# © 2025-26 Lino Ferrentino
+# lino.ferrentino@gmail.com
+#
+# This is free software. Licensed with GPL version 3
+#
+######################################################
+#
+# the main entry point for the Activity Pub implementation of adelphos.
+
+
 import typer
 from urllib.parse import urlparse
 import sys

@@ -34,6 +34,7 @@ from app.ap_api.AsyncRequest import AsyncGetReq
 from urllib.parse import urlparse
 from app.api.AppCtx import AppCtx
 import asyncio
+from app.api.ApAliasApi import ApAliasApi
 
 
 # checks the validity of the message received.
@@ -169,12 +170,17 @@ class ActivityPubGateway(AppCtx):
         super().__init__(app)
 
         # this is the Activity Pub actor which has issued the request.
+        # probably this does not need to be here.
         self.actor_str = None
 
         # the two objects which represent the verified sender of the message
         # (it can also be a bot: another adelphos daemon).
         self.actor_dto = None
         self.server_dto = None
+
+        # I create here the daemon_api: it will register itself, and register
+        # its handlers.
+        self.ap_alias_api = ApAliasApi(self)
 
 
     # the ``ingress'' in activity pub is one-shot. The protocol is stateless.
@@ -186,6 +192,11 @@ class ActivityPubGateway(AppCtx):
 
     # this is the procedural request, it is asynchrously
     async def _proc_request_impl(self):
+
+        # actually the activity pub gateway has only three important messages.
+        # the alias create, the daemon_q and daemon_a, all the others are
+        # handled by the web context.
+
         gCon.log("proc request in another thread.")
         await asyncio.sleep(3)
         gCon.log("After waiting I send the result")
@@ -194,12 +205,8 @@ class ActivityPubGateway(AppCtx):
         return "ALL DONE"
 
 
-    # check an ActivityPub message using the W3C reccomandations
-
+    # check an ActivityPub message using the W3C reccomendations
     async def check_ap_message(self, actor_str, request, body_str): 
-
-        #body_str = ctx.body_str
-        #body_ob = ctx.body_ob
 
         headers = request.headers
 
@@ -346,6 +353,12 @@ class ActivityPubGateway(AppCtx):
         gCon.log(f"For: url {request.url}")
         gCon.log(f"Message: [yellow]{clean_content}[/yellow]")
 
+        # the message must be for the ActivityPub daemon
+        (mention, rest_of_line) = clean_content.split(" ", 1)
+        if ( mention != f"@{USER_ID}"):
+            gCon.log(f"This is not a message for me. {mention}")
+            return (400, None)
+
         ob_type = body_ob['type']
 
         # I only understand activity create post objects.
@@ -365,7 +378,7 @@ class ActivityPubGateway(AppCtx):
             return (401, None)
         
         # the message has been accepted, I will return the response after.
-        return (202, clean_content)
+        return (202, rest_of_line)
 
 
     # here the outgress result, in our case it will post the message to the

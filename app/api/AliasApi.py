@@ -26,6 +26,8 @@ from app.dao.FamilyDto import family_dto_create_local
 from app.dao.AliasDto import alias_dto_create_local
 
 
+
+
 # This can be "myself" in the context, so that we can "speak" to ourselves
 # in the adelphos federated world
 
@@ -60,6 +62,7 @@ from app.dao.AliasDto import alias_dto_create_local
 # is the case: for example we might see that a family merges or splits.
 # But in this case the actor is the adelphos instance that does the action.
 
+from app.api.BaseApi import BaseApi
 
 # these are the states for the user.
 class EUserState(IntEnum):
@@ -68,7 +71,7 @@ class EUserState(IntEnum):
     LOGGED_AND_TOKEN = auto()
 
 
-class AliasApi:
+class AliasApi(BaseApi):
 
 
     # The Alias Api can serve the Activity pub context or the Web socket context.

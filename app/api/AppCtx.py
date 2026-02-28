@@ -18,6 +18,7 @@ from app.api.AliasApi import AliasApi
 from app.api.TrustLineApi import TrustLineApi
 import shlex
 from abc import ABC
+from app.api.AdelphosException import AdelphosException
 from abc import abstractmethod
 from app.logging import gCon
 import asyncio
@@ -39,10 +40,22 @@ class AppCtx(ABC):
         self.app = app
         # the flag is used to know if we later commit or not
         self.in_error = False
+
+        # the dictionary is in common to the gateways
+        self.handlers = dict()
+
         # the AliasApi is in common between the two gateways as we create an
         # alias using the ActivityPub interface and we access the web socket
         # using the alias created with activity pub
-        self.alias_api = AliasApi(self)
+        # No! It is not in common, we have the activity pub alias api
+        # and the web socket alias api: they are different.
+        #self.alias_api = AliasApi(self)
+
+
+    # this message is called by an handler to register its functions.
+    def add_handler(self, command_str, handler):
+        gCon.log(f"Adding handler for: {command_str}")
+        self.handlers[command_str] = handler
 
 
     # the gateway has this entry point common to all.
@@ -89,7 +102,7 @@ class AppCtx(ABC):
         self.parse_cmd_line(req_str)
 
         # I have first to call the real handler, this might produce an exception!
-        msg_out = await self._proc_request_impl()
+        msg_out = await self.proc_request_try()
 
         # the request could have created an async context, in this case
         # the real message will be available at the end of the async call
@@ -118,9 +131,29 @@ class AppCtx(ABC):
     # the request has been parsed, now we have only to process it
     # this should return a string which is the result or, if the request
     # is itself a result of another job it will return an async context.
-    @abstractmethod
-    async def _proc_request_impl(self):
-        pass
+    #@abstractmethod
+    async def proc_request_try(self):
+
+        try:
+            msg_out = await self.proc_req_bare()
+        except AdelphosException as adex:
+            msg_out = f"User error: {adex}"
+            self.in_error = True
+        except Exception as ex:
+            msg_out = f"Server error: {ex}"
+            self.in_error = True
+
+        return msg_out
+
+
+    async def proc_req_bare(self):
+
+        # search for the handler for this command.
+        handler = self.handlers.get(self.cmd)
+        if handler is None:
+            raise AdelphosException(f"Not found command  {self.cmd}")
+        msg_out = await handler(self)
+        return msg_out
 
 
     # parse the parameters: they can come either from an Activity Pub message or
