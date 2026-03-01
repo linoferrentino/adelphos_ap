@@ -96,18 +96,6 @@ resource=acct:{preferred_username}@{rem_instance}"
         return actor
 
 
-    @staticmethod
-    def _base_get(ctx, fields_to_seek, values_to_seek):
-        global table_name
-
-        fields_to_ask = ('actor_id', 'actor_uri', 'canonical_name', 
-                         'inbox_uri', 'public_key', 'timestamp')
-
-        dto = ctx.app.dao.get_dto_ex(table_name, fields_to_ask, 
-                                     fields_to_seek, 
-                            values_to_seek, ActorDto)
-        gCon.log(f"I have grabbed {dto} from db")
-        return dto      
 
 
     # this function will fetch the public key of the actor
@@ -207,32 +195,6 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
             ap_actor_dto = await self.create_from_uri(server_dto, actor_uri, 
                                                    key_parsed)
         return ap_actor_dto
-
-
-    # this function will get the Activity Pub Actor object from the database or
-    # it will query the remote server to get his data.
-    # It will return the data as a tuple (server, actor)
-    async def get_or_discover_from_pk_id_DEPRECATED(self, key_id_val):
-
-        # OK, I have the public key identifier, now I have to decompose it
-        # in host, path and fragment (the last one is usually removed)
-
-        key_parsed = urlparse(key_id_val)
-
-        # I grab or create the server: this is a local object.
-        ap_server_dto = self.dao.ap_server_dao\
-                .get_or_create_from_host_name(key_parsed.netloc)
-
-        # now I can create the actor.
-        parsed = key_parsed._replace(fragment = "")
-        actor_uri = parsed.geturl()
-
-        ap_actor_dto = self.get_local_from_parsed_uri(ctx, key_parsed)
-
-        if (ap_actor_dto is None):
-            ap_actor_dto = await self.create_from_uri(ctx, actor_uri, 
-                                                   key_parsed)
-        return (ap_server_dto, ap_actor_dto)
 
 
     def store_dict(self, actor, actor_as_dict):

@@ -77,12 +77,22 @@ class AdelphosApp(FastAPI):
         # I create here the ActivityPubApi which is in common for all the
         # objects in adelphos. The API has the possibilities to exchange
         # messages to the external world using the ActivityPub Protocol
+        self._init_schema = False
+
+
+    def post_initialization_needed(self):
+        self._init_schema = True
 
 
     async def create_root_user(self):
         # Now I have to discover the root actor.
+        flag = self._init_schema
+        del self._init_schema
+        if (flag == False):
+            return
         root_user = self.config['General']['root_user']
         gCon.log(f"Will discover root {root_user}")
+        # here I will get the activity pub object and I will create the root alias
         await self.ap_api.get_or_discover_actor(root_user)
 
 
@@ -235,8 +245,6 @@ def get_app():
     gCon.log(f"Starting Adelphos' instance {instance_name}")
     app = AdelphosApp(instance_name, root_path = API_POINT,
                       lifespan = lifespan)
-    gCon.log("xxxxx after constructor")
-    #app.create_root_user()
 
     return get_app()
 

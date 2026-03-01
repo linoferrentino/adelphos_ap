@@ -342,14 +342,12 @@ insert into ad_instance(actor_fk, authorized, comment) values
         # set the primary keys
         self._conn = sqlite3.connect(db_name_complete,
                                      autocommit=True)
-
       
         if (create_schema == True):
             self._create_schema(app)
 
             # If I am here I have to create the root alias for this instance..
-            #app.create_root_user()
-
+            app.post_initialization_needed()
            
 
     def dump_database(self):

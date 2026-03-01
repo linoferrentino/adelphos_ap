@@ -18,6 +18,7 @@ from app.api.AdelphosException import AdelphosException
 from app.logging import gCon
 from app.ap_api.AsyncRequest import AsyncGetReq
 import json
+from urllib.parse import urlparse
 
 class ActivityPubApi:
 
@@ -43,6 +44,8 @@ class ActivityPubApi:
     # ApActorDto object.
     # the function will store locally the result, so other queries will fetch
     # the local data.
+    # the return of the function is a tuple (server, actor) which identifies
+    # this actor in fediverse.
     async def get_or_discover_actor(self, fediverse_actor_str):
 
         # I assume the string is well formed, otherwise it won't have an answer
@@ -58,6 +61,10 @@ class ActivityPubApi:
             raise AdelphosException(f"I was expecting one and only one @ in {actor_instance}")
         (preferred_username, rem_instance) = user_host
 
+        # this is the server's root.
+        server_root = self.app.dao.ap_server_dao.get_or_create_from_host_name(\
+                rem_instance)
+
         actor_query = f"https://{rem_instance}/.well-known/webfinger?\
 resource=acct:{actor_instance}"
 
@@ -70,23 +77,42 @@ resource=acct:{actor_instance}"
 
         actor_ob = json.loads(actor_res.text)
 
+        gCon.log(f"The discovery has given me {actor_ob}")
+
         subject = actor_ob['subject']
         if ( subject != f"acct:{actor_instance}"):
-            raise AdelphosException(f"got {subject} instead!")
+            raise AdelphosException(f"Got {subject} instead!")
 
         # OK, now we make another query to get his data.
-        actor_uri = actor_ob['links'][0]['href']
+        # I have to get the URI corresponding to activitypub stream
+        # this is from W3C reccomentations. 
+        # https://www.w3.org/community/reports/socialcg/CG-FINAL-apwf-20240608/
+        href_user = None
+        for link in actor_ob['links']:
+            if link['rel'] != 'self':
+                continue
+            type_rel = link['type']
+            if  ((type_rel == 'application/activity+json') or
+                 (type_rel == 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"')):
+                href_user = link['href']
+                break
 
-        ap_actor_res = AsyncGetReq(actor_uri)
-        await self.app.async_req_wait(ap_actor_res)
- 
-        if (ap_actor_res.status_code != 200):
-            raise AdelphosException(
-                f"remote instance misconfigured {actor_uri}")
+        if (href_user is None):
+            raise AdelphosException("What? I cannot communicate to this actor")
 
-        actor_ob = json.loads(ap_actor_res.text)
+        #actor_uri = actor_ob['links'][0]['href']
+        # Now I can build the actor from the uri.
 
-        gCon.log(f"this is the object {actor_ob}")
+        # create the parsed key
+        key_parsed = urlparse(href_user)
+        key_parsed = key_parsed._replace(fragment = "main-key")
+
+        # for now I use the ApActorDao
+        actor_root = await self.app.dao.ap_actor_dao.create_from_uri(
+                server_root, href_user, key_parsed)
+        gCon.log(f"This is the root {actor_root}")
+
+        return (server_root, actor_root)
 
 
 
