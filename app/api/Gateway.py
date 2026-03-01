@@ -11,10 +11,8 @@
 #
 ######################################################
 #
-# this is the main context used by all the clients,
-# either called from the web socket or by the client
+# The gateway is the entry class to Adelphos.
 
-from app.api.Gateway import Gateway
 from app.api.AliasApi import AliasApi
 from app.api.TrustLineApi import TrustLineApi
 import shlex
@@ -25,15 +23,8 @@ from app.logging import gCon
 import asyncio
 import traceback
 
-# The application context holds the transient data to fulfill a request
-# or an interactive session with a client.
 
-# this will be renamed in ApplicationGateway
-# the gateway to access the adelphos instance, using either an
-# ActivityPub post message or a web socket.
-# The Gateway is stateful, but an ActivityPub Gateway will be discarded after use.
-# the gateway has a set of APIs to control the system
-class App_Ctx_deprecated(ABC):
+class Gateway(ABC):
 
 
     # the application context has in common the Alias API.
@@ -194,35 +185,3 @@ class App_Ctx_deprecated(ABC):
         raise AdelphosException(f"Required parameter {param} not found and default not given")
 
 
-# the class that holds the data relative to a client
-# this holds a session state for the socket.
-# this class will be renamed to WebSocketGateway
-class WebSocketContext(Gateway):
-
-    def __init__(self, app, websocket):
-        super().__init__(app)
-        self.websocket = websocket
-        # the container for the logged user.
-
-        # here the web socket publicies the APIs relative
-        # to the objects.
-
-        # this is the Alias as view from the external world.
-        # It is ``myself'', the logged user.
-        self.tl_api = TrustLineApi(self)
-        self.alias_api = AliasApi(self)
-
-        # these API will share the context
-        #self.place_api = PlaceApi(self)
-        #self.cheque_api = ChequeApi(self)
-
-
-    # here it is trivial, but it must return a None as a result code
-    # because we want the process to be synchronously
-    async def pre_process_request(self, request):
-        return (None, str(request))
-
-
-    # also the outgress is trivial
-    async def outgress_result(self, result):
-        await self.websocket.send_text(result)

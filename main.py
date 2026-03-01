@@ -41,12 +41,9 @@ from fastapi.responses import JSONResponse
 
 from app.logging import gCon
 from app.config import load_conf
-from app.api.IngressGateway import ActivityPubGateway
-from app.api.IngressGateway import _ingress_request
+from app.api.ActivityPubGateway import ActivityPubGateway
 import uvicorn
 import re
-from app.api.RequestCtx import RequestCtx
-#from app.api.IngressGateway import ingress_request
 
 from app.AdelphosApp import AdelphosApp, get_app
 from app.consts import USER_ID
@@ -361,18 +358,13 @@ async def user_inbox(username: str, request: Request):
     if username == USER_ID:
 
         # I create the Activity Pub Gateway
-        #gateway = RequestCtx(app, request)
-        #(res_code, content) = await _ingress_request(gateway)
-        
         gateway = ActivityPubGateway(app)
 
         # this will return the return code and will process the request asynchronously
         res_code = await gateway.new_request(request)
 
-
         # the result code is given immediately, but the message is processed
         # asynchronously
-        #res_code = await gateway.accept(request)
         
     return Response(status_code = res_code)
 

@@ -57,7 +57,7 @@ async def post_response_inbox_impl(app, host_name, user_path, inbox_path, msg):
     msg = re.sub("\n", "<p>", msg)
     #gCon.log(f"Now you have {msg}")
 
-    host = app.config['General']['host']
+    host = app.get_local_host()
     host_api = host + API_POINT
 
     sender_url = f"https://{host_api}/users/{USER_ID}"

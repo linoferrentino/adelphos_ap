@@ -107,55 +107,6 @@ class AliasApi(BaseApi):
         return f"Token accepted, welcome to adelphos, {self.uri.name}."
 
 
-    # this method takes the parameters from the context.
-    # the actor and the server are already taken 
-#    def create_from_ctx(self):
-#
-#        # first of all let's see if the alias is already present
-#        alias_complete = self.ctx.get_param_safe('alias')
-#        password = self.ctx.get_param_safe('password')
-#
-#        alias_uri = uriparse(alias_complete)
-#
-#        if (alias_uri.is_numeric == True):
-#            raise AdelphosException("Cannot create a numeric alias")
-#
-#        gCon.log(f"alias uri created {alias_uri}")
-#
-#        # the family MUST NOT already exist, we cannot create two families in
-#        # the same instance with the same name.
-#        family_dto = self.ctx.app.dao.family_dao.get_from_local_name(alias_uri.family)
-#
-#        if (family_dto is not None):
-#            raise AdelphosException(
-#    f"family {alias_uri.family} is already existing in this instance")
-#
-#
-#        # let's create the family, for now it will have only a name, not a currency
-#        family_dto = family_dto_create_local(alias_uri.family)
-#
-#        family_id = self.ctx.app.dao.family_dao.store(family_dto)
-#
-#        # I have now the id of the family and I can create the alias.
-#        ph = PasswordHasher()
-#        pass_hashed = ph.hash(password)
-#
-#        alias_dto = alias_dto_create_local(alias_uri.name,
-#                                           self.ctx.actor_dto.actor_id,
-#                                           family_id, pass_hashed)
-#
-#        # OK, let't try to add it to the database
-#        new_id = self.ctx.app.dao.alias_dao.store(alias_dto)
-#
-#        return f"Created alias {alias_dto} successfully, with id {new_id}"
-
-
-
-    # This method will get the parameters from the command line.
-#    def create_pars():
-#        pass
-
-
     async def _hndl_login(self):
         alias = self.gateway.get_param_safe('alias')
         password = self.gateway.get_param_safe('password')
@@ -260,16 +211,4 @@ HANDLERS = {
      'put_token' : AliasApi._hndl_put_token
 }
 
-    # this does not belong here!
 
-    # this is the function to buy an object, it will make the routing and create
-    # all the cheques.
-    # it returns a path or None if some conditions are not met.
-#    def buy_object_or_service(object_sold):
-#
-#        # this is a path.
-#        # the place and time of the object
-#        # the price you will pay, in t0 or tX money
-#        # the currency, etc.
-#        
-#        return "The object will arrive at @place@iii on Wednesday March 15th"

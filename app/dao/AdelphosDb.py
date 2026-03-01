@@ -348,7 +348,7 @@ insert into ad_instance(actor_fk, authorized, comment) values
             self._create_schema(app)
 
             # If I am here I have to create the root alias for this instance..
-            app.create_root_user()
+            #app.create_root_user()
 
            
 

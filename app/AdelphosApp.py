@@ -1,5 +1,17 @@
+######################################################
+#
+# Adelphos AP: the fractal trust network
+#
+# Activity Pub implementation
+#
+# © 2025-26 Lino Ferrentino
+# lino.ferrentino@gmail.com
+#
+# This is free software. Licensed with GPL version 3
+#
+######################################################
+#
 # the main class of adelphos. This defines the application.
-
 
 from fastapi import FastAPI
 import os
@@ -19,6 +31,8 @@ from app.dao.AdelphosDb import AdelphosDb
 from contextlib import asynccontextmanager
 import aiohttp
 import asyncio
+
+from app.ap_api.ActivityPubApi import ActivityPubApi
 
 # the actor is ambiguous, we can have the activity pub actor
 # or the adelphos actor
@@ -60,10 +74,16 @@ class AdelphosApp(FastAPI):
         # to the outside.
         self.requests = list()
 
+        # I create here the ActivityPubApi which is in common for all the
+        # objects in adelphos. The API has the possibilities to exchange
+        # messages to the external world using the ActivityPub Protocol
 
-    def create_root_user(self):
+
+    async def create_root_user(self):
         # Now I have to discover the root actor.
-        pass
+        root_user = self.config['General']['root_user']
+        gCon.log(f"Will discover root {root_user}")
+        await self.ap_api.get_or_discover_actor(root_user)
 
 
     # this is used for the put request.
@@ -132,7 +152,12 @@ async def lifespan(app: AdelphosApp):
     ses_worker = asyncio.create_task(session_worker(app))
     daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
     app.conn_hndl = ConnHandler(app)
+    app.ap_api = ActivityPubApi(app)
 
+    # post init
+    gCon.log("Root user creation.")
+    await app.create_root_user()
+    gCon.log("App is ready.")
     yield
 
     # no more running, please.
@@ -141,9 +166,12 @@ async def lifespan(app: AdelphosApp):
     async with app.cond:
         app.cond.notify_all()
     gCon.log("Please wait for adelphos shutdown")
+    app.ap_api.close()
     await app.conn_hndl.stop()
     await ses_worker
     await daemon_worker
+    # the last to close is the DB, so that all the modules have a chance to save
+    # on DB their transient state.
     app.dao.close()
 
 
@@ -207,6 +235,8 @@ def get_app():
     gCon.log(f"Starting Adelphos' instance {instance_name}")
     app = AdelphosApp(instance_name, root_path = API_POINT,
                       lifespan = lifespan)
+    gCon.log("xxxxx after constructor")
+    #app.create_root_user()
 
     return get_app()
 
