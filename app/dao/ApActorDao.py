@@ -96,8 +96,6 @@ resource=acct:{preferred_username}@{rem_instance}"
         return actor
 
 
-
-
     # this function will fetch the public key of the actor
     async def create_from_uri(self, server_dto, actor_uri, key_parsed):
 

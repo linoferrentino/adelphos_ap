@@ -49,22 +49,34 @@ class ApAliasApi(BaseApi):
             raise AdelphosException(
 f"family {alias_uri.family} is already existing in this instance")
 
-        # let's create the family, for now it will have only a name, not a currency
-        family_dto = family_dto_create_local(alias_uri.family)
-
-        family_id = self.gateway.app.dao.family_dao.store(family_dto)
-
         ph = PasswordHasher()
         pass_hashed = ph.hash(password)
 
+        self.create_alias_impl( self.gateway.actor_dto.actor_id,
+                    alias_uri.family,
+                    alias_uri.name,
+                    pass_hashed)
+        
+        return f"Created alias {alias_uri} successfully. You can login, now."
+
+    
+    # this function will simply use the fields and store the rows in db.
+    # this function bypasses all checks! Call it only after validating user input
+    def create_alias_impl(self, actor_id, family, name, password_hashed):
+
+         # let's create the family, for now it will have only a name, not a currency
+        family_dto = family_dto_create_local(family)
+
+        family_id = self.gateway.app.dao.family_dao.store(family_dto)
+
         # I use the activity pub actor object to link to the alias
-        alias_dto = alias_dto_create_local(alias_uri.name,
-                   self.gateway.actor_dto.actor_id, family_id, pass_hashed)
+        alias_dto = alias_dto_create_local(name,
+                   actor_id, family_id, password_hashed)
 
         # OK, let't try to add it to the database
         new_id = self.gateway.app.dao.alias_dao.store(alias_dto)
 
-        return f"Created alias {alias_uri} successfully. You can login, now."
+        return new_id
 
 
 # this table is valid for all the objects

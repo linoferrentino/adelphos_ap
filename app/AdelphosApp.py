@@ -46,6 +46,8 @@ from app.dao.CurrencyDao import CurrencyDao
 from app.dao.AliasDao import AliasDao
 from app.dao.AdInstanceDao import AdInstanceDao
 
+from app.api.ActivityPubGateway import ActivityPubGateway
+
 app = None
 
 
@@ -93,7 +95,14 @@ class AdelphosApp(FastAPI):
         root_user = self.config['General']['root_user']
         gCon.log(f"Will discover root {root_user}")
         # here I will get the activity pub object and I will create the root alias
-        await self.ap_api.get_or_discover_actor(root_user)
+        (root_server, root_actor) = await self.ap_api.get_or_discover_actor(root_user)
+
+        # Now I have to create the alias, so I use tha ApAliasApi.
+        gateway = ActivityPubGateway(self)
+        gateway.ap_alias_api.create_alias_impl(root_actor.actor_id,
+                                               'admins', 'root',
+                                               self.config['General']['root_password'])
+
 
 
     # this is used for the put request.
