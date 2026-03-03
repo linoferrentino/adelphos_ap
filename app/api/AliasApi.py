@@ -64,12 +64,6 @@ from app.dao.AliasDto import alias_dto_create_local
 
 from app.api.BaseApi import BaseApi
 
-# these are the states for the user.
-class EUserState(IntEnum):
-    NOT_LOGGED = auto()
-    LOGGED_WITHOUT_TOKEN = auto()
-    LOGGED_AND_TOKEN = auto()
-
 
 class AliasApi(BaseApi):
 
@@ -77,34 +71,15 @@ class AliasApi(BaseApi):
     # The Alias Api can serve the Activity pub context or the Web socket context.
     def __init__(self, gateway):
         super().__init__(gateway, HANDLERS)
-        self.user_state = EUserState.NOT_LOGGED
-
-
-    def _set_uri(self, uri):
-        self.uri = uri
-        if (uri.obj_type != EAdelphosType.ALIAS_TYPE):
-            raise AdelphosException(f"type mismatch wanted alias got {uri.obj_type}")
-
-
-    # this method will login the LOCAL alias.
-    # it verifies the password and, if it matches, it sends to the actor
-    # an OTP code which is used to finalize the login
-
-    # login is a verb: it has only a subject.
-
-    def is_logged_in(self ):
-        if (self.user_state != EUserState.LOGGED_AND_TOKEN):
-            gCon.log(f"No logged {self.user_state}")
-            return False
-        gCon.log(f"YES logged {self.user_state}")
-        return True
 
 
     def recv_token(self, token):
-        if (token != self.token):
+        if (token != self.gateway.session.token):
             raise AdelphosException("Invalid token")
-        self.user_state = EUserState.LOGGED_AND_TOKEN
-        return f"Token accepted, welcome to adelphos, {self.uri.name}."
+
+        self.gateway.session.login_confirmed()
+        return f"Token accepted, welcome to adelphos, \
+                {self.gateway.session.uri.name}@{self.gateway.session.uri.family}"
 
 
     async def _hndl_login(self):
@@ -115,9 +90,6 @@ class AliasApi(BaseApi):
 
         gCon.log(f"You {alias_uri} want to login! {self}")
 
-        # let's suppose that we want to login, first of all we create
-        # an AliasApi and we pass the message
-        #ctx.alias_api = AliasApi(alias_uri)
         msg = await self.login(alias_uri, password)
 
         return msg
@@ -130,34 +102,41 @@ class AliasApi(BaseApi):
 
     async def login(self, uri, password):
 
-        self._set_uri(uri)
+        #self._set_uri(uri)
+
+        if (uri.obj_type != EAdelphosType.ALIAS_TYPE):
+            raise AdelphosException(f"type mismatch wanted alias got {uri.obj_type}")
 
         # first of all I get the family, the alias needs the family.
-        self.n_family_dto = self.gateway.app.dao.family_dao\
-                .get_from_local_name(self.uri.family) 
+        family_dto = self.gateway.app.dao.family_dao\
+                .get_from_local_name(uri.family) 
 
-        if (self.n_family_dto is None):
+        if (family_dto is None):
             raise AdelphosException("Invalid alias/password")
 
+        #self.gateway.session.family_dto = family_dto
+
         # the family has a name, the alias has also a nick.
-        gCon.log(f"I have n_family {self.n_family_dto}")
+        gCon.log(f"I have n_family {family_dto}")
 
         # OK, now I have to get the alias
 
-        self.n_alias_dto = self.gateway.app.dao.alias_dao\
-                .get_from_name_family_id(self.uri.name,
-                                         self.n_family_dto.fd_actor_id)
+        alias_dto = self.gateway.app.dao.alias_dao\
+                .get_from_name_family_id(uri.name,
+                                         family_dto.fd_actor_id)
 
-        if (self.n_alias_dto is None):
+        if (alias_dto is None):
             raise AdelphosException("Invalid alias/password")
 
-        gCon.log(f"got the alias {self.n_alias_dto}, now we verify")
+        gCon.log(f"got the alias {alias_dto}, now we verify")
 
         ph = PasswordHasher()
         try:
-            res = ph.verify(self.n_alias_dto.password, password)
+            res = ph.verify(alias_dto.password, password)
         except:
             raise AdelphosException("Invalid username/password")
+
+        #self.gateway.session.alias_dto = alias_dto
 
         # Now we are here, the alias is authenticated. Is there already a session
         # for this alias? If yes we try to know if it has expired, if not
@@ -166,35 +145,52 @@ class AliasApi(BaseApi):
         # This maybe later, for now we simply do a memory session
 
         # OK, now we take the ActivityPub actor who is behind this alias
-        self.n_actor_dto = self.gateway.app.dao.ap_actor_dao.get_from_local_id(
-                self.n_alias_dto.actor_fk)
+        actor_dto = self.gateway.app.dao.ap_actor_dao.get_from_local_id(
+                alias_dto.actor_fk)
 
-        if (self.n_actor_dto is None):
+        if (actor_dto is None):
             raise Exception("Bug! there is not the actor corresponding")
 
-        gCon.log(f"I will send the token to {self.n_actor_dto}")
-        self.n_server_dto = self.gateway.app.dao.ap_server_dao.get_from_id(
-                                            self.n_actor_dto.server_fk)
+        gCon.log(f"I will send the token to {actor_dto}")
+        #self.gateway.session.actor_dto = actor_dto
 
-        if (self.n_server_dto is None):
+        server_dto = self.gateway.app.dao.ap_server_dao.get_from_id(
+                                            actor_dto.server_fk)
+
+        if (server_dto is None):
             raise Exception("Bug! there is not the server corresponding")
 
-        # Now we have to get the server dto
 
-        # just a random token, and I also save a timestamp.
-        self.token = secrets.token_urlsafe()
-        self.session_age = datetime.now()
+        # OK, all the checks have passed! We can login.
+        self.gateway.session.login_start(uri, family_dto, alias_dto,
+                            server_dto, actor_dto)
 
-        await post_to_ap_actor(self.gateway.app, self.n_server_dto,
-                               self.n_actor_dto,
+        await post_to_ap_actor(self.gateway.app, server_dto, actor_dto,
 f"Login OK, please copy the following line in adelphos chat\n\
-put_token tk {self.token}")
-
-        self.user_state = EUserState.LOGGED_WITHOUT_TOKEN
+put_token tk {self.gateway.session.token}")
 
         return """Login OK.
 Please paste the line received
 in your Mastodon inbox to finalize the login."""
+
+
+#        self.gateway.session.server_dto = server_dto
+#
+#        # Now we have to get the server dto
+#
+#        # just a random token, and I also save a timestamp.
+#        self.token = secrets.token_urlsafe()
+#        self.session_age = datetime.now()
+#
+#        await post_to_ap_actor(self.gateway.app, server_dto, actor_dto,
+#f"Login OK, please copy the following line in adelphos chat\n\
+#put_token tk {self.token}")
+#
+#        self.user_state = EUserState.LOGGED_WITHOUT_TOKEN
+#
+#        return """Login OK.
+#Please paste the line received
+#in your Mastodon inbox to finalize the login."""
 
 
     def logout():

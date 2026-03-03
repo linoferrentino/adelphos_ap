@@ -14,22 +14,23 @@
 
 from app.api.Gateway import Gateway
 from app.api.AliasApi import AliasApi
+from app.api.RootApi import RootApi
 from app.api.TrustLineApi import TrustLineApi
 import shlex
 from abc import ABC
 from app.api.AdelphosException import AdelphosException
+from app.api.UserSession import UserSession
 from abc import abstractmethod
 from app.logging import gCon
 import asyncio
 import traceback
 
 
-# the web socket context.
+# the web socket Gateway
 
 # the class that holds the data relative to a client
 # this holds a session state for the socket.
-# this class will be renamed to WebSocketGateway
-class WebSocketContext(Gateway):
+class WebSocketGateway(Gateway):
 
     def __init__(self, app, websocket):
         super().__init__(app)
@@ -43,10 +44,16 @@ class WebSocketContext(Gateway):
         # It is ``myself'', the logged user.
         self.tl_api = TrustLineApi(self)
         self.alias_api = AliasApi(self)
+        # the commands which only a super user can give.
+        self.root_api = RootApi(self)
 
         # these API will share the context
         #self.place_api = PlaceApi(self)
         #self.cheque_api = ChequeApi(self)
+
+        # the class has the ability to store a session, because we are ``talking''
+        # to a user.
+        self.session = UserSession(self)
 
 
     # here it is trivial, but it must return a None as a result code

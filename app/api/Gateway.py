@@ -37,13 +37,6 @@ class Gateway(ABC):
         # the dictionary is in common to the gateways
         self.handlers = dict()
 
-        # the AliasApi is in common between the two gateways as we create an
-        # alias using the ActivityPub interface and we access the web socket
-        # using the alias created with activity pub
-        # No! It is not in common, we have the activity pub alias api
-        # and the web socket alias api: they are different.
-        #self.alias_api = AliasApi(self)
-
 
     # this message is called by an handler to register its functions.
     def add_handler(self, command_str, other_self, handler):

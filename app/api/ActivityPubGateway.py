@@ -46,10 +46,6 @@ class ActivityPubGateway(Gateway):
     def __init__(self, app):
         super().__init__(app)
 
-        # this is the Activity Pub actor which has issued the request.
-        # probably this does not need to be here.
-        self.actor_str = None
-
         # the two objects which represent the verified sender of the message
         # (it can also be a bot: another adelphos daemon).
         self.actor_dto = None
