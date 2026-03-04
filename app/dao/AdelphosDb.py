@@ -76,15 +76,6 @@ create table ap_actor (
 );"""),
 
 
-## this is the view that joins the two tables.
-#('view actor_server',
-# """
-# create view actor_server as select
-# actor_id, host_name, user_path, inbox_path, preferred_name,
-# public_key, ap_actor.timestamp as timestamp from ap_server, ap_actor where
-# server_id = server_fk;
-#
-#"""),
 
 
 # this is the table that stores the adelphos instances. These
@@ -94,11 +85,20 @@ create table ap_actor (
 ('instance', """
 create table ad_instance (
     actor_fk integer primary key,
-    authorized text,
+    authorized integer,
     comment text,
     timestamp text default current_timestamp,
     foreign key (actor_fk) references ap_actor(actor_id)
 );"""),
+
+
+## I have here the view that links the adelphos instance to its fediverse endpoint
+#('view ad_instance_server', """
+# create view ad_instance_server as select
+# adi.authorized, 
+#
+#
+# """),
 
 
 # The basis of the adelphos federated database is the adelphos object:
@@ -362,7 +362,6 @@ insert into ad_instance(actor_fk, authorized, comment) values
     # this function will query a remote DAO to get the object (it will
     # be saved locally as a cache)
     async def import_from_dao_remote(ctx, object_uri):
-
         # I have to split the uri, get the local and the remote part.
         #object_splits = object_uri.split('@')
 
@@ -388,7 +387,6 @@ insert into ad_instance(actor_fk, authorized, comment) values
         condition_str = " and ". join(condition)
         gCon.log(f"the condition is {condition_str}")
         return condition_str
-
 
 
     # this has a list of queries, and they are combined
@@ -422,13 +420,6 @@ select {list_sql_fields} from {table_name} where {condition_str}
         return constructor_dto(*row)
 
 
-    # this is the entry point for the distributed adelphos database,
-    # from the uri we can determine the object type and its location.
-    # for now every adelphos instance is equal.
-    def get_or_import(self, uri):
-        pass
-
-
     # executes a query and fetch the first result row.
     def execute_and_fetch_one(self, sql, params):
         cur = self._conn.cursor()
@@ -456,8 +447,6 @@ select * from {table_name} where {condition_str}
 
         # I simply get the dto 
         return constructor_dto(*row)
-
-
 
 
     # gets the full table(view) with a condition on a field
@@ -532,6 +521,34 @@ insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
         cur.close()
 
         return newid
+
+
+    def update_dto(self, table_name, key_name, key_val, dto_as_dict):
+        fields = dto_as_dict.keys()
+        self.update_dto_fields(table_name, key_name, key_val,  fields, dto_as_dict)
+
+
+    # generic update for a table with a primary key composed of one field
+    def update_dto_fields(self, table_name, key_name, key_val, fields, dto_as_dict):
+
+        fields_colon = [ f":{field}" for field in fields ]
+        place_holders_list = ", ".join(fields_colon)
+        fields_list = ", ".join(fields)
+
+        sql_update = f"""
+
+update {table_name} set ( {fields_list} ) = ( {place_holders_list} ) 
+where {key_name} = {key_val};
+
+        """
+
+        gCon.log(f"The query to update is {sql_update} with dictionary")
+        gCon.log(dto_as_dict)
+        cur = self._conn.cursor()
+        cur.execute(sql_update, dto_as_dict)
+        cur.close()
+ 
+        return
         
 
     def close(self):

@@ -24,9 +24,18 @@ class CurrencyDao(AdelphosObjectDao):
     # I create myself with the table and the local columns
     def __init__(self, dao):
         super().__init__(dao)
-        #super().__init__(db, 'fd_currency',
-        #    ('local_fk', 'symbol', 'human_value'))
 
 
     def store_dict(self, dto_as_dict):
         pass
+
+
+    # gets the name of the column that stores the private key.
+    def get_pk_name(self):
+        return 'local_fk'
+
+
+    # We have a table name for each DAO (at least once)
+    def get_table_name(self):
+        return 'fd_currency'
+

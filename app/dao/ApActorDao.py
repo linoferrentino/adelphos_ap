@@ -38,62 +38,7 @@ class ApActorDao(BaseDao):
                               "inbox_path", "public_key", "actor_id",
                               "local_fk", "timestamp"
                               )
-
-#    # gets from local database or queries the webfinger endpoint
-#    @staticmethod
-#    async def get_or_discover_actor(ctx, preferred_username, rem_instance):
-#
-#        actor = ActorDto.get_from_canonical_name(ctx, preferred_username,
-#                                                 rem_instance)
-#        if (actor is not None):
-#            return actor
-#
-#        return await ActorDto.find_remote_actor(ctx,
-#                        preferred_username, rem_instance)
-#
-
-    # this function will query a remote actor in Activity Pub; it is working
-    # for a daemon too, which is only another actore.
-#    @staticmethod
-#    async def find_remote_actor(ctx, preferred_username, rem_instance):
-#
-#        actor_query = f"https://{rem_instance}/.well-known/webfinger?\
-#resource=acct:{preferred_username}@{rem_instance}"
-#
-#        actor_res = AsyncGetReq(actor_query)
-#        await ctx.app.async_req_wait(actor_res)
-#
-#        if (actor_res.status_code != 200):
-#            raise AdelphosException(
-#                    f"remote instance not responding: {rem_instance}")
-#
-#        actor_ob = json.loads(actor_res.text)
-#
-#        subject = actor_ob['subject']
-#        if ( subject != f"acct:{preferred_username}@{rem_instance}"):
-#            raise AdelphosException(f"got {subject} instead!")
-#
-#        actor = ActorDto()
-#        actor.actor_uri = actor_ob['links'][0]['href']
-#        
-#        # Now we do the request for the actor
-#        daemon_actor = AsyncGetReq(actor.actor_uri)
-#        await ctx.app.async_req_wait(daemon_actor)
-#
-#        if (daemon_actor.status_code != 200):
-#            raise AdelphosException(
-#                f"remote instance misconfigured {actor.actor_uri}")
-#
-#        actor_ob = json.loads(daemon_actor.text)
-#
-#        # OK, we can now take the inbox and the public key.
-#        actor.inbox_uri = actor_ob['inbox']
-#        actor.public_key = actor_ob['publicKey']['publicKeyPem']
-#        actor.preferred_username = preferred_username 
-#        actor.canonical_name = f"@{preferred_username}@{rem_instance}"
-#
-#        self.store(actor)
-#        return actor
+        self.table_name = "ap_actor"
 
 
     # this function will fetch the public key of the actor
@@ -162,6 +107,13 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
                                         ApActorDto)
 
 
+    # more than one user can have the same preferred_username in different servers.
+    def get_from_preferred_username(self, server_fk, preferred_username):
+        return self.dao.db.get_full_dto_ex(self.table_name,
+            ('server_fk', 'preferred_username'),
+            (server_fk, preferred_username), ApActorDto)
+
+
     # this function tries to get an actor from
     # the local db using the hostname and 
     def get_local_from_parsed_uri(self, server_dto, key_parsed):
@@ -211,4 +163,12 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
         actor.actor_id = newid
 
     
+    # gets the name of the column that stores the private key.
+    def get_pk_name(self):
+        return 'fd_actor_id'
+
+
+    # We have a table name for each DAO (at least once)
+    def get_table_name(self):
+        return 'fd_actor'
 

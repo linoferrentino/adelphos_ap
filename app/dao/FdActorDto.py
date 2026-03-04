@@ -18,6 +18,7 @@
 from app.logging import gCon
 from dataclasses import dataclass
 from dataclasses import field
+from app.dao.BaseDto import BaseDto
 
 # here we have all the DTOs relative to the federated actor
 
@@ -28,7 +29,7 @@ from dataclasses import field
 # this class is in a certain sense abstract: you do not instantiate directly
 # a FdActorDto, but for convenience it is stored in the DB.
 @dataclass
-class FdActorDto:
+class FdActorDto(BaseDto):
 
     # these are handled by the DB, so I put there.
     # this primary key is relative to the "whole" object.
@@ -44,5 +45,7 @@ class FdActorDto:
     # this is set by the db engine.
     timestamp: str 
 
+    def get_pk_value(self):
+        return self.fd_actor_id
 
 

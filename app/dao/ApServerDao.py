@@ -73,3 +73,13 @@ class ApServerDao(BaseDao):
 
         server.server_id = newid
 
+
+    # gets the name of the column that stores the private key.
+    def get_pk_name(self):
+        return 'server_id'
+
+
+    # We have a table name for each DAO (at least once)
+    def get_table_name(self):
+        return 'ap_server'
+

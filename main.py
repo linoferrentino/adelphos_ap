@@ -279,7 +279,6 @@ async def websocket_endpoint(websocket: WebSocket):
 )
 async def webfinger(resource: str = Query(..., alias="resource")):
 
-    #global HOST
     host = app.config['General']['host']
     host_api = host + API_POINT
 
@@ -357,7 +356,8 @@ async def user_inbox(username: str, request: Request):
     res_code = 404
     if username == USER_ID:
 
-        # I create the Activity Pub Gateway
+        # I create the Activity Pub Gateway, one for each request,
+        # because we can support concurrent async requests.
         gateway = ActivityPubGateway(app)
 
         # this will return the return code and will process the request asynchronously

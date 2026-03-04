@@ -25,6 +25,9 @@ class AdInstanceDto:
     comment: str
     timestamp: str
 
+    def get_pk(self):
+        return self.actor_fk
+
 
 # the function to create an instance with default fields
 def create_ad_instance(actor_fk, authorized, comment):

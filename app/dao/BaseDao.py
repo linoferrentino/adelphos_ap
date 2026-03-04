@@ -27,11 +27,25 @@ class BaseDao(ABC):
         self.dao = dao
 
 
-    # this method has here a default implementation, but we can override it
+    # this method has here a default implementation, but we can override it,
+    # returns the new id.
     def store(self, dto):
         dto_as_dict = asdict(dto)
         new_id = self.store_dict(dto, dto_as_dict)
         return new_id
+
+
+    def update(self, dto):
+        dto_as_dict = asdict(dto)
+        pk_id = dto.get_pk()
+        pk_name = self.get_pk_name()
+        self.update_dict(pk_name, pk_id, dto_as_dict)
+
+
+    # basic implementation
+    def update_dict(self, pk_name, pk_id, dto_as_dict):
+        self.dao.db.update_dto(self.get_table_name(),
+                                      pk_name, pk_id, dto_as_dict)
 
 
     # this is the abstract method that derived classes must implement
@@ -40,3 +54,13 @@ class BaseDao(ABC):
         pass
 
 
+    # gets the name of the column that stores the private key.
+    @abstractmethod
+    def get_pk_name(self):
+        pass
+
+
+    # We have a table name for each DAO (at least once)
+    @abstractmethod
+    def get_table_name(self):
+        pass

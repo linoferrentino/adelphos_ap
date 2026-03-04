@@ -74,10 +74,10 @@ class AliasApi(BaseApi):
 
 
     def recv_token(self, token):
-        if (token != self.gateway.session.token):
-            raise AdelphosException("Invalid token")
+        res = self.gateway.session.accept_token(token)
+        if (res == False):
+            raise AdelphosException("Invalid token or not logged in.")
 
-        self.gateway.session.login_confirmed()
         return f"Token accepted, welcome to adelphos, \
                 {self.gateway.session.uri.name}@{self.gateway.session.uri.family}"
 

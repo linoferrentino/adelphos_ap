@@ -75,3 +75,12 @@ class FdActorDao(BaseAdelphosDao):
         return new_id
 
 
+
+    # gets the name of the column that stores the private key.
+    def get_pk_name(self):
+        return 'fd_actor_id'
+
+
+    # We have a table name for each DAO (at least once)
+    def get_table_name(self):
+        return 'fd_actor'

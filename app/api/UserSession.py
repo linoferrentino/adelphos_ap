@@ -52,8 +52,14 @@ class UserSession:
         self.user_state = EUserState.NOT_LOGGED
 
 
-    def login_confirmed(self):
+    def accept_token(self, token):
+        # Am I in the right state?
+        if (self.user_state != EUserState.LOGGED_WITHOUT_TOKEN):
+            return False
+        if (self.token != token):
+            return False
         self.user_state = EUserState.LOGGED_AND_TOKEN
+        return True
 
 
     # this is called when we are sure that the user can login.

@@ -17,7 +17,6 @@
 from app.ap_api.AsyncRequest import AsyncGetReq
 from app.ap_api.AsyncRequest import AsyncPostReq
 from app.api.ApAliasApi import ApAliasApi
-from app.api.Dispatcher import dispatch_request
 from app.api.Gateway import Gateway
 from app.consts import API_POINT
 from app.consts import USER_ID
@@ -38,6 +37,7 @@ import json
 import re
 import uuid
 
+
 # this is the object which will process the requests that come from
 # Activity Pub
 class ActivityPubGateway(Gateway):
@@ -54,28 +54,6 @@ class ActivityPubGateway(Gateway):
         # I create here the daemon_api: it will register itself, and register
         # its handlers.
         self.ap_alias_api = ApAliasApi(self)
-
-
-    # the ``ingress'' in activity pub is one-shot. The protocol is stateless.
-    # this returns a code.
-    #async def ingress(self, request):
-    #    self.request = request
-    #    return await _ingress_request(self)
-
-
-    # this is the procedural request, it is asynchrously
-    #async def _proc_request_impl(self):
-
-    #    # actually the activity pub gateway has only three important messages.
-    #    # the alias create, the daemon_q and daemon_a, all the others are
-    #    # handled by the web context.
-
-    #    gCon.log("proc request in another thread.")
-    #    await asyncio.sleep(3)
-    #    gCon.log("After waiting I send the result")
-
-    #    # maybe here I can wait the async context.
-    #    return "ALL DONE"
 
 
     # check an ActivityPub message using the W3C reccomendations

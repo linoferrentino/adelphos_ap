@@ -68,6 +68,8 @@ class AdelphosApp(FastAPI):
         self.public_key = pub_key
         self.private_key = priv_key
 
+        self.ap_gateway = ActivityPubGateway(self)
+
         # create the condition for the http requests and the daemon
         # background cycle.
         self.cond = asyncio.Condition()  
@@ -98,10 +100,11 @@ class AdelphosApp(FastAPI):
         (root_server, root_actor) = await self.ap_api.get_or_discover_actor(root_user)
 
         # Now I have to create the alias, so I use tha ApAliasApi.
-        gateway = ActivityPubGateway(self)
-        gateway.ap_alias_api.create_alias_impl(root_actor.actor_id,
+        self.ap_gateway.ap_alias_api.create_alias_impl(root_actor.actor_id,
                                                'admins', 'root',
                                                self.config['General']['root_password'])
+        gCon.log("========= commit =======")
+        self.dao.commit()
 
 
 
@@ -148,6 +151,7 @@ class MasterAdelphosDao:
         self.currency_dao = CurrencyDao(self)
         self.ap_actor_dao  = ApActorDao(self)
         self.ap_server_dao   = ApServerDao(self)
+        self.ad_instance_dao = AdInstanceDao(self)
         self.family_dao  = FamilyDao(self)
         self.alias_dao   = AliasDao(self)
 

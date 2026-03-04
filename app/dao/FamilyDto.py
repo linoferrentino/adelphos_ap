@@ -28,7 +28,6 @@ from app.dao.BaseGroupDto import BaseGroupDto
 class FamilyDto(BaseGroupDto):
 
     # this class is only a place holder.
-
     pass
 
 

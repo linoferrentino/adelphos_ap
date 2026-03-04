@@ -31,9 +31,6 @@ class Gateway(ABC):
     # only this because all the others are used by the WebSocket
     def __init__(self, app):
         self.app = app
-        # the flag is used to know if we later commit or not
-        self.in_error = False
-
         # the dictionary is in common to the gateways
         self.handlers = dict()
 
@@ -51,6 +48,7 @@ class Gateway(ABC):
 
         # at the beginning I do not have an async request (or I delete the previous one) 
         self.async_ctx = None
+        self.in_error = False
 
         # this pre process can have two outcomes
         # a status code and a string, in this case the status code

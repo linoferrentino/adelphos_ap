@@ -133,20 +133,6 @@ def sudo_cmd(func):
     return check_root
 
 
-@err_middleware
-@sudo_cmd
-async def dump_db(ctx):
-    ctx.app.dao.dump_database()
-    return "dump db OK"
-
-
-
-# this function will query a distant adelphos instance to get an alias, if
-# present.
-async def rem_alias_get(ctx):
-    pass
-
-
 async def rem_echo_handler(ctx):
     rem_instance = ctx.get_param_safe("remote-instance")
     msg = ctx.get_param_safe("msg")
@@ -172,39 +158,6 @@ async def rem_echo_handler(ctx):
     await daemon_remote_query(ctx)
 
 
-# I have here the command handler for the activity pub interface, actually
-# the activity pub interface is very simple.
-cmd_handlers = {
-        "test_format": test_format_handler,
-        "alias_create": alias_create_handler,
-        "dump_db": dump_db,
-        "recho": rem_echo_handler,
-        "daemon_q": daemon_q_handler, 
-        "daemon_a": daemon_a_handler, 
-}
-
-
-
-async def cmd_parse(ctx):
-
-    # the first string is the @daemon
-    #ctx.cmd_splits = ctx.clean_content.split()
-    (mention, rest_of_line) = ctx.clean_content.split(" ", 1)
-
-    #mention = ctx.cmd_splits.pop(0)
-    if ( mention != f"@{USER_ID}"):
-        gCon.log(f"This is not a message for me. {mention}")
-        return
-
-    ctx.parse_cmd_line(rest_of_line)
-
-    # now the dispatcher.
-    handler = cmd_handlers.get(ctx.cmd)
-    if (handler is None):
-        raise AdelphosException(f"command {ctx.cmd} not recognized")
-
-    ctx.answer_txt = await handler(ctx)
-
 
 # this function sends a message to a LOCAL alias, that is to the Activity Pub
 # actor who has created an alias in this adelphos instance.
@@ -225,32 +178,5 @@ async def send_msg_to_local_alias(ctx, alias, msg):
 
     return "this is OK!"
 
-
-# this is the middleware for the activity pub request.
-# the message is authenticated and now it is processed.
-async def dispatch_request(ctx):
-    gCon.rule("--- dispatch request ---")
-    gCon.log(f"The message is {ctx.clean_content}")
-
-    # Exceptions are captured in the middleware
-    await cmd_parse(ctx)
-
-    # I might be in a async context, so I wait for the response:
-    # this is done only when we are waiting for a post response.
-    if (hasattr(ctx, "async_ctx")):
-        gCon.log("I have to wait an async context")
-        await ctx.async_ctx
-
-    # If I have arrived here here I can commit, if needed.
-    if (ctx.in_error == False):
-        gCon.rule("[blue]Commit![/blue]")
-        ctx.app.dao.commit()
-    else:
-        gCon.rule("[red]Rollback![/red]")
-        ctx.app.dao.rollback()
-
-    # No async, I can give immediately the response
-    if (ctx.answer_txt is not None):
-        await post_response(ctx)
 
 
