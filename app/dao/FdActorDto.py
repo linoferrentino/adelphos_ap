@@ -45,7 +45,7 @@ class FdActorDto(BaseDto):
     # this is set by the db engine.
     timestamp: str 
 
-    def get_pk_value(self):
+    def get_pk(self):
         return self.fd_actor_id
 
 

@@ -20,12 +20,13 @@ from app.ap_api.AsyncRequest import AsyncGetReq
 from app.api.AdelphosException import AdelphosException
 from urllib.parse import urlparse
 import json
+from app.dao.BaseDto import BaseDto
 
 
 # this is the base class for the activity pub actors.
 # the fields are in the same order as the columns in the db table
 @dataclass
-class ApActorDto:
+class ApActorDto(BaseDto):
 
     actor_id: int
     server_fk: int
@@ -34,6 +35,9 @@ class ApActorDto:
     preferred_username: str
     public_key: str
     timestamp: str
+
+    def get_pk(self):
+        return self.actor_id
 
 
 def create_ap_actor(server_fk, user_path, 

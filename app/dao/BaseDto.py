@@ -22,7 +22,7 @@ class BaseDto(ABC):
 
 
     @abstractmethod
-    def get_pk_value(self):
+    def get_pk(self):
         pass
 
 

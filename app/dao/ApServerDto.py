@@ -18,17 +18,21 @@
 
 from ..logging import gCon
 from dataclasses import dataclass
+from app.dao.BaseDto import BaseDto
 
 
 # the fields are in the same order as the database
 @dataclass
-class ApServerDto:
+class ApServerDto(BaseDto):
 
     server_id: int
 
     host_name: str
 
     timestamp: str
+
+    def get_pk(self):
+        return self.server_id
 
 
 # this function will create an Activity Pub Server objecct.

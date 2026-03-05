@@ -126,7 +126,7 @@ def validate_local_name(local_name):
     if (local_name is None):
         return
 
-    if (re.match("[a-z0-9][a-z0-9_-]+[a-z0-9]+", local_name, 
+    if (re.match("[a-z0-9][a-z0-9_-]*[a-z0-9]+", local_name, 
                  re.IGNORECASE) is None):
         raise AdelphosException(f"Invalid name {local_name}, \
 it must begin and end with a letter or a digit.")

@@ -104,6 +104,10 @@ class AdelphosApp(FastAPI):
 
         self.create_test_users()
 
+        # Now I want to create some other aliases.
+        gCon.rule("========= FINAL COMMIT OF INITIAL DB =======")
+        self.dao.commit()
+
 
     # this will create the zero server, the zero actor and the zero instance.
     def create_myself_as_actor(self):
@@ -115,13 +119,7 @@ class AdelphosApp(FastAPI):
         my_server_id = self.dao.ap_server_dao.store_full_no_ts(myself_server)
         gCon.log("Created the server")
 
-        user_path = API_POINT + f"/users/{USER_ID}"
-        user_inbox = user_path + "/inbox"
-        myself_actor = create_ap_actor(my_server_id, user_path, user_inbox,
-                                       USER_ID, self.public_key)
-        myself_actor.actor_id = 0
-        my_actor_id = self.dao.ap_actor_dao.store_full_no_ts(myself_actor)
-        gCon.log("Created my actor")
+        self.create_app_actor(USER_ID, 0)
 
         # now create the instance.
         myself_instance = create_ad_instance(0, 1, "Local adelphos instance")
@@ -129,14 +127,39 @@ class AdelphosApp(FastAPI):
         gCon.log("Created the instance")
 
 
+    # creates an actor which sits in the instance (only useful for testing)
+    def create_app_actor(self, actor_name, forced_id = None):
+        user_path = API_POINT + f"/users/{actor_name}"
+        user_inbox = user_path + "/inbox"
+        # the server is hard coded to zero, we are in the app realm
+        myself_actor = create_ap_actor(0, user_path, user_inbox,
+                                       actor_name, self.public_key)
+        if (forced_id is not None):
+            myself_actor.actor_id = 0
+            actor_id = self.dao.ap_actor_dao.store_full_no_ts(myself_actor)
+        else:
+            actor_id = self.dao.ap_actor_dao.store(myself_actor)
+
+        gCon.log(f"Created actor {actor_name} with id {actor_id}")
+
+
     def create_test_users(self):
 
         demo_users = self.config['demo_users']
         for demo_user in demo_users:
-            # by definition the users belong to my server.
+            # by definition the users belong tj my server.
             # they are ``embedded'' in this instance, so they belong to
             # ap_server 'zero'
             gCon.log(f"I want to create {demo_user}")
+            # first of all I have to create the actor, the server is our server
+            # and his/her key is the application's key.
+            actor_id = self.create_app_actor(demo_user['name'])
+            # Now I  will create the alias.
+            gCon.log(f"The new actor has the id {actor_id}")
+            # I have to create the alias, using the alias and the password
+            self.ap_gateway.ap_alias_api.create_alias_from_uri(
+                    actor_id, demo_user['alias'], demo_user['password'])
+
 
 
     async def create_root_actor(self):
@@ -150,10 +173,6 @@ class AdelphosApp(FastAPI):
         self.ap_gateway.ap_alias_api.create_alias_impl(root_actor.actor_id,
                                                'admins', 'root',
                                                self.config['General']['root_password'])
-
-        # Now I want to create some other aliases.
-        gCon.rule("========= FINAL COMMIT OF INITIAL DB =======")
-        self.dao.commit()
 
 
     # this is used for the put request.

@@ -32,10 +32,15 @@ class ApAliasApi(BaseApi):
     # here we define the handlers.
     async def _hndl_ap_alias_create(self):
 
-        alias_complete = self.gateway.get_param_safe('alias')
+        alias = self.gateway.get_param_safe('alias')
         password = self.gateway.get_param_safe('password')
+        self.create_alias_pass(self.gateway.actor_dto.actor_id, alias, password)
+        return f"Created alias {alias} successfully. You can login, now."
 
-        alias_uri = uriparse(alias_complete)
+
+    def create_alias_from_uri(self, actor_id, alias, password):
+
+        alias_uri = uriparse(alias)
 
         if (alias_uri.is_numeric == True):
             raise AdelphosException("Cannot create a numeric alias")
@@ -52,12 +57,8 @@ f"family {alias_uri.family} is already existing in this instance")
         ph = PasswordHasher()
         pass_hashed = ph.hash(password)
 
-        self.create_alias_impl( self.gateway.actor_dto.actor_id,
-                    alias_uri.family,
-                    alias_uri.name,
+        self.create_alias_impl(actor_id, alias_uri.family, alias_uri.name,
                     pass_hashed)
-        
-        return f"Created alias {alias_uri} successfully. You can login, now."
 
     
     # this function will simply use the fields and store the rows in db.

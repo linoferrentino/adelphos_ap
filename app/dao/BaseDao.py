@@ -42,6 +42,7 @@ class BaseDao(ABC):
         dto_as_dict.pop('timestamp', None)
         gCon.log(f"Inserting {dto_as_dict}")
         self.dao.db.insert_dto(self.get_table_name(), dto_as_dict)
+        return dto.get_pk()
 
 
     def update(self, dto):
