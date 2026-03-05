@@ -35,6 +35,15 @@ class BaseDao(ABC):
         return new_id
 
 
+    # stores the full object, we have had the id from another source.
+    # it deletes the timestamp, because we want the db to create it
+    def store_full_no_ts(self, dto):
+        dto_as_dict = asdict(dto)
+        dto_as_dict.pop('timestamp', None)
+        gCon.log(f"Inserting {dto_as_dict}")
+        self.dao.db.insert_dto(self.get_table_name(), dto_as_dict)
+
+
     def update(self, dto):
         dto_as_dict = asdict(dto)
         pk_id = dto.get_pk()

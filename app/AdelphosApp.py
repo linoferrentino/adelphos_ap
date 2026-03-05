@@ -18,6 +18,7 @@ import os
 
 from app.consts import ADELPHOS_AP_ENV_KEY
 from app.consts import API_POINT
+from app.consts import USER_ID
 
 from app.logging import exit_err
 from app.logging import gCon
@@ -37,14 +38,16 @@ from app.ap_api.ActivityPubApi import ActivityPubApi
 # the actor is ambiguous, we can have the activity pub actor
 # or the adelphos actor
 from app.dao.ApActorDao import ApActorDao
-# also the server is ambiguous: we can have the ActivityPub server
-# and the adelphos server, which is an instance
+from app.dao.ApActorDto import create_ap_actor
 
 from app.dao.ApServerDao import ApServerDao
+from app.dao.ApServerDto import create_ap_server
+
 from app.dao.FamilyDao import FamilyDao
 from app.dao.CurrencyDao import CurrencyDao 
 from app.dao.AliasDao import AliasDao
 from app.dao.AdInstanceDao import AdInstanceDao
+from app.dao.AdInstanceDto import create_ad_instance
 
 from app.api.ActivityPubGateway import ActivityPubGateway
 
@@ -88,12 +91,56 @@ class AdelphosApp(FastAPI):
         self._init_schema = True
 
 
-    async def create_root_user(self):
+    async def post_initialization(self):
         # Now I have to discover the root actor.
         flag = self._init_schema
         del self._init_schema
         if (flag == False):
             return
+
+        self.create_myself_as_actor()
+
+        await self.create_root_actor()
+
+        self.create_test_users()
+
+
+    # this will create the zero server, the zero actor and the zero instance.
+    def create_myself_as_actor(self):
+        
+        # create myself as a server, with a fixed id of zero
+        host = self.config['General']['host']
+        myself_server = create_ap_server(host)
+        myself_server.server_id = 0
+        my_server_id = self.dao.ap_server_dao.store_full_no_ts(myself_server)
+        gCon.log("Created the server")
+
+        user_path = API_POINT + f"/users/{USER_ID}"
+        user_inbox = user_path + "/inbox"
+        myself_actor = create_ap_actor(my_server_id, user_path, user_inbox,
+                                       USER_ID, self.public_key)
+        myself_actor.actor_id = 0
+        my_actor_id = self.dao.ap_actor_dao.store_full_no_ts(myself_actor)
+        gCon.log("Created my actor")
+
+        # now create the instance.
+        myself_instance = create_ad_instance(0, 1, "Local adelphos instance")
+        my_instance_id = self.dao.ad_instance_dao.store_full_no_ts(myself_instance)
+        gCon.log("Created the instance")
+
+
+    def create_test_users(self):
+
+        demo_users = self.config['demo_users']
+        for demo_user in demo_users:
+            # by definition the users belong to my server.
+            # they are ``embedded'' in this instance, so they belong to
+            # ap_server 'zero'
+            gCon.log(f"I want to create {demo_user}")
+
+
+    async def create_root_actor(self):
+        
         root_user = self.config['General']['root_user']
         gCon.log(f"Will discover root {root_user}")
         # here I will get the activity pub object and I will create the root alias
@@ -103,9 +150,10 @@ class AdelphosApp(FastAPI):
         self.ap_gateway.ap_alias_api.create_alias_impl(root_actor.actor_id,
                                                'admins', 'root',
                                                self.config['General']['root_password'])
-        gCon.log("========= commit =======")
-        self.dao.commit()
 
+        # Now I want to create some other aliases.
+        gCon.rule("========= FINAL COMMIT OF INITIAL DB =======")
+        self.dao.commit()
 
 
     # this is used for the put request.
@@ -178,8 +226,8 @@ async def lifespan(app: AdelphosApp):
     app.ap_api = ActivityPubApi(app)
 
     # post init
-    gCon.log("Root user creation.")
-    await app.create_root_user()
+    gCon.log("Application post initialization start.")
+    await app.post_initialization()
     gCon.log("App is ready.")
     yield
 

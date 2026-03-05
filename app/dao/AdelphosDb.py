@@ -277,37 +277,36 @@ class AdelphosDb:
 
         # Now I store the initial data (for example the zero actor,
         # which is myself)
-        host = app.config['General']['host']
+#        host = app.config['General']['host']
+#
+#        # I insert myself as the instance zero
+#        # here interpolating the SQL is safe, the values do not come
+#        # from the outside.
+#        sql_insert = f"""
+#insert into ap_server(server_id, host_name) values (0, '{host}');"""
+#        cursor.execute(sql_insert)
 
-        # I insert myself as the instance zero
-        # here interpolating the SQL is safe, the values do not come
-        # from the outside.
-        sql_insert = f"""
-insert into ap_server(server_id, host_name) values (0, '{host}');"""
-        cursor.execute(sql_insert)
+#        user_path = API_POINT + f"/users/{USER_ID}"
+#        user_inbox = user_path + "/inbox"
+#
+#        sql_insert = f"""
+#insert into ap_actor (actor_id, server_fk, user_path, inbox_path,
+#preferred_username, public_key) values(0, 0, "{user_path}",
+#"{user_inbox}", "{USER_ID}", "{app.public_key}")
+#
+#        """
+#        cursor.execute(sql_insert)
 
-        user_path = API_POINT + f"/users/{USER_ID}"
-        user_inbox = user_path + "/inbox"
-
-        sql_insert = f"""
-insert into ap_actor (actor_id, server_fk, user_path, inbox_path,
-preferred_username, public_key) values(0, 0, "{user_path}",
-"{user_inbox}", "{USER_ID}", "{app.public_key}")
-
-        """
-        cursor.execute(sql_insert)
-
-        sql_insert = f"""
-
-insert into ad_instance(actor_fk, authorized, comment) values
-(0, 1, "Local adelphos instance")
-        """
-        cursor.execute(sql_insert)
-
-        cursor.close()
+#        sql_insert = f"""
+#
+#insert into ad_instance(actor_fk, authorized, comment) values
+#(0, 1, "Local adelphos instance")
+#        """
+#        cursor.execute(sql_insert)
+#
+#        cursor.close()
 
         self._conn.commit()
-
         gCon.log(f"Schema created.")
 
 
@@ -346,17 +345,14 @@ insert into ad_instance(actor_fk, authorized, comment) values
         if (create_schema == True):
             self._create_schema(app)
 
-            # If I am here I have to create the root alias for this instance..
+            # If I am here I have to create also the initial data
+            # like the root user and maybe all the initial population
             app.post_initialization_needed()
            
 
     def dump_database(self):
         for line in self._conn.iterdump():
             gCon.log(f"{line}")
-
-
-    def export_to_remote_dto(ctx):
-        pass
 
 
     # this function will query a remote DAO to get the object (it will
@@ -396,11 +392,6 @@ insert into ad_instance(actor_fk, authorized, comment) values
         list_sql_fields = ", ".join(fields_to_ask)
 
         condition_str = self.build_condition_str(fields_to_seek)
-
-        #for field_to_seek in fields_to_seek:
-        #    condition.append(f" {field_to_seek} = ? ")
-        #condition_str = " and ". join(condition)
-        #gCon.log(f"the condition is {condition_str}")
 
         sql_get = f"""
 select {list_sql_fields} from {table_name} where {condition_str} 

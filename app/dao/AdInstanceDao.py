@@ -59,9 +59,10 @@ pub server, or the database is misconfigured")
 
 
     def store_dict(self, instance, instance_as_dict):
-
         self.dao.db.insert_dto_fields(self.table_name, 
                 ('actor_fk', 'authorized', 'comment'), instance_as_dict)
+        # I have a forced primary key
+        return instance_as_dict.actor_fk
 
 
     # gets the name of the column that stores the private key.

@@ -21,12 +21,14 @@ db_name = "db1"
 
 private_key = "private_key.pem"
 
+# this is the name of this host resolvable from the outside, it might
+# be different from hostname in case of reverse proxies like ngrok or something similar
 host = "example.instance.org"
 
 # this is the root user of this instance: it should be a fediverse account
 # in the form of @handle@host
 #
-# This user will have an alias in the instance ##admin.root_family
+# This user will have an alias in the instance ##root.admins family
 # and that family will be reserved.
 root_user = "@user@host.org"
 
@@ -40,4 +42,35 @@ root_user = "@user@host.org"
 root_password = "$argon2id$v=19$m=65536,t=3,p=4$XGe/4m0i02bBX1g92lsx+g$dGLAmUkdOTbfCBqjq6IVF37ZurADNuRN40f31Rb3O0Q"
 
 
+# this section is not obligatory, but if present it will contain the initial
+# data to populate, in case of a teting instance
 
+# how many Activity Pub actors this instance will simulate to have (they won't be
+# real, just sinks that will accept the messages and put them in the local db to
+# be later retrieved)
+
+# here the password is in clear, they are test users.
+[[ap_actor]]
+name = 'john'
+alias = '##aliasjohn.jf'
+password = 'john11'
+
+
+[[ap_actor]]
+name = 'mary'
+alias = '##aliasmary.mf'
+password = 'mary11'
+
+
+[[currency]]
+name = 'eur'
+
+
+[[tl_line]]
+name = 'tl1'
+alias_from = '##aliasjohn.jf'
+alias_to   = '##aliasmary.mf'
+equity = 12.12
+
+
+# if John and Mary are in the same family I will put them, there is no control.

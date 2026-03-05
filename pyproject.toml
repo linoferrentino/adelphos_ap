@@ -1,7 +1,7 @@
 [project]
 name = "adelphos-ap"
 version = "0.1.0"
-description = "Add your description here"
+description = "Adelphos, the fractal trust network. Activity Pub implementation"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
