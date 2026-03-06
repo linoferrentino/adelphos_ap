@@ -145,6 +145,10 @@ class AdelphosApp(FastAPI):
 
     def create_test_users(self):
 
+        if (self.config.get('demo_user') is None):
+            gCon.log("no demo users defined")
+            return
+
         demo_users = self.config['demo_users']
         for demo_user in demo_users:
             # by definition the users belong tj my server.
@@ -154,12 +158,11 @@ class AdelphosApp(FastAPI):
             # first of all I have to create the actor, the server is our server
             # and his/her key is the application's key.
             actor_id = self.create_app_actor(demo_user['name'])
-            # Now I  will create the alias.
+            # Now I will create the alias.
             gCon.log(f"The new actor has the id {actor_id}")
             # I have to create the alias, using the alias and the password
             self.ap_gateway.ap_alias_api.create_alias_from_uri(
                     actor_id, demo_user['alias'], demo_user['password'])
-
 
 
     async def create_root_actor(self):
@@ -188,6 +191,10 @@ class AdelphosApp(FastAPI):
     def get_local_host(self):
         # Just to not disperse too many hardcoded strings around.
         return self.config['General']['host']
+
+
+    def is_debug(self):
+        return self.config['General']['debug']
 
 
     # this is the blocking (async) GET request.

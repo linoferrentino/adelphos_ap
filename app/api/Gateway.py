@@ -105,6 +105,9 @@ class Gateway(ABC):
 
         await self.outgress_result(msg_out)
 
+        # the result is given also as a return value for the automating scripts
+        return msg_out
+
 
     # this is an abstract method here, different gateways will implement it differently
     @abstractmethod

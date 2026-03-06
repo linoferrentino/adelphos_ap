@@ -20,6 +20,8 @@ from app.logging import gCon
 from app.consts import USER_ID
 from app.dao.AdInstanceDto import create_ad_instance
 from datetime import datetime
+import os
+import re
 
 
 def sudo_cmd(func):
@@ -97,11 +99,69 @@ class RootApi(BaseApi):
         return "OK, dump created"
 
 
+    async def _auto_su_handler(self):
+        new_user = self.gateway.get_param_safe('user')
+        gCon.log(f"substuting the user session with {new_user}")
+
+
+    # the function to do an automate command, this too is async, as we might
+    # go in the fediverse.
+    async def do_automate(self, line):
+        # I can parse the command line as if it came from the web socket.
+        # the system is asynchronous but single threaded, no worry about concurrency here.
+        self.gateway.parse_cmd_line(line)
+        gCon.log(f"You want to execute {self.gateway.cmd}")
+        gCon.log(f"with these paramters {self.gateway.cmd_dict}")
+
+        match self.gateway.cmd:
+            case '_auto_su':
+                await self._auto_su_handler()
+
+        # the return of the automate command for now it is not important
+
+
+    @sudo_cmd
+    async def _hndl_play_script(self):
+        script_file = self.gateway.get_param_safe('script')
+        #as_alias = self.gateway.get_param_safe('su', 'root')
+
+        #if (as_alias != 'root'):
+        #    raise AdelphosException(f"substitute user {as_alias} TBI")
+
+        if (os.path.exists(script_file) == False):
+            raise AdelphosException(f"Script {script_file} not found")
+
+        with open(script_file, 'r') as file:
+            for line in file:
+                line = line.strip()
+                if (len(line) == 0):
+                    continue
+                if (line[0] == '#'):
+                    continue
+                # automate command?
+                if (match_auto := re.match('_auto_(.*)', line)):
+                    gCon.log(f"Execute automate command {match_auto.group(1)}")
+                    await self.do_automate(line)
+                    continue
+                gCon.log(f"execute {line}")
+                await self.gateway.outgress_result(f"executing: {line}")
+                last_msg = await self.gateway.proc_request(line)
+
+        return f"Exec script {script_file} done."
+
+
+    async def _hndl_su(self):
+
+        pass
+
+
 # here the handlers for this API
 HANDLERS = {
      'sudo_adelphos_allow' : RootApi._hndl_allow_remote_adelphos,
      'sudo_adelphos_deny' : RootApi._hndl_deny_remote_adelphos,
-     'sudo_dump_db' : RootApi._hndl_dump_db
+     'sudo_dump_db' : RootApi._hndl_dump_db,
+     'sudo_play_script': RootApi._hndl_play_script,
+
 }
 
 

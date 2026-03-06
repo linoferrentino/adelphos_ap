@@ -21,6 +21,7 @@ import secrets
 from datetime import datetime
 from enum import IntEnum
 from enum import auto
+from app.logging import gCon
 
 # these are the states for the user.
 class EUserState(IntEnum):
@@ -62,6 +63,10 @@ class UserSession:
         return True
 
 
+    def force_token(self):
+        self.user_state = EUserState.LOGGED_AND_TOKEN
+
+
     # this is called when we are sure that the user can login.
     def login_start(self, uri, family_dto, alias_dto, server_dto, actor_dto):
 
@@ -75,6 +80,7 @@ class UserSession:
         # asked me a trust line or something.
         self.token = secrets.token_urlsafe()
         self.session_age = datetime.now()
+        gCon.log(f"Started a new session at {self.session_age}")
 
         self.user_state = EUserState.LOGGED_WITHOUT_TOKEN
 
@@ -100,7 +106,6 @@ class UserSession:
         # I refresh the time
         self.session_age = time_now
         return True
-
 
 
     # Not only the login is valid, but we have also to be root

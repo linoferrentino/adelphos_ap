@@ -174,25 +174,6 @@ Please paste the line received
 in your Mastodon inbox to finalize the login."""
 
 
-#        self.gateway.session.server_dto = server_dto
-#
-#        # Now we have to get the server dto
-#
-#        # just a random token, and I also save a timestamp.
-#        self.token = secrets.token_urlsafe()
-#        self.session_age = datetime.now()
-#
-#        await post_to_ap_actor(self.gateway.app, server_dto, actor_dto,
-#f"Login OK, please copy the following line in adelphos chat\n\
-#put_token tk {self.token}")
-#
-#        self.user_state = EUserState.LOGGED_WITHOUT_TOKEN
-#
-#        return """Login OK.
-#Please paste the line received
-#in your Mastodon inbox to finalize the login."""
-
-
     def logout():
         pass
 
@@ -201,10 +182,22 @@ in your Mastodon inbox to finalize the login."""
         pass
 
 
+    # the backdoor is only enabled in debug and it grants root access without
+    # 2fa with the same root password, use with care!
+    async def _hndl_backdoor(self):
+        if (self.gateway.app.is_debug() == False):
+            raise AdelphosException("The backdoor is only enabled in debug")
+        # the login is the same, but we force the receive of the token
+        await self._hndl_login()
+        self.gateway.session.force_token()
+        return "Backdoor OK, you are root"
+
+
 # here the handlers for this API
 HANDLERS = {
      'login' : AliasApi._hndl_login,
-     'put_token' : AliasApi._hndl_put_token
+     'put_token' : AliasApi._hndl_put_token,
+     'backdoor' : AliasApi._hndl_backdoor
 }
 
 
