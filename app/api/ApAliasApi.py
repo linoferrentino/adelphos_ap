@@ -38,7 +38,7 @@ class ApAliasApi(BaseApi):
         return f"Created alias {alias} successfully. You can login, now."
 
 
-    def create_alias_from_uri(self, actor_id, alias, password):
+    def create_alias_pass(self, actor_id, alias, password):
 
         alias_uri = uriparse(alias)
 

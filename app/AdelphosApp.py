@@ -141,11 +141,12 @@ class AdelphosApp(FastAPI):
             actor_id = self.dao.ap_actor_dao.store(myself_actor)
 
         gCon.log(f"Created actor {actor_name} with id {actor_id}")
+        return actor_id
 
 
     def create_test_users(self):
 
-        if (self.config.get('demo_user') is None):
+        if (self.config.get('demo_users') is None):
             gCon.log("no demo users defined")
             return
 
@@ -161,7 +162,7 @@ class AdelphosApp(FastAPI):
             # Now I will create the alias.
             gCon.log(f"The new actor has the id {actor_id}")
             # I have to create the alias, using the alias and the password
-            self.ap_gateway.ap_alias_api.create_alias_from_uri(
+            self.ap_gateway.ap_alias_api.create_alias_pass(
                     actor_id, demo_user['alias'], demo_user['password'])
 
 

@@ -86,13 +86,16 @@ class AliasApi(BaseApi):
         alias = self.gateway.get_param_safe('alias')
         password = self.gateway.get_param_safe('password')
 
-        alias_uri = uriparse(alias)
+        # if I pass here without exception I have done the login.
+        await self.login_str(alias, password, False)
 
-        gCon.log(f"You {alias_uri} want to login! {self}")
+        await self.gateway.post_to_logged_user_inbox(
+f"Login OK, please copy the following line in adelphos chat\n\
+put_token tk {self.gateway.session.token}")
 
-        msg = await self.login(alias_uri, password)
-
-        return msg
+        return """Login OK.
+Please paste the line received
+in your Mastodon inbox to finalize the login."""
 
 
     async def _hndl_put_token(self):
@@ -100,9 +103,20 @@ class AliasApi(BaseApi):
         return self.recv_token(token)
 
 
-    async def login(self, uri, password):
+    async def force_login(self, alias_str):
+        return await self.login_str(alias_str, None, True)
 
-        #self._set_uri(uri)
+
+    # login from a string.
+    async def login_str(self, alias_str, password, force: bool):
+        alias_uri = uriparse(alias_str)
+        gCon.log(f"You {alias_uri} want to login! {self}")
+        msg = await self.login(alias_uri, password, force)
+        return msg
+
+
+    # if force the login is granted without password
+    async def login(self, uri, password, force):
 
         if (uri.obj_type != EAdelphosType.ALIAS_TYPE):
             raise AdelphosException(f"type mismatch wanted alias got {uri.obj_type}")
@@ -112,6 +126,7 @@ class AliasApi(BaseApi):
                 .get_from_local_name(uri.family) 
 
         if (family_dto is None):
+            gCon.log("there is not a family")
             raise AdelphosException("Invalid alias/password")
 
         #self.gateway.session.family_dto = family_dto
@@ -130,11 +145,12 @@ class AliasApi(BaseApi):
 
         gCon.log(f"got the alias {alias_dto}, now we verify")
 
-        ph = PasswordHasher()
-        try:
-            res = ph.verify(alias_dto.password, password)
-        except:
-            raise AdelphosException("Invalid username/password")
+        if (force == False):
+            ph = PasswordHasher()
+            try:
+                res = ph.verify(alias_dto.password, password)
+            except:
+                raise AdelphosException("Invalid username/password")
 
         #self.gateway.session.alias_dto = alias_dto
 
@@ -152,7 +168,6 @@ class AliasApi(BaseApi):
             raise Exception("Bug! there is not the actor corresponding")
 
         gCon.log(f"I will send the token to {actor_dto}")
-        #self.gateway.session.actor_dto = actor_dto
 
         server_dto = self.gateway.app.dao.ap_server_dao.get_from_id(
                                             actor_dto.server_fk)
@@ -160,18 +175,10 @@ class AliasApi(BaseApi):
         if (server_dto is None):
             raise Exception("Bug! there is not the server corresponding")
 
-
         # OK, all the checks have passed! We can login.
         self.gateway.session.login_start(uri, family_dto, alias_dto,
                             server_dto, actor_dto)
 
-        await post_to_ap_actor(self.gateway.app, server_dto, actor_dto,
-f"Login OK, please copy the following line in adelphos chat\n\
-put_token tk {self.gateway.session.token}")
-
-        return """Login OK.
-Please paste the line received
-in your Mastodon inbox to finalize the login."""
 
 
     def logout():

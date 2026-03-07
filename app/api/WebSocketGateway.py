@@ -20,6 +20,7 @@ import shlex
 from abc import ABC
 from app.api.AdelphosException import AdelphosException
 from app.api.UserSession import UserSession
+from app.api.OutgressGateway import post_to_ap_actor
 from abc import abstractmethod
 from app.logging import gCon
 import asyncio
@@ -54,6 +55,26 @@ class WebSocketGateway(Gateway):
         # the class has the ability to store a session, because we are ``talking''
         # to a user.
         self.session = UserSession(self)
+        self.sessions = dict()
+
+
+    async def post_to_logged_user_inbox(self, msg):
+        await post_to_ap_actor(self.app,
+                               self.session.server_dto, self.session.actor_dto, msg)
+
+
+    async def substitute_user(self, user):
+        
+        if (user_store := self.sessions.get(user)):
+            gCon.log(f"sudo user {user_store}")
+            self.session = user_store
+            return
+
+        # I create a new user.
+        gCon.log(f"Create a new session for user {user}")
+        self.session = UserSession(self)
+        self.sessions[user] = self.session
+        return await self.alias_api.force_login(user)
 
 
     # here it is trivial, but it must return a None as a result code

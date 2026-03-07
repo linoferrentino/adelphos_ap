@@ -161,6 +161,7 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
         newid = self.dao.db.insert_dto_fields(table_name, fields_stored, actor_as_dict)
         actor.actor_id = newid
+        return newid
 
     
     # gets the name of the column that stores the private key.

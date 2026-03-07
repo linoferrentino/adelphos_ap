@@ -35,6 +35,11 @@ def sudo_cmd(func):
     return check_root
 
 
+# this class users.
+class AutoUsers:
+    pass
+
+
 class RootApi(BaseApi):
 
     def __init__(self, gateway):
@@ -100,8 +105,9 @@ class RootApi(BaseApi):
 
 
     async def _auto_su_handler(self):
-        new_user = self.gateway.get_param_safe('user')
-        gCon.log(f"substuting the user session with {new_user}")
+        new_user = self.gateway.get_param_safe('alias')
+        gCon.log(f"subsituting the user session with {new_user}")
+        return await self.gateway.substitute_user(new_user)
 
 
     # the function to do an automate command, this too is async, as we might
@@ -123,10 +129,6 @@ class RootApi(BaseApi):
     @sudo_cmd
     async def _hndl_play_script(self):
         script_file = self.gateway.get_param_safe('script')
-        #as_alias = self.gateway.get_param_safe('su', 'root')
-
-        #if (as_alias != 'root'):
-        #    raise AdelphosException(f"substitute user {as_alias} TBI")
 
         if (os.path.exists(script_file) == False):
             raise AdelphosException(f"Script {script_file} not found")
@@ -148,11 +150,6 @@ class RootApi(BaseApi):
                 last_msg = await self.gateway.proc_request(line)
 
         return f"Exec script {script_file} done."
-
-
-    async def _hndl_su(self):
-
-        pass
 
 
 # here the handlers for this API
