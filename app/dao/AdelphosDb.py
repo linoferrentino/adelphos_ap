@@ -234,27 +234,6 @@ create table fd_alias(
  """),
 
 
-# this is the table that holds the session, the session is linked to
-# a particular alias, there is a 1:1 mapping.
-# the session is not persistent, and it is used to make a MFA login to adelphos
-
-('session_tokens', """
-
- create table sessions (
-
-    local_fk integer primary key references fd_alias(local_fk),
-    cur_session_token integer,
-    state_id integer,
-    timestamp text default current_timestamp
-
- );
-
-
- """),
-
-
-
-
 ]
 
 
@@ -274,37 +253,6 @@ class AdelphosDb:
         for cmd in create_schema_sql:
             gCon.log(f"Will exec -> {cmd[0]}")
             cursor.execute(cmd[1])
-
-        # Now I store the initial data (for example the zero actor,
-        # which is myself)
-#        host = app.config['General']['host']
-#
-#        # I insert myself as the instance zero
-#        # here interpolating the SQL is safe, the values do not come
-#        # from the outside.
-#        sql_insert = f"""
-#insert into ap_server(server_id, host_name) values (0, '{host}');"""
-#        cursor.execute(sql_insert)
-
-#        user_path = API_POINT + f"/users/{USER_ID}"
-#        user_inbox = user_path + "/inbox"
-#
-#        sql_insert = f"""
-#insert into ap_actor (actor_id, server_fk, user_path, inbox_path,
-#preferred_username, public_key) values(0, 0, "{user_path}",
-#"{user_inbox}", "{USER_ID}", "{app.public_key}")
-#
-#        """
-#        cursor.execute(sql_insert)
-
-#        sql_insert = f"""
-#
-#insert into ad_instance(actor_fk, authorized, comment) values
-#(0, 1, "Local adelphos instance")
-#        """
-#        cursor.execute(sql_insert)
-#
-#        cursor.close()
 
         self._conn.commit()
         gCon.log(f"Schema created.")

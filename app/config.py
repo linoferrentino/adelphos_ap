@@ -9,11 +9,7 @@ from .logging import exit_err
 import json
 
 
-#config = None
-
-
 def load_conf(instance_name: str):
-    global config
 
     toml_file = f"adelphos_ap_{instance_name}.toml"
     gCon.log(f"Loading configuration file {toml_file}")
@@ -29,9 +25,4 @@ def load_conf(instance_name: str):
 
     return config
     
-
-#def get_config():
-#    global config
-#    return config
-
 

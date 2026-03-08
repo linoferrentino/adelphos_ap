@@ -5,20 +5,23 @@ from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from .logging import gCon
 
-from .consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
+
+def generate_key():
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    return private_key
 
 
-def load_keys(config):
+def load_keys(key_file):
 
-    key_file = config[GENERAL_SECTION][PRIVATE_KEY_FILE_KEY]
-
-    if os.path.exists(key_file):
+    if (key_file == ":memory:"):
+        private_key = generate_key()
+    elif os.path.exists(key_file):
         gCon.log(f"Loading existing private key from {key_file}.")
         with open(key_file, "rb") as f:
             private_key = crypto_serialization.load_pem_private_key(f.read(), password=None)
     else:
         gCon.log(f"No key file found. Generating new private key and saving to {key_file}.")
-        private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        private_key = generate_key() 
         with open(key_file, "wb") as f:
             f.write(private_key.private_bytes(
                 encoding=crypto_serialization.Encoding.PEM,
@@ -30,7 +33,6 @@ def load_keys(config):
         encoding=crypto_serialization.Encoding.PEM,
         format=crypto_serialization.PublicFormat.SubjectPublicKeyInfo
     ).decode('utf-8')
-
     return (public_key, private_key)
 
 

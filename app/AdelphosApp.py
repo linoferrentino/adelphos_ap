@@ -50,6 +50,7 @@ from app.dao.AdInstanceDao import AdInstanceDao
 from app.dao.AdInstanceDto import create_ad_instance
 
 from app.api.ActivityPubGateway import ActivityPubGateway
+from .consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
 
 app = None
 
@@ -58,17 +59,28 @@ class AdelphosApp(FastAPI):
 
 
     # the initialization of adelphos is done in two steps.
-    def __init__(self, instance: str, **kwargs):
+    def __init__(self, **kwargs):
 
         super().__init__(**kwargs)
+
+
+    # we can init the instance using also a memory configuration,
+    # to use in testing.
+    # the configuration can be any json which is interpreted.
+    def init_instance(self, instance, config = None):
+
         self.running = True
         self.instance = instance
 
         # load the configuration.
-        self.config = load_conf(instance)
+        if (config is None):
+            self.config = load_conf(instance)
+        else:
+            self.config = config
 
         # load the keys
-        (pub_key, priv_key) = load_keys(self.config)
+        key_file = self.config[GENERAL_SECTION][PRIVATE_KEY_FILE_KEY]
+        (pub_key, priv_key) = load_keys(key_file)
         self.public_key = pub_key
         self.private_key = priv_key
 
@@ -81,10 +93,6 @@ class AdelphosApp(FastAPI):
         # this is the queue of requests that this daemon does
         # to the outside.
         self.requests = list()
-
-        # I create here the ActivityPubApi which is in common for all the
-        # objects in adelphos. The API has the possibilities to exchange
-        # messages to the external world using the ActivityPub Protocol
         self._init_schema = False
 
 
@@ -320,20 +328,22 @@ async def session_worker(app: AdelphosApp):
                 
 
 # I create here the main application object, singleton
-def get_app():
+def get_app(instance_name = None, config = None):
     global app
 
     if (app is not None):
         return app
 
-    instance_name = os.getenv(ADELPHOS_AP_ENV_KEY)
+    if (instance_name is None):
+        instance_name = os.getenv(ADELPHOS_AP_ENV_KEY)
 
     if (instance_name is None):
-        exit_err(f"{ADELPHOS_AP_ENV_KEY} variable not defined")
+        exit_err(f"No instance defined and {ADELPHOS_AP_ENV_KEY} variable not defined")
 
     gCon.log(f"Starting Adelphos' instance {instance_name}")
-    app = AdelphosApp(instance_name, root_path = API_POINT,
-                      lifespan = lifespan)
+    app = AdelphosApp(root_path = API_POINT, lifespan = lifespan)
+
+    app.init_instance(instance_name, config)
 
     return get_app()
 
