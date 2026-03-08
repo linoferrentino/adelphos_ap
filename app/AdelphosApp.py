@@ -57,6 +57,7 @@ app = None
 class AdelphosApp(FastAPI):
 
 
+    # the initialization of adelphos is done in two steps.
     def __init__(self, instance: str, **kwargs):
 
         super().__init__(**kwargs)

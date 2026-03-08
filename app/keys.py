@@ -5,16 +5,10 @@ from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from .logging import gCon
 
-#public_key = None
-#private_key = None
-
 from .consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
 
 
 def load_keys(config):
-
-    #public_key
-    #private_key
 
     key_file = config[GENERAL_SECTION][PRIVATE_KEY_FILE_KEY]
 
@@ -36,7 +30,6 @@ def load_keys(config):
         encoding=crypto_serialization.Encoding.PEM,
         format=crypto_serialization.PublicFormat.SubjectPublicKeyInfo
     ).decode('utf-8')
-
 
     return (public_key, private_key)
 
