@@ -80,6 +80,7 @@ class AdelphosApp(FastAPI):
 
         # load the keys
         key_file = self.config[GENERAL_SECTION][PRIVATE_KEY_FILE_KEY]
+        gCon.log(f"Get private key from {key_file}")
         (pub_key, priv_key) = load_keys(key_file)
         self.public_key = pub_key
         self.private_key = priv_key
@@ -109,7 +110,8 @@ class AdelphosApp(FastAPI):
 
         self.create_myself_as_actor()
 
-        await self.create_root_actor()
+        asyncio.create_task(self.create_root_actor())
+        #asyncio.create_task await self.create_root_actor()
 
         self.create_test_users()
 
@@ -178,7 +180,8 @@ class AdelphosApp(FastAPI):
     async def create_root_actor(self):
         
         root_user = self.config['General']['root_user']
-        gCon.log(f"Will discover root {root_user}")
+        #gCon.log(f"Will discover root {root_user} after a bit ")
+        #await asyncio.sleep(5)
         # here I will get the activity pub object and I will create the root alias
         (root_server, root_actor) = await self.ap_api.get_or_discover_actor(root_user)
 
@@ -186,6 +189,8 @@ class AdelphosApp(FastAPI):
         self.ap_gateway.ap_alias_api.create_alias_impl(root_actor.actor_id,
                                                'admins', 'root',
                                                self.config['General']['root_password'])
+        gCon.rule("Commit root user")
+        self.dao.commit()
 
 
     # this is used for the put request.
@@ -255,6 +260,7 @@ class MasterAdelphosDao:
 
 @asynccontextmanager
 async def lifespan(app: AdelphosApp):
+    gCon.rule("LIFESPAN START")
     app.dao = MasterAdelphosDao(app)
     ses_worker = asyncio.create_task(session_worker(app))
     daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
@@ -264,7 +270,7 @@ async def lifespan(app: AdelphosApp):
     # post init
     gCon.log("Application post initialization start.")
     await app.post_initialization()
-    gCon.log("App is ready.")
+    gCon.rule("App is ready.")
     yield
 
     # no more running, please.

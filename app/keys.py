@@ -33,6 +33,7 @@ def load_keys(key_file):
         encoding=crypto_serialization.Encoding.PEM,
         format=crypto_serialization.PublicFormat.SubjectPublicKeyInfo
     ).decode('utf-8')
+    #gCon.log(f"got {public_key} as my public key")
     return (public_key, private_key)
 
 
