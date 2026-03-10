@@ -51,6 +51,7 @@ from app.dao.AdInstanceDto import create_ad_instance
 
 from app.api.ActivityPubGateway import ActivityPubGateway
 from .consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
+from app.AdelphosRouter import make_router
 
 app = None
 
@@ -67,14 +68,15 @@ class AdelphosApp(FastAPI):
     # we can init the instance using also a memory configuration,
     # to use in testing.
     # the configuration can be any json which is interpreted.
-    def init_instance(self, instance, config = None):
+    # or a configuration file
+    def init_instance(self, instance, config_file, config):
 
         self.running = True
         self.instance = instance
 
         # load the configuration.
         if (config is None):
-            self.config = load_conf(instance)
+            self.config = load_conf(instance, config_file)
         else:
             self.config = config
 
@@ -101,6 +103,26 @@ class AdelphosApp(FastAPI):
         self._init_schema = True
 
 
+    # the app can have some fake Activity Pub users defined for testing,
+    # the daemon is always defined.
+    def ap_user_exists(self, activity_pub_user):
+
+        if (activity_pub_user == USER_ID):
+            return True 
+
+        # other users?
+        return False
+
+    
+    def ap_user_info(self, activity_pub_user):
+
+        if (activity_pub_user == USER_ID):
+            return ('bot', USER_ID, f"Adelphos' daemon for instance {self.instance}")
+
+        # other users...
+        return None
+
+
     async def post_initialization(self):
         # Now I have to discover the root actor.
         flag = self._init_schema
@@ -110,8 +132,10 @@ class AdelphosApp(FastAPI):
 
         self.create_myself_as_actor()
 
-        asyncio.create_task(self.create_root_actor())
+        #asyncio.create_task(self.create_root_actor())
         #asyncio.create_task await self.create_root_actor()
+        gCon.log("Creating root actor!")
+        await self.create_root_actor()
 
         self.create_test_users()
 
@@ -180,6 +204,10 @@ class AdelphosApp(FastAPI):
     async def create_root_actor(self):
         
         root_user = self.config['General']['root_user']
+        gCon.log(f"Creating root user {root_user}")
+        if (root_user == ':local:'):
+            gCon.rule("The root user is locally defined")
+            return
         #gCon.log(f"Will discover root {root_user} after a bit ")
         #await asyncio.sleep(5)
         # here I will get the activity pub object and I will create the root alias
@@ -334,7 +362,7 @@ async def session_worker(app: AdelphosApp):
                 
 
 # I create here the main application object, singleton
-def get_app(instance_name = None, config = None):
+def get_app(instance_name, config_file, config):
     global app
 
     if (app is not None):
@@ -349,9 +377,12 @@ def get_app(instance_name = None, config = None):
     gCon.log(f"Starting Adelphos' instance {instance_name}")
     app = AdelphosApp(root_path = API_POINT, lifespan = lifespan)
 
-    app.init_instance(instance_name, config)
+    router = make_router(app)
+    app.include_router(router)
 
-    return get_app()
+    app.init_instance(instance_name, config_file, config)
+
+    return app
 
 
 

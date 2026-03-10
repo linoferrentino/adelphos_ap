@@ -129,23 +129,6 @@ class ClientWs:
         self.running = True
 
 
-    #async def _handle_cmdline(self, data):
-
-    #    self.ctx.parse_cmd_line(data)
-
-    #    handler = ws_cmd_handlers.get(self.ctx.cmd)
-    #    if (handler is None):
-    #        raise AdelphosException(f"Command {self.ctx.cmd} not recognized")
-
-    #    # maybe you can remove the ctx, all the API objects have a reference to it.
-    #    response = await handler(self.ctx)
-    #    
-    #    time_now = datetime.now()
-    #    time_str = time_now.strftime("%Y-%m-%d %H:%M")
-
-    #    await self.websocket.send_text(f"{time_str}: {response}")
-
-
     async def _internal_serve(self):
 
         while True:

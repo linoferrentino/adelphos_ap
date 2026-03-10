@@ -19,6 +19,7 @@ from app.logging import gCon
 from app.ap_api.AsyncRequest import AsyncGetReq
 import json
 from urllib.parse import urlparse
+import re
 
 class ActivityPubApi:
 
@@ -65,7 +66,15 @@ class ActivityPubApi:
         server_root = self.app.dao.ap_server_dao.get_or_create_from_host_name(\
                 rem_instance)
 
-        actor_query = f"https://{rem_instance}/.well-known/webfinger?\
+        # there might be a colon, let's remove it
+        rem_instance_host = re.sub(r":\d*$", "", rem_instance)
+
+        if (rem_instance_host == 'localhost'):
+            scheme = 'http'
+        else:
+            scheme = 'https'
+
+        actor_query = f"{scheme}://{rem_instance}/.well-known/webfinger?\
 resource=acct:{actor_instance}"
 
         actor_res = AsyncGetReq(actor_query)
