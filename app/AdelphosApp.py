@@ -27,6 +27,7 @@ from app.cli.ConnHandler import ConnHandler
 
 from app.config import load_conf
 from app.keys import load_keys
+from app.logging import good_bye
 
 from app.dao.AdelphosDb import AdelphosDb
 from contextlib import asynccontextmanager
@@ -34,6 +35,7 @@ import aiohttp
 import asyncio
 
 from app.ap_api.ActivityPubApi import ActivityPubApi
+from app.ap_api.ActivityPubMockup import ActivityPubMockup
 
 # the actor is ambiguous, we can have the activity pub actor
 # or the adelphos actor
@@ -88,6 +90,7 @@ class AdelphosApp(FastAPI):
         self.private_key = priv_key
 
         self.ap_gateway = ActivityPubGateway(self)
+        self.ap_mockup = ActivityPubMockup(self)
 
         # create the condition for the http requests and the daemon
         # background cycle.
@@ -109,18 +112,14 @@ class AdelphosApp(FastAPI):
 
         if (activity_pub_user == USER_ID):
             return True 
+        return self.ap_mockup.ap_user_exists(activity_pub_user)
 
-        # other users?
-        return False
 
-    
     def ap_user_info(self, activity_pub_user):
 
         if (activity_pub_user == USER_ID):
             return ('bot', USER_ID, f"Adelphos' daemon for instance {self.instance}")
-
-        # other users...
-        return None
+        return self.ap_mockup.ap_user_info(activity_pub_user)
 
 
     async def post_initialization(self):
@@ -132,15 +131,18 @@ class AdelphosApp(FastAPI):
 
         self.create_myself_as_actor()
 
-        #asyncio.create_task(self.create_root_actor())
-        #asyncio.create_task await self.create_root_actor()
-        gCon.log("Creating root actor!")
-        await self.create_root_actor()
+        # Now I want to create some other aliases, this MUST BE DONE before,
+        # because the root actor might be internal.
+        self.ap_mockup.create_test_users()
 
-        self.create_test_users()
+        # when I return from this function the test users are created, so
+        # I can create the root.
 
-        # Now I want to create some other aliases.
-        gCon.rule("========= FINAL COMMIT OF INITIAL DB =======")
+        # we have to discover the root actor
+        # in another task, because we might be the target!
+        asyncio.create_task(self.create_root_actor())
+
+        gCon.rule("========= COMMIT OF INITIAL DB (minus the root actor) =======")
         self.dao.commit()
 
 
@@ -154,51 +156,12 @@ class AdelphosApp(FastAPI):
         my_server_id = self.dao.ap_server_dao.store_full_no_ts(myself_server)
         gCon.log("Created the server")
 
-        self.create_app_actor(USER_ID, 0)
+        self.ap_mockup.create_app_actor(USER_ID, 0)
 
         # now create the instance.
         myself_instance = create_ad_instance(0, 1, "Local adelphos instance")
         my_instance_id = self.dao.ad_instance_dao.store_full_no_ts(myself_instance)
         gCon.log("Created the instance")
-
-
-    # creates an actor which sits in the instance (only useful for testing)
-    def create_app_actor(self, actor_name, forced_id = None):
-        user_path = API_POINT + f"/users/{actor_name}"
-        user_inbox = user_path + "/inbox"
-        # the server is hard coded to zero, we are in the app realm
-        myself_actor = create_ap_actor(0, user_path, user_inbox,
-                                       actor_name, self.public_key)
-        if (forced_id is not None):
-            myself_actor.actor_id = 0
-            actor_id = self.dao.ap_actor_dao.store_full_no_ts(myself_actor)
-        else:
-            actor_id = self.dao.ap_actor_dao.store(myself_actor)
-
-        gCon.log(f"Created actor {actor_name} with id {actor_id}")
-        return actor_id
-
-
-    def create_test_users(self):
-
-        if (self.config.get('demo_users') is None):
-            gCon.log("no demo users defined")
-            return
-
-        demo_users = self.config['demo_users']
-        for demo_user in demo_users:
-            # by definition the users belong tj my server.
-            # they are ``embedded'' in this instance, so they belong to
-            # ap_server 'zero'
-            gCon.log(f"I want to create {demo_user}")
-            # first of all I have to create the actor, the server is our server
-            # and his/her key is the application's key.
-            actor_id = self.create_app_actor(demo_user['name'])
-            # Now I will create the alias.
-            gCon.log(f"The new actor has the id {actor_id}")
-            # I have to create the alias, using the alias and the password
-            self.ap_gateway.ap_alias_api.create_alias_pass(
-                    actor_id, demo_user['alias'], demo_user['password'])
 
 
     async def create_root_actor(self):
@@ -211,7 +174,10 @@ class AdelphosApp(FastAPI):
         #gCon.log(f"Will discover root {root_user} after a bit ")
         #await asyncio.sleep(5)
         # here I will get the activity pub object and I will create the root alias
-        (root_server, root_actor) = await self.ap_api.get_or_discover_actor(root_user)
+        (root_server, root_actor) = await self.ap_api.get_or_discover_actor(root_user, True)
+
+        if (root_server is None):
+            exit_err(f"Misconfigured root user {root_user}, cannot resolve.")
 
         # Now I have to create the alias, so I use tha ApAliasApi.
         self.ap_gateway.ap_alias_api.create_alias_impl(root_actor.actor_id,

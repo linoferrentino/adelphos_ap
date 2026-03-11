@@ -47,7 +47,17 @@ class ActivityPubApi:
     # the local data.
     # the return of the function is a tuple (server, actor) which identifies
     # this actor in fediverse.
-    async def get_or_discover_actor(self, fediverse_actor_str):
+    async def get_or_discover_actor(self, fediverse_actor_str, maybe = False):
+        try:
+            return await self.get_or_discover_actor_impl(fediverse_actor_str)
+        except AdelphosException as adex:
+            if (maybe == True):
+                gCon.log(f"Got exception while discovering actor {adex}")
+                return (None, None)
+            raise
+
+
+    async def get_or_discover_actor_impl(self, fediverse_actor_str):
 
         # I assume the string is well formed, otherwise it won't have an answer
         # it must begin with a @
@@ -66,15 +76,9 @@ class ActivityPubApi:
         server_root = self.app.dao.ap_server_dao.get_or_create_from_host_name(\
                 rem_instance)
 
-        # there might be a colon, let's remove it
-        rem_instance_host = re.sub(r":\d*$", "", rem_instance)
+        gCon.log(f"I have obtained {server_root} as server")
 
-        if (rem_instance_host == 'localhost'):
-            scheme = 'http'
-        else:
-            scheme = 'https'
-
-        actor_query = f"{scheme}://{rem_instance}/.well-known/webfinger?\
+        actor_query = f"https://{rem_instance}/.well-known/webfinger?\
 resource=acct:{actor_instance}"
 
         actor_res = AsyncGetReq(actor_query)
@@ -108,9 +112,6 @@ resource=acct:{actor_instance}"
 
         if (href_user is None):
             raise AdelphosException("What? I cannot communicate to this actor")
-
-        #actor_uri = actor_ob['links'][0]['href']
-        # Now I can build the actor from the uri.
 
         # create the parsed key
         key_parsed = urlparse(href_user)

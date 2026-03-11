@@ -16,6 +16,8 @@
 import asyncio
 from abc import ABC, abstractmethod
 from app.logging import gCon
+from urllib.parse import urlsplit
+import re
 
 
 # the base class for all the requests in Adelphos.
@@ -27,7 +29,15 @@ class AsyncRequestBase(ABC):
     # condition.
     def __init__(self, url):
 
-        self._url = url
+        u = urlsplit(url)
+
+        if ((re.match('localhost', u.netloc)) or
+            (re.match('127.0.0.1', u.netloc))):
+            gCon.log("Asking localhost, I change to http")
+            new_u = u._replace(scheme = 'http')
+            self._url = new_u.geturl()
+        else:
+            self._url = url
 
 
     @abstractmethod

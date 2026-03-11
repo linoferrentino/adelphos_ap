@@ -21,6 +21,7 @@ from app.dao.ApActorDto import create_ap_actor
 from app.ap_api.AsyncRequest import AsyncGetReq
 from dataclasses import asdict
 import json
+from app.api.AdelphosException import AdelphosException
 
 # this is the class that holds the logic to query and to
 # instantiate actor DTOs
@@ -50,8 +51,7 @@ class ApActorDao(BaseDao):
         await self.dao.app.async_req_wait(res_key)
 
         if (res_key.status_code != 200):
-            gCon.log(f"Could not fetch the public key {res_key.status_code}")
-            return False
+           raise AdelphosException(f"Could not fetch the public key {res_key.status_code}")
 
         key_ob_text = res_key.text
 
@@ -94,7 +94,10 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
                          preferred_username,
                          pub_key_ob['publicKeyPem'])
 
-        self.store(actor)
+        if (server_dto.server_id == 0):
+            gCon.log("This is a locally defined actor, no store!")
+        else:
+            self.store(actor)
 
         gCon.log(f"Created actor {actor}")
 

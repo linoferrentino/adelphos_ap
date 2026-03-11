@@ -8,7 +8,9 @@
 
 [General]
 
-# this flag is used to relax some security checks. Do not use in production.
+# this flag is used to relax some security checks.
+# It allows the backdoor feature, to login without a security token
+# Do not use in production.
 debug = true
 
 # this is the port which this server uses, usually it is behind a
@@ -19,6 +21,8 @@ port = 8000
 # the instance only in memory.
 db_name = "db1"
 
+# also the private key can be in memory, just type ':memory:' as in the database.
+# Useful for testing.
 private_key = "private_key.pem"
 
 # this is the name of this host resolvable from the outside, it might
@@ -50,27 +54,16 @@ root_password = "$argon2id$v=19$m=65536,t=3,p=4$XGe/4m0i02bBX1g92lsx+g$dGLAmUkdO
 # be later retrieved)
 
 # here the password is in clear, they are test users.
-[[ap_actor]]
+[[demo_users]]
 name = 'john'
 alias = '##aliasjohn.jf'
 password = 'john11'
 
 
-[[ap_actor]]
+[[demo_users]]
 name = 'mary'
 alias = '##aliasmary.mf'
 password = 'mary11'
 
 
-[[currency]]
-name = 'eur'
 
-
-[[tl_line]]
-name = 'tl1'
-alias_from = '##aliasjohn.jf'
-alias_to   = '##aliasmary.mf'
-equity = 12.12
-
-
-# if John and Mary are in the same family I will put them, there is no control.

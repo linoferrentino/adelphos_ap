@@ -15,7 +15,6 @@
 
 
 from .AdelphosApp import get_app
-
 from fastapi.testclient import TestClient
 from app.logging import gCon
 from fastapi.websockets import WebSocket
@@ -37,70 +36,43 @@ adelphos_t1_test =  {"General": {
     "db_name": ":memory:", 
     "private_key": ":memory:", 
     "host":  "localhost:9911", 
-    "root_user": "@john@localhost:5011", 
-    "root_password": "$argon2id$v=19$m=65536,t=3,p=4$QK8nKJOBQX0jU+S9fwJpLw$0wV4hG/ar/uJSlcDd4IV6bqEBLWz+rFLFBpuGiyaPjM"}, 
+    "root_user": "@john_test@localhost:5011", 
+    "root_password": "$argon2id$v=19$m=65536,t=3,p=4$Odkr3o7V+SOVF6Dn5NB8XQ$NX9ZG6tqB4a/hQqEM6hvNnFsJt5VvCjbwuvYEU00f60"
+    }, 
             "demo_users":
-   [{"name": "john", "alias": "##john.jf", "password": "john11"}, 
-    {"name": "mary", "alias": "##mary.mf", "password": "mary11"}]
-}
-
-adelphos_slave_instance =  {"General": {
-    "debug": True, 
-    "port": 8001, 
-    "db_name": ":memory:", 
-    "private_key": ":memory:", 
-    "host":  "localhost:9911", 
-    "root_user": ":local:", 
-    "root_password": "$argon2id$v=19$m=65536,t=3,p=4$QK8nKJOBQX0jU+S9fwJpLw$0wV4hG/ar/uJSlcDd4IV6bqEBLWz+rFLFBpuGiyaPjM"}, 
-            "demo_users":
-   [{"name": "john", "alias": "##john.admins", "password": "john11"}, 
-    {"name": "mary", "alias": "##mary.mf", "password": "mary11"}]
+   [{"name": "alice", "alias": "##alice.af", "password": "alice11"}, 
+    {"name": "bob", "alias": "##bob.bf", "password": "bob11"}]
 }
 
 
-def uvicorn_start_slave():
-    slave_app = get_app('slave_adelphos', None, adelphos_slave_instance)
-    uvicorn.run(slave_app, host="127.0.0.1", port=8001, reload=False)
-
-
-
-#@pytest.mark.asyncio( loop_scope = "session" )
-#@pytest.mark.anyio
-#@pytest.mark.asyncio
-#async def test_ad_2():
-#    server_thread = threading.Thread(target = uvicorn_start_slave, daemon = True)
-#    server_thread.start()
-#    time.sleep(1)
-
-
-#@pytest.mark.anyio
-#async def test_ad_1():
-#@pytest.mark.asyncio
-@pytest.mark.anyio
-async def test_ad_1():
-
-    #server_thread = threading.Thread(target = uvicorn_start_slave, daemon = True)
-    #server_thread.start()
-    #time.sleep(1)
-
+@pytest.fixture(scope = "session")
+def adelphos1():
     client = TestClient(get_app('adelphos_t1', None, adelphos_t1_test))
     with client:
+        yield client
 
-        with client.websocket_connect("/api/ws") as websocket:
-            websocket.send_text('login alias ##john.jf password john11')
-            data = websocket.receive_text()
-            assert re.match('Login OK.*', data) is not None
 
-        with client.websocket_connect("/api/ws") as websocket:
-            websocket.send_text('login alias ##john.jf password john12')
-            data = websocket.receive_text()
-            assert re.match('User error: Invalid username/password', data) is not None
+def test_ad_1(adelphos1):
 
-        #time.sleep(1)
+    with adelphos1.websocket_connect("/api/ws") as websocket:
+        websocket.send_text('login alias ##bob.bf password bob11')
+        data = websocket.receive_text()
+        assert re.match('Login OK.*', data) is not None
 
-        #with client.websocket_connect("/api/ws") as websocket:
-        #    websocket.send_text('backdoor alias ##root.admins password supercippo$88')
-        #    data = websocket.receive_text()
-        #    assert data == 'backdoor OK' 
+
+def test_ad_2(adelphos1):
+
+    with adelphos1.websocket_connect("/api/ws") as websocket:
+        websocket.send_text('login alias ##john.jf password john12')
+        data = websocket.receive_text()
+        assert re.match('User error: Invalid username/password', data) is not None
+
+
+def test_ad_3(adelphos1):
+
+    with adelphos1.websocket_connect("/api/ws") as websocket:
+        websocket.send_text('backdoor alias ##root.admins password super_secret')
+        data = websocket.receive_text()
+        assert data == 'Backdoor OK, you are root' 
 
 

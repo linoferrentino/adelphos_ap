@@ -293,7 +293,7 @@ def make_router(app):
 
         ap_user_match = re.match('acct:(.*?)@(.*)$', resource)
         if (ap_user_match is None):
-            return Response(status_code=404)
+            return Response(status_code=401)
 
         host_rex = ap_user_match.group(2)
         if (host_rex != host):
@@ -323,7 +323,7 @@ def make_router(app):
     @router.get('/users/{username}')
     async def user(username : str):
 
-        gCon.log(f"[red]get {username}[/red]")
+        gCon.log(f"[red]GET {username}[/red]")
 
         user_info = app.ap_user_info(username)
         if (user_info is None):

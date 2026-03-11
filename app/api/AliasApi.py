@@ -127,7 +127,7 @@ in your Mastodon inbox to finalize the login."""
 
         if (family_dto is None):
             gCon.log("there is not a family")
-            raise AdelphosException("Invalid alias/password")
+            raise AdelphosException("Invalid username/password")
 
         #self.gateway.session.family_dto = family_dto
 
@@ -151,14 +151,6 @@ in your Mastodon inbox to finalize the login."""
                 res = ph.verify(alias_dto.password, password)
             except:
                 raise AdelphosException("Invalid username/password")
-
-        #self.gateway.session.alias_dto = alias_dto
-
-        # Now we are here, the alias is authenticated. Is there already a session
-        # for this alias? If yes we try to know if it has expired, if not
-        # we ask the user to force the logout from the other session
-
-        # This maybe later, for now we simply do a memory session
 
         # OK, now we take the ActivityPub actor who is behind this alias
         actor_dto = self.gateway.app.dao.ap_actor_dao.get_from_local_id(
