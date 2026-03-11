@@ -29,6 +29,8 @@ import uvicorn
 
 #
 ## I can have several test instances that speak together.
+
+# note that this session needs to speak to another instance.
 #
 adelphos_t1_test =  {"General": {
     "debug": True, 
@@ -42,6 +44,20 @@ adelphos_t1_test =  {"General": {
             "demo_users":
    [{"name": "alice", "alias": "##alice.af", "password": "alice11"}, 
     {"name": "bob", "alias": "##bob.bf", "password": "bob11"}]
+}
+
+adelphos_slave1 =  {"General": {
+    "debug": True, 
+    "port": 5011, 
+    "db_name": ":memory:", 
+    "private_key": ":memory:", 
+    "host":  "localhost:5011", 
+    "root_user": "@john_test@localhost:5011", 
+    "root_password": "$argon2id$v=19$m=65536,t=3,p=4$Odkr3o7V+SOVF6Dn5NB8XQ$NX9ZG6tqB4a/hQqEM6hvNnFsJt5VvCjbwuvYEU00f60"
+    }, 
+            "demo_users":
+   [{"name": "john_test", "alias": "##john.jf", "password": "john11"}, 
+    {"name": "mary_test", "alias": "##mary.mf", "password": "mary11"}]
 }
 
 
@@ -74,5 +90,34 @@ def test_ad_3(adelphos1):
         websocket.send_text('backdoor alias ##root.admins password super_secret')
         data = websocket.receive_text()
         assert data == 'Backdoor OK, you are root' 
+
+
+# I have to be able to build an activity pub post message in order to test the create
+# alias
+
+
+# I can login as an activity pub to the instance, this is done off-the-grid, as
+# we do not use a documented API
+
+# I should be able to login to the instance as an activity pub user.
+def test_login_ap(adelphos1):
+
+    #ap_mock = adelphos1.app.get_ap_mockup()
+    #ap_user_mock = ap_mock.force_login('alice')
+    #res = ap_user_mock.post_message('hello')
+    #assert res == 'itworks, alice'
+    response = adelphos1.get('/backdoor_api/login')
+    assert response.status_code == 200
+    gCon.rule("-------")
+    gCon.log(response.json)
+    assert response.json() == { 'login' : 'it works, alice' }
+
+
+def atest_create_user(adelphos1):
+
+    # I have to connect to the post route, and give a message to daemon
+    res = adelphos1.post('/users/daemon/inbox', json = { 'msg' : 'hello' })
+
+
 
 

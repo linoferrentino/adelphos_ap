@@ -17,21 +17,34 @@
 from app.logging import gCon
 from app.dao.ApActorDto import create_ap_actor
 from app.consts import API_POINT
+from app.api.ActivityPubGateway import ActivityPubBaseGateway
 
-# then there is the Mockup user
-class MockupUser:
 
-    def post_message():
-        pass
+# then there is the Mockup user, it listens to events in ActivityPub
+class ActivityPubMockupUser(ActivityPubBaseGateway):
+
+
+    def __init__(self, server_dto, actor_dto):
+        self.server_dto = server_dto
+        self.actor_dto = actor_dto
+
+
+    def post_message(self, message):
+        return f'it works, {self.actor_dto.preferred_username}'
+
 
     def clear_messages():
         pass
+
 
     def get_messages():
         pass
 
 
 
+# this ActivityPub object is also a gateway, it gets the POST messages that
+# come from the outside and, if they correspond to real users it will post them
+# in the users's inbox.
 class ActivityPubMockup:
 
 
@@ -48,6 +61,20 @@ class ActivityPubMockup:
         if (ap_actor is None):
             return False
         return True
+
+
+    # called in testing to allow the possibility to login and send real activity pub posts
+    def force_login(self, activity_pub_user):
+        if user_handle := self.users.get(activity_pub_user) is not None:
+            return user_handle
+        # the condition is on the actor.
+        ap_actor = self.app.dao.ap_actor_dao.get_from_preferred_username(0, activity_pub_user)
+        if ap_actor is None:
+            return None
+        ap_server = self.app.dao.ap_server_dao.get_from_id(0)
+        gCon.log(f"forced login of {ap_actor} on {ap_server}")
+        ap_user = ActivityPubMockupUser(ap_server, ap_actor)
+        return ap_user
 
 
     def ap_user_info(self, activity_pub_user):

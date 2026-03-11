@@ -260,15 +260,23 @@ class AdelphosRouter(APIRouter):
         </body>
     </html>
     """
-
-        gCon.log(f"Hello I give to you the html")
         return HTMLResponse(html_string)
-
 
 
 def make_router(app):
 
     router = AdelphosRouter(app)
+
+
+    # I can add a backdoor to test the application (in testing).
+    # You can't call them directly
+    @router.get('/backdoor_api/{cmd}')
+    async def _backdoor_api():
+        ap_mock = app.get_ap_mockup()
+        ap_user_mock = ap_mock.force_login('alice')
+        res = ap_user_mock.post_message('hello')
+        return { 'login' : res }
+
 
     @router.get("/daemon_cli")
     async def daemon_cli_inner():
@@ -353,12 +361,10 @@ def make_router(app):
         }
 
         resp_json = jsonable_encoder(response_ob)
-
         response = JSONResponse(content = resp_json)
-
         response.headers['Content-Type'] = 'application/activity+json'
-
         return response
+
 
     @router.post('/users/{username}/inbox')
     async def user_inbox(username: str, request: Request):

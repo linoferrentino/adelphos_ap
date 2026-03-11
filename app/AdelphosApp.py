@@ -115,6 +115,10 @@ class AdelphosApp(FastAPI):
         return self.ap_mockup.ap_user_exists(activity_pub_user)
 
 
+    def get_ap_mockup(self):
+        return self.ap_mockup 
+
+
     def ap_user_info(self, activity_pub_user):
 
         if (activity_pub_user == USER_ID):

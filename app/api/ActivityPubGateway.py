@@ -40,20 +40,17 @@ import uuid
 
 # this is the object which will process the requests that come from
 # Activity Pub
-class ActivityPubGateway(Gateway):
+class ActivityPubBaseGateway(Gateway):
 
 
-    def __init__(self, app):
+    def __init__(self, app, user):
         super().__init__(app)
+        self.user = user
 
         # the two objects which represent the verified sender of the message
         # (it can also be a bot: another adelphos daemon).
         self.actor_dto = None
         self.server_dto = None
-
-        # I create here the daemon_api: it will register itself, and register
-        # its handlers.
-        self.ap_alias_api = ApAliasApi(self)
 
 
     # check an ActivityPub message using the W3C reccomendations
@@ -206,7 +203,7 @@ class ActivityPubGateway(Gateway):
 
         # the message must be for the ActivityPub daemon
         (mention, rest_of_line) = clean_content.split(" ", 1)
-        if ( mention != f"@{USER_ID}"):
+        if ( mention != f"@{self.user}"):
             gCon.log(f"This is not a message for me. {mention}")
             return (400, None)
 
@@ -238,5 +235,15 @@ class ActivityPubGateway(Gateway):
 
         await post_to_ap_actor(self.app, self.server_dto,
                                self.actor_dto, result)
+
+
+class ActivityPubGateway(ActivityPubBaseGateway):
+
+    
+    def __init__(self, app):
+        super().__init__(app, USER_ID)
+        # I create here the daemon_api: it will register itself, and register
+        # its handlers.
+        self.ap_alias_api = ApAliasApi(self)
 
 
