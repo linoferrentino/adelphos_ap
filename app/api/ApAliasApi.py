@@ -74,6 +74,8 @@ f"family {alias_uri.family} is already existing in this instance")
         alias_dto = alias_dto_create_local(name,
                    actor_id, family_id, password_hashed)
 
+        gCon.log(f"Create alias {name} with pass {password_hashed}")
+
         # OK, let't try to add it to the database
         new_id = self.gateway.app.dao.alias_dao.store(alias_dto)
 

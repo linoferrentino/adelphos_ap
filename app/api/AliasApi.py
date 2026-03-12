@@ -126,7 +126,7 @@ in your Mastodon inbox to finalize the login."""
                 .get_from_local_name(uri.family) 
 
         if (family_dto is None):
-            gCon.log("there is not a family")
+            gCon.log(f"there is not a family {uri.family}")
             raise AdelphosException("Invalid username/password")
 
         #self.gateway.session.family_dto = family_dto

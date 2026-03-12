@@ -144,9 +144,15 @@ class AdelphosApp(FastAPI):
 
         # we have to discover the root actor
         # in another task, because we might be the target!
-        asyncio.create_task(self.create_root_actor())
+        root_user = self.config['General']['root_user']
+        gCon.log(f"Creating root user {root_user} for {self.instance}")
+        if (root_user == ':local:'):
+            gCon.rule("The root user is locally defined")
+        else:
+            #await self.create_root_actor(root_user)
+            asyncio.create_task(self.create_root_actor(root_user))
 
-        gCon.rule("========= COMMIT OF INITIAL DB (minus the root actor) =======")
+        gCon.rule(f"COMMIT OF INITIAL DB (minus the root actor) for {self.instance}")
         self.dao.commit()
 
 
@@ -168,13 +174,8 @@ class AdelphosApp(FastAPI):
         gCon.log("Created the instance")
 
 
-    async def create_root_actor(self):
+    async def create_root_actor(self, root_user):
         
-        root_user = self.config['General']['root_user']
-        gCon.log(f"Creating root user {root_user}")
-        if (root_user == ':local:'):
-            gCon.rule("The root user is locally defined")
-            return
         #gCon.log(f"Will discover root {root_user} after a bit ")
         #await asyncio.sleep(5)
         # here I will get the activity pub object and I will create the root alias
@@ -187,7 +188,7 @@ class AdelphosApp(FastAPI):
         self.ap_gateway.ap_alias_api.create_alias_impl(root_actor.actor_id,
                                                'admins', 'root',
                                                self.config['General']['root_password'])
-        gCon.rule("Commit root user")
+        gCon.rule(f"Commit root user for {self.instance}")
         self.dao.commit()
 
 
@@ -258,7 +259,7 @@ class MasterAdelphosDao:
 
 @asynccontextmanager
 async def lifespan(app: AdelphosApp):
-    gCon.rule("LIFESPAN START")
+    gCon.rule(f"LIFESPAN START {app.instance}")
     app.dao = MasterAdelphosDao(app)
     ses_worker = asyncio.create_task(session_worker(app))
     daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
@@ -268,7 +269,7 @@ async def lifespan(app: AdelphosApp):
     # post init
     gCon.log("Application post initialization start.")
     await app.post_initialization()
-    gCon.rule("App is ready.")
+    gCon.rule(f"App {app.instance} is ready.")
     yield
 
     # no more running, please.

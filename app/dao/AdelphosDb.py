@@ -492,8 +492,8 @@ where {key_name} = {key_val};
 
     def close(self):
         gCon.log("Shut down the database")
-        if (self.mem_db == True):
-            self.dump_database()
+        #if (self.mem_db == True):
+        #    self.dump_database()
         self._conn.close()
 
 
