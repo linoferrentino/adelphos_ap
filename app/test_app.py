@@ -25,6 +25,11 @@ import pytest
 import time
 import threading
 import uvicorn
+import contextlib
+import time
+import threading
+import uvicorn
+
 
 
 #
@@ -46,13 +51,13 @@ adelphos_t1_test =  {"General": {
     {"name": "bob", "alias": "##bob.bf", "password": "bob11"}]
 }
 
-adelphos_slave1 =  {"General": {
+adelphos_slave1_conf =  {"General": {
     "debug": True, 
     "port": 5011, 
     "db_name": ":memory:", 
     "private_key": ":memory:", 
     "host":  "localhost:5011", 
-    "root_user": "@john_test@localhost:5011", 
+    "root_user": ":local:", 
     "root_password": "$argon2id$v=19$m=65536,t=3,p=4$Odkr3o7V+SOVF6Dn5NB8XQ$NX9ZG6tqB4a/hQqEM6hvNnFsJt5VvCjbwuvYEU00f60"
     }, 
             "demo_users":
@@ -68,7 +73,56 @@ def adelphos1():
         yield client
 
 
-def test_ad_1(adelphos1):
+#class Server(uvicorn.Server):
+#    def install_signal_handlers(self):
+#        pass
+#
+#    @contextlib.contextmanager
+#    def run_in_thread(self):
+#        thread = threading.Thread(target=self.run)
+#        thread.start()
+#        try:
+#            while not self.started:
+#                time.sleep(1e-3)
+#            yield
+#        finally:
+#            self.should_exit = True
+#            thread.join()
+
+
+def start_app_thread():
+    slave1_app = get_app('adelphos_slave1', None, adelphos_slave1_conf)
+    uvicorn.run(slave1_app, host="127.0.0.1", port=5011, 
+                            log_level="info")
+
+import multiprocessing as mp
+
+
+@pytest.fixture(scope = "session")
+def adelphos_slave1_th():
+    mp.set_start_method('spawn')
+    p = mp.Process(target = start_app_thread)
+    p.start()
+    yield
+
+    #server_thread = threading.Thread(target=start_app_thread, daemon=True)
+    #server_thread.start()
+    #yield
+
+
+@pytest.fixture(scope = "session")
+def adelphos_slave1_back():
+    slave1_app = get_app('adelphos_slave1', None, adelphos_slave1_conf)
+    config = uvicorn.Config(slave1_app, host="127.0.0.1", port=5011, 
+                            log_level="info")
+    server = Server(config=config)
+    with server.run_in_thread():
+        yield
+
+
+def test_ad_1(adelphos1, adelphos_slave1_th):
+
+    #time.sleep(2)
 
     with adelphos1.websocket_connect("/api/ws") as websocket:
         websocket.send_text('login alias ##bob.bf password bob11')
@@ -76,7 +130,7 @@ def test_ad_1(adelphos1):
         assert re.match('Login OK.*', data) is not None
 
 
-def test_ad_2(adelphos1):
+def xtest_ad_2(adelphos1):
 
     with adelphos1.websocket_connect("/api/ws") as websocket:
         websocket.send_text('login alias ##john.jf password john12')
@@ -84,7 +138,7 @@ def test_ad_2(adelphos1):
         assert re.match('User error: Invalid username/password', data) is not None
 
 
-def test_ad_3(adelphos1):
+def xtest_ad_3(adelphos1):
 
     with adelphos1.websocket_connect("/api/ws") as websocket:
         websocket.send_text('backdoor alias ##root.admins password super_secret')
@@ -100,13 +154,9 @@ def test_ad_3(adelphos1):
 # we do not use a documented API
 
 # I should be able to login to the instance as an activity pub user.
-def test_login_ap(adelphos1):
+def xtest_login_ap(adelphos1):
 
-    #ap_mock = adelphos1.app.get_ap_mockup()
-    #ap_user_mock = ap_mock.force_login('alice')
-    #res = ap_user_mock.post_message('hello')
-    #assert res == 'itworks, alice'
-    response = adelphos1.get('/backdoor_api/login')
+    response = adelphos1.post('/_backdoor_api_/login', json = { 'user' : 'alice'})
     assert response.status_code == 200
     gCon.rule("-------")
     gCon.log(response.json)

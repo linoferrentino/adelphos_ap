@@ -270,10 +270,14 @@ def make_router(app):
 
     # I can add a backdoor to test the application (in testing).
     # You can't call them directly
-    @router.get('/backdoor_api/{cmd}')
-    async def _backdoor_api():
+    @router.post('/_backdoor_api_/{cmd}')
+    async def _backdoor_api(cmd: str, request : Request):
         ap_mock = app.get_ap_mockup()
-        ap_user_mock = ap_mock.force_login('alice')
+        body = await request.body()
+        body_str = body.decode()
+        body_ob = json.loads(body_str)
+        user = body_ob['user']
+        ap_user_mock = ap_mock.force_login(user)
         res = ap_user_mock.post_message('hello')
         return { 'login' : res }
 
