@@ -53,6 +53,13 @@ class ActivityPubMockup:
         self.users = {}
 
 
+    async def proc_cmd(self, cmd, body_ob):
+        user = body_ob['user']
+        ap_user_mock = self.force_login(user)
+        res = ap_user_mock.post_message('hello')
+        return res
+
+
     # queries the db in order to get the answer
     def ap_user_exists(self, activity_pub_user):
         # OK, I have to query the db, the server MUST be zero

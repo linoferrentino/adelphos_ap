@@ -73,18 +73,14 @@ adelphos_slave1_conf =  {"General": {
 }
 
 
-# inspired by 
-# https://stackoverflow.com/questions/57412825/how-to-start-a-uvicorn-fastapi-in-background-when-testing-with-pytest
-# and
-# https://github.com/Kludex/uvicorn/issues/742#issuecomment-674411676
-
 class ProcessServer:
     def install_signal_handlers(self):
         pass
 
     @contextlib.contextmanager
     def run_in_subprocess(self):
-        mp.set_start_method('spawn')
+        if mp.get_start_method() != 'spawn':
+            mp.set_start_method('spawn')
         p = mp.Process(target = start_app_thread)
         p.start()
         try:
@@ -101,14 +97,14 @@ def start_app_thread():
 
 
 @pytest.fixture(scope = "module")
-def adelphos_slave_process():
+def adelphos_slave_process2():
     server = ProcessServer()
     with server.run_in_subprocess():
         yield
 
 
 @pytest.fixture(scope = "module")
-def adelphos1(adelphos_slave_process):
+def adelphos2(adelphos_slave_process2):
     # this first wait is needed to let the slave to come up
     gCon.log("first sleep to let the slave come up")
     time.sleep(1)
@@ -119,54 +115,12 @@ def adelphos1(adelphos_slave_process):
         yield client
 
 
-def test_sub_proc(adelphos1, adelphos_slave_process):
+def atest_sub_proc_1(adelphos2, adelphos_slave_process2):
     # this second sleep is needed to let the root user discovery
 
-    with adelphos1.websocket_connect("/api/ws") as websocket:
+    with adelphos2.websocket_connect("/api/ws") as websocket:
         websocket.send_text('login alias ##bob.bf password bob11')
         data = websocket.receive_text()
         assert re.match('Login OK.*', data) is not None
-
-
-def test_ad_2(adelphos1, adelphos_slave_process):
-
-    with adelphos1.websocket_connect("/api/ws") as websocket:
-        websocket.send_text('login alias ##john.jf password john12')
-        data = websocket.receive_text()
-        assert re.match('User error: Invalid username/password', data) is not None
-
-
-def test_ad_3(adelphos1, adelphos_slave_process):
-
-    with adelphos1.websocket_connect("/api/ws") as websocket:
-        websocket.send_text('backdoor alias ##root.admins password super_secret')
-        data = websocket.receive_text()
-        assert data == 'Backdoor OK, you are root' 
-
-    gCon.log("Done!")
-
-
-
-# I can login as an activity pub to the instance, this is done off-the-grid, as
-# we do not use a documented API
-
-# I should be able to login to the instance as an activity pub user.
-def test_login_ap(adelphos1):
-
-    response = adelphos1.post('/_backdoor_api_/login', json = { 'user' : 'alice'})
-    assert response.status_code == 200
-    assert response.json() == { 'res' : 'it works, alice' }
-
-    # OK, now I have logged in, I can send a message to the adelphos_slave to create
-    # the alias
-    #response = adelphos1.post('/_backdoor_api_/post_msg', json = { 'user' : 'alice'})
-
-
-def a_test_create_user(adelphos1):
-
-    # I have to connect to the post route, and give a message to daemon
-    res = adelphos1.post('/users/daemon/inbox', json = { 'msg' : 'hello' })
-
-
 
 

@@ -62,19 +62,19 @@ class AdelphosApp(FastAPI):
 
 
     # the initialization of adelphos is done in two steps.
-    def __init__(self, **kwargs):
+    def __init__(self, instance, **kwargs):
 
         super().__init__(**kwargs)
+        self.instance = instance
 
 
     # we can init the instance using also a memory configuration,
     # to use in testing.
     # the configuration can be any json which is interpreted.
     # or a configuration file
-    def init_instance(self, instance, config_file, config):
+    def init_instance(self, config_file, config):
 
         self.running = True
-        self.instance = instance
 
         # load the configuration.
         if (config is None):
@@ -346,12 +346,12 @@ def get_app(instance_name, config_file, config):
         exit_err(f"No instance defined and {ADELPHOS_AP_ENV_KEY} variable not defined")
 
     gCon.log(f"Starting Adelphos' instance {instance_name}")
-    app = AdelphosApp(root_path = API_POINT, lifespan = lifespan)
+    app = AdelphosApp(instance_name, root_path = API_POINT, lifespan = lifespan)
 
     router = make_router(app)
     app.include_router(router)
 
-    app.init_instance(instance_name, config_file, config)
+    app.init_instance(config_file, config)
 
     return app
 

@@ -268,18 +268,17 @@ def make_router(app):
     router = AdelphosRouter(app)
 
 
-    # I can add a backdoor to test the application (in testing).
-    # You can't call them directly
-    @router.post('/_backdoor_api_/{cmd}')
-    async def _backdoor_api(cmd: str, request : Request):
-        ap_mock = app.get_ap_mockup()
-        body = await request.body()
-        body_str = body.decode()
-        body_ob = json.loads(body_str)
-        user = body_ob['user']
-        ap_user_mock = ap_mock.force_login(user)
-        res = ap_user_mock.post_message('hello')
-        return { 'login' : res }
+    if re.match("_test_", app.instance):
+        # I can add a backdoor to test the application (in testing).
+        @router.post('/_backdoor_api_/{cmd}')
+        async def _backdoor_api(cmd: str, request : Request):
+            body = await request.body()
+            body_str = body.decode()
+            body_ob = json.loads(body_str)
+            ap_mock = app.get_ap_mockup()
+            # the mock might as well do other async calls
+            res = await ap_mock.proc_cmd(cmd, body_ob)
+            return { 'res' : res }
 
 
     @router.get("/daemon_cli")
