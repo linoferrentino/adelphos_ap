@@ -18,19 +18,29 @@ from app.logging import gCon
 from app.dao.ApActorDto import create_ap_actor
 from app.consts import API_POINT
 from app.api.ActivityPubGateway import ActivityPubBaseGateway
+from app.api.AdelphosException import AdelphosException
 
 
 # then there is the Mockup user, it listens to events in ActivityPub
 class ActivityPubMockupUser(ActivityPubBaseGateway):
 
 
-    def __init__(self, server_dto, actor_dto):
+    def __init__(self, app, server_dto, actor_dto):
+        self.app = app
         self.server_dto = server_dto
         self.actor_dto = actor_dto
 
 
-    def post_message(self, message):
-        return f'it works, {self.actor_dto.preferred_username}'
+    async def post_message(self, recipient, message):
+        # I have to get the mention as the first field of the mention.
+        #(header, body) = message.split(" ", 1)
+        # then I have to change the mention, 
+        #header = header[1:] # remove the initial @
+        #(user_remote, host) = header.split("@", 1)
+        #msg_complete = f"@{user_remote} message"
+        res = await self.app.ap_api.post_to_fediverse_actor(
+                self.actor_dto.preferred_username, recipient, message)
+        return f"posted ok, {self.actor_dto.preferred_username} to {recipient}, {res}"
 
 
     def clear_messages():
@@ -51,13 +61,24 @@ class ActivityPubMockup:
     def __init__(self, app):
         self.app = app
         self.users = {}
+        # Only one user logged for now
+        self.current_logged_user = None
 
 
     async def proc_cmd(self, cmd, body_ob):
-        user = body_ob['user']
-        ap_user_mock = self.force_login(user)
-        res = ap_user_mock.post_message('hello')
-        return res
+
+        match cmd:
+            case 'login':
+                user = body_ob['user']
+                return self.force_login(user)
+            case 'post':
+                if self.current_logged_user is None:
+                    raise AdelphosException('no logged user')
+                recipient = body_ob['recipient']
+                msg = body_ob['msg']
+                return await self.current_logged_user.post_message(recipient, msg)
+            case _:
+                raise AdelphosException(f"invalid test command {cmd}")
 
 
     # queries the db in order to get the answer
@@ -72,7 +93,7 @@ class ActivityPubMockup:
 
     # called in testing to allow the possibility to login and send real activity pub posts
     def force_login(self, activity_pub_user):
-        if user_handle := self.users.get(activity_pub_user) is not None:
+        if (user_handle := self.users.get(activity_pub_user)) is not None:
             return user_handle
         # the condition is on the actor.
         ap_actor = self.app.dao.ap_actor_dao.get_from_preferred_username(0, activity_pub_user)
@@ -80,8 +101,10 @@ class ActivityPubMockup:
             return None
         ap_server = self.app.dao.ap_server_dao.get_from_id(0)
         gCon.log(f"forced login of {ap_actor} on {ap_server}")
-        ap_user = ActivityPubMockupUser(ap_server, ap_actor)
-        return ap_user
+        ap_user = ActivityPubMockupUser(self.app, ap_server, ap_actor)
+        self.users[activity_pub_user] = ap_user
+        self.current_logged_user = ap_user
+        return f'it works, {activity_pub_user}'
 
 
     def ap_user_info(self, activity_pub_user):

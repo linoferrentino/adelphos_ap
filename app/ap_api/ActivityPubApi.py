@@ -17,6 +17,7 @@
 from app.api.AdelphosException import AdelphosException
 from app.logging import gCon
 from app.ap_api.AsyncRequest import AsyncGetReq
+from app.api.OutgressGateway import post_to_ap_actor_from_local_user
 import json
 from urllib.parse import urlparse
 import re
@@ -37,6 +38,26 @@ class ActivityPubApi:
     # the close might be not needed, in any case I could store messages which
     # have not been submitted, yet.
     def close(self):
+        pass
+
+
+    async def post_to_fediverse_actor(self, sender, fediverse_actor_str, msg):
+
+        # First of all I have to discover the receiver
+        (server_rec, actor_rec) = await self.get_or_discover_actor(fediverse_actor_str)
+
+        msg_complete = f"@{actor_rec.preferred_username} {msg}"
+
+        # If I am here I can send the message!
+        res = await post_to_ap_actor_from_local_user(self.app,
+                            sender, server_rec, actor_rec, msg_complete)
+
+        return f"s: {res}"
+
+
+    # this method posts to the fediverse actor a message, the sender is the
+    # local adelphos daemon.
+    async def post_to_fediverse_actor_as_daemon(self, server, actor, msg):
         pass
 
 

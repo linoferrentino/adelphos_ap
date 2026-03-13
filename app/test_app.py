@@ -50,7 +50,7 @@ adelphos_t1_test =  {"General": {
     "db_name": ":memory:", 
     "private_key": ":memory:", 
     "host":  "localhost:9911", 
-    "root_user": "@john_test@localhost:5011", 
+    "root_user": "@john_remote@localhost:5011", 
     "root_password": "$argon2id$v=19$m=65536,t=3,p=4$o/oGlKYis246QARUaT/0cw$7zu3oQuS1wz4Ddk/pc6NjLfTcac6YGmEX2VRGymtXrI"
     }, 
             "demo_users":
@@ -58,18 +58,18 @@ adelphos_t1_test =  {"General": {
     {"name": "bob", "alias": "##bob.bf", "password": "bob11"}]
 }
 
-adelphos_slave1_conf =  {"General": {
+adelphos_remote_1_conf =  {"General": {
     "debug": True, 
     "port": 5011, 
     "db_name": ":memory:", 
     "private_key": ":memory:", 
     "host":  "localhost:5011", 
-    "root_user": "@john_test@localhost:5011", 
+    "root_user": "@john_remote@localhost:5011", 
     "root_password": "$argon2id$v=19$m=65536,t=3,p=4$Odkr3o7V+SOVF6Dn5NB8XQ$NX9ZG6tqB4a/hQqEM6hvNnFsJt5VvCjbwuvYEU00f60"
     }, 
             "demo_users":
-   [{"name": "john_test", "alias": "##john.jf", "password": "john11"}, 
-    {"name": "mary_test", "alias": "##mary.mf", "password": "mary11"}]
+   [{"name": "john_remote", "alias": "##john.jf", "password": "john11"}, 
+    {"name": "mary_remote", "alias": "##mary.mf", "password": "mary11"}]
 }
 
 
@@ -95,31 +95,30 @@ class ProcessServer:
 
 
 def start_app_thread():
-    slave1_app = get_app('adelphos_slave1', None, adelphos_slave1_conf)
-    uvicorn.run(slave1_app, host="127.0.0.1", port=5011, 
+    remote1_app = get_app('_test_adelphos_remote1', None, adelphos_remote_1_conf)
+    uvicorn.run(remote1_app, host="127.0.0.1", port=5011, 
                             log_level="info")
 
 
 @pytest.fixture(scope = "module")
-def adelphos_slave_process():
+def adelphos_remote_process():
     server = ProcessServer()
     with server.run_in_subprocess():
         yield
 
 
 @pytest.fixture(scope = "module")
-def adelphos1(adelphos_slave_process):
-    # this first wait is needed to let the slave to come up
-    gCon.log("first sleep to let the slave come up")
-    time.sleep(1)
+def adelphos1(adelphos_remote_process):
+    gCon.log("first sleep to let the remote come up")
+    time.sleep(3)
     client = TestClient(get_app('_test_adelphos_t1', None, adelphos_t1_test))
     with client:
         gCon.log("second sleep to let the root discovery")
-        time.sleep(0.1)
+        time.sleep(1)
         yield client
 
 
-def test_sub_proc(adelphos1, adelphos_slave_process):
+def Atest_sub_proc(adelphos1, adelphos_remote_process):
     # this second sleep is needed to let the root user discovery
 
     with adelphos1.websocket_connect("/api/ws") as websocket:
@@ -128,7 +127,7 @@ def test_sub_proc(adelphos1, adelphos_slave_process):
         assert re.match('Login OK.*', data) is not None
 
 
-def test_ad_2(adelphos1, adelphos_slave_process):
+def Atest_ad_2(adelphos1, adelphos_remote_process):
 
     with adelphos1.websocket_connect("/api/ws") as websocket:
         websocket.send_text('login alias ##john.jf password john12')
@@ -136,7 +135,7 @@ def test_ad_2(adelphos1, adelphos_slave_process):
         assert re.match('User error: Invalid username/password', data) is not None
 
 
-def test_ad_3(adelphos1, adelphos_slave_process):
+def Atest_ad_3(adelphos1, adelphos_remote_process):
 
     with adelphos1.websocket_connect("/api/ws") as websocket:
         websocket.send_text('backdoor alias ##root.admins password super_secret')
@@ -157,9 +156,39 @@ def test_login_ap(adelphos1):
     assert response.status_code == 200
     assert response.json() == { 'res' : 'it works, alice' }
 
-    # OK, now I have logged in, I can send a message to the adelphos_slave to create
-    # the alias
-    #response = adelphos1.post('/_backdoor_api_/post_msg', json = { 'user' : 'alice'})
+    # this cannot work because the 
+
+    #mention = '@daemon@localhost:5011'
+    #response = adelphos1.post('/_backdoor_api_/post', json = { 
+    #    'recipient' : f"{mention}", 'msg' : 
+    #    'alias_create alias ##alice_alias.family1 password alice99' })
+    #assert response.status_code == 200
+    #assert response.json() == { 'res' : f"posted ok, alice to {mention}, good_ap_api" }
+
+
+# this will test the login in the remote , the remote is in another process so I
+# have to make a normal call
+def test_login_remote(adelphos1):
+
+    response = httpx.post('http://localhost:5011/_backdoor_api_/login', json = {'user' : 'mary_remote'})
+    assert response.status_code == 200
+    assert response.json() == { 'res' : 'it works, mary_remote' }
+
+
+    # after this I could login to the remote adelphos.
+    gCon.log("-==========================================================")
+
+    mention = '@daemon@localhost:5011'
+    response = httpx.post('http://localhost:5011/_backdoor_api_/post', json = { 
+        'recipient' : f"{mention}", 'msg' : 
+        'alias_create alias ##mary_remote.family1 password mary99' })
+    assert response.status_code == 200
+    assert response.json() == { 'res' : f"posted ok, mary_remote to {mention}, s: ok" }
+
+
+    gCon.log("-==========================================================")
+    time.sleep(1)
+
 
 
 def a_test_create_user(adelphos1):

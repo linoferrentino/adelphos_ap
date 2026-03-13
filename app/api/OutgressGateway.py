@@ -19,35 +19,35 @@ import re
 
 
 async def post_response(ctx):
-
-    msg = ctx.answer_txt
-
-    return await post_response_inbox(ctx, ctx.actor_dto, ctx.server_dto, msg)
+    raise Exception("Not done now")
 
 
 async def post_daemon_req(ctx):
-
-    msg = ctx.query_txt 
-
-    return await post_response_inbox(ctx, ctx.daemon_dto,
-                                     ctx.daemon_server_dto, msg)
+    raise Exception("Not done now")
 
 
-async def post_response_inbox(ctx, actor, server, msg):
-    return await post_response_inbox_impl(ctx, ctx.server_dto.host_name,
-                                          ctx.actor_dto.user_path,
-                                          ctx.actor_dto.inbox_path, msg)
-
-
+# this will be deprecated soon.
 async def post_to_ap_actor(app, server_dto, actor_dto, message):
-    return await post_response_inbox_impl(app, server_dto.host_name, 
+    return await post_response_inbox_impl(app, USER_ID, server_dto.host_name, 
+                                          actor_dto.user_path,
+                                          actor_dto.inbox_path, message)
+
+
+# the sender must be a locally defined actor, (in testing)
+# this fake actor will have the private key of the application
+async def post_to_ap_actor_from_local_user(
+        app, sender, server_dto, actor_dto, message):
+    return await post_response_inbox_impl(app, USER_ID, server_dto.host_name, 
                                           actor_dto.user_path,
                                           actor_dto.inbox_path, message)
 
 
 # we can pass messages to other inboxes, for example a daemon inbox 
-async def post_response_inbox_impl(app, host_name, user_path, inbox_path, msg):
+async def post_response_inbox_impl(app, sender,
+                                   host_name, user_path, inbox_path, msg):
 
+
+    gCon.log(f"Sending to {host_name} user {user_path} from {sender}")
 
     actor_uri = f"https://{host_name}{user_path}"
     inbox_uri = f"https://{host_name}{inbox_path}"
@@ -60,7 +60,9 @@ async def post_response_inbox_impl(app, host_name, user_path, inbox_path, msg):
     host = app.get_local_host()
     host_api = host + API_POINT
 
-    sender_url = f"https://{host_api}/users/{USER_ID}"
+    gCon.log(f"Apparently my host is {host}")
+
+    sender_url = f"https://{host_api}/users/{sender}"
     sender_key = f"{sender_url}#main-key"
 
     current_date = datetime.now().strftime(
@@ -114,6 +116,8 @@ async def post_response_inbox_impl(app, host_name, user_path, inbox_path, msg):
     gCon.log(f"{new_message}")
     post_res  = AsyncPostReq(inbox_uri, headers, new_message)
     await app.async_req_push(post_res)
+    # TODO take the push status code
+    return "ok" 
 
 
 

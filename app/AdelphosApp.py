@@ -78,7 +78,7 @@ class AdelphosApp(FastAPI):
 
         # load the configuration.
         if (config is None):
-            self.config = load_conf(instance, config_file)
+            self.config = load_conf(self.instance, config_file)
         else:
             self.config = config
 
@@ -221,6 +221,7 @@ class AdelphosApp(FastAPI):
                 await ar._cond.wait()
 
         gCon.log(f"got result {ar.status_code} in client request!")
+        return ar.status_code
 
 
 # A simple container for all the DAOs in the system
