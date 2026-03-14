@@ -110,11 +110,11 @@ def adelphos_remote_process():
 @pytest.fixture(scope = "module")
 def adelphos1(adelphos_remote_process):
     gCon.log("first sleep to let the remote come up")
-    time.sleep(3)
+    time.sleep(1)
     client = TestClient(get_app('_test_adelphos_t1', None, adelphos_t1_test))
     with client:
         gCon.log("second sleep to let the root discovery")
-        time.sleep(1)
+        time.sleep(0.5)
         yield client
 
 
@@ -156,14 +156,9 @@ def test_login_ap(adelphos1):
     assert response.status_code == 200
     assert response.json() == { 'res' : 'it works, alice' }
 
-    # this cannot work because the 
+    # I cannot send here a post message because the recipient will fetch from
+    # me the private key and this is not possible because I am not really a server.
 
-    #mention = '@daemon@localhost:5011'
-    #response = adelphos1.post('/_backdoor_api_/post', json = { 
-    #    'recipient' : f"{mention}", 'msg' : 
-    #    'alias_create alias ##alice_alias.family1 password alice99' })
-    #assert response.status_code == 200
-    #assert response.json() == { 'res' : f"posted ok, alice to {mention}, good_ap_api" }
 
 
 # this will test the login in the remote , the remote is in another process so I
@@ -186,8 +181,11 @@ def test_login_remote(adelphos1):
     assert response.json() == { 'res' : f"posted ok, mary_remote to {mention}, s: ok" }
 
 
-    gCon.log("-==========================================================")
-    time.sleep(1)
+    # OK, now if I log in to the activity pub I should see my message.
+    gCon.log("Waiting 3 seconds to get the posted message")
+    time.sleep(3)
+
+
 
 
 

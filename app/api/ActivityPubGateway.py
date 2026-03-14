@@ -20,6 +20,7 @@ from app.api.ApAliasApi import ApAliasApi
 from app.api.Gateway import Gateway
 from app.consts import API_POINT
 from app.consts import USER_ID
+from app.consts import DAEMON_ID
 from app.dao.AliasDto import AliasDto
 from app.logging import gCon
 from cryptography.hazmat.backends import default_backend as crypto_default_backend
@@ -36,6 +37,7 @@ import hashlib
 import json
 import re
 import uuid
+from abc import abstractmethod
 
 
 # this is the object which will process the requests that come from
@@ -43,9 +45,8 @@ import uuid
 class ActivityPubBaseGateway(Gateway):
 
 
-    def __init__(self, app, user):
+    def __init__(self, app):
         super().__init__(app)
-        self.user = user
 
         # the two objects which represent the verified sender of the message
         # (it can also be a bot: another adelphos daemon).
@@ -203,9 +204,17 @@ class ActivityPubBaseGateway(Gateway):
 
         # the message must be for the ActivityPub daemon
         (mention, rest_of_line) = clean_content.split(" ", 1)
-        if ( mention != f"@{self.user}"):
-            gCon.log(f"This is not a message for me. {mention}")
+        if mention[0] != '@':
+            gCon.log(f"Malformed mention {mention}")
             return (400, None)
+        mention = mention[1:]
+        if self.ap_user_exists(mention) == False:
+            gCon.log(f"User not found in this instance {mention}")
+            return (404, None)
+
+        #if ( mention != f"@{self.user}"):
+        #    gCon.log(f"This is not a message for me. Got: {mention}")
+        #    return (400, None)
 
         ob_type = body_ob['type']
 
@@ -229,21 +238,36 @@ class ActivityPubBaseGateway(Gateway):
         return (202, rest_of_line)
 
 
+    # this method is redefined in the MockupGateway which will accept posted
+    # messages for the users.
+    @abstractmethod
+    def ap_user_exists(self, activity_pub_user):
+        return False
+
+
     # here the outgress result, in our case it will post the message to the
     # user's inbox who has made the request.
     async def outgress_result(self, result):
 
-        await post_to_ap_actor(self.app, self.server_dto,
-                               self.actor_dto, result)
+        #await post_to_ap_actor(self.app, self.server_dto,
+        #                       self.actor_dto, result)
+        await self.app.ap_api.post_to_fediverse_actor_as_daemon(
+                self.server_dto, self.actor_dto, result)
 
 
 class ActivityPubGateway(ActivityPubBaseGateway):
 
     
     def __init__(self, app):
-        super().__init__(app, USER_ID)
+        super().__init__(app)
         # I create here the daemon_api: it will register itself, and register
         # its handlers.
         self.ap_alias_api = ApAliasApi(self)
+
+
+    def ap_user_exists(self, activity_pub_user):
+        if activity_pub_user == DAEMON_ID:
+            return True
+        return False
 
 

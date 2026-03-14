@@ -1,7 +1,9 @@
 # Simple constants file
 
 
+# this will be deprecated.
 USER_ID = "daemon"
+DAEMON_ID = "daemon"
 
 # this env variable is used to get the name of the instance.
 ADELPHOS_AP_ENV_KEY = "ADELPHOS_AP_INSTANCE"

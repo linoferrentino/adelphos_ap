@@ -296,10 +296,7 @@ async def _dequeue_requests_or_wait_lock(session, app: AdelphosApp):
     while (len(app.requests) != 0):
         req = app.requests.pop()
         asyncio.create_task(req.async_req(session))
-
-    gCon.log("No requests, I wait")
     await app.cond.wait()
-    gCon.log("woken up!")
 
 
 async def daemon_bg_cycle(app: AdelphosApp):

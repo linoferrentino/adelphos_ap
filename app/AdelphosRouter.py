@@ -267,8 +267,10 @@ def make_router(app):
 
     router = AdelphosRouter(app)
 
+    test_instance = re.match("_test_", app.instance) is not None
 
-    if re.match("_test_", app.instance):
+
+    if test_instance:
         # I can add a backdoor to test the application (in testing).
         @router.post('/_backdoor_api_/{cmd}')
         async def _backdoor_api(cmd: str, request : Request):
@@ -386,6 +388,12 @@ def make_router(app):
 
             # the result code is given immediately, but the message is processed
             # asynchronously
+        elif test_instance:
+
+            # the message is not for the daemon, it might be for some test users
+            # that I have .
+            res_code = await app.ap_mockup.new_request(request)
+
             
         return Response(status_code = res_code)
 

@@ -37,9 +37,10 @@ async def post_to_ap_actor(app, server_dto, actor_dto, message):
 # this fake actor will have the private key of the application
 async def post_to_ap_actor_from_local_user(
         app, sender, server_dto, actor_dto, message):
-    return await post_response_inbox_impl(app, USER_ID, server_dto.host_name, 
+    msg_complete = f"@{actor_dto.preferred_username} {message}"
+    return await post_response_inbox_impl(app, sender, server_dto.host_name, 
                                           actor_dto.user_path,
-                                          actor_dto.inbox_path, message)
+                                          actor_dto.inbox_path, msg_complete)
 
 
 # we can pass messages to other inboxes, for example a daemon inbox 

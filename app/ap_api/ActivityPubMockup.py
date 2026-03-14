@@ -19,10 +19,11 @@ from app.dao.ApActorDto import create_ap_actor
 from app.consts import API_POINT
 from app.api.ActivityPubGateway import ActivityPubBaseGateway
 from app.api.AdelphosException import AdelphosException
+import time
 
 
 # then there is the Mockup user, it listens to events in ActivityPub
-class ActivityPubMockupUser(ActivityPubBaseGateway):
+class ActivityPubMockupUser:
 
 
     def __init__(self, app, server_dto, actor_dto):
@@ -32,12 +33,7 @@ class ActivityPubMockupUser(ActivityPubBaseGateway):
 
 
     async def post_message(self, recipient, message):
-        # I have to get the mention as the first field of the mention.
-        #(header, body) = message.split(" ", 1)
-        # then I have to change the mention, 
-        #header = header[1:] # remove the initial @
-        #(user_remote, host) = header.split("@", 1)
-        #msg_complete = f"@{user_remote} message"
+        gCon.log(f"will post on behalf as {self.actor_dto.preferred_username}")
         res = await self.app.ap_api.post_to_fediverse_actor(
                 self.actor_dto.preferred_username, recipient, message)
         return f"posted ok, {self.actor_dto.preferred_username} to {recipient}, {res}"
@@ -55,7 +51,7 @@ class ActivityPubMockupUser(ActivityPubBaseGateway):
 # this ActivityPub object is also a gateway, it gets the POST messages that
 # come from the outside and, if they correspond to real users it will post them
 # in the users's inbox.
-class ActivityPubMockup:
+class ActivityPubMockup(ActivityPubBaseGateway):
 
 
     def __init__(self, app):
@@ -83,12 +79,20 @@ class ActivityPubMockup:
 
     # queries the db in order to get the answer
     def ap_user_exists(self, activity_pub_user):
-        # OK, I have to query the db, the server MUST be zero
-        ap_actor = self.app.dao.ap_actor_dao.get_from_preferred_username(0, activity_pub_user)
+        # OK, I have to query the db, the server MUST be zero, I only
+        # accept activities for local users.
+        ap_actor = self.app.dao.ap_actor_dao.get_from_preferred_username(0,
+                              activity_pub_user)
         gCon.log(f"Obtained actor {ap_actor}")
         if (ap_actor is None):
             return False
         return True
+
+
+    # override from Gateway
+    async def proc_request(self, req_str):
+        gCon.log(f"Will process the request {req_str}")
+
 
 
     # called in testing to allow the possibility to login and send real activity pub posts
