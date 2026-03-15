@@ -154,7 +154,7 @@ def test_login_ap(adelphos1):
 
     response = adelphos1.post('/_backdoor_api_/login', json = { 'user' : 'alice'})
     assert response.status_code == 200
-    assert response.json() == { 'res' : 'it works, alice' }
+    assert response.json() == { 'res' : 0 }
 
     # I cannot send here a post message because the recipient will fetch from
     # me the private key and this is not possible because I am not really a server.
@@ -167,7 +167,7 @@ def test_login_remote(adelphos1):
 
     response = httpx.post('http://localhost:5011/_backdoor_api_/login', json = {'user' : 'mary_remote'})
     assert response.status_code == 200
-    assert response.json() == { 'res' : 'it works, mary_remote' }
+    assert response.json() == { 'res' : 0 }
 
 
     # after this I could login to the remote adelphos.
@@ -178,15 +178,17 @@ def test_login_remote(adelphos1):
         'recipient' : f"{mention}", 'msg' : 
         'alias_create alias ##mary_remote.family1 password mary99' })
     assert response.status_code == 200
-    assert response.json() == { 'res' : f"posted ok, mary_remote to {mention}, s: ok" }
+    assert response.json() == { 'res' : 0 }
 
+    # sleep a little to let the server get the message
+    time.sleep(0.5)
 
-    # OK, now if I log in to the activity pub I should see my message.
-    gCon.log("Waiting 3 seconds to get the posted message")
-    time.sleep(3)
-
-
-
+    # now I read the unread messages.
+    response = httpx.post('http://localhost:5011/_backdoor_api_/get_unread_messages', 
+                          json = { 'how_many' : 1})
+    assert response.status_code == 200
+    assert response.json() == { 'res' : 
+      [ 'Created alias ##mary_remote.family1 successfully. You can login, now.'] }
 
 
 def a_test_create_user(adelphos1):

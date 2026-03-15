@@ -280,6 +280,7 @@ def make_router(app):
             ap_mock = app.get_ap_mockup()
             # the mock might as well do other async calls
             res = await ap_mock.proc_cmd(cmd, body_ob)
+            gCon.log(f"===================================== {res}")
             return { 'res' : res }
 
 

@@ -38,7 +38,7 @@ async def post_to_ap_actor(app, server_dto, actor_dto, message):
 async def post_to_ap_actor_from_local_user(
         app, sender, server_dto, actor_dto, message):
     msg_complete = f"@{actor_dto.preferred_username} {message}"
-    return await post_response_inbox_impl(app, sender, server_dto.host_name, 
+    await post_response_inbox_impl(app, sender, server_dto.host_name, 
                                           actor_dto.user_path,
                                           actor_dto.inbox_path, msg_complete)
 
@@ -117,8 +117,6 @@ async def post_response_inbox_impl(app, sender,
     gCon.log(f"{new_message}")
     post_res  = AsyncPostReq(inbox_uri, headers, new_message)
     await app.async_req_push(post_res)
-    # TODO take the push status code
-    return "ok" 
 
 
 

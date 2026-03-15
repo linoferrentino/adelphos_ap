@@ -202,13 +202,14 @@ class ActivityPubBaseGateway(Gateway):
         gCon.log(f"For: url {request.url}")
         gCon.log(f"Message: [yellow]{clean_content}[/yellow]")
 
-        # the message must be for the ActivityPub daemon
+        # the message can be for the daemon or for one of the users
+        # defined in the test instsance.
         (mention, rest_of_line) = clean_content.split(" ", 1)
         if mention[0] != '@':
             gCon.log(f"Malformed mention {mention}")
             return (400, None)
         mention = mention[1:]
-        if self.ap_user_exists(mention) == False:
+        if self.select_user_inbox(mention) == False:
             gCon.log(f"User not found in this instance {mention}")
             return (404, None)
 
@@ -241,7 +242,7 @@ class ActivityPubBaseGateway(Gateway):
     # this method is redefined in the MockupGateway which will accept posted
     # messages for the users.
     @abstractmethod
-    def ap_user_exists(self, activity_pub_user):
+    def select_user_inbox(self, activity_pub_user):
         return False
 
 
@@ -265,7 +266,7 @@ class ActivityPubGateway(ActivityPubBaseGateway):
         self.ap_alias_api = ApAliasApi(self)
 
 
-    def ap_user_exists(self, activity_pub_user):
+    def select_user_inbox(self, activity_pub_user):
         if activity_pub_user == DAEMON_ID:
             return True
         return False

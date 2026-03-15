@@ -48,18 +48,15 @@ class ActivityPubApi:
         (server_rec, actor_rec) = await self.get_or_discover_actor(fediverse_actor_str)
 
         # If I am here I can send the message!
-        res = await post_to_ap_actor_from_local_user(self.app,
+        await post_to_ap_actor_from_local_user(self.app,
                             sender, server_rec, actor_rec, msg)
-
-        return f"s: {res}"
 
 
     # this method posts to the fediverse actor a message, the sender is the
     # local adelphos daemon, the recipient is already discovered.
     async def post_to_fediverse_actor_as_daemon(self, server, actor, msg):
-        res = await post_to_ap_actor_from_local_user(self.app,
+        await post_to_ap_actor_from_local_user(self.app,
                             DAEMON_ID, server, actor, msg)
-        return f"s: {res}"
 
 
     # this function will fetch the Fediverse in order to translate a string like
