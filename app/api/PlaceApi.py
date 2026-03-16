@@ -23,7 +23,7 @@ class PlaceApi:
 
 
     # Here I can create a place.
-    def create_place_handler():
+    def _hndl_create_place(self, gateway):
         pass
 
 
@@ -31,3 +31,10 @@ class PlaceApi:
 
 
     # where can I buy an object? Make a routing?
+
+
+
+# here the handlers for this API
+HANDLERS = {
+     'create_place' : PlaceApi._hndl_create_place
+}

@@ -26,42 +26,6 @@ from app.dao.FamilyDto import family_dto_create_local
 from app.dao.AliasDto import alias_dto_create_local
 
 
-
-
-# This can be "myself" in the context, so that we can "speak" to ourselves
-# in the adelphos federated world
-
-# the API is a collection of "verbs".
-# these verbs have for a "subject" an alias and an object can be an
-# external entity.
-
-# for example
-# alias a1 buys object o1 belonging to alias a2
-# in this case the subject is a1, the object is o1 and then there is a
-# complement a2
-
-# this division in subject-verb-object is the core of the adelphos api.
-
-# as in Ancient Greek the subject is in the Nominative case
-# the object is in the Accusative case
-# the complement can be in the Genitive or in the Dative case
-
-# so we have n_alias is the nominative alias
-# n_instance, is the instance where he belongs
-# and so on.
-
-# n_alias is the first object that is instantiated.
-
-# Can we have a family as a subject? Maybe yes. A family can merge
-# with other families to for a group of a superior level.
-
-# But in any case there is a user who has control of the family,
-# we return basically to a user.
-
-# the family cannot act independently, however it might seem that this
-# is the case: for example we might see that a family merges or splits.
-# But in this case the actor is the adelphos instance that does the action.
-
 from app.api.BaseApi import BaseApi
 
 

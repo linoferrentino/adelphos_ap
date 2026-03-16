@@ -157,7 +157,7 @@ create index fd_object_name_idx on fd_object(name);
 # the currency is the base of exchange. In adelphos we do not have a
 # centralized value exchange, the exchange rates are decided by the actor
 # themselves.
-('currency', """
+('fd_currency', """
 create table fd_currency(
 
         local_fk integer primary key references fd_object(local_id),
@@ -165,6 +165,38 @@ create table fd_currency(
         human_value real
 
 );"""),
+
+
+# a `sellable' is any-'thing' that can be sold. Something physical.
+# we are not talking here about goods which are sellable but immaterial like
+# software licenses, online tickets, or something like that
+('fd_sellable', """
+
+        local_fk integer primary key references fd_object(local_id),
+        place_fk integer references fd_place(local_fk),
+        price real,
+        currency_fk integer references fd_currency(local_fk)
+
+ """),
+
+
+('fd_place', """
+create table fd_place(
+
+        local_fk integer primary key references fd_object(local_id),
+        place_type integer,
+        ruler_fk integer references fd_alias(local_fk)
+);"""),
+
+
+('fd_collecting_service', """
+create table fd_collecting_service(
+        place_fk integer references fd_place(local_fk),
+        collector_fk integer references fd_alias(local_fk),
+        currency_fk integer references fd_currency(local_fk),
+        price real,
+        primary key (place_fk, collector_fk, currency_fk)
+) without rowid;"""),
 
 
 # the federated group can have a parent and many children
@@ -232,6 +264,15 @@ create table fd_alias(
  where fda.fd_actor_id = fdl.local_fk;
 
  """),
+
+# this table is only local, an instance is able to process
+# only local objects, other instances, might only do a fetch,
+# but the state is not changeable
+('object_states', """
+ create table object_states (
+      local_fk integer primary key references fd_object(local_id),
+      id_state integer
+ ); """),
 
 
 ]
