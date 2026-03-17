@@ -45,6 +45,7 @@ from httpx import ASGITransport, AsyncClient
 # note that this session needs to speak to another instance.
 #
 adelphos_t1_test =  {"General": {
+    "name" : "_test_adelphos_t1",
     "debug": True, 
     "port": 9911, 
     "db_name": ":memory:", 
@@ -59,6 +60,7 @@ adelphos_t1_test =  {"General": {
 }
 
 adelphos_slave1_conf =  {"General": {
+    "name" : "_test_adelphos_remote1",
     "debug": True, 
     "port": 5011, 
     "db_name": ":memory:", 

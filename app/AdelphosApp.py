@@ -149,7 +149,6 @@ class AdelphosApp(FastAPI):
         if (root_user == ':local:'):
             gCon.rule("The root user is locally defined")
         else:
-            #await self.create_root_actor(root_user)
             asyncio.create_task(self.create_root_actor(root_user))
 
         gCon.rule(f"COMMIT OF INITIAL DB (minus the root actor) for {self.instance}")
@@ -255,7 +254,6 @@ class MasterAdelphosDao:
 
     def rollback(self):
         self.db.rollback()
-
 
 
 @asynccontextmanager

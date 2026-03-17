@@ -33,6 +33,7 @@ import uvicorn
 import asyncio
 #import pytest_asyncio
 import httpx
+from tests.ProcessServer import ProcessServer
 
 import pytest
 #from asgi_lifespan import LifespanManager
@@ -45,6 +46,7 @@ from httpx import ASGITransport, AsyncClient
 # note that this session needs to speak to another instance.
 #
 adelphos_t1_test =  {"General": {
+    "name" : '_test_adelphos_t1',
     "debug": True, 
     "port": 9911, 
     "db_name": ":memory:", 
@@ -59,6 +61,7 @@ adelphos_t1_test =  {"General": {
 }
 
 adelphos_remote_1_conf =  {"General": {
+    "name" : '_test_adelphos_remote1',
     "debug": True, 
     "port": 5011, 
     "db_name": ":memory:", 
@@ -73,37 +76,30 @@ adelphos_remote_1_conf =  {"General": {
 }
 
 
-# inspired by 
-# https://stackoverflow.com/questions/57412825/how-to-start-a-uvicorn-fastapi-in-background-when-testing-with-pytest
-# and
-# https://github.com/Kludex/uvicorn/issues/742#issuecomment-674411676
-
-class ProcessServer:
-    def install_signal_handlers(self):
-        pass
-
-    @contextlib.contextmanager
-    def run_in_subprocess(self):
-        mp.set_start_method('spawn')
-        p = mp.Process(target = start_app_thread)
-        p.start()
-        try:
-            yield
-        finally:
-            p.kill()
-            p.join()
-
-
-def start_app_thread():
-    remote1_app = get_app('_test_adelphos_remote1', None, adelphos_remote_1_conf)
-    uvicorn.run(remote1_app, host="127.0.0.1", port=5011, 
-                            log_level="info")
-
+#class AProcessServer:
+#
+#    @contextlib.contextmanager
+#    def run_in_subprocess(self, instance_conf):
+#        mp.set_start_method('spawn')
+#        p = mp.Process(target = start_adelphos_conf, args = (instance_conf, ))
+#        p.start()
+#        try:
+#            yield
+#        finally:
+#            p.kill()
+#            p.join()
+#
+#
+#def XXstart_adelphos_conf(adelphos_conf):
+#    remote1_app = get_app(adelphos_conf['General']['name'], None, adelphos_conf)
+#    uvicorn.run(remote1_app, host="127.0.0.1", port=int(adelphos_conf['General']['port']), 
+#                            log_level="info")
+#
 
 @pytest.fixture(scope = "module")
 def adelphos_remote_process():
     server = ProcessServer()
-    with server.run_in_subprocess():
+    with server.run_in_subprocess(adelphos_remote_1_conf):
         yield
 
 
@@ -118,7 +114,7 @@ def adelphos1(adelphos_remote_process):
         yield client
 
 
-def Atest_sub_proc(adelphos1, adelphos_remote_process):
+def test_sub_proc(adelphos1, adelphos_remote_process):
     # this second sleep is needed to let the root user discovery
 
     with adelphos1.websocket_connect("/api/ws") as websocket:
@@ -127,7 +123,7 @@ def Atest_sub_proc(adelphos1, adelphos_remote_process):
         assert re.match('Login OK.*', data) is not None
 
 
-def Atest_ad_2(adelphos1, adelphos_remote_process):
+def test_ad_2(adelphos1, adelphos_remote_process):
 
     with adelphos1.websocket_connect("/api/ws") as websocket:
         websocket.send_text('login alias ##john.jf password john12')
@@ -135,7 +131,7 @@ def Atest_ad_2(adelphos1, adelphos_remote_process):
         assert re.match('User error: Invalid username/password', data) is not None
 
 
-def Atest_ad_3(adelphos1, adelphos_remote_process):
+def test_ad_3(adelphos1, adelphos_remote_process):
 
     with adelphos1.websocket_connect("/api/ws") as websocket:
         websocket.send_text('backdoor alias ##root.admins password super_secret')
@@ -190,11 +186,6 @@ def test_login_remote(adelphos1):
     assert response.json() == { 'res' : 
       [ 'Created alias ##mary_remote.family1 successfully. You can login, now.'] }
 
-
-def a_test_create_user(adelphos1):
-
-    # I have to connect to the post route, and give a message to daemon
-    res = adelphos1.post('/users/daemon/inbox', json = { 'msg' : 'hello' })
 
 
 

@@ -132,11 +132,9 @@ create table fd_actor(
 create index fdact_idx ON fd_actor(name);"""),
 
 
-
-
 # this is the base class for all the 'inert' objects in adelphos.  they are
 # created by a federated actor (an alias), and they follow him if he moves.
-# the object has a current holder
+# the object has a current holder, who might pass it.
 ('fd_object', """
 create table fd_object(
     fd_object_id integer primary key,
@@ -325,6 +323,14 @@ create table fd_collecting_service(
  ); """), 
 
 
+# a cash voucher is the receipt that I have given a certain sum to
+# an actor, but in adelphos the receipt is tied to a future object,
+# because the object in adelphos is to exchange goods and services not
+# to acclumulate money.
+# so A gives 30$ to B
+# but a cash voucher is unsensical; because we have the money in the pocket.
+
+
 # the federated group can have a parent and many children
 # it has a boss and a cashier
 # the parent group need not to belong to the same instance
@@ -391,14 +397,26 @@ create table fd_alias(
 
  """),
 
-# this table is only local, an instance is able to process
-# only local objects, other instances, might only do a fetch,
-# but the state is not changeable
-('object_states', """
- create table object_states (
-      local_fk integer primary key references fd_object(local_id),
-      id_state integer
- ); """),
+
+('fd_trust_line', """
+create table fd_trust_line (
+
+        actor_1 integer references fd_actor(fd_actor_id),
+        actor_2 integer references fd_actor(fd_actor_id),
+        currency_exchange_rate real,
+        strength real,
+        interest real
+
+); """),
+
+
+('fd_ticket', """
+
+
+create table fd_ticket (
+    object_fk integer primary key references fd_sellable(local_fk)
+
+    );"""),
 
 
 ]
