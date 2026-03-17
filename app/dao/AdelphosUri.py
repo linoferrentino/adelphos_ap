@@ -71,9 +71,6 @@ from app.logging import gCon
 # this is a place
 # #pl#stadium_north@www.adelphos.it
 
-# this is an item.
-# #ob#used_pc99@www.adelphos.it
-
 
 # This enumeration will list all the types in the federated database
 # with their compact representation (two letters).

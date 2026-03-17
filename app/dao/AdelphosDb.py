@@ -136,13 +136,19 @@ create index fdact_idx ON fd_actor(name);"""),
 
 # this is the base class for all the 'inert' objects in adelphos.  they are
 # created by a federated actor (an alias), and they follow him if he moves.
+# the object has a current holder
 ('fd_object', """
 create table fd_object(
     fd_object_id integer primary key,
     name text,
     creator_fk integer references fd_alias(local_fk) on delete restrict,
+    holder_fk integer references fd_alias(local_fk),
     timestamp text default current_timestamp
  );"""),
+
+# there might be the ``future'' object; this is the object which is
+# used to exchange. A transaction is a transfer of credit and debit and
+# we need to trust the other party.
 
 
 # I must create an index on name, as I will sometimes query on this.
@@ -172,10 +178,12 @@ create table fd_currency(
 # software licenses, online tickets, or something like that
 ('fd_sellable', """
 
+create table fd_sellable(
         local_fk integer primary key references fd_object(local_id),
         place_fk integer references fd_place(local_fk),
         price real,
         currency_fk integer references fd_currency(local_fk)
+        );
 
  """),
 
@@ -189,6 +197,7 @@ create table fd_place(
 );"""),
 
 
+# an object can be in a place, where can be collected.
 ('fd_collecting_service', """
 create table fd_collecting_service(
         place_fk integer references fd_place(local_fk),
@@ -197,6 +206,123 @@ create table fd_collecting_service(
         price real,
         primary key (place_fk, collector_fk, currency_fk)
 ) without rowid;"""),
+
+
+# to finalize a selling I have to make a transaction between two actors
+# the transaction is a passage of a cheque from one actor to another.
+# and AT THE SAME TIME, we have a corresponding passage of a good or service
+# between the same users, the transaction has a date.
+
+# the transaction can happen between two different instances, and how we can do it?
+# the actors themselves agree on the transaction.
+
+# the transaction is another object in adelphos, but it is not in the hierarchy
+# of objects, and it is not federated.
+
+# the transactions are local in each instance. Distributed transactions are handled
+# by the actor themselves, because each transaction is thought to happen between
+# two actors who trust themselves, so there is not a real need of security at
+# this level.
+
+# when the transaction is confirmed it is forgotten.
+
+# the transaction is always balanced. The sum of values from both side is equal.
+
+('ad_transaction', """
+
+ create table ad_transaction(
+
+    transaction_id integer primary key,
+
+    left_to_right_fk integer references fd_object(local_id),
+    right_to_left_fk integer references fd_object(local_id),
+
+    actor_left_fk integer references fd_actor(fd_actor_id),
+    actor_right_fk integer references fd_actor(fd_actor_id),
+
+    state_id integer,
+
+    timestamp text default current_timestamp
+
+ );
+
+
+ """), 
+
+# a cheque is an object that represents an amount of currency which is
+# created by a person and held by another.
+
+# the cheque has a level, this is implicit by the issuer, the creator, however
+# a cheque might also have some components inside.
+# When we obtain a cheque the cashier can ask the issuers to repay it
+('fd_cheque', """
+
+ create table fd_cheque (
+
+        local_fk integer primary key references fd_object(local_id),
+
+        master_fk integer references fd_cheque(local_fk),
+
+        amount real,
+
+        expiry_date text,
+
+        currency_fk integer references fd_currency(local_fk)
+ );
+
+
+ """), 
+
+# a cheque set is a cheque composed of other cheques AT THE SAME LEVEL.
+# this is different from a cheque which is an uplevel version of other sub cheques.
+# in a set we can peer inside.
+# a master cheque, instead, is opaque from the levels outside.
+# a cheque set can have cheques of different currencies.
+
+# it has no any other use, it is not duplicated.
+
+('fd_cheque_set', """
+
+ create table fd_cheque_set (
+
+        local_fk integer primary key references fd_object(local_id)
+
+
+
+ );"""), 
+
+
+
+# as the cheque is a promise to pay money, the future object is a promise
+# to have an object, the object voucher is erased with a real object.
+
+# A has a voucher for object x
+# B has the object x
+
+# B gives the object to A
+# A has not the voucher any more, it is erased.
+
+# A gives a cheque to B, his equity does not change.
+
+# a transaction has a zero sum.
+# ============================
+
+('fd_object_voucher', """
+
+ create table fd_object_voucher(
+
+        local_fk integer primary key references fd_object(local_id)
+ ); """), 
+
+# this is the promise to have a service, like a voucher
+
+('fd_service_voucher', """
+
+ create table fd_service_voucher(
+
+        local_fk integer primary key references fd_object(local_id)
+
+ ); """), 
 
 
 # the federated group can have a parent and many children
