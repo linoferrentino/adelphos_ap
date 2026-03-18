@@ -25,11 +25,19 @@ from app.AdelphosApp import get_app
 # https://github.com/Kludex/uvicorn/issues/742#issuecomment-674411676
 
 
+import pytest
+
+@pytest.fixture(scope = "session", autouse = True)
+def mp_set_start_method():
+    print ("-------------------------------------------- HELLO ")
+    mp.set_start_method('spawn')
+
+
 class ProcessServer:
 
     @contextlib.contextmanager
     def run_in_subprocess(self, instance_conf):
-        mp.set_start_method('spawn')
+        #mp.set_start_method('spawn')
         p = mp.Process(target = start_adelphos_conf, args = (instance_conf, ))
         p.start()
         try:

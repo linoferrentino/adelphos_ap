@@ -190,8 +190,7 @@ create table fd_sellable(
 create table fd_place(
 
         local_fk integer primary key references fd_object(local_id),
-        place_type integer,
-        ruler_fk integer references fd_alias(local_fk)
+        place_type integer
 );"""),
 
 

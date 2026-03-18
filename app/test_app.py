@@ -15,6 +15,7 @@
 
 
 from .AdelphosApp import get_app
+from .AdelphosApp import del_app
 from fastapi.testclient import TestClient
 from app.logging import gCon
 from fastapi.websockets import WebSocket
@@ -112,6 +113,7 @@ def adelphos1(adelphos_remote_process):
         gCon.log("second sleep to let the root discovery")
         time.sleep(0.5)
         yield client
+    del_app()
 
 
 def test_sub_proc(adelphos1, adelphos_remote_process):

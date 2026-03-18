@@ -353,3 +353,9 @@ def get_app(instance_name, config_file, config):
 
 
 
+def del_app():
+    global app
+    if (app is None):
+        return
+    del app
+    app = None
