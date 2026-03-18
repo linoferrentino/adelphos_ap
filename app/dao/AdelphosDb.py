@@ -347,8 +347,6 @@ create table fd_group_family(
              fd_actor(fd_actor_id),
         parent_group_fk integer references fd_group_family(local_fk),
         boss_fk integer null references fd_alias(local_fk),
-        cashier_fk integer references fd_alias(local_fk),
-        judge_fk integer references fd_alias(local_fk),
         currency_fk integer references fd_currency(local_fk),
         equity real,
         level integer
@@ -359,7 +357,7 @@ create table fd_group_family(
 
  create view fd_group_family_ex as select 
  fda.fd_actor_id, fda.name, fda.instance_fk, fda.timestamp,
- fdg.parent_group_fk, fdg.boss_fk, fdg.cashier_fk, fdg.judge_fk,
+ fdg.parent_group_fk, fdg.boss_fk,  
  fdg.currency_fk, fdg.equity, fdg.level
  from fd_actor as fda, fd_group_family as fdg
  where fda.fd_actor_id = fdg.local_fk;
@@ -418,6 +416,23 @@ create table fd_ticket (
 
     );"""),
 
+# A user can have a "duty", "something to do, give, or pay"
+
+('ad_duty', """
+
+
+create table ad_duty(
+
+    duty_id integer primary key,
+    duty_type integer,
+    current_state integer,
+    active_actor_fk integer references fd_alias(local_fk),
+    receiving_actor_fk integer references fd_alias(local_fk),
+    timestamp_created text default current_timestamp,
+    timestamp_done text,
+    timestamp_acked text
+    
+);"""),
 
 ]
 

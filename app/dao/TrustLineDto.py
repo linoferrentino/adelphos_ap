@@ -25,7 +25,7 @@
 # a bond between A and B on level x could be regarded as a bond between A^ and B^, the
 # parent group of A and B, then also of A^^ and B^^, and so on.
 from dataclasses import dataclass
-from app.dao.FdObjectDto import FdObjectDto
+from app.dao.FdObjectDto import FdLineDto
 
 
 # the interest is the amount of money that you will charge to use the trust line,
@@ -36,20 +36,24 @@ from app.dao.FdObjectDto import FdObjectDto
 
 # trust is asymmetric, the two actors may have different risk attitutes.
 
+# the trust line is /ALSO/ a credit line, because in adelphos credit and trust
+# are synonimous.
+
 
 @dataclass
-class TrustLineDto(FdObjectDto)
-
-    alias_1: int
-    alias_2: int
+class TrustLineDto(FdLineDto)
 
     # I cannot have a trust line greater than my equity!
     # The currency is mine, I trust Bob with his currency,
     # I trust Alice with her currency
 
-    currency_fk: int
+    # the exchange rate is 1 in case of trust line between two aliases with
+    # the same currency
     exchange_rate: float
+
     strength: float
+
     interest_1: float
+
     interest_2: float
 

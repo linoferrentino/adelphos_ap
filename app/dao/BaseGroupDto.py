@@ -28,13 +28,8 @@ class BaseGroupDto(FdActorDto):
 
     boss_fk: int
 
-    cashier_fk: int
-
-    judge_fk: int
-
     currency_fk: int 
 
-    # equity and currenct can be set after: now we simply set the name
     equity: float
 
     level: int

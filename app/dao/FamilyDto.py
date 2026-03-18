@@ -39,7 +39,7 @@ def family_dto_create_local(name):
 
     fam_dto = FamilyDto(
             None, name, 0, None, #fd_actor fields
-            None, None, None, None, None, None, 0)
+            None, None, None, None, 0)
 
     return fam_dto
 
