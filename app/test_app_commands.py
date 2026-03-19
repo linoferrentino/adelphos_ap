@@ -52,11 +52,13 @@ adelphos_t2_test =  {"General": {
     "db_name": ":memory:", 
     "private_key": ":memory:", 
     "host":  "localhost:9911", 
-    "root_user": "@john_test@localhost:5011", 
+    "root_user": ":local:", 
+    # the password for alice is dual, one is for her being a normal alias in adelphos,
+    # the other as a super user, the super user does not participate in the transactions
     "root_password": "$argon2id$v=19$m=65536,t=3,p=4$o/oGlKYis246QARUaT/0cw$7zu3oQuS1wz4Ddk/pc6NjLfTcac6YGmEX2VRGymtXrI"
     }, 
-            "demo_users":
-   [{"name": "alice99", "alias": "##alice.af", "password": "alice11"}, 
+            "demo_users": [
+    {"name": "alice99", "alias": "##alice.af", "password": "alice11", "root" : True}, 
     {"name": "bobzz", "alias": "##bob2.bf", "password": "bob22"}]
 }
 
@@ -76,29 +78,6 @@ adelphos_remote2_conf  =  {"General": {
 }
 
 
-#class ProcessServer:
-#    def install_signal_handlers(self):
-#        pass
-#
-#    @contextlib.contextmanager
-#    def run_in_subprocess(self):
-#        if mp.get_start_method() != 'spawn':
-#            mp.set_start_method('spawn')
-#        p = mp.Process(target = start_app_thread)
-#        p.start()
-#        try:
-#            yield
-#        finally:
-#            p.kill()
-#            p.join()
-#
-
-#def start_app_thread():
-#    slave1_app = get_app('adelphos_slave1', None, adelphos_slave1_conf)
-#    uvicorn.run(slave1_app, host="127.0.0.1", port=5011, 
-#                            log_level="info")
-
-
 @pytest.fixture(scope = "module")
 def adelphos_remote2_process():
     server = ProcessServer()
@@ -106,31 +85,38 @@ def adelphos_remote2_process():
         yield
 
 
-@pytest.fixture(scope = "module")
-def adelphos2(adelphos_remote2_process):
-    #def adelphos2():
-    # this first wait is needed to let the slave to come up
-    gCon.log("first sleep to let the slave come up")
-    print ("========================= adelphos2 setup ")
-    time.sleep(1)
-    client = TestClient(get_app('_test_adelphos_t2', None, adelphos_t2_test))
+# this generator will be moved in the test module, this is without wait
+def generator_test_client(instance_conf, must_wait = False):
+
+    if must_wait:
+        gCon.log("first sleep to let the slave come up")
+        time.sleep(1.2)
+    client = TestClient(get_app(instance_conf['General']['name'], None, instance_conf))
     with client:
-        gCon.log("second sleep to let the root discovery")
-        time.sleep(0.1)
+        if must_wait:
+            gCon.log("second sleep to let the root discovery")
+            time.sleep(0.5)
         yield client
-    print ("========================= adelphos 2 teardown")
     del_app()
 
 
-#@pytest.fixture(scope = "session", autouse = True)
-#def mp_set_start_method():
-#    print ("-------------------------------------------- HELLO ")
-#    mp.set_start_method('spawn')
-#
+@pytest.fixture(scope = "module")
+def adelphos2():
+    yield from generator_test_client(adelphos_t2_test)
+ 
 
-#def test_sub_proc_2(adelphos2, adelphos_remote2_process):
+def test_backdoor_local(adelphos2):
+
+    with adelphos2.websocket_connect("/api/ws") as websocket:
+        websocket.send_text('backdoor alias ##root.admins password super_secret')
+        data = websocket.receive_text()
+        assert data == 'Backdoor OK, you are root' 
+
+    gCon.log("Done!")
+
+
+
 def test_sub_proc_2(adelphos2):
-    # this second sleep is needed to let the root user discovery
 
     with adelphos2.websocket_connect("/api/ws") as websocket:
         websocket.send_text('login alias ##bob2.bf password bob22')

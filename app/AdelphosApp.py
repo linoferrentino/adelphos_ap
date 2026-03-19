@@ -175,16 +175,19 @@ class AdelphosApp(FastAPI):
 
     async def create_root_actor(self, root_user):
         
-        #gCon.log(f"Will discover root {root_user} after a bit ")
-        #await asyncio.sleep(5)
         # here I will get the activity pub object and I will create the root alias
         (root_server, root_actor) = await self.ap_api.get_or_discover_actor(root_user, True)
 
         if (root_server is None):
             exit_err(f"Misconfigured root user {root_user}, cannot resolve.")
 
+        self.create_root_actor_impl(root_actor.actor_id)
+
+
+    def create_root_actor_impl(self, actor_id):
+
         # Now I have to create the alias, so I use tha ApAliasApi.
-        self.ap_gateway.ap_alias_api.create_alias_impl(root_actor.actor_id,
+        self.ap_gateway.ap_alias_api.create_alias_impl(actor_id,
                                                'admins', 'root',
                                                self.config['General']['root_password'])
         gCon.rule(f"Commit root user for {self.instance}")

@@ -186,6 +186,10 @@ class ActivityPubMockup(ActivityPubBaseGateway):
             self.app.ap_gateway.ap_alias_api.create_alias_pass(
                     actor_id, demo_user['alias'], demo_user['password'])
 
+            if demo_user.get('root') == True:
+                gCon.log(f"Adding {demo_user} as root, with id {actor_id}")
+                self.app.create_root_actor_impl(actor_id)
+
 
     # creates an actor which sits in the instance (only useful for testing)
     def create_app_actor(self, actor_name, forced_id = None):
