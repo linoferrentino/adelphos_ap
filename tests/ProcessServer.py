@@ -27,10 +27,10 @@ from app.AdelphosApp import get_app
 
 import pytest
 
-@pytest.fixture(scope = "session", autouse = True)
-def mp_set_start_method():
-    print ("-------------------------------------------- HELLO ")
-    mp.set_start_method('spawn')
+#@pytest.fixture(scope = "session", autouse = True)
+#def mp_set_start_method():
+#    print ("-------------------------------------------- HELLO ")
+#    mp.set_start_method('spawn')
 
 
 class ProcessServer:

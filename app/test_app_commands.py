@@ -100,14 +100,14 @@ adelphos_remote2_conf  =  {"General": {
 
 
 @pytest.fixture(scope = "module")
-def adelphos_remote_process():
+def adelphos_remote2_process():
     server = ProcessServer()
     with server.run_in_subprocess(adelphos_remote2_conf):
         yield
 
 
 @pytest.fixture(scope = "module")
-def adelphos2(adelphos_remote_process):
+def adelphos2(adelphos_remote2_process):
     #def adelphos2():
     # this first wait is needed to let the slave to come up
     gCon.log("first sleep to let the slave come up")
@@ -121,13 +121,14 @@ def adelphos2(adelphos_remote_process):
     print ("========================= adelphos 2 teardown")
     del_app()
 
-@pytest.fixture(scope = "session", autouse = True)
-def mp_set_start_method():
-    print ("-------------------------------------------- HELLO ")
-    mp.set_start_method('spawn')
 
+#@pytest.fixture(scope = "session", autouse = True)
+#def mp_set_start_method():
+#    print ("-------------------------------------------- HELLO ")
+#    mp.set_start_method('spawn')
+#
 
-#def test_sub_proc_2(adelphos2, adelphos_remote_process):
+#def test_sub_proc_2(adelphos2, adelphos_remote2_process):
 def test_sub_proc_2(adelphos2):
     # this second sleep is needed to let the root user discovery
 
