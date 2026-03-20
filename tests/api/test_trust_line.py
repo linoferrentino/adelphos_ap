@@ -38,11 +38,12 @@ adelphos_tl_test =  {"General": {
     "db_name": ":memory:", 
     "private_key": ":memory:", 
     "host":  "localhost:9911", 
-    "root_user": "@john_remote@localhost:5012", 
+    #"root_user": "@john_remote@localhost:5012", 
+    "root_user": ":local:", 
     "root_password": "$argon2id$v=19$m=65536,t=3,p=4$o/oGlKYis246QARUaT/0cw$7zu3oQuS1wz4Ddk/pc6NjLfTcac6YGmEX2VRGymtXrI"
     }, 
             "demo_users":
-   [{"name": "alice", "alias": "##alice.af", "password": "alice_tl"}, 
+    [{"name": "alice", "alias": "##alice.af", "password": "alice_tl", "root" : True}, 
     {"name": "bob", "alias": "##bob.bf", "password": "bob_tl"},
     {"name": "carl", "alias": "##carl.cf", "password": "carl_tl"}
     ]
@@ -72,7 +73,8 @@ def adelphos_remote_process_tl():
 
 
 @pytest.fixture(scope = "module")
-def adelphos_tl(adelphos_remote_process_tl):
+#def adelphos_tl(adelphos_remote_process_tl):
+def adelphos_tl():
     yield from tu.generator_test_client(adelphos_tl_test, True)
 
 

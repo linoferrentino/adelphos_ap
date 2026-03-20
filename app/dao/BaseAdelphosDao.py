@@ -18,6 +18,7 @@ from abc import abstractmethod
 from ..logging import gCon
 from dataclasses import asdict
 from app.dao.BaseDao import BaseDao
+from app.api.AdelphosException import AdelphosException
 
 
 # This is the base class for all the objects in the federated
@@ -72,7 +73,7 @@ class BaseAdelphosDao(BaseDao):
     # the URI here is parsed.
     #@abstractmethod
     # if maybe is True we don't complain if the object is not found.
-    async def get_from_uri(uri, maybe = False):
+    async def get_from_uri(self, uri, maybe = False):
 
         # first of all I try to know if this object is present in my db, remote or not
         # this function is not async, because I do not leave the instance.
@@ -81,7 +82,7 @@ class BaseAdelphosDao(BaseDao):
         if (dto is not None):
             return dto
 
-        # I have not found it, if he uri is local this is a not recoverable error
+        # I have not found it, if the uri is local this is a not recoverable error
         local_uri = BaseAdelphosDao._is_local_uri(uri)
 
         if (local_uri == False):

@@ -41,6 +41,9 @@ class TrustLineApi(BaseApi):
         judge = self.gateway.get_param_safe("judge")
         judge_uri = uriparse_type(judge, EAdelphosType.ALIAS_TYPE)
 
+        alias_dto  = await self.gateway.app.dao.alias_dao.\
+                get_from_uri(alias_to_uri)
+
         return f"Trust line created from {alias_to} to {judge}\n\
 They will need to confirm it before it is operational."
 

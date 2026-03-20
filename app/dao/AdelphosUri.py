@@ -237,6 +237,7 @@ def uriparse_type(uri, type_expected):
     uri_ob = uriparse(uri)
     if (uri_ob.obj_type != type_expected):
         raise AdelphosException(f"Expecting {type_expected} found {uri_ob.obj_type}")
+    return uri_ob
 
 
 # this function will parse an URI in adelphos and return the
