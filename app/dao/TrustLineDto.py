@@ -25,7 +25,7 @@
 # a bond between A and B on level x could be regarded as a bond between A^ and B^, the
 # parent group of A and B, then also of A^^ and B^^, and so on.
 from dataclasses import dataclass
-from app.dao.FdObjectDto import FdLineDto
+from app.dao.LineDto import LineDto
 
 
 # the interest is the amount of money that you will charge to use the trust line,
@@ -41,7 +41,7 @@ from app.dao.FdObjectDto import FdLineDto
 
 
 @dataclass
-class TrustLineDto(FdLineDto)
+class TrustLineDto(LineDto)
 
     # I cannot have a trust line greater than my equity!
     # The currency is mine, I trust Bob with his currency,

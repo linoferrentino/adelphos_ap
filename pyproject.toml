@@ -12,3 +12,12 @@ dependencies = [
     "pytest>=9.0.2",
     "websockets>=15.0.1",
 ]
+
+# Source - https://stackoverflow.com/a/50610630
+# Posted by hoefling, modified by community. See post 'Timeline' for change history
+# Retrieved 2026-03-20, License - CC BY-SA 4.0
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]

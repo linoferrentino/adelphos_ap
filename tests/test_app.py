@@ -14,8 +14,8 @@
 # the starting point of the adelphos test
 
 
-from .AdelphosApp import get_app
-from .AdelphosApp import del_app
+from app.AdelphosApp import get_app
+from app.AdelphosApp import del_app
 from fastapi.testclient import TestClient
 from app.logging import gCon
 from fastapi.websockets import WebSocket
@@ -35,6 +35,7 @@ import asyncio
 #import pytest_asyncio
 import httpx
 from tests.ProcessServer import ProcessServer
+import tests.t_utils as tu
 
 import pytest
 #from asgi_lifespan import LifespanManager
@@ -77,26 +78,6 @@ adelphos_remote_1_conf =  {"General": {
 }
 
 
-#class AProcessServer:
-#
-#    @contextlib.contextmanager
-#    def run_in_subprocess(self, instance_conf):
-#        mp.set_start_method('spawn')
-#        p = mp.Process(target = start_adelphos_conf, args = (instance_conf, ))
-#        p.start()
-#        try:
-#            yield
-#        finally:
-#            p.kill()
-#            p.join()
-#
-#
-#def XXstart_adelphos_conf(adelphos_conf):
-#    remote1_app = get_app(adelphos_conf['General']['name'], None, adelphos_conf)
-#    uvicorn.run(remote1_app, host="127.0.0.1", port=int(adelphos_conf['General']['port']), 
-#                            log_level="info")
-#
-
 @pytest.fixture(scope = "module")
 def adelphos_remote_process():
     server = ProcessServer()
@@ -106,14 +87,7 @@ def adelphos_remote_process():
 
 @pytest.fixture(scope = "module")
 def adelphos1(adelphos_remote_process):
-    gCon.log("first sleep to let the remote come up")
-    time.sleep(1)
-    client = TestClient(get_app('_test_adelphos_t1', None, adelphos_t1_test))
-    with client:
-        gCon.log("second sleep to let the root discovery")
-        time.sleep(0.5)
-        yield client
-    del_app()
+    yield from tu.generator_test_client(adelphos_t1_test, True)
 
 
 def test_sub_proc(adelphos1, adelphos_remote_process):

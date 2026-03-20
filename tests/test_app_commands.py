@@ -11,35 +11,20 @@
 #
 ######################################################
 #
-# the starting point of the adelphos test
 
 
-from .AdelphosApp import get_app
-from .AdelphosApp import del_app
+from app.AdelphosApp import get_app
+from app.AdelphosApp import del_app
 from fastapi.testclient import TestClient
 from app.logging import gCon
 from fastapi.websockets import WebSocket
-from contextlib import asynccontextmanager
 import re
 from fastapi import FastAPI
-import multiprocessing as mp
 import pytest
 import time
-import threading
-import uvicorn
-import contextlib
-import time
-import threading
-import uvicorn
-import asyncio
-#import pytest_asyncio
-import httpx
 from tests.ProcessServer import ProcessServer
-#from tests.ProcessServer import mp_set_start_method
-
+import tests.t_utils as tu
 import pytest
-#from asgi_lifespan import LifespanManager
-from httpx import ASGITransport, AsyncClient
 
 
 #
@@ -85,24 +70,10 @@ def adelphos_remote2_process():
         yield
 
 
-# this generator will be moved in the test module, this is without wait
-def generator_test_client(instance_conf, must_wait = False):
-
-    if must_wait:
-        gCon.log("first sleep to let the slave come up")
-        time.sleep(1.2)
-    client = TestClient(get_app(instance_conf['General']['name'], None, instance_conf))
-    with client:
-        if must_wait:
-            gCon.log("second sleep to let the root discovery")
-            time.sleep(0.5)
-        yield client
-    del_app()
-
 
 @pytest.fixture(scope = "module")
 def adelphos2():
-    yield from generator_test_client(adelphos_t2_test)
+    yield from tu.generator_test_client(adelphos_t2_test)
  
 
 def test_backdoor_local(adelphos2):

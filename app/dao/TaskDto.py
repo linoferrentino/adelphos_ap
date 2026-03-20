@@ -15,6 +15,7 @@
 from dataclasses import dataclass
 from app.dao.FdObjectDto import FdObjectDto
 from enum import IntEnum
+from enum import auto
 
 
 # the duty is something that must be done, the duty in adelphos
@@ -35,11 +36,15 @@ from enum import IntEnum
 
 
 class ETaskType(IntEnum):
-    CARRY_OBJECT
-    GIVE_MONEY
-    GIVE_SERVICE
-    GIVE_OBJECT
-    TRANSPORT_PERSON
+    CARRY_OBJECT = auto()
+    GIVE_MONEY = auto()
+    GIVE_SERVICE = auto()
+    GIVE_OBJECT = auto()
+    TRANSPORT_PERSON = auto()
+
+    # these are task which do not have a need to an ack.
+    ACCEPT_TRUST_LINE_AS_PARTNER
+    ACCEPT_TRUST_LINE_AS_JUDGE
 
 
 # carry object: use a carrier_line
