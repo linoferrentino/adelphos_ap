@@ -18,16 +18,34 @@
 
 from app.dao.AdelphosUri import uriparse_type
 from app.dao.AdelphosUri import EAdelphosType
+from app.api.BaseApi import BaseApi
 
-class TrustLineApi:
+from app.dao.AdelphosUri import uriparse
+from app.dao.AdelphosUri import EAdelphosType
 
-    def __init__(self, ctx):
-        self.ctx = ctx
+class TrustLineApi(BaseApi):
+
+
+    def __init__(self, gateway):
+        super().__init__(gateway, HANDLERS)
 
 
     # this function might download information from other adelphos instances
     # so it is async.
-    async def create(self):
+    async def _hndl_tl_create(self):
+
+        # to create a trust line I need at least another alias and a judge.
+        # they might not be in the same instance.
+        alias_to = self.gateway.get_param_safe("alias_to")
+        alias_to_uri = uriparse_type(alias_to, EAdelphosType.ALIAS_TYPE)
+        judge = self.gateway.get_param_safe("judge")
+        judge_uri = uriparse_type(judge, EAdelphosType.ALIAS_TYPE)
+
+        return f"Trust line created from {alias_to} to {judge}\n\
+They will need to confirm it before it is operational."
+
+
+    async def _hndl_tl_create__old(self):
         alias_to = self.ctx.get_param_safe('alias_to')
         alias_uri = uriparse_type(alias, EAdelphosType.ALIAS_TYPE)
 
@@ -39,4 +57,11 @@ class TrustLineApi:
         # is existing and create it. To do.
 
         return f"Creating a trust line to {alias_uri} which is {alias_to_ob}"
+
+
+# here the handlers for this API
+HANDLERS = {
+     'trust_line_create' : TrustLineApi._hndl_tl_create,
+}
+
 

@@ -44,7 +44,7 @@ adelphos_tl_test =  {"General": {
             "demo_users":
    [{"name": "alice", "alias": "##alice.af", "password": "alice_tl"}, 
     {"name": "bob", "alias": "##bob.bf", "password": "bob_tl"},
-    {"name": "carl", "alias": "##carl.bf", "password": "carl_tl"}
+    {"name": "carl", "alias": "##carl.cf", "password": "carl_tl"}
     ]
 }
 
@@ -76,6 +76,20 @@ def adelphos_tl(adelphos_remote_process_tl):
     yield from tu.generator_test_client(adelphos_tl_test, True)
 
 
+def create_trust_line(websocket):
+    websocket.send_text('login alias ##alice.af  password alice_tl')
+    data = websocket.receive_text()
+    assert re.match('Login OK.*', data) is not None
+    # OK, now I have logged in, I can try to create a family
 
-def test_create_trust_line():
-    assert 0 == 0
+    websocket.send_text('trust_line_create alias_to ##bob.bf judge ##carl.cf')
+    data = websocket.receive_text()
+    assert re.match("Trust line created", data) is not None
+
+
+def test_create_trust_line(adelphos_tl):
+
+    # I simulate a user that wants to login
+    with adelphos_tl.websocket_connect("/api/ws") as websocket:
+        create_trust_line(websocket)
+

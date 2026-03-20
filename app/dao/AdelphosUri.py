@@ -156,7 +156,7 @@ def _parse_object_part(object_part, uri_type):
     if (uri_type == EAdelphosType.ALIAS_TYPE):
         if (family is None):
             raise AdelphosException(
-f"An alias must have a family! {alias_match.group(1)} has not one.")
+f"An alias must have a family! {object_part} has not one.")
     else:
         if (family is not None):
             raise AdelphosException(
