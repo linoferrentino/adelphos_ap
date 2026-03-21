@@ -23,12 +23,12 @@ from app.AdelphosApp import del_app
 def generator_test_client(instance_conf, must_wait = False):
 
     if must_wait:
-        gCon.log("first sleep to let the slave come up")
+        #gCon.log("first sleep to let the slave come up")
         time.sleep(1.2)
     client = TestClient(get_app(instance_conf['General']['name'], None, instance_conf))
     with client:
         if must_wait:
-            gCon.log("second sleep to let the root discovery")
+            #gCon.log("second sleep to let the root discovery")
             time.sleep(0.5)
         yield client
     del_app()

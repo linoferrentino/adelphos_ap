@@ -33,7 +33,7 @@ class AsyncRequestBase(ABC):
 
         if ((re.match('localhost', u.netloc)) or
             (re.match('127.0.0.1', u.netloc))):
-            gCon.log("Asking localhost, I change to http")
+            #gCon.log("Asking localhost, I change to http")
             new_u = u._replace(scheme = 'http')
             self._url = new_u.geturl()
         else:
@@ -81,7 +81,7 @@ class AsyncPostReq(AsyncRequestBase):
 
 
     async def async_req(self, session):
-        gCon.log(f"will post to url {self._url}")
+        #gCon.log(f"will post to url {self._url}")
         async with session.post(self._url, headers = self._headers,
                                 json = self._json):
             pass

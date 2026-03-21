@@ -48,7 +48,7 @@ async def post_response_inbox_impl(app, sender,
                                    host_name, user_path, inbox_path, msg):
 
 
-    gCon.log(f"Sending to {host_name} user {user_path} from {sender}")
+    #gCon.log(f"Sending to {host_name} user {user_path} from {sender}")
 
     actor_uri = f"https://{host_name}{user_path}"
     inbox_uri = f"https://{host_name}{inbox_path}"
@@ -61,7 +61,7 @@ async def post_response_inbox_impl(app, sender,
     host = app.get_local_host()
     host_api = host + API_POINT
 
-    gCon.log(f"Apparently my host is {host}")
+    #gCon.log(f"Apparently my host is {host}")
 
     sender_url = f"https://{host_api}/users/{sender}"
     sender_key = f"{sender_url}#main-key"
@@ -113,8 +113,8 @@ async def post_response_inbox_impl(app, sender,
             'Signature': signature_header
             }
 
-    gCon.log(f"just before sending to {inbox_uri}")
-    gCon.log(f"{new_message}")
+    #gCon.log(f"just before sending to {inbox_uri}")
+    #gCon.log(f"{new_message}")
     post_res  = AsyncPostReq(inbox_uri, headers, new_message)
     await app.async_req_push(post_res)
 

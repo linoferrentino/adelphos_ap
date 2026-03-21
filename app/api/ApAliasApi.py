@@ -45,7 +45,7 @@ class ApAliasApi(BaseApi):
         if (alias_uri.is_numeric == True):
             raise AdelphosException("Cannot create a numeric alias")
 
-        gCon.log(f"alias uri created {alias_uri}")
+        #gCon.log(f"alias uri created {alias_uri}")
 
         family_dto = self.gateway.app.dao.family_dao.get_from_local_name(
                 alias_uri.family)
@@ -74,7 +74,7 @@ f"family {alias_uri.family} is already existing in this instance")
         alias_dto = alias_dto_create_local(name,
                    actor_id, family_id, password_hashed)
 
-        gCon.log(f"Create alias {name} with pass {password_hashed}")
+        #gCon.log(f"Create alias {name} with pass {password_hashed}")
 
         # OK, let't try to add it to the database
         new_id = self.gateway.app.dao.alias_dao.store(alias_dto)

@@ -141,7 +141,7 @@ class ClientWs:
                 #data = "are you still there?"
                 continue
 
-            gCon.log(f"received ]{data}[")
+            #gCon.log(f"received ]{data}[")
 
             #await self._handle_cmdline(data)
             # I handle it to the gateway
@@ -160,10 +160,9 @@ class ClientWs:
                 continue
 
             except WebSocketDisconnect as wds:
-
                 # No problem, come another time
-                gCon.log("disconnect")
-
+                #gCon.log("disconnect")
+                pass
 
             # this to catch all other errors, these are bugs :(
             except Exception as ex:
@@ -216,8 +215,9 @@ class ConnHandler:
 
     
     async def stop(self):
+        pass
 
-        gCon.log("I will close the connections")
+        #gCon.log("I will close the connections")
         #wslist = [ ws.websocket for ws in self.clients]
         #broadcast(wslist, "The server is going dow NOW!")
 

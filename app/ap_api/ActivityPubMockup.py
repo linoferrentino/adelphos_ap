@@ -176,18 +176,18 @@ class ActivityPubMockup(ActivityPubBaseGateway):
             # by definition the users belong to my server.
             # they are ``embedded'' in this instance, so they belong to
             # ap_server 'zero'
-            gCon.log(f"I want to create {demo_user}")
+            #gCon.log(f"I want to create {demo_user}")
             # first of all I have to create the actor, the server is our server
             # and his/her key is the application's key.
             actor_id = self.create_app_actor(demo_user['name'])
             # Now I will create the alias.
-            gCon.log(f"The new actor has the id {actor_id}")
+            #gCon.log(f"The new actor has the id {actor_id}")
             # I have to create the alias, using the alias and the password
             self.app.ap_gateway.ap_alias_api.create_alias_pass(
                     actor_id, demo_user['alias'], demo_user['password'])
 
             if demo_user.get('root') == True:
-                gCon.log(f"Adding {demo_user} as root, with id {actor_id}")
+                #gCon.log(f"Adding {demo_user} as root, with id {actor_id}")
                 self.app.create_root_actor_impl(actor_id)
 
 
@@ -204,7 +204,7 @@ class ActivityPubMockup(ActivityPubBaseGateway):
         else:
             actor_id = self.app.dao.ap_actor_dao.store(myself_actor)
 
-        gCon.log(f"Created actor {actor_name} with id {actor_id}")
+        #gCon.log(f"Created actor {actor_name} with id {actor_id}")
         return actor_id
 
 

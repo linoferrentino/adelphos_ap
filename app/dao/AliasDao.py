@@ -24,7 +24,7 @@ class AliasDao(FdActorDao):
 
 
     def __init__(self, dao):
-        super().__init__(dao, "fd_alias_ex", AliasDao)
+        super().__init__(dao, "fd_alias_ex", AliasDto)
 
         # the columns are in the same order as AliasDto
         self.ftbl_col_list = ('actor_fk', 'family_fk', 'password', 'local_fk')
@@ -65,6 +65,6 @@ class AliasDao(FdActorDao):
         dto.local_fk = new_id
 
         self.dao.db.insert_dto_fields("fd_alias", self.ftbl_col_list, dto_as_dict)
-        gCon.log(f"Created new alias {dto}")
+        #gCon.log(f"Created new alias {dto}")
 
 

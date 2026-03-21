@@ -441,7 +441,7 @@ class AdelphosDb:
 
 
     def _create_schema(self, app):
-        gCon.log(f"Creating schema...")
+        #gCon.log(f"Creating schema...")
 
         # I can add the foreign key constraints only without a transaction.
         self._conn.execute("pragma foreign_keys = ON;")
@@ -450,11 +450,11 @@ class AdelphosDb:
         cursor = self._conn.cursor()
 
         for cmd in create_schema_sql:
-            gCon.log(f"Will exec -> {cmd[0]}")
+            #gCon.log(f"Will exec -> {cmd[0]}")
             cursor.execute(cmd[1])
 
         self._conn.commit()
-        gCon.log(f"Schema created.")
+        #gCon.log(f"Schema created.")
 
 
     # for testing I can also create the file in memory
@@ -468,7 +468,7 @@ class AdelphosDb:
 
         if (db_name == ":memory:"):
 
-            gCon.log("I will use the in-memory database")
+            #gCon.log("I will use the in-memory database")
             db_name_complete = db_name
             create_schema = True
             self.mem_db = True
@@ -565,6 +565,15 @@ select {list_sql_fields} from {table_name} where {condition_str}
         row = cur.fetchone()
         cur.close()
         return row
+
+
+    # gets the first row from the sql with the given constructor, None if no row
+    # is present.
+    def get_dto_from_sql(self, sql, params, constructor_dto):
+        row = self.execute_and_fetch_one(sql, params)
+        if (row is None):
+            return None
+        return constructor_dto(*row)
 
 
     def get_full_dto_ex(self, table_name, fields_to_seek, 
@@ -690,7 +699,7 @@ where {key_name} = {key_val};
         
 
     def close(self):
-        gCon.log("Shut down the database")
+        #gCon.log("Shut down the database")
         #if (self.mem_db == True):
         #    self.dump_database()
         self._conn.close()

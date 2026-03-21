@@ -80,7 +80,7 @@ class UserSession:
         # asked me a trust line or something.
         self.token = secrets.token_urlsafe()
         self.session_age = datetime.now()
-        gCon.log(f"Started a new session at {self.session_age}")
+        #gCon.log(f"Started a new session at {self.session_age}")
 
         self.user_state = EUserState.LOGGED_WITHOUT_TOKEN
 

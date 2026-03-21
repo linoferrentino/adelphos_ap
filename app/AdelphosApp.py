@@ -84,7 +84,7 @@ class AdelphosApp(FastAPI):
 
         # load the keys
         key_file = self.config[GENERAL_SECTION][PRIVATE_KEY_FILE_KEY]
-        gCon.log(f"Get private key from {key_file}")
+        #gCon.log(f"Get private key from {key_file}")
         (pub_key, priv_key) = load_keys(key_file)
         self.public_key = pub_key
         self.private_key = priv_key
@@ -145,13 +145,11 @@ class AdelphosApp(FastAPI):
         # we have to discover the root actor
         # in another task, because we might be the target!
         root_user = self.config['General']['root_user']
-        gCon.log(f"Creating root user {root_user} for {self.instance}")
-        if (root_user == ':local:'):
-            gCon.rule("The root user is locally defined")
-        else:
+        #gCon.log(f"Creating root user {root_user} for {self.instance}")
+        if (root_user != ':local:'):
             asyncio.create_task(self.create_root_actor(root_user))
 
-        gCon.rule(f"COMMIT OF INITIAL DB (minus the root actor) for {self.instance}")
+        #gCon.rule(f"COMMIT OF INITIAL DB (minus the root actor) for {self.instance}")
         self.dao.commit()
 
 
@@ -163,14 +161,14 @@ class AdelphosApp(FastAPI):
         myself_server = create_ap_server(host)
         myself_server.server_id = 0
         my_server_id = self.dao.ap_server_dao.store_full_no_ts(myself_server)
-        gCon.log("Created the server")
+        #gCon.log("Created the server")
 
         self.ap_mockup.create_app_actor(USER_ID, 0)
 
         # now create the instance.
         myself_instance = create_ad_instance(0, 1, "Local adelphos instance")
         my_instance_id = self.dao.ad_instance_dao.store_full_no_ts(myself_instance)
-        gCon.log("Created the instance")
+        #gCon.log("Created the instance")
 
 
     async def create_root_actor(self, root_user):
@@ -190,7 +188,7 @@ class AdelphosApp(FastAPI):
         self.ap_gateway.ap_alias_api.create_alias_impl(actor_id,
                                                'admins', 'root',
                                                self.config['General']['root_password'])
-        gCon.rule(f"Commit root user for {self.instance}")
+        #gCon.rule(f"Commit root user for {self.instance}")
         self.dao.commit()
 
 
@@ -231,12 +229,12 @@ class MasterAdelphosDao:
 
 
     def __init__(self, app):
-        gCon.log("Creating the Master DAO, first the connection")
+        #gCon.log("Creating the Master DAO, first the connection")
         self.db = AdelphosDb(app)
         # I take a reference to the application for the configuration
         self.app = app
 
-        gCon.log("Creating here the specialized DAOs")
+        #gCon.log("Creating here the specialized DAOs")
 
         # I create the specialized DAOs
         self.currency_dao = CurrencyDao(self)
@@ -261,7 +259,7 @@ class MasterAdelphosDao:
 
 @asynccontextmanager
 async def lifespan(app: AdelphosApp):
-    gCon.rule(f"LIFESPAN START {app.instance}")
+    #gCon.rule(f"LIFESPAN START {app.instance}")
     app.dao = MasterAdelphosDao(app)
     ses_worker = asyncio.create_task(session_worker(app))
     daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
@@ -269,9 +267,9 @@ async def lifespan(app: AdelphosApp):
     app.ap_api = ActivityPubApi(app)
 
     # post init
-    gCon.log("Application post initialization start.")
+    #gCon.log("Application post initialization start.")
     await app.post_initialization()
-    gCon.rule(f"App {app.instance} is ready.")
+    #gCon.rule(f"App {app.instance} is ready.")
     yield
 
     # no more running, please.
@@ -279,7 +277,7 @@ async def lifespan(app: AdelphosApp):
     # signal the workers to stop 
     async with app.cond:
         app.cond.notify_all()
-    gCon.log("Please wait for adelphos shutdown")
+    #gCon.log("Please wait for adelphos shutdown")
     app.ap_api.close()
     await app.conn_hndl.stop()
     await ses_worker
@@ -313,7 +311,7 @@ async def daemon_bg_cycle(app: AdelphosApp):
                     #gCon.log("Now I can do a cycle")
                     pass
 
-    gCon.log("Daemon quit.")
+    #gCon.log("Daemon quit.")
 
 
 # this is the session worker that holds the session and
@@ -328,7 +326,7 @@ async def session_worker(app: AdelphosApp):
             async with app.cond:
                 await _dequeue_requests_or_wait_lock(session, app)
 
-        gCon.log("Session worker quit.")
+        #gCon.log("Session worker quit.")
                 
 
 # I create here the main application object, singleton
@@ -344,7 +342,7 @@ def get_app(instance_name, config_file, config):
     if (instance_name is None):
         exit_err(f"No instance defined and {ADELPHOS_AP_ENV_KEY} variable not defined")
 
-    gCon.log(f"Starting Adelphos' instance {instance_name}")
+    #gCon.log(f"Starting Adelphos' instance {instance_name}")
     app = AdelphosApp(instance_name, root_path = API_POINT, lifespan = lifespan)
 
     router = make_router(app)

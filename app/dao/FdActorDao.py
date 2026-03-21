@@ -52,25 +52,33 @@ class FdActorDao(BaseAdelphosDao):
         select * from {self.view_name} where fd_actor_id = ? and instance_fk = 0
         """
 
+        # to be implemented
+        assert False
+
         # Now I will try to get the object.
         return None
 
 
     def _try_get_local_human_uri(self, uri):
         sql_get = f"""
-        select * from {self.view_name} where name = ? and instance_fk = 0
+        select * from {self.view_name} where name = :name and instance_fk = 0
         """
-
+        params  = {
+                'name' : uri.name
+                }
+        dto = self.dao.db.get_dto_from_sql(sql_get, params, self.constructor)
+        gCon.log(f"This is the dto {dto}")
+        return dto
 
 
     def store_dict(self, dto, dto_as_dict):
-        gCon.log("Store the fdActor Dao")
+        #gCon.log("Store the fdActor Dao")
 
         # Here I can store the fd_actor table
         new_id = self.dao.db.insert_dto_fields('fd_actor',
                 ('name', 'instance_fk'), dto_as_dict)
         
-        gCon.log(f"FdActorDao new id {new_id}")
+        #gCon.log(f"FdActorDao new id {new_id}")
         dto.fd_actor_id = new_id
         return new_id
 

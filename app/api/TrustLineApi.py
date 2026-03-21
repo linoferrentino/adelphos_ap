@@ -44,8 +44,7 @@ class TrustLineApi(BaseApi):
         alias_dto  = await self.gateway.app.dao.alias_dao.\
                 get_from_uri(alias_to_uri)
 
-        return f"Trust line created from {alias_to} to {judge}\n\
-They will need to confirm it before it is operational."
+        return "Trust line created."
 
 
     async def _hndl_tl_create__old(self):

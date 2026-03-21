@@ -86,7 +86,8 @@ def create_trust_line(websocket):
 
     websocket.send_text('trust_line_create alias_to ##bob.bf judge ##carl.cf')
     data = websocket.receive_text()
-    assert re.match("Trust line created", data) is not None
+    #assert re.match("Trust line created", data) is not None
+    assert data == "Trust line created."
 
 
 def test_create_trust_line(adelphos_tl):

@@ -37,7 +37,7 @@ class Gateway(ABC):
 
     # this message is called by an handler to register its functions.
     def add_handler(self, command_str, other_self, handler):
-        gCon.log(f"Adding handler for: {command_str}")
+        #gCon.log(f"Adding handler for: {command_str}")
         self.handlers[command_str] = (other_self, handler)
 
 
@@ -97,10 +97,10 @@ class Gateway(ABC):
 
         # OK, now I will check if there has been an exception, if not I can commit
         if (self.in_error == False):
-            gCon.rule("[blue]Commit![/blue]")
+            #gCon.rule("[blue]Commit![/blue]")
             self.app.dao.commit()
         else:
-            gCon.rule("[red]Rollback![/red]")
+            #gCon.rule("[red]Rollback![/red]")
             self.app.dao.rollback()
 
         await self.outgress_result(msg_out)

@@ -74,7 +74,7 @@ in your Mastodon inbox to finalize the login."""
     # login from a string.
     async def login_str(self, alias_str, password, force: bool):
         alias_uri = uriparse(alias_str)
-        gCon.log(f"You {alias_uri} want to login! {self}")
+        #gCon.log(f"You {alias_uri} want to login! {self}")
         msg = await self.login(alias_uri, password, force)
         return msg
 
@@ -96,7 +96,7 @@ in your Mastodon inbox to finalize the login."""
         #self.gateway.session.family_dto = family_dto
 
         # the family has a name, the alias has also a nick.
-        gCon.log(f"I have n_family {family_dto}")
+        #gCon.log(f"I have n_family {family_dto}")
 
         # OK, now I have to get the alias
 
@@ -107,7 +107,7 @@ in your Mastodon inbox to finalize the login."""
         if (alias_dto is None):
             raise AdelphosException("Invalid alias/password")
 
-        gCon.log(f"got the alias {alias_dto}, now we verify")
+        #gCon.log(f"got the alias {alias_dto}, now we verify")
 
         if (force == False):
             ph = PasswordHasher()
@@ -123,7 +123,7 @@ in your Mastodon inbox to finalize the login."""
         if (actor_dto is None):
             raise Exception("Bug! there is not the actor corresponding")
 
-        gCon.log(f"I will send the token to {actor_dto}")
+        #gCon.log(f"I will send the token to {actor_dto}")
 
         server_dto = self.gateway.app.dao.ap_server_dao.get_from_id(
                                             actor_dto.server_fk)

@@ -64,7 +64,7 @@ class BaseFractalGroupDao(FdActorDao):
         self.dao.db.insert_dto_fields("fd_group_family",
                 ('local_fk', 'level'), dto_as_dict)
 
-        gCon.log(f"Stored the group family {dto}")
+        #gCon.log(f"Stored the group family {dto}")
         return new_id
 
 
