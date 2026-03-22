@@ -63,13 +63,6 @@ adelphos_remote2_conf  =  {"General": {
 }
 
 
-#@pytest.fixture(scope = "module")
-#def adelphos_remote2_process():
-#    server = ProcessServer()
-#    with server.run_in_subprocess(adelphos_remote2_conf):
-#        yield
-
-
 @pytest.fixture(scope = "module")
 def adelphos2():
     yield from tu.generator_test_client(adelphos_t2_test, False)
@@ -78,7 +71,7 @@ def adelphos2():
 def test_backdoor_local(adelphos2):
 
     with adelphos2.websocket_connect("/api/ws") as websocket:
-        websocket.send_text('backdoor alias ##root.admins password super_secret')
+        websocket.send_text('backdoor password super_secret')
         data = websocket.receive_text()
         assert data == 'Backdoor OK, you are root' 
 

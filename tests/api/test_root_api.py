@@ -51,7 +51,6 @@ def adelphos_root():
     yield from tu.generator_test_client(adelphos_root_api_test, False)
 
 
-
 def test_execute_local_script(adelphos_root):
     # to test the local script first of all I have to open the backdoor.
 

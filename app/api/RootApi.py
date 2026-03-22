@@ -104,26 +104,18 @@ class RootApi(BaseApi):
         return "OK, dump created"
 
 
-    async def _auto_su_handler(self):
+    async def _hndl_push_user(self):
         new_user = self.gateway.get_param_safe('alias')
         gCon.log(f"subsituting the user session with {new_user}")
         return await self.gateway.substitute_user(new_user)
 
 
-    # the function to do an automate command, this too is async,
-    # as we might go in the fediverse.
-    #async def do_automate(self, line):
-    #    # I can parse the command line as if it came from the web socket.
-    #    # the system is asynchronous but single threaded, no worry about concurrency here.
-    #    self.gateway.parse_cmd_line(line)
-    #    gCon.log(f"You want to execute {self.gateway.cmd}")
-    #    gCon.log(f"with these paramters {self.gateway.cmd_dict}")
+    async def _hndl_pop_user(self):
+        pass
 
-    #    match self.gateway.cmd:
-    #        case '_auto_su':
-    #            await self._auto_su_handler()
 
-    #    # the return of the automate command for now it is not important
+    async def _hndl_apmkup_create_user(self):
+        pass
 
 
     @sudo_cmd
@@ -152,8 +144,9 @@ HANDLERS = {
      'sudo_adelphos_deny' : RootApi._hndl_deny_remote_adelphos,
      'sudo_dump_db' : RootApi._hndl_dump_db,
      'sudo_play_script': RootApi._hndl_play_script,
-     'sudo_su': RootApi._auto_su_handler
-
+     'sudo_su_push': RootApi._hndl_push_user,
+     'sudo_su_pop': RootApi._hndl_pop_user,
+     'sudo_apmkup_create_user': RootApi._hndl_apmkup_create_user
 }
 
 

@@ -82,8 +82,8 @@ class EAdelphosType(StrEnum):
     GROUP_TYPE = 'gr'
     OBJECT_TYPE = 'ob'
     PLACE_TYPE = 'pl'
-    TRANSIT_LINE = 'tr'
-    TRUST_LINE = 'tl'
+    CARRIER_LINE_TYPE = 'cl'
+    TRUST_LINE_TYPE = 'tl'
 
 
 @dataclass
@@ -187,10 +187,10 @@ def _parse_uri_type(uri_type_str):
             uri_type = EAdelphosType.OBJECT_TYPE
         case 'pl':
             uri_type = EAdelphosType.PLACE_TYPE
-        case 'tr':
-            uri_type = EAdelphosType.TRANSIT_LINE
+        case 'cr':
+            uri_type = EAdelphosType.CARRIER_LINE_TYPE
         case 'tl':
-            uri_type = EAdelphosType.TRUST_LINE
+            uri_type = EAdelphosType.TRUST_LINE_TYPE
         case _:
             raise AdelphosException(f"Unknown type \
 {type_name_match.group(1)}")

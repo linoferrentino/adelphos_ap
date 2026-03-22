@@ -172,23 +172,19 @@ class ActivityPubMockup(ActivityPubBaseGateway):
             return
 
         demo_users = self.app.config['demo_users']
-        for demo_user in demo_users:
-            # by definition the users belong to my server.
-            # they are ``embedded'' in this instance, so they belong to
-            # ap_server 'zero'
-            #gCon.log(f"I want to create {demo_user}")
-            # first of all I have to create the actor, the server is our server
-            # and his/her key is the application's key.
-            actor_id = self.create_app_actor(demo_user['name'])
-            # Now I will create the alias.
-            #gCon.log(f"The new actor has the id {actor_id}")
-            # I have to create the alias, using the alias and the password
-            self.app.ap_gateway.ap_alias_api.create_alias_pass(
-                    actor_id, demo_user['alias'], demo_user['password'])
 
-            if demo_user.get('root') == True:
-                #gCon.log(f"Adding {demo_user} as root, with id {actor_id}")
-                self.app.create_root_actor_impl(actor_id)
+        for demo_user in demo_users:
+            is_root = demo_user.get('root') == True
+            self.create_demo_user(demo_user['name'], demo_user['alias'],
+                        demo_user['password'], is_root)
+
+
+    def create_demo_user(self, name, alias, password, is_root):
+        actor_id = self.create_app_actor(name)
+        self.app.ap_gateway.ap_alias_api.create_alias_pass(
+                actor_id, alias, password)
+        if is_root:
+            self.app.create_root_actor_impl(actor_id)
 
 
     # creates an actor which sits in the instance (only useful for testing)

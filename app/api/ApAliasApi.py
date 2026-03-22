@@ -15,7 +15,7 @@
 # In Activity Pub realm we only create an alias. 
 
 from app.api.BaseApi import BaseApi
-from app.dao.AdelphosUri import uriparse
+from app.dao.AdelphosUri import uriparse_type, EAdelphosType
 from app.api.AdelphosException import AdelphosException
 from app.logging import gCon
 from app.dao.FamilyDto import family_dto_create_local
@@ -40,7 +40,7 @@ class ApAliasApi(BaseApi):
 
     def create_alias_pass(self, actor_id, alias, password):
 
-        alias_uri = uriparse(alias)
+        alias_uri = uriparse_type(alias, EAdelphosType.ALIAS_TYPE)
 
         if (alias_uri.is_numeric == True):
             raise AdelphosException("Cannot create a numeric alias")

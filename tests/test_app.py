@@ -110,7 +110,7 @@ def test_ad_2(adelphos1, adelphos_remote_process):
 def test_ad_3(adelphos1, adelphos_remote_process):
 
     with adelphos1.websocket_connect("/api/ws") as websocket:
-        websocket.send_text('backdoor alias ##root.admins password super_secret')
+        websocket.send_text('backdoor password super_secret')
         data = websocket.receive_text()
         assert data == 'Backdoor OK, you are root' 
 
