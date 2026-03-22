@@ -11,7 +11,7 @@
 #
 ######################################################
 #
-# testing trusti lines.
+# testing trust lines.
 
 
 from app.AdelphosApp import get_app
@@ -84,7 +84,7 @@ def create_trust_line(websocket):
     assert re.match('Login OK.*', data) is not None
     # OK, now I have logged in, I can try to create a family
 
-    websocket.send_text('trust_line_create alias_to ##bob.bf judge ##carl.cf')
+    websocket.send_text('trust_line_create alias_to ##bob.bf referee ##carl.cf')
     data = websocket.receive_text()
     #assert re.match("Trust line created", data) is not None
     assert data == "Trust line created."

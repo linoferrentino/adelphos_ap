@@ -38,11 +38,16 @@ class TrustLineApi(BaseApi):
         # they might not be in the same instance.
         alias_to = self.gateway.get_param_safe("alias_to")
         alias_to_uri = uriparse_type(alias_to, EAdelphosType.ALIAS_TYPE)
-        judge = self.gateway.get_param_safe("judge")
-        judge_uri = uriparse_type(judge, EAdelphosType.ALIAS_TYPE)
+
+        referee = self.gateway.get_param_safe("referee")
+        referee_uri = uriparse_type(referee, EAdelphosType.ALIAS_TYPE)
 
         alias_dto  = await self.gateway.app.dao.alias_dao.\
                 get_from_uri(alias_to_uri)
+
+        referee_dto  = await self.gateway.app.dao.alias_dao.\
+                get_from_uri(referee_uri)
+
 
         return "Trust line created."
 

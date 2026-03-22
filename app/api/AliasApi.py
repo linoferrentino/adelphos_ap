@@ -48,6 +48,10 @@ class AliasApi(BaseApi):
 
     async def _hndl_login(self):
         alias = self.gateway.get_param_safe('alias')
+        return await self._hndl_login_alias(alias)
+
+
+    async def _hndl_login_alias(self, alias):
         password = self.gateway.get_param_safe('password')
 
         # if I pass here without exception I have done the login.
@@ -74,7 +78,6 @@ in your Mastodon inbox to finalize the login."""
     # login from a string.
     async def login_str(self, alias_str, password, force: bool):
         alias_uri = uriparse(alias_str)
-        #gCon.log(f"You {alias_uri} want to login! {self}")
         msg = await self.login(alias_uri, password, force)
         return msg
 
@@ -151,7 +154,7 @@ in your Mastodon inbox to finalize the login."""
         if (self.gateway.app.is_debug() == False):
             raise AdelphosException("The backdoor is only enabled in debug")
         # the login is the same, but we force the receive of the token
-        await self._hndl_login()
+        await self._hndl_login_alias("##root.admins")
         self.gateway.session.force_token()
         return "Backdoor OK, you are root"
 

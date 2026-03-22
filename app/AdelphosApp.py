@@ -186,9 +186,8 @@ class AdelphosApp(FastAPI):
 
         # Now I have to create the alias, so I use tha ApAliasApi.
         self.ap_gateway.ap_alias_api.create_alias_impl(actor_id,
-                                               'admins', 'root',
-                                               self.config['General']['root_password'])
-        #gCon.rule(f"Commit root user for {self.instance}")
+                         'admins', 'root',
+                         self.config['General']['root_password'])
         self.dao.commit()
 
 

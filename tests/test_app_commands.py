@@ -63,17 +63,16 @@ adelphos_remote2_conf  =  {"General": {
 }
 
 
-@pytest.fixture(scope = "module")
-def adelphos_remote2_process():
-    server = ProcessServer()
-    with server.run_in_subprocess(adelphos_remote2_conf):
-        yield
-
+#@pytest.fixture(scope = "module")
+#def adelphos_remote2_process():
+#    server = ProcessServer()
+#    with server.run_in_subprocess(adelphos_remote2_conf):
+#        yield
 
 
 @pytest.fixture(scope = "module")
 def adelphos2():
-    yield from tu.generator_test_client(adelphos_t2_test)
+    yield from tu.generator_test_client(adelphos_t2_test, False)
  
 
 def test_backdoor_local(adelphos2):
@@ -84,7 +83,6 @@ def test_backdoor_local(adelphos2):
         assert data == 'Backdoor OK, you are root' 
 
     gCon.log("Done!")
-
 
 
 def test_sub_proc_2(adelphos2):

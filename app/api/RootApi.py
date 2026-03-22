@@ -110,20 +110,20 @@ class RootApi(BaseApi):
         return await self.gateway.substitute_user(new_user)
 
 
-    # the function to do an automate command, this too is async, as we might
-    # go in the fediverse.
-    async def do_automate(self, line):
-        # I can parse the command line as if it came from the web socket.
-        # the system is asynchronous but single threaded, no worry about concurrency here.
-        self.gateway.parse_cmd_line(line)
-        gCon.log(f"You want to execute {self.gateway.cmd}")
-        gCon.log(f"with these paramters {self.gateway.cmd_dict}")
+    # the function to do an automate command, this too is async,
+    # as we might go in the fediverse.
+    #async def do_automate(self, line):
+    #    # I can parse the command line as if it came from the web socket.
+    #    # the system is asynchronous but single threaded, no worry about concurrency here.
+    #    self.gateway.parse_cmd_line(line)
+    #    gCon.log(f"You want to execute {self.gateway.cmd}")
+    #    gCon.log(f"with these paramters {self.gateway.cmd_dict}")
 
-        match self.gateway.cmd:
-            case '_auto_su':
-                await self._auto_su_handler()
+    #    match self.gateway.cmd:
+    #        case '_auto_su':
+    #            await self._auto_su_handler()
 
-        # the return of the automate command for now it is not important
+    #    # the return of the automate command for now it is not important
 
 
     @sudo_cmd
@@ -140,16 +140,10 @@ class RootApi(BaseApi):
                     continue
                 if (line[0] == '#'):
                     continue
-                # automate command?
-                if (match_auto := re.match('_auto_(.*)', line)):
-                    gCon.log(f"Execute automate command {match_auto.group(1)}")
-                    await self.do_automate(line)
-                    continue
-                gCon.log(f"execute {line}")
                 await self.gateway.outgress_result(f"executing: {line}")
                 last_msg = await self.gateway.proc_request(line)
 
-        return f"Exec script {script_file} done."
+        return f"Exec script {script_file} done, last msg {last_msg}"
 
 
 # here the handlers for this API
@@ -158,6 +152,7 @@ HANDLERS = {
      'sudo_adelphos_deny' : RootApi._hndl_deny_remote_adelphos,
      'sudo_dump_db' : RootApi._hndl_dump_db,
      'sudo_play_script': RootApi._hndl_play_script,
+     'sudo_su': RootApi._auto_su_handler
 
 }
 

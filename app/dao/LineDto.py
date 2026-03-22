@@ -29,14 +29,19 @@
 
 # remember: adelphos is at its core a trust amplifier.
 
+
+# DEPRECATED
 class LineDto(FdObjectDto):
 
-    alias_1_fk: int
+    # deprecated
+    pass
 
-    alias_2_fk: int
+    #alias_1_fk: int
+
+    #alias_2_fk: int
 
     # Every line is associated to a task, the judge is a person who both
     # people agree to be their judge in case of controversy.
-    judge_fk: int
+    #judge_fk: int
 
 

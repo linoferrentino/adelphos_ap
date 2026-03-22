@@ -16,18 +16,30 @@ from dataclasses import dataclass
 from app.dao.FdObjectDto import FdObjectDto
 
 
-# A carrier line has a limit of weigth and dimensions, a cost and a minimum
-# frequency guaranteed.
+# A carrier line is between two points.
+# The carrier has a person who is in charge to bring the object
+# from one place to another.
+
+# it needs five people:
+
+# the carrier
+# the two people at the end of the line
+# the two confirmers
+
 
 @dataclass
 class CarrierLineDto(FdObjectDto):
 
-    alias_1: int
-    alias_2: int
+    point_a_fk: int
+    alias_a_fk: int
+    referee_a_fk: int
 
-    cost_1: int 
-    cost_2: int 
+    point_b_fk: int
+    alias_b_fk: int
+    referee_b_fk: int
 
+    carrier_alias_fk: int
+    cost: int
     minimum_frequency: float
     limit_weight: float
     maximum_dimension: float

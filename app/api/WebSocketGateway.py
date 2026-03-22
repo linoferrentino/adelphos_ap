@@ -36,25 +36,15 @@ class WebSocketGateway(Gateway):
     def __init__(self, app, websocket):
         super().__init__(app)
         self.websocket = websocket
-        # the container for the logged user.
 
-        # here the web socket publicies the APIs relative
-        # to the objects.
-
-        # this is the Alias as view from the external world.
-        # It is ``myself'', the logged user.
-        self.tl_api = TrustLineApi(self)
         self.alias_api = AliasApi(self)
+        self.tl_api = TrustLineApi(self)
         # the commands which only a super user can give.
         self.root_api = RootApi(self)
 
-        # these API will share the context
-        #self.place_api = PlaceApi(self)
-        #self.cheque_api = ChequeApi(self)
-
-        # the class has the ability to store a session, because we are ``talking''
-        # to a user.
+        # the container for the logged user.
         self.session = UserSession(self)
+        # the super user can impersonate different identities.
         self.sessions = dict()
 
 

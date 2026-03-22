@@ -25,7 +25,7 @@
 # a bond between A and B on level x could be regarded as a bond between A^ and B^, the
 # parent group of A and B, then also of A^^ and B^^, and so on.
 from dataclasses import dataclass
-from app.dao.LineDto import LineDto
+#from app.dao.LineDto import LineDto
 
 
 # the interest is the amount of money that you will charge to use the trust line,
@@ -41,19 +41,26 @@ from app.dao.LineDto import LineDto
 
 
 @dataclass
-class TrustLineDto(LineDto)
+class TrustLineDto
 
     # I cannot have a trust line greater than my equity!
     # The currency is mine, I trust Bob with his currency,
     # I trust Alice with her currency
 
+    alias_1_fk: int
+    alias_2_fk: int
+    referee_fk: int
+
     # the exchange rate is 1 in case of trust line between two aliases with
     # the same currency
-    exchange_rate: float
+    # In the other case we have that a credit from alias 2 is converted multiplying
+    # by the exchange_rate_1_to_2, a credito from alias 1 is conferted dividing by
+    # the same amount
+    exchange_rate_1_to_2: float
 
-    strength: float
+    # the maximum value for this credit in ``1'' units
+    strength_1: float
 
     interest_1: float
-
     interest_2: float
 
