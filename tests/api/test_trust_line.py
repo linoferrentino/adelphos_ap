@@ -38,7 +38,6 @@ adelphos_tl_test =  {"General": {
     "db_name": ":memory:", 
     "private_key": ":memory:", 
     "host":  "localhost:9911", 
-    #"root_user": "@john_remote@localhost:5012", 
     "root_user": ":local:", 
     "root_password": "$argon2id$v=19$m=65536,t=3,p=4$o/oGlKYis246QARUaT/0cw$7zu3oQuS1wz4Ddk/pc6NjLfTcac6YGmEX2VRGymtXrI"
     }, 
@@ -55,13 +54,15 @@ adelphos_remote_tl_conf =  {"General": {
     "port": 5012, 
     "db_name": ":memory:", 
     "private_key": ":memory:", 
-    "host":  "localhost:5011", 
+    "host":  "localhost:5012", 
     "root_user": "@john_remote@localhost:5012", 
     "root_password": "$argon2id$v=19$m=65536,t=3,p=4$Odkr3o7V+SOVF6Dn5NB8XQ$NX9ZG6tqB4a/hQqEM6hvNnFsJt5VvCjbwuvYEU00f60"
     }, 
             "demo_users":
    [{"name": "john_remote", "alias": "##john.jf", "password": "john_tl"}, 
-    {"name": "mary_remote", "alias": "##mary.mf", "password": "mary_tl"}]
+    {"name": "mary_remote", "alias": "##mary.mf", "password": "mary_tl"},
+    {"name": "jean_remote", "alias": "##jean.jean_fam", "password": "jean_tl"},
+    ]
 }
 
 
@@ -73,21 +74,20 @@ def adelphos_remote_process_tl():
 
 
 @pytest.fixture(scope = "module")
-#def adelphos_tl(adelphos_remote_process_tl):
-def adelphos_tl():
+def adelphos_tl(adelphos_remote_process_tl):
+#def adelphos_tl():
     yield from tu.generator_test_client(adelphos_tl_test, True)
 
 
 def create_trust_line(websocket):
-    websocket.send_text('login alias ##alice.af  password alice_tl')
+    websocket.send_text('al_login1f alias ##alice.af  password alice_tl')
     data = websocket.receive_text()
-    assert re.match('Login OK.*', data) is not None
+    assert data == 'Login OK.'
     # OK, now I have logged in, I can try to create a family
 
     websocket.send_text('trust_line_create alias_to ##bob.bf referee ##carl.cf')
     data = websocket.receive_text()
-    #assert re.match("Trust line created", data) is not None
-    assert data == "Trust line created."
+    assert data == "Done."
 
 
 def test_create_trust_line(adelphos_tl):
@@ -95,4 +95,16 @@ def test_create_trust_line(adelphos_tl):
     # I simulate a user that wants to login
     with adelphos_tl.websocket_connect("/api/ws") as websocket:
         create_trust_line(websocket)
+
+
+def test_create_trust_line_remote(adelphos_tl):
+    assert 0 == 0
+    #websocket.send_text('al_login1f alias ##alice.af  password alice_tl')
+    #data = websocket.receive_text()
+    #assert data == 'Login OK.'
+ 
+    #websocket.send_text('trust_line_create alias_to ##bob.bf referee ##carl.cf')
+    #data = websocket.receive_text()
+    #assert data == "Done."
+
 

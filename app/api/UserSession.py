@@ -22,6 +22,7 @@ from datetime import datetime
 from enum import IntEnum
 from enum import auto
 from app.logging import gCon
+from app.api.AdelphosException import AdelphosException
 
 # these are the states for the user.
 class EUserState(IntEnum):
@@ -64,6 +65,10 @@ class UserSession:
         self.user_state = EUserState.NOT_LOGGED
 
 
+    def whoami(self):
+        return self.alias_dto.name
+
+
     def accept_token(self, token):
         # Am I in the right state?
         if (self.user_state != EUserState.LOGGED_WITHOUT_TOKEN):
@@ -103,6 +108,7 @@ class UserSession:
 
     def is_login_valid(self):
         if (self.user_state != EUserState.LOGGED_AND_TOKEN):
+            gCon.log(f'[red]invalid state {self.user_state}[/red]')
             return False
         # let's get the age
         time_now = datetime.now()

@@ -17,6 +17,17 @@
 
 from app.logging import gCon
 
+
+# some APIs can be called only in debug.
+def only_in_debug(func):
+
+    async def check_debug_app(self):
+        if self.gateway.app.is_debug() == False:
+            raise AdelphosException('Only available in debug mode')
+        return await func(self)
+    return check_debug_app
+
+
 # this is the basic class for all the APIs in the system
 # the class goes hand in hand with the Gateway class.
 # An instance of this class will give services to a Gateway.

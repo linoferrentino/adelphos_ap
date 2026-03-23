@@ -65,6 +65,22 @@ def test_execute_local_script(adelphos_root):
         data = websocket.receive_text()
         assert data == 'Done.' 
 
-        # If this is OK, I can now login as this user
+        # If this is OK, I can now login as this user, I user the super power
+        websocket.send_text('sudo_su_push alias ##test1.fam1')
+        data = websocket.receive_text()
+        assert data == 'Done.' 
+
+        websocket.send_text('whoami')
+        data = websocket.receive_text()
+        assert data == 'test1' 
+
+        #let's return to our user.
+        websocket.send_text('sudo_su_pop')
+        data = websocket.receive_text()
+        assert data == 'Done.' 
+
+        websocket.send_text('whoami')
+        data = websocket.receive_text()
+        assert data == 'root' 
 
 

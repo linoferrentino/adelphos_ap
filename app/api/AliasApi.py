@@ -24,9 +24,10 @@ from enum import IntEnum
 from enum import auto
 from app.dao.FamilyDto import family_dto_create_local
 from app.dao.AliasDto import alias_dto_create_local
-
+from app.api.UserSession import active_login
 
 from app.api.BaseApi import BaseApi
+from app.api.BaseApi import only_in_debug
 
 
 class AliasApi(BaseApi):
@@ -47,23 +48,32 @@ class AliasApi(BaseApi):
 
 
     async def _hndl_login(self):
+        await self._hndl_base_login()
+        await self.gateway.post_to_logged_user_inbox(
+f"Login OK, please copy the following line in adelphos chat\n\
+put_token tk {self.gateway.session.token}")
+        return """Login OK.
+Please paste the line received
+in your Mastodon inbox to finalize the login."""
+
+
+    # test login without MFA, this is only enabled in tests.
+    @only_in_debug
+    async def _hndl_login_1f(self):
+        await self._hndl_base_login()
+        self.gateway.session.force_token()
+        return 'Login OK.'
+
+
+    async def _hndl_base_login(self):
         alias = self.gateway.get_param_safe('alias')
-        return await self._hndl_login_alias(alias)
+        await self._hndl_login_alias(alias)
 
 
     async def _hndl_login_alias(self, alias):
         password = self.gateway.get_param_safe('password')
-
         # if I pass here without exception I have done the login.
         await self.login_str(alias, password, False)
-
-        await self.gateway.post_to_logged_user_inbox(
-f"Login OK, please copy the following line in adelphos chat\n\
-put_token tk {self.gateway.session.token}")
-
-        return """Login OK.
-Please paste the line received
-in your Mastodon inbox to finalize the login."""
 
 
     async def _hndl_put_token(self):
@@ -72,7 +82,8 @@ in your Mastodon inbox to finalize the login."""
 
 
     async def force_login(self, alias_str):
-        return await self.login_str(alias_str, None, True)
+        await self.login_str(alias_str, None, True)
+        self.gateway.session.force_token()
 
 
     # login from a string.
@@ -150,15 +161,15 @@ in your Mastodon inbox to finalize the login."""
 
     # the backdoor is only enabled in debug and it grants root access without
     # 2fa with the same root password, use with care!
+    @only_in_debug
     async def _hndl_backdoor(self):
-        if (self.gateway.app.is_debug() == False):
-            raise AdelphosException("The backdoor is only enabled in debug")
         # the login is the same, but we force the receive of the token
         await self._hndl_login_alias("##root.admins")
         self.gateway.session.force_token()
         return "Backdoor OK, you are root"
 
 
+    @active_login
     async def _hndl_whoami(self):
         return self.gateway.session.whoami()
 
@@ -166,6 +177,7 @@ in your Mastodon inbox to finalize the login."""
 # here the handlers for this API
 HANDLERS = {
      'login' : AliasApi._hndl_login,
+     'al_login1f' : AliasApi._hndl_login_1f,
      'put_token' : AliasApi._hndl_put_token,
      'backdoor' : AliasApi._hndl_backdoor,
      'whoami': AliasApi._hndl_whoami,

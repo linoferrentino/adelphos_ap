@@ -54,7 +54,7 @@ class WebSocketGateway(Gateway):
                                self.session.server_dto, self.session.actor_dto, msg)
 
 
-    async def push_user(self, user):
+    async def pop_user(self):
 
         if self.pushed_user is None:
             raise AdelphosException("No user to pop to")
@@ -74,7 +74,7 @@ class WebSocketGateway(Gateway):
             return
 
         # I create a new user.
-        gCon.log(f"Create a new session for user {user}")
+        #gCon.log(f"Create a new session for user {user}")
         self.session = UserSession(self)
         self.sessions[user] = self.session
         return await self.alias_api.force_login(user)

@@ -22,6 +22,8 @@ from app.api.BaseApi import BaseApi
 
 from app.dao.AdelphosUri import uriparse
 from app.dao.AdelphosUri import EAdelphosType
+from app.api.UserSession import active_login
+
 
 class TrustLineApi(BaseApi):
 
@@ -32,6 +34,7 @@ class TrustLineApi(BaseApi):
 
     # this function might download information from other adelphos instances
     # so it is async.
+    @active_login
     async def _hndl_tl_create(self):
 
         # to create a trust line I need at least another alias and a judge.
@@ -47,9 +50,6 @@ class TrustLineApi(BaseApi):
 
         referee_dto  = await self.gateway.app.dao.alias_dao.\
                 get_from_uri(referee_uri)
-
-
-        return "Trust line created."
 
 
     async def _hndl_tl_create__old(self):

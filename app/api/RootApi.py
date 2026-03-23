@@ -108,7 +108,7 @@ class RootApi(BaseApi):
     @sudo_cmd
     async def _hndl_push_user(self):
         new_user = self.gateway.get_param_safe('alias')
-        gCon.log(f"pushing user session with {new_user}")
+        #gCon.log(f"pushing user session with {new_user}")
         await self.gateway.push_user(new_user)
 
 
