@@ -59,4 +59,12 @@ def test_execute_local_script(adelphos_root):
         data = websocket.receive_text()
         assert data == 'Backdoor OK, you are root' 
 
+        # try to create a user
+        websocket.send_text('sudo_apmkup_create_user user testu1 alias \
+##test1.fam1 password testu1pass')
+        data = websocket.receive_text()
+        assert data == 'Done.' 
+
+        # If this is OK, I can now login as this user
+
 

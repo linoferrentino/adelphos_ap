@@ -30,6 +30,17 @@ class EUserState(IntEnum):
     LOGGED_AND_TOKEN = auto()
 
 
+# ensures that an alias is logged and has an active session
+def active_login(func):
+
+    async def check_logged(self):
+        if not self.gateway.session.is_login_valid():
+            raise AdelphosException("Login not valid or expired session")
+        return await func(self)
+
+    return check_logged
+
+
 # the user session stores all the data that is accumulating during the
 # conversation with the user.
 class UserSession:

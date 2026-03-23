@@ -159,11 +159,16 @@ in your Mastodon inbox to finalize the login."""
         return "Backdoor OK, you are root"
 
 
+    async def _hndl_whoami(self):
+        return self.gateway.session.whoami()
+
+
 # here the handlers for this API
 HANDLERS = {
      'login' : AliasApi._hndl_login,
      'put_token' : AliasApi._hndl_put_token,
-     'backdoor' : AliasApi._hndl_backdoor
+     'backdoor' : AliasApi._hndl_backdoor,
+     'whoami': AliasApi._hndl_whoami,
 }
 
 

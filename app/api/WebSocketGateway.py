@@ -46,6 +46,7 @@ class WebSocketGateway(Gateway):
         self.session = UserSession(self)
         # the super user can impersonate different identities.
         self.sessions = dict()
+        self.pushed_user = None
 
 
     async def post_to_logged_user_inbox(self, msg):
@@ -53,7 +54,19 @@ class WebSocketGateway(Gateway):
                                self.session.server_dto, self.session.actor_dto, msg)
 
 
-    async def substitute_user(self, user):
+    async def push_user(self, user):
+
+        if self.pushed_user is None:
+            raise AdelphosException("No user to pop to")
+        self.session = self.pushed_user
+
+
+    async def push_user(self, user):
+
+        if self.pushed_user is not None:
+            raise AdelphosException("Cannot push two times")
+
+        self.pushed_user = self.session
         
         if (user_store := self.sessions.get(user)):
             gCon.log(f"sudo user {user_store}")
@@ -75,4 +88,6 @@ class WebSocketGateway(Gateway):
 
     # also the outgress is trivial
     async def outgress_result(self, result):
+        if result is None or len(result) == 0:
+            result = "Done."
         await self.websocket.send_text(result)

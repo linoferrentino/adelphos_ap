@@ -16,6 +16,7 @@
 
 from app.api.AdelphosException import AdelphosException
 from app.api.BaseApi import BaseApi
+from app.api.UserSession import active_login
 from app.logging import gCon
 from app.consts import USER_ID
 from app.dao.AdInstanceDto import create_ad_instance
@@ -104,18 +105,28 @@ class RootApi(BaseApi):
         return "OK, dump created"
 
 
+    @sudo_cmd
     async def _hndl_push_user(self):
         new_user = self.gateway.get_param_safe('alias')
-        gCon.log(f"subsituting the user session with {new_user}")
-        return await self.gateway.substitute_user(new_user)
+        gCon.log(f"pushing user session with {new_user}")
+        await self.gateway.push_user(new_user)
 
 
+    # this is NOT sudo, otherwise root cannot gain back control
+    @active_login
     async def _hndl_pop_user(self):
-        pass
+        await self.gateway.pop_user()
 
 
+    @sudo_cmd
     async def _hndl_apmkup_create_user(self):
-        pass
+        # I take the parameters and create the user
+        new_user = self.gateway.get_param_safe('user')
+        new_alias = self.gateway.get_param_safe('alias')
+        password = self.gateway.get_param_safe('password')
+        # the new user is NOT root.
+        self.gateway.app.ap_mockup.create_demo_user(new_user,
+                    new_alias, password, False)
 
 
     @sudo_cmd
