@@ -38,7 +38,7 @@ adelphos_tl_test =  {"General": {
     "db_name": ":memory:", 
     "private_key": ":memory:", 
     "host":  "localhost:9911", 
-    "root_user": ":local:", 
+    "root_user": "@john_remote@localhost:5012", 
     "root_password": "$argon2id$v=19$m=65536,t=3,p=4$o/oGlKYis246QARUaT/0cw$7zu3oQuS1wz4Ddk/pc6NjLfTcac6YGmEX2VRGymtXrI"
     }, 
             "demo_users":
@@ -79,13 +79,20 @@ def adelphos_tl(adelphos_remote_process_tl):
     yield from tu.generator_test_client(adelphos_tl_test, True)
 
 
-def create_trust_line(websocket):
+def test_check_carl(adelphos_tl):
+    with adelphos_tl.websocket_connect("/api/ws") as websocket:
+        websocket.send_text('al_login1f alias ##carl.cf  password carl_tl')
+        data = websocket.receive_text()
+        assert data == 'Login OK.'
+
+
+def create_trust_line(websocket, alias_to, code = 0):
     websocket.send_text('al_login1f alias ##alice.af  password alice_tl')
     data = websocket.receive_text()
     assert data == 'Login OK.'
     # OK, now I have logged in, I can try to create a family
 
-    websocket.send_text('trust_line_create alias_to ##bob.bf referee ##carl.cf')
+    websocket.send_text(f'trust_line_create alias_to {alias_to} referee ##carl.cf')
     data = websocket.receive_text()
     assert data == "Done."
 
@@ -94,17 +101,13 @@ def test_create_trust_line(adelphos_tl):
 
     # I simulate a user that wants to login
     with adelphos_tl.websocket_connect("/api/ws") as websocket:
-        create_trust_line(websocket)
+        create_trust_line(websocket, '##bob.bf' )
 
 
 def test_create_trust_line_remote(adelphos_tl):
+
     assert 0 == 0
-    #websocket.send_text('al_login1f alias ##alice.af  password alice_tl')
-    #data = websocket.receive_text()
-    #assert data == 'Login OK.'
- 
-    #websocket.send_text('trust_line_create alias_to ##bob.bf referee ##carl.cf')
-    #data = websocket.receive_text()
-    #assert data == "Done."
+    #with adelphos_tl.websocket_connect("/api/ws") as websocket:
+    #    create_trust_line(websocket, '##john.jf@localhost:5012', 0)
 
 

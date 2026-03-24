@@ -115,7 +115,7 @@ class ActivityPubMockup(ActivityPubBaseGateway):
     def _select_test_user(self, activity_pub_user):
         ap_actor = self.app.dao.ap_actor_dao.get_from_preferred_username(0,
                               activity_pub_user)
-        gCon.log(f"Obtained actor {ap_actor} for {activity_pub_user}")
+        #gCon.log(f"Obtained actor {ap_actor} for {activity_pub_user}")
         return ap_actor
 
 

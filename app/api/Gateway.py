@@ -18,6 +18,7 @@ from app.api.TrustLineApi import TrustLineApi
 import shlex
 from abc import ABC
 from app.api.AdelphosException import AdelphosException
+from app.api.AdelphosException import EAdelhposErrno
 from abc import abstractmethod
 from app.logging import gCon
 import asyncio
@@ -86,32 +87,30 @@ class Gateway(ABC):
         self.parse_cmd_line(req_str)
 
         # I have first to call the real handler, this might produce an exception!
-        msg_out = await self.proc_request_try()
+        (errno, payload) = await self.proc_request_try()
 
         # the request could have created an async context, in this case
         # the real message will be available at the end of the async call
 
         # XXX maybe this wait can be moved.
         if (self.async_ctx is not None):
-            msg_out = await self.async_ctx
+            (errno, payload) = await self.async_ctx
 
         # OK, now I will check if there has been an exception, if not I can commit
         if (self.in_error == False):
-            #gCon.rule("[blue]Commit![/blue]")
             self.app.dao.commit()
         else:
-            #gCon.rule("[red]Rollback![/red]")
             self.app.dao.rollback()
 
-        await self.outgress_result(msg_out)
+        await self.outgress_result(errno, payload)
 
         # the result is given also as a return value for the automating scripts
-        return msg_out
+        return payload
 
 
     # this is an abstract method here, different gateways will implement it differently
     @abstractmethod
-    async def outgress_result(self, result):
+    async def outgress_result(self, errno, payload):
         pass
 
 
@@ -121,18 +120,22 @@ class Gateway(ABC):
     #@abstractmethod
     async def proc_request_try(self):
 
+
         try:
             msg_out = await self.proc_req_bare()
+            errno = EAdelhposErrno.DONE_OK
         except AdelphosException as adex:
-            traceback.print_exc()
+            #traceback.print_exc()
+            errno = EAdelhposErrno.GENERIC_USER_ERROR
             msg_out = f"User error: {adex}"
             self.in_error = True
         except Exception as ex:
-            traceback.print_exc()
+            #traceback.print_exc()
+            errno = EAdelhposErrno.GENERIC_SERVER_ERROR
             msg_out = f"Server error: {ex}"
             self.in_error = True
 
-        return msg_out
+        return (errno, msg_out)
 
 
     async def proc_req_bare(self):

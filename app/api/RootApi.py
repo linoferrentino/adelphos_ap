@@ -18,7 +18,7 @@ from app.api.AdelphosException import AdelphosException
 from app.api.BaseApi import BaseApi
 from app.api.UserSession import active_login
 from app.logging import gCon
-from app.consts import USER_ID
+from app.consts import DAEMON_ID
 from app.dao.AdInstanceDto import create_ad_instance
 from datetime import datetime
 import os
@@ -79,7 +79,7 @@ class RootApi(BaseApi):
         # Ok, now I have to discover the actor at that instance.
         gCon.log(f"You want to authorize instance {remote_instance}")
 
-        daemon_in_fediverse = f"@{USER_ID}@{remote_instance}"
+        daemon_in_fediverse = f"@{DAEMON_ID}@{remote_instance}"
         gCon.log(f"discovering actor {daemon_in_fediverse}")
 
         (daemon_server, daemon_actor) = await self.gateway.app.ap_api.\

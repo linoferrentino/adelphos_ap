@@ -15,8 +15,9 @@
 # to other adelphos instances in the fediverse.
 
 from app.dao.BaseDao import BaseDao
-from app.consts import USER_ID
+from app.consts import DAEMON_ID
 from app.api.AdelphosException import AdelphosException
+from app.api.AdelphosException import EAdelhposErrno
 from app.dao.AdInstanceDto import AdInstanceDto
 from ..logging import gCon
 
@@ -38,13 +39,13 @@ class AdInstanceDao(BaseDao):
 
         # the name of the daemon is fixed.
         ap_actor_dto = self.dao.ap_actor_dao.get_from_preferred_username(
-                ap_server_dto.server_id, USER_ID)
+                ap_server_dto.server_id, DAEMON_ID)
 
         if (ap_actor_dto is None):
             # this may happen if the server is an activity pub but not an adelphos instance
             # for now I raise an error, this is something that should not happen
-            raise AdelphosException(f"Or the server {host_name} is a normal activity \
-pub server, or the database is misconfigured")
+            raise AdelphosException(f"The server {host_name} is a normal activity \
+pub server", EAdelhposErrno.ERR_NO_DAEMON_FOR_HOST)
 
         # OK, now I can get the adelphos instance, and this MUST succeed, because
         # otherwise it means that I have a daemon actor pending.

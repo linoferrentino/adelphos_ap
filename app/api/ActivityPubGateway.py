@@ -248,10 +248,7 @@ class ActivityPubBaseGateway(Gateway):
 
     # here the outgress result, in our case it will post the message to the
     # user's inbox who has made the request.
-    async def outgress_result(self, result):
-
-        #await post_to_ap_actor(self.app, self.server_dto,
-        #                       self.actor_dto, result)
+    async def outgress_result(self, errno, result):
         await self.app.ap_api.post_to_fediverse_actor_as_daemon(
                 self.server_dto, self.actor_dto, result)
 

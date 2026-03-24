@@ -189,6 +189,9 @@ class AdelphosApp(FastAPI):
                          'admins', 'root',
                          self.config['General']['root_password'])
         self.dao.commit()
+        #gCon.log(f"[red]DB for  {self.instance} START[/red]")
+        #self.dao.db.dump_database()
+        #gCon.log(f"[red]DB for  {self.instance} END[/red]")
 
 
     # this is used for the put request.
@@ -214,12 +217,12 @@ class AdelphosApp(FastAPI):
     async def async_req_wait(self, ar):
         # I have to put it into the list and wait
         await self.async_req_push(ar)
-        gCon.log(f"async req to {ar._url} posted, now I wait")
+        #gCon.log(f"async req to {ar._url} posted, now I wait")
         while (ar.status_code is None):
             async with ar._cond:
                 await ar._cond.wait()
 
-        gCon.log(f"got result {ar.status_code} in client request!")
+        #gCon.log(f"got result {ar.status_code} in client request!")
         return ar.status_code
 
 

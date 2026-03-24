@@ -31,8 +31,7 @@ class BaseAdelphosDao(BaseDao):
         super().__init__(dao)
 
 
-    @staticmethod
-    def _is_local_uri(uri):
+    def _is_local_uri(self, uri):
         if uri.host_name is None:
             return True
 
@@ -62,10 +61,16 @@ class BaseAdelphosDao(BaseDao):
         pass
 
 
-    # this method will get the object from the federated db, so first of
-    # all I have to get the 
+    # this method will get the object from the federated db 
     async def _get_from_remote_uri(self, uri):
         pass
+
+        # get remote adelphos instance
+        instance_dto = self.dao.ad_instance_dao.get_from_hostname(uri.host_name)
+        gCon.log(f"got {instance_dto} as adelphos instance")
+        # is enabled?
+        # if no exception
+        # if yes send to it the request for the uri (which, in this case, will be local!)
 
     
     # this method gets the object from this instance or, if not present,
@@ -83,9 +88,10 @@ class BaseAdelphosDao(BaseDao):
             return dto
 
         # I have not found it, if the uri is local this is a not recoverable error
-        local_uri = BaseAdelphosDao._is_local_uri(uri)
+        local_uri = self._is_local_uri(uri)
 
         if (local_uri == False):
+            gCon.log(f"Uri {uri} not local, go to fediverse!")
             # I try to get the object from the federated db
             dto = await self._get_from_remote_uri(uri)
 

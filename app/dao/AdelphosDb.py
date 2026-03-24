@@ -42,12 +42,9 @@ create_schema_sql = \
 
 # an adelphos server is also an activity pub server, but the contrary
 # is not true.
-# all the adelphos servers join the federated adelphos database.
 
-#('enable foreign keys',
-# """
-# PRAGMA foreign_keys = ON;
-# """),
+# all the adelphos instances join the federated adelphos database: as a cautios
+# and privacy measure the adelphos instances talk to each other only when enabled.
 
 
 ('activity_pub_server',
@@ -76,8 +73,6 @@ create table ap_actor (
 );"""),
 
 
-
-
 # this is the table that stores the adelphos instances. These
 # are not activity pub instances.
 # However every adelphos instance is linked to an activity pub actor
@@ -90,15 +85,6 @@ create table ad_instance (
     timestamp text default current_timestamp,
     foreign key (actor_fk) references ap_actor(actor_id)
 );"""),
-
-
-## I have here the view that links the adelphos instance to its fediverse endpoint
-#('view ad_instance_server', """
-# create view ad_instance_server as select
-# adi.authorized, 
-#
-#
-# """),
 
 
 # The basis of the adelphos federated database is the adelphos object:
@@ -127,8 +113,8 @@ create table fd_actor(
     );
  """),
 
-('fd_actor index', """
 
+('fd_actor index', """
 create index fdact_idx ON fd_actor(name);"""),
 
 
@@ -528,7 +514,7 @@ class AdelphosDb:
             condition.append(f" {field_to_seek} = ? ")
 
         condition_str = " and ". join(condition)
-        gCon.log(f"the condition is {condition_str}")
+        #gCon.log(f"the condition is {condition_str}")
         return condition_str
 
 
@@ -610,8 +596,7 @@ select * from {table_name} where {field_to_seek} = ?
         cur.close()
 
         if (row is None):
-            gCon.log(f"No row in {table_name} for {field_to_seek} \
-= {value_to_seek}")
+            #gCon.log(f"No row in {table_name} for {field_to_seek} = {value_to_seek}")
             return None
 
         # I simply get the dto 

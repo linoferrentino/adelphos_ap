@@ -95,7 +95,7 @@ class ActivityPubApi:
         server_root = self.app.dao.ap_server_dao.get_or_create_from_host_name(\
                 rem_instance)
 
-        gCon.log(f"I have obtained {server_root} as server")
+        #gCon.log(f"I have obtained {server_root} as server")
 
         actor_query = f"https://{rem_instance}/.well-known/webfinger?\
 resource=acct:{actor_instance}"
@@ -109,7 +109,7 @@ resource=acct:{actor_instance}"
 
         actor_ob = json.loads(actor_res.text)
 
-        gCon.log(f"The discovery has given me {actor_ob}")
+        #gCon.log(f"The discovery has given me {actor_ob}")
 
         subject = actor_ob['subject']
         if ( subject != f"acct:{actor_instance}"):
@@ -139,7 +139,7 @@ resource=acct:{actor_instance}"
         # for now I use the ApActorDao
         actor_root = await self.app.dao.ap_actor_dao.create_from_uri(
                 server_root, href_user, key_parsed)
-        gCon.log(f"This is the root {actor_root}")
+        #gCon.log(f"This is the root {actor_root}")
 
         return (server_root, actor_root)
 

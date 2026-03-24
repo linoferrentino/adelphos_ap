@@ -57,13 +57,12 @@ class AsyncGetReq(AsyncRequestBase):
 
 
     async def async_req(self, session):
-        gCon.log(f"will request the url {self._url}")
+        #gCon.log(f"will request the url {self._url}")
         async with session.get(self._url) as resp:
             self.status_code = resp.status
             self.text = await resp.text()
 
-        gCon.log(f"got response {self.status_code} now I signal")
-
+        #gCon.log(f"got response {self.status_code} now I signal")
         # Ok, now I can signal the waiting task
         async with self._cond:
             self._cond.notify()

@@ -45,7 +45,7 @@ class ApActorDao(BaseDao):
     # this function will fetch the public key of the actor
     async def create_from_uri(self, server_dto, actor_uri, key_parsed):
 
-        gCon.log(f"Create here a cached actor {actor_uri}")
+        #gCon.log(f"Create here a cached actor {actor_uri}")
 
         res_key = AsyncGetReq(actor_uri)
         await self.dao.app.async_req_wait(res_key)
@@ -94,12 +94,12 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
                          preferred_username,
                          pub_key_ob['publicKeyPem'])
 
-        if (server_dto.server_id == 0):
-            gCon.log("This is a locally defined actor, no store!")
-        else:
+        # if it is zero it is a locally defined actor, we do not store it
+        # because it would violate the db integrity
+        if (server_dto.server_id != 0):
             self.store(actor)
 
-        gCon.log(f"Created actor {actor}")
+        #gCon.log(f"Created actor {actor}")
 
         return actor 
 

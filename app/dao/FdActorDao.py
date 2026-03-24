@@ -67,7 +67,7 @@ class FdActorDao(BaseAdelphosDao):
                 'name' : uri.name
                 }
         dto = self.dao.db.get_dto_from_sql(sql_get, params, self.constructor)
-        gCon.log(f"This is the dto {dto}")
+        #gCon.log(f"This is the dto {dto}")
         return dto
 
 

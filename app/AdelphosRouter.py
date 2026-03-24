@@ -303,7 +303,7 @@ def make_router(app):
         host = app.config['General']['host']
         host_api = host + API_POINT
 
-        gCon.log(f"[red]webfinger[/red] host {host} resource {resource}")
+        #gCon.log(f"[red]webfinger[/red] host {host} resource {resource}")
 
         ap_user_match = re.match('acct:(.*?)@(.*)$', resource)
         if (ap_user_match is None):
@@ -337,7 +337,7 @@ def make_router(app):
     @router.get('/users/{username}')
     async def user(username : str):
 
-        gCon.log(f"[red]GET {username}[/red]")
+        #gCon.log(f"[red]GET {username}[/red]")
 
         user_info = app.ap_user_info(username)
         if (user_info is None):
