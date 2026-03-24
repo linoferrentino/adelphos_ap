@@ -232,16 +232,8 @@ class AdelphosRouter(APIRouter):
 
                 };
                 function sendMessage(event) {
-                    //var token = document.getElementById('token');
                     var input = document.getElementById("messageInput");
-                    /*
-                    if (token.value != "") {
-                        msg_total = input.value + " tk " + token.value;
-                    } else {
-                    }
-                    */
                     msg_total = input.value;
-                    //console.log("writing " + msg_total)
                     ws.send(msg_total);
 
                     msg_logged = msg_total.replace(/password .*/, "password XXX")

@@ -40,6 +40,11 @@ class ApServerDao(BaseDao):
         if (server_dto is not None):
             return server_dto
 
+        return self.create_from_hostname(host_name)
+
+
+    def create_from_hostname(self, host_name):
+
         # at this point I have to create it.
         server_dto = create_ap_server(host_name)
         self.store(server_dto)

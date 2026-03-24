@@ -91,11 +91,11 @@ class ActivityPubApi:
             raise AdelphosException(f"I was expecting one and only one @ in {actor_instance}")
         (preferred_username, rem_instance) = user_host
 
-        # this is the server's root.
-        server_root = self.app.dao.ap_server_dao.get_or_create_from_host_name(\
+        # this is the actor's server 
+        server_actor = self.app.dao.ap_server_dao.get_or_create_from_host_name(\
                 rem_instance)
 
-        #gCon.log(f"I have obtained {server_root} as server")
+        #gCon.log(f"I have obtained {server_actor} as server")
 
         actor_query = f"https://{rem_instance}/.well-known/webfinger?\
 resource=acct:{actor_instance}"
@@ -137,11 +137,9 @@ resource=acct:{actor_instance}"
         key_parsed = key_parsed._replace(fragment = "main-key")
 
         # for now I use the ApActorDao
-        actor_root = await self.app.dao.ap_actor_dao.create_from_uri(
-                server_root, href_user, key_parsed)
-        #gCon.log(f"This is the root {actor_root}")
-
-        return (server_root, actor_root)
+        actor_dto = await self.app.dao.ap_actor_dao.create_from_uri(
+                server_actor, href_user, key_parsed)
+        return (server_actor, actor_dto)
 
 
 

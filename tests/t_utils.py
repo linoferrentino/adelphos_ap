@@ -18,6 +18,8 @@ import time
 from fastapi.testclient import TestClient
 from app.AdelphosApp import get_app
 from app.AdelphosApp import del_app
+import json
+from app.api.AdelphosException import EAdelhposErrno
 
 
 # must_wait is true when we have to connect to a remote instance.
@@ -32,5 +34,30 @@ def generator_test_client(instance_conf, must_wait):
             time.sleep(0.5)
         yield client
     del_app()
+
+
+def websocket_get_next_msg(websocket):
+    datas = websocket.receive_text()
+    data_parsed = json.loads(datas)
+    return data_parsed
+
+
+def websocket_assert_payload(websocket, payload_expected):
+    data = websocket_get_next_msg(websocket)
+    assert data['payload'] == payload_expected
+
+
+def websocket_assert_code(websocket, code_expected):
+    data = websocket_get_next_msg(websocket)
+    assert data['res'] == code_expected
+
+
+# enforces that all the commands on the script are successful
+def play_script_on_instance_OK(adelphos_instance, script):
+
+    with adelphos_instance.websocket_connect("/api/ws") as websocket:
+        for line in script:
+            websocket.send_text(line)
+            websocket_assert_code(websocket, EAdelhposErrno.DONE_OK)
 
 

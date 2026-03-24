@@ -29,7 +29,11 @@ class AdInstanceDao(BaseDao):
         self.table_name = "ad_instance"
 
 
-    # this function does not try to create it.
+    #async get_or_create_from_hostname(self, host_name):
+    #    pass
+
+
+    # no discover, it is not async!
     def get_from_hostname(self, host_name):
         ap_server_dto = self.dao.ap_server_dao.get_from_hostname(host_name)
         if (ap_server_dto is None):
@@ -42,10 +46,9 @@ class AdInstanceDao(BaseDao):
                 ap_server_dto.server_id, DAEMON_ID)
 
         if (ap_actor_dto is None):
-            # this may happen if the server is an activity pub but not an adelphos instance
-            # for now I raise an error, this is something that should not happen
-            raise AdelphosException(f"The server {host_name} is a normal activity \
-pub server", EAdelhposErrno.ERR_NO_DAEMON_FOR_HOST)
+            return None
+            #raise AdelphosException(f"The server {host_name} is a normal activity \
+#pub server", EAdelhposErrno.ENO_DAEMON_FOR_HOST)
 
         # OK, now I can get the adelphos instance, and this MUST succeed, because
         # otherwise it means that I have a daemon actor pending.

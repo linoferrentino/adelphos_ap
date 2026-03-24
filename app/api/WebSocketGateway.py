@@ -25,6 +25,7 @@ from abc import abstractmethod
 from app.logging import gCon
 import asyncio
 import traceback
+import json
 
 
 # the web socket Gateway
@@ -89,4 +90,8 @@ class WebSocketGateway(Gateway):
     async def outgress_result(self, errno, payload):
         if payload is None or len(payload) == 0:
             payload = "Done."
-        await self.websocket.send_text(payload)
+        final_msg = {
+                'res' : errno,
+                'payload' : payload
+                }
+        await self.websocket.send_text(json.dumps(final_msg))

@@ -26,6 +26,7 @@ import time
 from tests.ProcessServer import ProcessServer
 import tests.t_utils as tu
 import pytest
+from app.api.AdelphosException import EAdelhposErrno
 
 
 
@@ -56,31 +57,24 @@ def test_execute_local_script(adelphos_root):
 
     with adelphos_root.websocket_connect("/api/ws") as websocket:
         websocket.send_text('backdoor password super_secret')
-        data = websocket.receive_text()
-        assert data == 'Backdoor OK, you are root' 
+        tu.websocket_assert_code(websocket, EAdelhposErrno.DONE_OK)
 
         # try to create a user
         websocket.send_text('sudo_apmkup_create_user user testu1 alias \
 ##test1.fam1 password testu1pass')
-        data = websocket.receive_text()
-        assert data == 'Done.' 
+        tu.websocket_assert_code(websocket, EAdelhposErrno.DONE_OK)
 
         # If this is OK, I can now login as this user, I user the super power
         websocket.send_text('sudo_su_push alias ##test1.fam1')
-        data = websocket.receive_text()
-        assert data == 'Done.' 
+        tu.websocket_assert_code(websocket, EAdelhposErrno.DONE_OK)
 
         websocket.send_text('whoami')
-        data = websocket.receive_text()
-        assert data == 'test1' 
+        tu.websocket_assert_payload(websocket, 'test1')
 
         #let's return to our user.
         websocket.send_text('sudo_su_pop')
-        data = websocket.receive_text()
-        assert data == 'Done.' 
+        tu.websocket_assert_code(websocket, EAdelhposErrno.DONE_OK)
 
         websocket.send_text('whoami')
-        data = websocket.receive_text()
-        assert data == 'root' 
-
+        tu.websocket_assert_payload(websocket, 'root')
 

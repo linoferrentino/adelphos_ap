@@ -25,6 +25,7 @@ import time
 from tests.ProcessServer import ProcessServer
 import tests.t_utils as tu
 import pytest
+from app.api.AdelphosException import EAdelhposErrno
 
 
 #
@@ -72,17 +73,13 @@ def test_backdoor_local(adelphos2):
 
     with adelphos2.websocket_connect("/api/ws") as websocket:
         websocket.send_text('backdoor password super_secret')
-        data = websocket.receive_text()
-        assert data == 'Backdoor OK, you are root' 
-
-    gCon.log("Done!")
+        tu.websocket_assert_code(websocket, EAdelhposErrno.DONE_OK)
 
 
 def test_sub_proc_2(adelphos2):
 
     with adelphos2.websocket_connect("/api/ws") as websocket:
         websocket.send_text('login alias ##bob2.bf password bob22')
-        data = websocket.receive_text()
-        assert re.match('Login OK.*', data) is not None
+        tu.websocket_assert_code(websocket, EAdelhposErrno.DONE_OK)
 
 

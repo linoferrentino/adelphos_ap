@@ -126,12 +126,12 @@ class Gateway(ABC):
             errno = EAdelhposErrno.DONE_OK
         except AdelphosException as adex:
             #traceback.print_exc()
-            errno = EAdelhposErrno.GENERIC_USER_ERROR
+            errno = adex.code
             msg_out = f"User error: {adex}"
             self.in_error = True
         except Exception as ex:
             #traceback.print_exc()
-            errno = EAdelhposErrno.GENERIC_SERVER_ERROR
+            errno = EAdelhposErrno.EGENERIC_SERVER
             msg_out = f"Server error: {ex}"
             self.in_error = True
 

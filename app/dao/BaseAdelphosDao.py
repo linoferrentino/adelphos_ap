@@ -19,6 +19,7 @@ from ..logging import gCon
 from dataclasses import asdict
 from app.dao.BaseDao import BaseDao
 from app.api.AdelphosException import AdelphosException
+from app.api.AdelphosException import EAdelhposErrno
 
 
 # This is the base class for all the objects in the federated
@@ -63,8 +64,6 @@ class BaseAdelphosDao(BaseDao):
 
     # this method will get the object from the federated db 
     async def _get_from_remote_uri(self, uri):
-        pass
-
         # get remote adelphos instance
         instance_dto = self.dao.ad_instance_dao.get_from_hostname(uri.host_name)
         gCon.log(f"got {instance_dto} as adelphos instance")
@@ -101,7 +100,7 @@ class BaseAdelphosDao(BaseDao):
         if (maybe == True):
             return None
 
-        raise AdelphosException(f"Could not find URI {uri}")
+        raise AdelphosException(f"Could not find URI {uri}", EAdelhposErrno.EURI_NOT_FOUND)
 
 
     # I can query the adelphos db using the local name. All objects in adelphos

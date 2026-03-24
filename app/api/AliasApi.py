@@ -13,6 +13,7 @@
 #
 # This is the class that models an Alias with its business logic
 from app.api.AdelphosException import AdelphosException
+from app.api.AdelphosException import EAdelhposErrno
 from app.dao.AdelphosUri import EAdelphosType
 from app.logging import gCon
 from argon2 import PasswordHasher
@@ -105,7 +106,8 @@ in your Mastodon inbox to finalize the login."""
 
         if (family_dto is None):
             gCon.log(f"there is not a family {uri.family}")
-            raise AdelphosException("Invalid username/password")
+            raise AdelphosException("Invalid username/password",
+                        EAdelhposErrno.EINVALID_USER_OR_PASSWORD)
 
         #self.gateway.session.family_dto = family_dto
 
@@ -119,7 +121,8 @@ in your Mastodon inbox to finalize the login."""
                                          family_dto.fd_actor_id)
 
         if (alias_dto is None):
-            raise AdelphosException("Invalid alias/password")
+            raise AdelphosException("Invalid alias/password",
+                                   EAdelhposErrno.EINVALID_USER_OR_PASSWORD)
 
         #gCon.log(f"got the alias {alias_dto}, now we verify")
 
@@ -128,7 +131,8 @@ in your Mastodon inbox to finalize the login."""
             try:
                 res = ph.verify(alias_dto.password, password)
             except:
-                raise AdelphosException("Invalid username/password")
+                raise AdelphosException("Invalid username/password",
+                                   EAdelhposErrno.EINVALID_USER_OR_PASSWORD)
 
         # OK, now we take the ActivityPub actor who is behind this alias
         actor_dto = self.gateway.app.dao.ap_actor_dao.get_from_local_id(
