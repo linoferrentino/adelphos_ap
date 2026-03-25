@@ -78,7 +78,7 @@ class BaseAdelphosDao(BaseDao):
         if instance_pack.instance.authorized == 0:
             raise AdelphosException(None, EAdelhposErrno.EREMOTE_ADELPHOS_NOT_AUTHORIZED)
 
-        remote_dto = await self.dao.app.ad_gateway.daemon_api.\
+        remote_dto = await self.dao.app.ad_gateway.ad_daemon_api.\
                 get_uri_remote(instance_pack, uri)
         return remote_dto
 

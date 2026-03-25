@@ -198,10 +198,33 @@ def _parse_uri_type(uri_type_str):
     return uri_type
 
 
+
+def uri_numeric_unparse(uri):
+    uri_local = f"#{uri.obj_type}#${uri.numeric_id}"
+    return uri_local
+    
+
+def uri_human_unparse(uri):
+    if uri.obj_type == EAdelphosType.ALIAS_TYPE:
+        uri_local = f"#{uri.obj_type}#{uri.name}.{uri.family}"
+    else:
+        uri_local = f"#{uri.obj_type}#{uri.name}"
+    return uri_local
+
+
+def uriunparse(uri):
+    if uri.is_numeric:
+        uri_local = uri_numeric_unparse(uri)
+    else:
+        uri_local = uri_human_unparse(uri)
+
+    if uri.host_name is None:
+        return uri_local
+    return f"{uri_local}@{uri.host_name}"
+
+
 # this function is used to parse an URI with the
 # type already fixed.
-# for example
-
 def uriparse_type(uri, uri_type):
 
     (object_part, host_part) = _divide_local_host_part(uri)

@@ -14,8 +14,8 @@
 # testing trust lines.
 
 
-from app.AdelphosApp import get_app
-from app.AdelphosApp import del_app
+from app.AdelphosApp import get_existent_app
+from app.ad_api.AdDaemonApi import AdDaemonApi
 from fastapi.testclient import TestClient
 from app.logging import gCon
 from fastapi.websockets import WebSocket
@@ -43,7 +43,7 @@ adelphos_ad_api_test =  {"General": {
     "root_password": "$argon2id$v=19$m=65536,t=3,p=4$o/oGlKYis246QARUaT/0cw$7zu3oQuS1wz4Ddk/pc6NjLfTcac6YGmEX2VRGymtXrI"
     }, 
             "demo_users":
-    [{"name": "alice", "alias": "##alice.af", "password": "alice_tl", "root" : True}, 
+    [{"name": "alice", "alias": "##alice.tapif", "password": "alice_tl", "root" : True}, 
     {"name": "bob", "alias": "##bob.bf", "password": "bob_tl"},
     {"name": "carl", "alias": "##carl.cf", "password": "carl_tl"}
     ]
@@ -81,9 +81,19 @@ def adelphos_ad_api(adelphos_remote_process_ad_api):
 
 def test_check_echo(adelphos_ad_api):
 
-    # to test the adelphos api I fake an encapsulated message
+    # to test the adelphos api I fake an encapsulated message and I give it
+    # to my app
+    with adelphos_ad_api.websocket_connect("/api/ws") as websocket:
+        websocket.send_text('test_recho msg "hello world" remote_instance localhost:5012')
+        tu.websocket_assert_code(websocket, EAdelhposErrno.ENO_DAEMON_FOR_HOST)
 
-
-
-
-    assert 0 == 0
+        # allow the instance
+        script = [
+            'backdoor password super_secret',
+            'sudo_adelphos_allow remote_adelphos localhost:5012',
+            'sudo_su_push alias ##alice.tapif',
+            ]
+        tu.play_script_on_instance_OK(adelphos_ad_api, script)
+        websocket.send_text('test_recho msg "hello world" remote_instance localhost:5012')
+        tu.websocket_assert_payload_success(websocket, 
+          'hello world ##alice.tapif@localhost:9911 from localhost:5012')

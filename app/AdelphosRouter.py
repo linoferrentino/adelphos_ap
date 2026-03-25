@@ -46,7 +46,7 @@ import uvicorn
 import re
 
 #from app.AdelphosApp import AdelphosApp, get_app
-from app.consts import USER_ID
+from app.consts import DAEMON_ID 
 from app.consts import API_POINT
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
@@ -173,7 +173,7 @@ class AdelphosRouter(APIRouter):
         <title>Welcome to adelphos instance {instance} @ {host}</title>
         </head>
         <body>
-            <h1>Adelphos instance: {instance}</h1><br><h2>{USER_ID}@{host}</h2>
+            <h1>Adelphos instance: {instance}</h1><br><h2>{DAEMON_ID}@{host}</h2>
 
     <div class="chat-container" id="chat">
         <div class="message received">
@@ -259,8 +259,7 @@ def make_router(app):
 
     router = AdelphosRouter(app)
 
-    test_instance = re.match("_test_", app.instance) is not None
-
+    test_instance = app.is_test_instance()
 
     if test_instance:
         # I can add a backdoor to test the application (in testing).
@@ -370,7 +369,7 @@ def make_router(app):
         gCon.log(f"[red]post inbox {username}[/red]")
 
         res_code = 404
-        if username == USER_ID:
+        if username == DAEMON_ID:
 
             # I create the Activity Pub Gateway, one for each request,
             # because we can support concurrent async requests.

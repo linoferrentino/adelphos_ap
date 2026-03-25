@@ -16,6 +16,9 @@
 # an Activity Pub endpoint or a web socket endpoint.
 
 from app.logging import gCon
+from app.api.AdelphosException import AdelphosException
+from app.api.AdelphosException import EAdelhposErrno
+
 
 
 # some APIs can be called only in debug.

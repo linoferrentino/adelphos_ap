@@ -12,21 +12,24 @@
 ######################################################
 #
 
-from app.api.Gateway import Gateway
-from app.api.AliasApi import AliasApi
-from app.api.RootApi import RootApi
-from app.api.TrustLineApi import TrustLineApi
 import shlex
-from abc import ABC
-from app.api.AdelphosException import AdelphosException
-from app.api.UserSession import UserSession
-from app.api.OutgressGateway import post_to_ap_actor
-from abc import abstractmethod
-from app.logging import gCon
 import asyncio
 import traceback
 import json
 
+from abc import ABC
+from abc import abstractmethod
+
+from app.api.Gateway import Gateway
+from app.api.AliasApi import AliasApi
+from app.api.RootApi import RootApi
+from app.api.TrustLineApi import TrustLineApi
+from app.api.TestApi import TestApi
+
+from app.api.AdelphosException import AdelphosException
+from app.api.UserSession import UserSession
+from app.api.OutgressGateway import post_to_ap_actor
+from app.logging import gCon
 
 # the web socket Gateway
 
@@ -40,8 +43,10 @@ class WebSocketGateway(Gateway):
 
         self.alias_api = AliasApi(self)
         self.tl_api = TrustLineApi(self)
-        # the commands which only a super user can give.
         self.root_api = RootApi(self)
+        
+        if app.is_test_instance():
+            self.test_api = TestApi(self)
 
         # the container for the logged user.
         self.session = UserSession(self)

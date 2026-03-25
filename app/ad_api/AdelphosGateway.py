@@ -28,13 +28,16 @@ class AdelphosGateway(Gateway):
     def __init__(self, app):
         super().__init__(app)
 
-        self.daemon_api = AdDaemonApi(self)
+        self.ad_daemon_api = AdDaemonApi(self)
 
 
     # the request is encoded in base64
     async def pre_process_request(self, request):
 
         return (202, str(request))
+
+
+    # the AdelphosGateway has another way to process the command line
 
 
     # this is returned as an activity pub message.

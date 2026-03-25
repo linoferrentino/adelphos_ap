@@ -45,12 +45,19 @@ def websocket_get_next_msg(websocket):
 def websocket_assert_payload(websocket, payload_expected):
     data = websocket_get_next_msg(websocket)
     assert data['payload'] == payload_expected
+    return data
 
 
 def websocket_assert_code(websocket, code_expected):
     data = websocket_get_next_msg(websocket)
     code_got = data['res']
     assert code_got == code_expected
+    return data
+
+
+def websocket_assert_payload_success(websocket, payload_expected):
+    data = websocket_assert_code(websocket, EAdelhposErrno.DONE_OK)
+    assert data['payload'] == payload_expected
 
 
 # enforces that all the commands on the script are successful

@@ -54,6 +54,7 @@ from app.ap_api.ActivityPubGateway import ActivityPubGateway
 from app.ad_api.AdelphosGateway import AdelphosGateway
 from .consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
 from app.AdelphosRouter import make_router
+import re
 
 app = None
 
@@ -216,6 +217,11 @@ class AdelphosApp(FastAPI):
         return self.config['General']['debug']
 
 
+    def is_test_instance(self):
+        test_instance = re.match("_test_", self .instance) is not None
+        return test_instance
+
+
     # this is the blocking (async) GET request.
     async def async_req_wait(self, ar):
         # I have to put it into the list and wait
@@ -357,6 +363,10 @@ def get_app(instance_name, config_file, config):
 
     return app
 
+
+# this does not try to create it.
+def get_existent_app():
+    return app
 
 
 def del_app():
