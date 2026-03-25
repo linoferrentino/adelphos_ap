@@ -17,7 +17,7 @@
 from app.logging import gCon
 from app.dao.ApActorDto import create_ap_actor
 from app.consts import API_POINT
-from app.api.ActivityPubGateway import ActivityPubBaseGateway
+from app.ap_api.ActivityPubGateway import ActivityPubBaseGateway
 from app.api.AdelphosException import AdelphosException
 import time
 

@@ -16,10 +16,10 @@
 
 from app.ap_api.AsyncRequest import AsyncGetReq
 from app.ap_api.AsyncRequest import AsyncPostReq
-from app.api.ApAliasApi import ApAliasApi
+from app.ap_api.ApDaemonApi import ApDaemonApi
+from app.ap_api.ApAliasApi import ApAliasApi
 from app.api.Gateway import Gateway
 from app.consts import API_POINT
-from app.consts import USER_ID
 from app.consts import DAEMON_ID
 from app.dao.AliasDto import AliasDto
 from app.logging import gCon
@@ -258,9 +258,8 @@ class ActivityPubGateway(ActivityPubBaseGateway):
     
     def __init__(self, app):
         super().__init__(app)
-        # I create here the daemon_api: it will register itself, and register
-        # its handlers.
         self.ap_alias_api = ApAliasApi(self)
+        self.ap_daemon_api = ApDaemonApi(self)
 
 
     def select_user_inbox(self, activity_pub_user):

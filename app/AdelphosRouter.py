@@ -41,7 +41,7 @@ from fastapi.responses import JSONResponse
 
 from app.logging import gCon
 from app.config import load_conf
-from app.api.ActivityPubGateway import ActivityPubGateway
+from app.ap_api.ActivityPubGateway import ActivityPubGateway
 import uvicorn
 import re
 

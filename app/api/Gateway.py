@@ -84,7 +84,7 @@ class Gateway(ABC):
     # here the method is not entirely abstract, we have to return a string.
     async def proc_request(self, req_str):
 
-        self.parse_cmd_line(req_str)
+        self.parse_request_string(req_str)
 
         # I have first to call the real handler, this might produce an exception!
         (errno, payload) = await self.proc_request_try()
@@ -98,8 +98,10 @@ class Gateway(ABC):
 
         # OK, now I will check if there has been an exception, if not I can commit
         if (self.in_error == False):
+            #gCon.log("[blue]commit[/blue]")
             self.app.dao.commit()
         else:
+            #gCon.log("[red]rollback[/red]")
             self.app.dao.rollback()
 
         await self.outgress_result(errno, payload)
@@ -150,7 +152,8 @@ class Gateway(ABC):
 
     # parse the parameters: they can come either from an Activity Pub message or
     # a web socket (or a GUI client, later...)
-    def parse_cmd_line(self, command_line):
+    # Derived classes could override this method.
+    def parse_request_string(self, command_line):
         parsed_line = shlex.split(command_line)
         self.cmd = None
         self.cmd_dict = {}

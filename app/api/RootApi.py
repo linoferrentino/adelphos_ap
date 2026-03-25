@@ -76,21 +76,9 @@ class RootApi(BaseApi):
             self.gateway.app.dao.ad_instance_dao.update(ad_instance_dto)
             return f"Remote instance {remote_instance} {action}."
 
-        # Ok, now I have to discover the actor at that instance.
-        gCon.log(f"You want to authorize instance {remote_instance}")
-
-        daemon_in_fediverse = f"@{DAEMON_ID}@{remote_instance}"
-        gCon.log(f"discovering actor {daemon_in_fediverse}")
-
-        (daemon_server, daemon_actor) = await self.gateway.app.ap_api.\
-                get_or_discover_actor(daemon_in_fediverse)
-
-        # If I am here without exceptions I can create the row in Db.
-        ad_instance_dto = create_ad_instance(daemon_actor.actor_id,
-                                             1, f"{action} by root on {now_time}")
-        self.gateway.app.dao.ad_instance_dao.store(ad_instance_dto)
-
-        return f"OK, remote adelphos {daemon_in_fediverse} {action}"
+        await self.gateway.app.dao.ad_instance_dao.\
+                discover_from_host_name(remote_instance)
+        return f"OK, remote adelphos {remote_instance} discovered and enabled."
 
 
     @sudo_cmd

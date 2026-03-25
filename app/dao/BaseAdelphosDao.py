@@ -65,11 +65,22 @@ class BaseAdelphosDao(BaseDao):
     # this method will get the object from the federated db 
     async def _get_from_remote_uri(self, uri):
         # get remote adelphos instance
-        instance_dto = self.dao.ad_instance_dao.get_from_hostname(uri.host_name)
-        gCon.log(f"got {instance_dto} as adelphos instance")
-        # is enabled?
-        # if no exception
-        # if yes send to it the request for the uri (which, in this case, will be local!)
+        instance_pack = self.dao.ad_instance_dao.get_from_hostname(uri.host_name)
+        gCon.log(f"got {instance_pack} as adelphos instance")
+
+        if instance_pack is None:
+            instance_pack = await self.dao.ad_instance_dao.discover_from_host_name(
+                    uri.host_name)
+
+        if instance_pack is None:
+            return None
+
+        if instance_pack.instance.authorized == 0:
+            raise AdelphosException(None, EAdelhposErrno.EREMOTE_ADELPHOS_NOT_AUTHORIZED)
+
+        remote_dto = await self.dao.app.ad_gateway.daemon_api.\
+                get_uri_remote(instance_pack, uri)
+        return remote_dto
 
     
     # this method gets the object from this instance or, if not present,

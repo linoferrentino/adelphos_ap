@@ -49,7 +49,8 @@ def websocket_assert_payload(websocket, payload_expected):
 
 def websocket_assert_code(websocket, code_expected):
     data = websocket_get_next_msg(websocket)
-    assert data['res'] == code_expected
+    code_got = data['res']
+    assert code_got == code_expected
 
 
 # enforces that all the commands on the script are successful

@@ -14,6 +14,7 @@ class EAdelhposErrno(IntEnum):
     EINVALID_USER_OR_PASSWORD = auto()
     ENO_DAEMON_FOR_HOST = auto()
     EURI_NOT_FOUND = auto()
+    EREMOTE_ADELPHOS_NOT_AUTHORIZED = auto()
 
 
 class AdelphosException(Exception):

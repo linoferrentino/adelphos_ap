@@ -16,6 +16,11 @@
 # the adelphos instance is also an activity pub instance, but not the contrary
 
 from dataclasses import dataclass
+from app.dao.ApServerDto import ApServerDto
+from app.dao.ApActorDto import ApActorDto
+from typing import NamedTuple
+
+  
 
 @dataclass
 class AdInstanceDto:
@@ -29,6 +34,13 @@ class AdInstanceDto:
         return self.actor_fk
 
 
+# the tuple which collects the adelphos instance in its fullness
+class AdInstancePack(NamedTuple):
+    server:  ApServerDto
+    actor: ApActorDto
+    instance: AdInstanceDto
+
+  
 # the function to create an instance with default fields
 def create_ad_instance(actor_fk, authorized, comment):
     ad_instance = AdInstanceDto(actor_fk, authorized, comment, None)

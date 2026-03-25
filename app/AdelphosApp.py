@@ -40,7 +40,6 @@ from app.ap_api.ActivityPubMockup import ActivityPubMockup
 # the actor is ambiguous, we can have the activity pub actor
 # or the adelphos actor
 from app.dao.ApActorDao import ApActorDao
-from app.dao.ApActorDto import create_ap_actor
 
 from app.dao.ApServerDao import ApServerDao
 from app.dao.ApServerDto import create_ap_server
@@ -51,7 +50,8 @@ from app.dao.AliasDao import AliasDao
 from app.dao.AdInstanceDao import AdInstanceDao
 from app.dao.AdInstanceDto import create_ad_instance
 
-from app.api.ActivityPubGateway import ActivityPubGateway
+from app.ap_api.ActivityPubGateway import ActivityPubGateway
+from app.ad_api.AdelphosGateway import AdelphosGateway
 from .consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
 from app.AdelphosRouter import make_router
 
@@ -89,7 +89,10 @@ class AdelphosApp(FastAPI):
         self.public_key = pub_key
         self.private_key = priv_key
 
+        # I have two gateways, one which uses activity pub, the other
+        # is the enclosed gateway tunneled inside activity pub.
         self.ap_gateway = ActivityPubGateway(self)
+        self.ad_gateway = AdelphosGateway(self)
         self.ap_mockup = ActivityPubMockup(self)
 
         # create the condition for the http requests and the daemon

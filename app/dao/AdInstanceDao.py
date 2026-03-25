@@ -15,10 +15,13 @@
 # to other adelphos instances in the fediverse.
 
 from app.dao.BaseDao import BaseDao
+from datetime import datetime
 from app.consts import DAEMON_ID
 from app.api.AdelphosException import AdelphosException
 from app.api.AdelphosException import EAdelhposErrno
 from app.dao.AdInstanceDto import AdInstanceDto
+from app.dao.AdInstanceDto import AdInstancePack
+from app.dao.AdInstanceDto import create_ad_instance
 from ..logging import gCon
 
 class AdInstanceDao(BaseDao):
@@ -45,10 +48,10 @@ class AdInstanceDao(BaseDao):
         ap_actor_dto = self.dao.ap_actor_dao.get_from_preferred_username(
                 ap_server_dto.server_id, DAEMON_ID)
 
+        # this is a benign condition, the server is only a normal activity pub server.
+        # but it could also host an adelphos instance, like the test one.
         if (ap_actor_dto is None):
             return None
-            #raise AdelphosException(f"The server {host_name} is a normal activity \
-#pub server", EAdelhposErrno.ENO_DAEMON_FOR_HOST)
 
         # OK, now I can get the adelphos instance, and this MUST succeed, because
         # otherwise it means that I have a daemon actor pending.
@@ -59,7 +62,25 @@ class AdInstanceDao(BaseDao):
             raise AdelphosException(f"Database corrupt? No instance for {host_name}")
 
         gCon.log(f"OK, there is already an adelphos instance {ad_instance_dto}")
-        return ad_instance_dto
+        return AdInstancePack(ap_server_dto, ap_actor_dto, ad_instance_dto)
+
+
+    async def discover_from_host_name(self, hostname):
+        daemon_in_fediverse = f"@{DAEMON_ID}@{hostname}"
+        gCon.log(f"discovering actor {daemon_in_fediverse}")
+
+        now_time = datetime.now()
+
+        (daemon_server, daemon_actor) = await self.dao.app.ap_api.\
+                get_or_discover_actor(daemon_in_fediverse)
+
+        # If I am here without exceptions I can create the row in Db, the instance
+        # is at first enabled.
+        ad_instance_dto = create_ad_instance(daemon_actor.actor_id,
+                                             1, f"discovered on {now_time}")
+        self.dao.ad_instance_dao.store(ad_instance_dto)
+
+        return AdInstancePack(daemon_server, daemon_actor, ad_instance_dto)
 
 
     def store_dict(self, instance, instance_as_dict):
