@@ -51,6 +51,7 @@ class AdInstanceDao(BaseDao):
         # this is a benign condition, the server is only a normal activity pub server.
         # but it could also host an adelphos instance, like the test one.
         if (ap_actor_dto is None):
+            #gCon.log("No actor listening")
             return None
 
         # OK, now I can get the adelphos instance, and this MUST succeed, because

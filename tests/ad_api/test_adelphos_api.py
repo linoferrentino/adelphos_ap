@@ -95,7 +95,7 @@ def adelphos_ad_api(adelphos_remote_process_ad_api):
 
 # I have to use the backdoor api
 @pytest.mark.anyio
-async def X_test_check_echo(adelphos_ad_api):
+async def test_check_echo(adelphos_ad_api):
 
     async with httpx.AsyncClient() as client:
         async with aconnect_ws("http://localhost:9911/api/ws", client) as ws:
@@ -122,8 +122,8 @@ async def X_test_check_echo(adelphos_ad_api):
     ('backdoor password super_secret', EAdelhposErrno.DONE_OK),
     ('sudo_adelphos_allow remote_adelphos localhost:5012', EAdelhposErrno.DONE_OK),
     ('sudo_su_push alias ##bob.bf19', EAdelhposErrno.DONE_OK),
-    ('test_recho msg "hello world" remote_instance localhost:5012',
-     'hello world ##bob.bf19f@localhost:9911 from localhost:5012')
+    ('test_recho msg "this works" remote_instance localhost:5012',
+     'hello_remote this works')
             ]
 
             gCon.log('script 3')

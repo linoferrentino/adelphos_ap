@@ -12,15 +12,14 @@
 ######################################################
 #
 # The daemon gateway, the entry point to Adelphos, usually encapsulated into the
-# ActivityPubGateway
 
 
+import base64
+import json
 
 from app.api.Gateway import Gateway
 from app.ad_api.AdDaemonApi import AdDaemonApi
-import base64
 from app.logging import gCon
-import json
 
 
 # this is the object which will process the requests that come from
@@ -34,18 +33,19 @@ class AdelphosGateway(Gateway):
         self.ad_daemon_api = AdDaemonApi(self)
 
 
-    # the request is encoded in base64
+    # the request is encoded in base64, the request must be
+    # done in the same thread
     async def pre_process_request(self, request):
-        gCon.log(f"HERE I got req {request}")
-
-        return (202, str(request))
+        decoded = self._decode_daemon_message(request)
+        gCon.log(f"I got req {decoded}")
+        return (None, decoded)
 
 
     def parse_request_string(self, command_line):
-        #gCon.log(f"[red]HERE I got req {command_line}[/red]")
-        payload_str = self._decode_daemon_message(command_line)
-        remote_json = json.loads(payload_str)
-        gCon.log(f"Got parsed: {remote_json}")
+        remote_json = json.loads(command_line)
+        gCon.log(f"The request decoded is {remote_json}")
+        self.cmd = remote_json['cmd']
+        self.cmd_dict = remote_json['params']
 
 
     def _decode_daemon_message(self, daemon_str):
@@ -62,7 +62,9 @@ class AdelphosGateway(Gateway):
 
     # the AdelphosGateway has another way to process the command line
     def post_process_msg(self, msg_out):
+        gCon.log(f"Will post process {msg_out}")
         msg_proc = self._encode_daemon_message(msg_out)
+        gCon.log(f"Got {msg_proc}")
         return msg_proc
 
 

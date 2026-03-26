@@ -49,11 +49,13 @@ class TestApi(BaseApi):
         remote_instance = self.gateway.get_param_safe('remote_instance')
         instance_pack = self.gateway.app.dao.ad_instance_dao.\
                 get_from_hostname(remote_instance)
+        #gCon.log(f"adelphos found {instance_pack}")
         if instance_pack is None:
+            gCon.log(f"No adelphos instance @{remote_instance}")
             raise AdelphosException(None, EAdelhposErrno.ENO_DAEMON_FOR_HOST)
         response = await self.gateway.app.ad_gateway.ad_daemon_api.\
                 echo_remote(instance_pack, msg)
-        return 'hello world ##alice.tapif@localhost:9911 from localhost:5012' 
+        #return 'hello world ##alice.tapif@localhost:9911 from localhost:5012' 
         return response
 
 

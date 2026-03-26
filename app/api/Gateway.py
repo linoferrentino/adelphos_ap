@@ -48,7 +48,7 @@ class Gateway(ABC):
     async def new_request(self, request):
 
         # at the beginning I do not have an async request (or I delete the previous one) 
-        self.async_ctx = None
+        #self.async_ctx = None
         self.in_error = False
 
         # this pre process can have two outcomes
@@ -67,7 +67,7 @@ class Gateway(ABC):
             # the return is the res_code
             response = res_code
             if (req_str is not None):
-                #gCon.log(f"Creating task for request -{req_str}-")
+                gCon.log(f"Creating task for request -{req_str}-")
                 asyncio.create_task(self.proc_request(req_str))
 
         # this is the processing part of the request
@@ -94,21 +94,22 @@ class Gateway(ABC):
 
         # OK, now I will check if there has been an exception, if not I can commit
         if (self.in_error == False):
-            #gCon.log("[blue]commit[/blue]")
+            gCon.log(f"[blue]commit[/blue] {self.in_error}")
             self.app.dao.commit()
         else:
-            #gCon.log("[red]rollback[/red]")
+            gCon.log(f"[red]rollback[/red] {self.in_error}")
             self.app.dao.rollback()
 
         # do not ping back the error!
         payload = self.pack_message(errno, msg_clear)
+        payload_encoded = self.post_process_msg(payload)
 
         if errno != EAdelhposErrno.EREMOTE_ERROR:
-            payload_encoded = self.post_process_msg(payload)
-            await self.outgress_result(payload)
+            await self.outgress_result(payload_encoded)
 
-        # the result is given also in clear as a return value for the automating scripts
-        return payload
+        # the result is given also in clear as a return 
+        # value for the automating scripts
+        return payload_encoded
 
 
     # this is an abstract method here, different gateways will implement it differently

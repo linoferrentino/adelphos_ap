@@ -373,10 +373,10 @@ def make_router(app):
 
             # I create the Activity Pub Gateway, one for each request,
             # because we can support concurrent async requests.
-            gateway = ActivityPubGateway(app)
+            #gateway = ActivityPubGateway(app)
 
             # this will return the return code and will process the request asynchronously
-            res_code = await gateway.new_request(request)
+            res_code = await app.ap_gateway.new_request(request)
 
             # the result code is given immediately, but the message is processed
             # asynchronously

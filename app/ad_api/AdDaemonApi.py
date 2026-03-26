@@ -14,10 +14,12 @@
 
 # the normal daemon api, encapsulated into an ActivityPub message
 
-from app.api.BaseApi import BaseApi
 import base64
 import json
+
 from app.dao.AdelphosUri import uriunparse
+from app.logging import gCon
+from app.api.BaseApi import BaseApi
 
 
 class AdDaemonApi(BaseApi):
@@ -28,9 +30,10 @@ class AdDaemonApi(BaseApi):
 
 
     async def _hndl_echo(self):
-        msg = self.get_param_safe('msg')
+        msg = self.gateway.get_param_safe('msg')
+        gCon.log(f"remote echo msg {msg}")
         answer = f'hello_remote {msg}'
-        return msg
+        return answer
 
 
     async def _hndl_get_uri(self):
@@ -45,12 +48,6 @@ class AdDaemonApi(BaseApi):
                 }
         rcmd_str = json.dumps(cmd_json)
         return self.gateway._encode_daemon_message(rcmd_str)
-
-
-    # this unpacks the request and returns 
-    @staticmethod
-    def _unpack_request_message(req_str):
-        pass
 
 
     def _get_uri_remote_payload(self, uri):
@@ -77,8 +74,10 @@ class AdDaemonApi(BaseApi):
         pass
 
 
+    # this is blocking, it is from client side
     async def echo_remote(self, ad_instance_pack, echomsg):
         msg = self._echo_remote_payload(echomsg)
+        gCon.log(f"------> I will send {msg}")
         res = await self.gateway.app.ap_gateway.ap_daemon_api.make_request(
                 ad_instance_pack, msg)
         return res

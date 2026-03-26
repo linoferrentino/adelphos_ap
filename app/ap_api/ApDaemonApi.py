@@ -22,6 +22,7 @@
 
 import secrets
 import asyncio
+import json
 
 from app.api.BaseApi import BaseApi
 from app.api.AdelphosException import AdelphosException
@@ -96,13 +97,20 @@ class ApDaemonApi(BaseApi):
         # I put it into the dictionary because I need to retrieve it for the response
         self.async_contexts[int(cur_api_id)] = async_ctx
 
+        gCon.log(f"[blue]my question {self.async_contexts}[/blue]")
         # OK, now I wait for a response!
         # this will block!
-        gCon.log("[red]Now I will wait until done![/red]")
-        #await async_ctx.wait_until_done()
+        gCon.log(f"[red]Now I will wait until done![/red] {id(self)}")
+        await async_ctx.wait_until_done()
+        gCon.log(f"[green]Waited the msg is {async_ctx.answer}[/green]")
 
-        # If I am here all is OK!
-        return async_ctx.answer
+        if async_ctx.answer['res'] == EAdelhposErrno.DONE_OK:
+            return async_ctx.answer['payload']
+
+        # If not this is a local exception
+        raise AdelphosException(async_ctx.answer['payload'],
+                                async_ctx.answer['res'])
+
 
 
     async def _hndl_daemon_q(self):
@@ -112,7 +120,8 @@ class ApDaemonApi(BaseApi):
         api_id = self.gateway.get_param_safe('api_id')
         payload_str = self.gateway.get_param_safe('payload')
 
-        payload_ans = await self.gateway.app.ad_gateway.proc_request(payload_str)
+        payload_ans = await self.gateway.app.ad_gateway.new_request(payload_str)
+        gCon.log(f"[yellow]Payload ans {payload_ans}[/yellow]")
         response_str = self.encode_remote_response(api_id, payload_ans)
         gCon.log(f"------> response {response_str}")
 
@@ -121,7 +130,24 @@ class ApDaemonApi(BaseApi):
 
 
     async def _hndl_daemon_a(self):
-        assert False
+
+        api_id = self.gateway.get_param_safe('api_id')
+        payload_str = self.gateway.get_param_safe('payload')
+        gCon.log(f"------> I have received {payload_str} for apiid {api_id}")
+        async_ctx = self.async_contexts.pop(int(api_id), None)
+        if (async_ctx is None):
+            # this is an internal error, or a tentative attack?
+            gCon.log(f"[blue]my question {self.async_contexts}[/blue]")
+            raise AdelphosException(f"No question asked {api_id} {id(self)}",
+                                    EAdelhposErrno.EGENERIC_SERVER)
+
+        # I have to unpack the remote payload
+        payload_decoded  = self.gateway.app.ad_gateway._decode_daemon_message(
+                payload_str)
+        remote_json = json.loads(payload_decoded)
+        async_ctx.answer = remote_json
+        async with async_ctx.async_cond:
+           async_ctx.async_cond.notify()
 
 
 

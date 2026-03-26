@@ -101,7 +101,8 @@ def test_create_trust_line(adelphos_tl):
         create_trust_line(websocket, '##bob.bf' , EAdelhposErrno.DONE_OK)
 
 
-def test_create_trust_line_remote(adelphos_tl):
+# this cannot work, now, because we have the need of two independent instances.
+def xx_test_create_trust_line_remote(adelphos_tl):
 
     with adelphos_tl.websocket_connect("/api/ws") as websocket:
         create_trust_line(websocket, '##john.jf@localhost:5012',

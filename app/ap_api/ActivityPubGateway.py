@@ -249,6 +249,9 @@ class ActivityPubBaseGateway(Gateway):
     # here the outgress result, in our case it will post the message to the
     # user's inbox who has made the request.
     async def outgress_result(self, result):
+        if result is None:
+            gCon.log("Discarding None result")
+            return
         await self.app.ap_api.post_to_fediverse_actor_as_daemon(
                 self.server_dto, self.actor_dto, result)
 
