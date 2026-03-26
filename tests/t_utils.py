@@ -36,28 +36,70 @@ def generator_test_client(instance_conf, must_wait):
     del_app()
 
 
-def websocket_get_next_msg(websocket):
-    datas = websocket.receive_text()
+def _parse_data(datas):
     data_parsed = json.loads(datas)
     return data_parsed
 
 
-def websocket_assert_payload(websocket, payload_expected):
-    data = websocket_get_next_msg(websocket)
+def websocket_get_next_msg(websocket):
+    datas = websocket.receive_text()
+    return _parse_data(datas)
+
+
+async def ws_get_next_msg_async(ws):
+    datas = await ws.receive_text()
+    return _parse_data(datas)
+
+
+def _ws_assert_payload(data, payload_expected):
     assert data['payload'] == payload_expected
     return data
 
 
-def websocket_assert_code(websocket, code_expected):
+def websocket_assert_payload(websocket, payload_expected):
     data = websocket_get_next_msg(websocket)
+    return _ws_assert_payload(data, payload_expected)
+
+
+async def  ws_assert_payload_async(ws, payload_expected):
+    data = await ws_get_next_msg_async(ws)
+    return _ws_assert_payload(data, payload_expected)
+
+
+def _ws_assert_code(data, code_expected):
     code_got = data['res']
     assert code_got == code_expected
     return data
 
 
+def websocket_assert_code(websocket, code_expected):
+    data = websocket_get_next_msg(websocket)
+    return _ws_assert_code(data, code_expected)
+
+
+async def ws_assert_code_async(ws, code_expected):
+    data = await ws_get_next_msg_async(ws)
+    return _ws_assert_code(data, code_expected)
+
+
 def websocket_assert_payload_success(websocket, payload_expected):
     data = websocket_assert_code(websocket, EAdelhposErrno.DONE_OK)
-    assert data['payload'] == payload_expected
+    return _ws_assert_payload(data, payload_expected)
+
+
+async def play_script_ws_async(ws, script):
+    for item in script:
+        (question, expected) = item
+        #gCon.log(f'-----------------------> send {question}')
+        await ws.send_text(question)
+        if isinstance(expected, EAdelhposErrno):
+            #gCon.log(f"expected code {expected}")
+            await ws_assert_code_async(ws, expected)
+        elif isinstance(expected, str):
+            #gCon.log(f"expected string {expected}")
+            await ws_assert_payload_async(ws, expected)
+        else:
+            await ws_assert_payload_code_async(ws, expected[0], expected[1])
 
 
 # enforces that all the commands on the script are successful

@@ -97,8 +97,6 @@ def test_sub_proc(adelphos1, adelphos_remote_process):
     with adelphos1.websocket_connect("/api/ws") as websocket:
         websocket.send_text('login alias ##bob.bf password bob11')
         tu.websocket_assert_code(websocket, EAdelhposErrno.DONE_OK)
-        #data = websocket.receive_text()
-        #assert re.match('Login OK.*', data) is not None
 
 
 def test_ad_2(adelphos1, adelphos_remote_process):
@@ -106,8 +104,6 @@ def test_ad_2(adelphos1, adelphos_remote_process):
     with adelphos1.websocket_connect("/api/ws") as websocket:
         websocket.send_text('login alias ##john.jf password john12')
         tu.websocket_assert_code(websocket, EAdelhposErrno.EINVALID_USER_OR_PASSWORD)
-        #data = websocket.receive_text()
-        #assert re.match('User error: Invalid username/password', data) is not None
 
 
 def test_ad_3(adelphos1, adelphos_remote_process):
@@ -115,8 +111,6 @@ def test_ad_3(adelphos1, adelphos_remote_process):
     with adelphos1.websocket_connect("/api/ws") as websocket:
         websocket.send_text('backdoor password super_secret')
         tu.websocket_assert_code(websocket, EAdelhposErrno.DONE_OK)
-        #data = websocket.receive_text()
-        #assert data == 'Backdoor OK, you are root' 
 
 
 # I can login as an activity pub to the instance, this is done off-the-grid, as

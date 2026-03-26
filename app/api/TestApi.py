@@ -31,6 +31,7 @@ from app.api.UserSession import active_login
 
 from app.api.BaseApi import BaseApi
 from app.api.BaseApi import only_in_debug
+from app.api.UserSession import active_login
 
 
 class TestApi(BaseApi):
@@ -40,8 +41,11 @@ class TestApi(BaseApi):
         super().__init__(gateway, HANDLERS)
 
 
+    @active_login
+    @only_in_debug
     async def _hndl_recho(self):
         msg = self.gateway.get_param_safe('msg')
+        gCon.log(f"got message {msg}")
         remote_instance = self.gateway.get_param_safe('remote_instance')
         instance_pack = self.gateway.app.dao.ad_instance_dao.\
                 get_from_hostname(remote_instance)

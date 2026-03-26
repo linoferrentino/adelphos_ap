@@ -121,8 +121,8 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
     # the local db using the hostname and 
     def get_local_from_parsed_uri(self, server_dto, key_parsed):
         # I have to query the view.
-        gCon.log(f"this actor's Activity Pub host is {key_parsed.netloc}")
-        gCon.log(f"his path is  is {key_parsed.path}")
+        #gCon.log(f"this actor's Activity Pub host is {key_parsed.netloc}")
+        #gCon.log(f"his path is  is {key_parsed.path}")
 
         table_name = "ap_actor"
 
@@ -131,7 +131,7 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
         dto = self.dao.db.get_full_dto_ex(table_name,  fields_to_seek, 
                             values_to_seek, ApActorDto)
-        gCon.log(f"I have grabbed {dto} from db")
+        #gCon.log(f"I have grabbed {dto} from db")
  
         return dto
 

@@ -20,11 +20,13 @@
 # the transport. Inside it there is the normal API which is as if the request
 # has been done locally from a web socket.
 
-from app.api.BaseApi import BaseApi
 import secrets
 import asyncio
+
+from app.api.BaseApi import BaseApi
 from app.api.AdelphosException import AdelphosException
 from app.api.AdelphosException import EAdelhposErrno
+from app.logging import gCon
 
 
 # the async context used to store the condition to wait for the answer
@@ -71,12 +73,9 @@ class ApDaemonApi(BaseApi):
 
 
     # here I can encode a request for the remote adelphos
-    def encode_remote_response(self, response):
-        pass
-
-
-    def encode_remote_request(self, response):
-        pass
+    def encode_remote_response(self, api_id, response):
+        answer_txt = f"daemon_a api_id {api_id} payload {response}"
+        return answer_txt
 
 
     # this blocks the caller until an answer
@@ -99,6 +98,7 @@ class ApDaemonApi(BaseApi):
 
         # OK, now I wait for a response!
         # this will block!
+        gCon.log("[red]Now I will wait until done![/red]")
         #await async_ctx.wait_until_done()
 
         # If I am here all is OK!
@@ -111,15 +111,17 @@ class ApDaemonApi(BaseApi):
         # also in this part I have to check the authorized instance
         api_id = self.gateway.get_param_safe('api_id')
         payload_str = self.gateway.get_param_safe('payload')
-        # the request is then passed to the adelphos api
+
         payload_ans = await self.gateway.app.ad_gateway.proc_request(payload_str)
-        # this is my answer, I will have to pack it with the id requested.
-        response_str = self.encode_remote_response(payload_ans)
-        return payload_str
+        response_str = self.encode_remote_response(api_id, payload_ans)
+        gCon.log(f"------> response {response_str}")
+
+        # I have to post the response to the activity pub actor which has given
+        return response_str 
 
 
     async def _hndl_daemon_a(self):
-        pass
+        assert False
 
 
 

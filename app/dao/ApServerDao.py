@@ -48,7 +48,7 @@ class ApServerDao(BaseDao):
         # at this point I have to create it.
         server_dto = create_ap_server(host_name)
         self.store(server_dto)
-        gCon.log(f"I return {server_dto}")
+        #gCon.log(f"I return {server_dto}")
         return server_dto
 
 
@@ -74,7 +74,7 @@ class ApServerDao(BaseDao):
         newid = self.dao.db.insert_dto_fields(self.table_name,
                             ('host_name',), server_as_dict)
 
-        gCon.log(f"stored {server.host_name} his id {newid}")
+        #gCon.log(f"stored {server.host_name} his id {newid}")
 
         server.server_id = newid
 

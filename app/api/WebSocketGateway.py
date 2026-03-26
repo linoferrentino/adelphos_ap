@@ -92,11 +92,5 @@ class WebSocketGateway(Gateway):
         return (None, str(request))
 
 
-    async def outgress_result(self, errno, payload):
-        if payload is None or len(payload) == 0:
-            payload = "Done."
-        final_msg = {
-                'res' : errno,
-                'payload' : payload
-                }
-        await self.websocket.send_text(json.dumps(final_msg))
+    async def outgress_result(self, payload):
+        await self.websocket.send_text(payload)

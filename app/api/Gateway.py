@@ -23,6 +23,7 @@ from abc import abstractmethod
 from app.logging import gCon
 import asyncio
 import traceback
+import json
 
 
 class Gateway(ABC):
@@ -32,13 +33,12 @@ class Gateway(ABC):
     # only this because all the others are used by the WebSocket
     def __init__(self, app):
         self.app = app
-        # the dictionary is in common to the gateways
         self.handlers = dict()
+        self.handlers['AdelphosError'] = (self, Gateway._handle_remote_error)
 
 
     # this message is called by an handler to register its functions.
     def add_handler(self, command_str, other_self, handler):
-        #gCon.log(f"Adding handler for: {command_str}")
         self.handlers[command_str] = (other_self, handler)
 
 
@@ -67,7 +67,7 @@ class Gateway(ABC):
             # the return is the res_code
             response = res_code
             if (req_str is not None):
-                gCon.log(f"Creating task for request -{req_str}-")
+                #gCon.log(f"Creating task for request -{req_str}-")
                 asyncio.create_task(self.proc_request(req_str))
 
         # this is the processing part of the request
@@ -87,14 +87,10 @@ class Gateway(ABC):
         self.parse_request_string(req_str)
 
         # I have first to call the real handler, this might produce an exception!
-        (errno, payload) = await self.proc_request_try()
+        (errno, msg_clear) = await self.proc_request_try()
 
         # the request could have created an async context, in this case
         # the real message will be available at the end of the async call
-
-        # XXX maybe this wait can be moved.
-        if (self.async_ctx is not None):
-            (errno, payload) = await self.async_ctx
 
         # OK, now I will check if there has been an exception, if not I can commit
         if (self.in_error == False):
@@ -104,15 +100,21 @@ class Gateway(ABC):
             #gCon.log("[red]rollback[/red]")
             self.app.dao.rollback()
 
-        await self.outgress_result(errno, payload)
+        # do not ping back the error!
+        payload = self.pack_message(errno, msg_clear)
 
-        # the result is given also as a return value for the automating scripts
+        if errno != EAdelhposErrno.EREMOTE_ERROR:
+            payload_encoded = self.post_process_msg(payload)
+            await self.outgress_result(payload)
+
+        # the result is given also in clear as a return value for the automating scripts
         return payload
 
 
     # this is an abstract method here, different gateways will implement it differently
+    # the error code should have been already packed
     @abstractmethod
-    async def outgress_result(self, errno, payload):
+    async def outgress_result(self, result):
         pass
 
 
@@ -127,17 +129,45 @@ class Gateway(ABC):
             msg_out = await self.proc_req_bare()
             errno = EAdelhposErrno.DONE_OK
         except AdelphosException as adex:
-            #traceback.print_exc()
+            gCon.log(f"USER Error {adex}")
+            traceback.print_exc()
             errno = adex.code
-            msg_out = f"User error: {adex}"
+            msg_out = f"AdelphosError in your request (you have done a mistake): {adex}"
             self.in_error = True
         except Exception as ex:
-            #traceback.print_exc()
+            gCon.log(f"SERVER Error {ex}")
+            traceback.print_exc()
             errno = EAdelhposErrno.EGENERIC_SERVER
-            msg_out = f"Server error: {ex}"
+            msg_out = f"AdelphosError in server (this might be a bug, sorry): {ex}"
             self.in_error = True
 
+
+        # some gateways will pack the message and the error together.
+        #packed_message = Gateway.pack_message(errno, msg_out)
+        #post_proc_msg = self.post_process_msg(packed_message)
+
+        # here I return the simple tuple in clear
         return (errno, msg_out)
+
+
+    def pack_message(self, errno, msg_out):
+        if msg_out is None or len(msg_out) == 0:
+            msg_out = "Done." if errno == EAdelhposErrno.DONE_OK else "Error."
+        final_msg = {
+                'res' : errno,
+                'payload' : msg_out 
+        }
+        return json.dumps(final_msg)
+
+
+    # This is a NOP for all but the AdelphosGateway 
+    def post_process_msg(self, msg_out):
+        return msg_out
+
+
+    async def _handle_remote_error(self):
+        # I raise a remote error to stop infinite recursion.
+        raise AdelphosException("__recurse error__", EAdelhposErrno.EREMOTE_ERROR)
 
 
     async def proc_req_bare(self):
@@ -145,7 +175,9 @@ class Gateway(ABC):
         # search for the handler for this command.
         handler_tuple = self.handlers.get(self.cmd)
         if handler_tuple is None:
-            raise AdelphosException(f"Not found command  {self.cmd}")
+            raise AdelphosException(
+                    f"Not found command  {self.cmd}",
+                    EAdelhposErrno.ECOMMAND_NOT_FOUND)
         msg_out = await handler_tuple[1](handler_tuple[0])
         return msg_out
 

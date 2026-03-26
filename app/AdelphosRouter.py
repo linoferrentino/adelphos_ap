@@ -366,7 +366,7 @@ def make_router(app):
     @router.post('/users/{username}/inbox')
     async def user_inbox(username: str, request: Request):
 
-        gCon.log(f"[red]post inbox {username}[/red]")
+        #gCon.log(f"[red]post inbox {username}[/red]")
 
         res_code = 404
         if username == DAEMON_ID:

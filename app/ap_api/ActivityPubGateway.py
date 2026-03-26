@@ -78,15 +78,15 @@ class ActivityPubBaseGateway(Gateway):
         # Now we try to get the public key 
         key_id_val = keyId.split("=")[1][1:-1] #remove the quotes
 
-        gCon.log(f"Get the public key {key_id_val}")
-        gCon.log(f"Try to get the cached actor's key {actor_str}")
+        #gCon.log(f"Get the public key {key_id_val}")
+        #gCon.log(f"Try to get the cached actor's key {actor_str}")
 
         # get the actor and server objectx.
         # I have the key, which is an URI, I parse it in its components.
         key_parsed = urlparse(key_id_val)
 
         self.server_dto = self.app.dao.ap_server_dao.get_or_create_from_uri(key_parsed)
-        gCon.log(f"This is my server {self.server_dto}")
+        #gCon.log(f"This is my server {self.server_dto}")
 
         self.actor_dto = await self.app.dao.ap_actor_dao\
                 .get_or_discover_from_uri(self.server_dto, key_parsed)
@@ -164,7 +164,7 @@ class ActivityPubBaseGateway(Gateway):
                     padding.PKCS1v15(),
                     hashes.SHA256()
                     )
-            gCon.log("[green]The signature is valid.[/green]")
+            #gCon.log("[green]The signature is valid.[/green]")
 
         except Exception as err:
             gCon.log(f"[red]The signature is invalid.[/red]\n{err}")
@@ -176,7 +176,7 @@ class ActivityPubBaseGateway(Gateway):
 
     # this function will check the validity of the request and return a string
     async def pre_process_request(self, request):
-        gCon.log("pre proc request")
+        #gCon.log("pre proc request")
 
         body = await request.body()
         body_str = body.decode()
@@ -198,7 +198,7 @@ class ActivityPubBaseGateway(Gateway):
         # remove HTML tags
         clean_content = re.sub('<[^<]+?>', '', content) 
 
-        gCon.rule(f"Message from {actor_str}")
+        gCon.log(f"[green]Message from {actor_str}[/green]")
         gCon.log(f"For: url {request.url}")
         gCon.log(f"Message: [yellow]{clean_content}[/yellow]")
 
@@ -248,9 +248,14 @@ class ActivityPubBaseGateway(Gateway):
 
     # here the outgress result, in our case it will post the message to the
     # user's inbox who has made the request.
-    async def outgress_result(self, errno, result):
+    async def outgress_result(self, result):
         await self.app.ap_api.post_to_fediverse_actor_as_daemon(
                 self.server_dto, self.actor_dto, result)
+
+
+    # in Activity Pub I discard the errno
+    def pack_message(self, errno, msg_out):
+        return msg_out
 
 
 class ActivityPubGateway(ActivityPubBaseGateway):

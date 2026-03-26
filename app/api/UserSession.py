@@ -23,6 +23,7 @@ from enum import IntEnum
 from enum import auto
 from app.logging import gCon
 from app.api.AdelphosException import AdelphosException
+from app.api.AdelphosException import EAdelhposErrno
 
 # these are the states for the user.
 class EUserState(IntEnum):
@@ -36,7 +37,8 @@ def active_login(func):
 
     async def check_logged(self):
         if not self.gateway.session.is_login_valid():
-            raise AdelphosException("Login not valid or expired session")
+            raise AdelphosException("Login not valid or expired session",
+                                    EAdelhposErrno.ENOLOGIN)
         return await func(self)
 
     return check_logged
@@ -108,7 +110,7 @@ class UserSession:
 
     def is_login_valid(self):
         if (self.user_state != EUserState.LOGGED_AND_TOKEN):
-            gCon.log(f'[red]invalid state {self.user_state}[/red]')
+            #gCon.log(f'[red]invalid state {self.user_state}[/red]')
             return False
         # let's get the age
         time_now = datetime.now()

@@ -575,7 +575,7 @@ select * from {table_name} where {condition_str}
         cur.close()
 
         if (row is None):
-            gCon.log(f"No row in {table_name} for |{condition_str}| {values_to_seek}")
+            #gCon.log(f"No row in {table_name} for |{condition_str}| {values_to_seek}")
             return None
 
         # I simply get the dto 

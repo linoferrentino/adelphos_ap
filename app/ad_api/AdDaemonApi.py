@@ -19,6 +19,7 @@ import base64
 import json
 from app.dao.AdelphosUri import uriunparse
 
+
 class AdDaemonApi(BaseApi):
 
 
@@ -27,8 +28,9 @@ class AdDaemonApi(BaseApi):
 
 
     async def _hndl_echo(self):
-
-        pass
+        msg = self.get_param_safe('msg')
+        answer = f'hello_remote {msg}'
+        return msg
 
 
     async def _hndl_get_uri(self):
@@ -36,16 +38,13 @@ class AdDaemonApi(BaseApi):
         pass
 
 
-    @staticmethod
-    def _pack_request_message(command, param_dict):
+    def _pack_request_message(self, command, param_dict):
         cmd_json = {
                 'cmd' : command,
                 'params' : param_dict
                 }
         rcmd_str = json.dumps(cmd_json)
-        remote_payload = base64.b64encode(rcmd_str.encode())
-        remote_payload_str = remote_payload.decode()
-        return remote_payload_str
+        return self.gateway._encode_daemon_message(rcmd_str)
 
 
     # this unpacks the request and returns 
@@ -54,22 +53,20 @@ class AdDaemonApi(BaseApi):
         pass
 
 
-    @staticmethod
-    def _get_uri_remote_payload(uri):
-        msg = AdDaemonApi._pack_request_message('add_get_uri',
+    def _get_uri_remote_payload(self, uri):
+        msg = self._pack_request_message('add_get_uri',
                                                  { 'uri' : uriunparse(uri) } )
         return msg
 
 
-    @staticmethod
-    def _echo_remote_payload(msg):
-        msg = AdDaemonApi._pack_request_message('add_echo', { 'msg' : msg } )
+    def _echo_remote_payload(self, msg):
+        msg = self._pack_request_message('add_echo', { 'msg' : msg } )
         return msg
 
 
     # returns a uri from a remote adelphos
     async def get_uri_remote(self, ad_instance_pack, uri):
-        msg = AdDaemonApi._get_uri_remote_payload(uri)
+        msg = self._get_uri_remote_payload(uri)
         res = await self.gateway.app.ap_gateway.ap_daemon_api.make_request(
                 ad_instance_pack, msg)
         return res
@@ -81,7 +78,7 @@ class AdDaemonApi(BaseApi):
 
 
     async def echo_remote(self, ad_instance_pack, echomsg):
-        msg = AdDaemonApi._echo_remote_payload(echomsg)
+        msg = self._echo_remote_payload(echomsg)
         res = await self.gateway.app.ap_gateway.ap_daemon_api.make_request(
                 ad_instance_pack, msg)
         return res

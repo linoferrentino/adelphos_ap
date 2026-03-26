@@ -42,7 +42,7 @@ class AdInstanceDao(BaseDao):
         if (ap_server_dto is None):
             return None
 
-        gCon.log(f"Ok, the server {ap_server_dto} is present, is there a daemon actor?")
+        #gCon.log(f"Ok, the server {ap_server_dto} is present, is there a daemon actor?")
 
         # the name of the daemon is fixed.
         ap_actor_dto = self.dao.ap_actor_dao.get_from_preferred_username(
@@ -61,13 +61,13 @@ class AdInstanceDao(BaseDao):
         if (ad_instance_dto is None):
             raise AdelphosException(f"Database corrupt? No instance for {host_name}")
 
-        gCon.log(f"OK, there is already an adelphos instance {ad_instance_dto}")
+        #gCon.log(f"OK, there is already an adelphos instance {ad_instance_dto}")
         return AdInstancePack(ap_server_dto, ap_actor_dto, ad_instance_dto)
 
 
     async def discover_from_host_name(self, hostname):
         daemon_in_fediverse = f"@{DAEMON_ID}@{hostname}"
-        gCon.log(f"discovering actor {daemon_in_fediverse}")
+        #gCon.log(f"discovering actor {daemon_in_fediverse}")
 
         now_time = datetime.now()
 

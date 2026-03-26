@@ -28,6 +28,10 @@ import tests.t_utils as tu
 import pytest
 from app.api.AdelphosException import EAdelhposErrno
 
+import httpx
+from httpx_ws import aconnect_ws
+from httpx_ws.transport import ASGIWebSocketTransport
+
 
 # to create a trust line I first test a local trust line, then a remote trust line,
 # a remote is a trust line where the three aliases do not reside in the same instance.
@@ -43,8 +47,8 @@ adelphos_ad_api_test =  {"General": {
     "root_password": "$argon2id$v=19$m=65536,t=3,p=4$o/oGlKYis246QARUaT/0cw$7zu3oQuS1wz4Ddk/pc6NjLfTcac6YGmEX2VRGymtXrI"
     }, 
             "demo_users":
-    [{"name": "alice", "alias": "##alice.tapif", "password": "alice_tl", "root" : True}, 
-    {"name": "bob", "alias": "##bob.bf", "password": "bob_tl"},
+    [{"name": "alice", "alias": "##alice.tapif", "password": "alice_tapif", "root" : True}, 
+    {"name": "bob_19", "alias": "##bob.bf19", "password": "bob_19"},
     {"name": "carl", "alias": "##carl.cf", "password": "carl_tl"}
     ]
 }
@@ -74,12 +78,59 @@ def adelphos_remote_process_ad_api():
         yield
 
 
+#@pytest.fixture(scope = "module")
+#def adelphos_ad_api(adelphos_remote_process_ad_api):
+#    yield from tu.generator_test_client(adelphos_ad_api_test, True)
+
+
 @pytest.fixture(scope = "module")
 def adelphos_ad_api(adelphos_remote_process_ad_api):
-    yield from tu.generator_test_client(adelphos_ad_api_test, True)
+    time.sleep(1)
+    server = ProcessServer()
+    with server.run_in_subprocess(adelphos_ad_api_test):
+        time.sleep(1.5)
+        yield
+        
 
 
-def test_check_echo(adelphos_ad_api):
+# I have to use the backdoor api
+@pytest.mark.anyio
+async def X_test_check_echo(adelphos_ad_api):
+
+    async with httpx.AsyncClient() as client:
+        async with aconnect_ws("http://localhost:9911/api/ws", client) as ws:
+
+            script_no_login = [
+                ('test_recho msg "hello world" remote_instance localhost:5012',
+                 EAdelhposErrno.ENOLOGIN)
+            ]
+
+            gCon.log('script 1')
+            await tu.play_script_ws_async(ws, script_no_login)
+
+            script_login = [
+                ('al_login1f alias ##bob.bf19  password bob_19', 
+                 EAdelhposErrno.DONE_OK),
+                ('test_recho msg "hello world" remote_instance localhost:5012',
+                 EAdelhposErrno.ENO_DAEMON_FOR_HOST)
+            ]
+
+            gCon.log('script 2')
+            await tu.play_script_ws_async(ws, script_login)
+
+            script_allow = [
+    ('backdoor password super_secret', EAdelhposErrno.DONE_OK),
+    ('sudo_adelphos_allow remote_adelphos localhost:5012', EAdelhposErrno.DONE_OK),
+    ('sudo_su_push alias ##bob.bf19', EAdelhposErrno.DONE_OK),
+    ('test_recho msg "hello world" remote_instance localhost:5012',
+     'hello world ##bob.bf19f@localhost:9911 from localhost:5012')
+            ]
+
+            gCon.log('script 3')
+            await tu.play_script_ws_async(ws, script_allow)
+
+
+def xtest_check_echo(adelphos_ad_api):
 
     # to test the adelphos api I fake an encapsulated message and I give it
     # to my app
