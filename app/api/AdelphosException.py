@@ -22,6 +22,7 @@ class EAdelhposErrno(IntEnum):
     EURI_NOT_FOUND = 10
     EREMOTE_ADELPHOS_NOT_AUTHORIZED = 11
     ELOCAL_ADELPHOS_NOT_AUTHORIZED = 12
+    EBADDB = 13
 
 
 class AdelphosException(Exception):

@@ -98,15 +98,6 @@ def adelphos_ad_api(adelphos_remote_process_ad_api):
 async def test_check_echo(adelphos_ad_api):
 
 
-    #script_allow = [
-    #('backdoor password super_secret', EAdelhposErrno.DONE_OK),
-    #('sudo_adelphos_allow remote_adelphos localhost:5012', EAdelhposErrno.DONE_OK),
-    #('sudo_su_push alias ##bob.bf19', EAdelhposErrno.DONE_OK),
-    #('test_recho msg "this works" remote_instance localhost:5012',
-    # 'hello_remote this works')
-    #        ]
-
-
     async with httpx.AsyncClient() as client:
         async with aconnect_ws("http://localhost:9911/api/ws", client) as ws:
 
@@ -138,6 +129,23 @@ async def test_check_echo(adelphos_ad_api):
 
             gCon.log('script 3')
             await tu.play_script_ws_async(ws, script_allow)
+
+
+    # Now I authorize the adelphos on the other side.
+    async with httpx.AsyncClient() as client:
+        async with aconnect_ws("http://localhost:5012/api/ws", client) as ws:
+
+            script_allow = [
+    ('backdoor password super_secret', EAdelhposErrno.DONE_OK),
+    ('sudo_adelphos_allow remote_adelphos localhost:9911', EAdelhposErrno.DONE_OK),
+    ('sudo_su_push alias ##mary.mf', EAdelhposErrno.DONE_OK),
+    ('test_recho msg "this works" remote_instance localhost:9911', 
+     'hello_remote this works')
+            ]
+
+            gCon.log('script ///////////////////////// FROM REMOTE')
+            await tu.play_script_ws_async(ws, script_allow)
+
 
 
 def xtest_check_echo(adelphos_ad_api):

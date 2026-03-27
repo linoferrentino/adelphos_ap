@@ -95,7 +95,7 @@ class ActivityPubApi:
         server_actor = self.app.dao.ap_server_dao.get_or_create_from_host_name(\
                 rem_instance)
 
-        #gCon.log(f"I have obtained {server_actor} as server")
+        gCon.log(f"I have obtained {server_actor} as server")
 
         actor_query = f"https://{rem_instance}/.well-known/webfinger?\
 resource=acct:{actor_instance}"
@@ -109,7 +109,7 @@ resource=acct:{actor_instance}"
 
         actor_ob = json.loads(actor_res.text)
 
-        #gCon.log(f"The discovery has given me {actor_ob}")
+        gCon.log(f"The discovery has given me {actor_ob}")
 
         subject = actor_ob['subject']
         if ( subject != f"acct:{actor_instance}"):

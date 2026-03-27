@@ -17,7 +17,6 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from websockets.asyncio.server import broadcast
 from app.logging import gCon
 from app.api.AdelphosException import AdelphosException
-from app.api.Dispatcher import send_msg_to_local_alias
 from app.api.WebSocketGateway import WebSocketGateway
 from app.dao.AliasDto import AliasDto
 from app.dao.AdelphosUri import uriparse

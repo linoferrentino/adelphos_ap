@@ -87,20 +87,24 @@ exp {actor_uri}")
             raise AdelphosException(
 f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
-        # OK, now I can create the actor
-        actor = create_ap_actor(server_dto.server_id,
-                         key_parsed.path,
-                         inbox_parsed.path,
-                         preferred_username,
-                         pub_key_ob['publicKeyPem'])
+        if server_dto.server_id == 0:
+            gCon.log("[red]This is a locally defined actor![/red]")
+            actor = self.get_from_server_path(0, key_parsed.path)
+        else:
+            # OK, now I can create the actor
+            actor = create_ap_actor(server_dto.server_id,
+                             key_parsed.path,
+                             inbox_parsed.path,
+                             preferred_username,
+                             pub_key_ob['publicKeyPem'])
+            self.store(actor)
 
         # if it is zero it is a locally defined actor, we do not store it
         # because it would violate the db integrity
-        if (server_dto.server_id != 0):
-            self.store(actor)
-
-        #gCon.log(f"Created actor {actor}")
-
+        #if (server_dto.server_id != 0):
+        #else:
+        #    local_actor = 
+        gCon.log(f"Created actor {actor}")
         return actor 
 
 
@@ -115,6 +119,12 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
         return self.dao.db.get_full_dto_ex(self.table_name,
             ('server_fk', 'preferred_username'),
             (server_fk, preferred_username), ApActorDto)
+
+
+    def get_from_server_path(self, server_fk, user_path):
+        return self.dao.db.get_full_dto_ex(self.table_name,
+            ('server_fk', 'user_path'),
+            (server_fk, user_path), ApActorDto)
 
 
     # this function tries to get an actor from
