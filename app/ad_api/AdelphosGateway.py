@@ -64,7 +64,7 @@ class AdelphosGateway(Gateway):
     def post_process_msg(self, msg_out):
         gCon.log(f"Will post process {msg_out}")
         msg_proc = self._encode_daemon_message(msg_out)
-        gCon.log(f"Got {msg_proc}")
+        #gCon.log(f"Got {msg_proc}")
         return msg_proc
 
 

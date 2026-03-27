@@ -32,8 +32,12 @@ class AdInstanceDao(BaseDao):
         self.table_name = "ad_instance"
 
 
-    #async get_or_create_from_hostname(self, host_name):
-    #    pass
+    # No discover, returns the statu quo
+    def is_instance_authorized(self, hostname):
+        instance_pack = self.get_from_hostname(hostname)
+        if instance_pack is None:
+            return False
+        return instance_pack.instance.authorized
 
 
     # no discover, it is not async!
@@ -54,13 +58,14 @@ class AdInstanceDao(BaseDao):
             #gCon.log("No actor listening")
             return None
 
-        # OK, now I can get the adelphos instance, and this MUST succeed, because
-        # otherwise it means that I have a daemon actor pending.
+        # OK, now I can get the adelphos instance. If this fails it means that
+        # I have registered the actor as only an activitypub daemon,
         ad_instance_dto = self.dao.db.get_full_dto(self.table_name,
                         'actor_fk', ap_actor_dto.actor_id, AdInstanceDto)
         
         if (ad_instance_dto is None):
-            raise AdelphosException(f"Database corrupt? No instance for {host_name}")
+            raise AdelphosException(f"No adelphos instance for {host_name}",
+                                    EAdelhposErrno.ENO_DAEMON_FOR_HOST)
 
         #gCon.log(f"OK, there is already an adelphos instance {ad_instance_dto}")
         return AdInstancePack(ap_server_dto, ap_actor_dto, ad_instance_dto)

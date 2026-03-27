@@ -58,8 +58,8 @@ class ApAsyncContext:
                 await self.async_cond.wait()
 
         # a remote error will be a local exception.
-        if (self.answer['res'] != EAdelhposErrno.DONE_OK):
-            raise AdelphosException(f"remote error {self.answer}", self.answer['res'])
+        #if (self.answer['res'] != EAdelhposErrno.DONE_OK):
+        #    raise AdelphosException(f"remote error {self.answer}", self.answer['res'])
 
 
 class ApDaemonApi(BaseApi):
@@ -104,36 +104,65 @@ class ApDaemonApi(BaseApi):
         await async_ctx.wait_until_done()
         gCon.log(f"[green]Waited the msg is {async_ctx.answer}[/green]")
 
-        if async_ctx.answer['res'] == EAdelhposErrno.DONE_OK:
-            return async_ctx.answer['payload']
+        #if async_ctx.answer['res'] == EAdelhposErrno.DONE_OK:
+        #    return async_ctx.answer['payload']
 
-        # If not this is a local exception
-        raise AdelphosException(async_ctx.answer['payload'],
-                                async_ctx.answer['res'])
-
+        #gCon.log(f"[red]got remote exception! {async_ctx.answer}[/red]")
+        return (async_ctx.answer['res'], async_ctx.answer['payload'])
 
 
+    # a Local exception will be serialized to the remote instance
     async def _hndl_daemon_q(self):
-        # here the request is unpacked in the 'normal' way, because here we
-        # have still a big message
-        # also in this part I have to check the authorized instance
         api_id = self.gateway.get_param_safe('api_id')
-        payload_str = self.gateway.get_param_safe('payload')
+        try:
+            payload_ans = await self._hndl_daemon_q_try()
+            errno = EAdelhposErrno.DONE_OK
+        except AdelphosException as adex:
+            gCon.log(f"[red]GOT EXCEPTION {adex} --> transmit to local[/red]")
+            remote_errno = adex.code
+            payload_ans = str(adex)
+            errno = EAdelhposErrno.EREMOTE_API_EXCEPTION
+        except Exception as genex:
+            gCon.log(f"[red]GOT GENERIC EXCEPTION {genex}[/red]")
+            payload_ans = str(genex)
+            remote_errno = EAdelhposErrno.EGENERIC_SERVER
+            errno = EAdelhposErrno.EREMOTE_API_EXCEPTION
 
-        payload_ans = await self.gateway.app.ad_gateway.new_request(payload_str)
-        gCon.log(f"[yellow]Payload ans {payload_ans}[/yellow]")
-        response_str = self.encode_remote_response(api_id, payload_ans)
-        gCon.log(f"------> response {response_str}")
+        if errno != EAdelhposErrno.DONE_OK:
+            payload_packed = self.gateway.app.ad_gateway.pack_message(remote_errno, payload_ans)
+            payload_encoded = self.gateway.app.ad_gateway.post_process_msg(payload_packed)
+        else:
+            payload_encoded = payload_ans
+
+        #gCon.log(f"[yellow]Payload ans {payload_encoded}[/yellow]")
+        response_str = self.encode_remote_response(api_id, payload_encoded)
+        gCon.log(f"------> response {response_str} errno {errno}")
 
         # I have to post the response to the activity pub actor which has given
-        return response_str 
+        return (errno, response_str)
+
+
+    async def _hndl_daemon_q_try(self):
+
+        # first of all I must determine if the remote adelphos is authorized
+        # to make queries on me.
+        authorized = self.gateway.app.dao.ad_instance_dao.\
+                is_instance_authorized(self.gateway.server_dto.host_name)
+        if authorized == False:
+            # for me is 'remote'. From the point of view of the adelphos
+            # which has done the query this is local
+            raise AdelphosException(f"Not authorized {self.server_dto.host_name}",
+                                    EAdelhposErrno.ELOCAL_ADELPHOS_NOT_AUTHORIZED)
+
+        payload_str = self.gateway.get_param_safe('payload')
+        payload_ans = await self.gateway.app.ad_gateway.new_request(payload_str)
+        return payload_ans
 
 
     async def _hndl_daemon_a(self):
 
         api_id = self.gateway.get_param_safe('api_id')
         payload_str = self.gateway.get_param_safe('payload')
-        gCon.log(f"------> I have received {payload_str} for apiid {api_id}")
         async_ctx = self.async_contexts.pop(int(api_id), None)
         if (async_ctx is None):
             # this is an internal error, or a tentative attack?
@@ -145,9 +174,12 @@ class ApDaemonApi(BaseApi):
         payload_decoded  = self.gateway.app.ad_gateway._decode_daemon_message(
                 payload_str)
         remote_json = json.loads(payload_decoded)
+        gCon.log(f"[green]------> ANS_GOT for apiid {api_id} {payload_decoded}[/green]")
         async_ctx.answer = remote_json
         async with async_ctx.async_cond:
            async_ctx.async_cond.notify()
+
+        return (EAdelhposErrno.ECONTINUE, None)
 
 
 

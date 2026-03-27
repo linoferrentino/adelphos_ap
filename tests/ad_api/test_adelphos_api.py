@@ -97,6 +97,16 @@ def adelphos_ad_api(adelphos_remote_process_ad_api):
 @pytest.mark.anyio
 async def test_check_echo(adelphos_ad_api):
 
+
+    #script_allow = [
+    #('backdoor password super_secret', EAdelhposErrno.DONE_OK),
+    #('sudo_adelphos_allow remote_adelphos localhost:5012', EAdelhposErrno.DONE_OK),
+    #('sudo_su_push alias ##bob.bf19', EAdelhposErrno.DONE_OK),
+    #('test_recho msg "this works" remote_instance localhost:5012',
+    # 'hello_remote this works')
+    #        ]
+
+
     async with httpx.AsyncClient() as client:
         async with aconnect_ws("http://localhost:9911/api/ws", client) as ws:
 
@@ -122,8 +132,8 @@ async def test_check_echo(adelphos_ad_api):
     ('backdoor password super_secret', EAdelhposErrno.DONE_OK),
     ('sudo_adelphos_allow remote_adelphos localhost:5012', EAdelhposErrno.DONE_OK),
     ('sudo_su_push alias ##bob.bf19', EAdelhposErrno.DONE_OK),
-    ('test_recho msg "this works" remote_instance localhost:5012',
-     'hello_remote this works')
+    ('test_recho msg "this works" remote_instance localhost:5012', 
+     EAdelhposErrno.ENO_DAEMON_FOR_HOST)
             ]
 
             gCon.log('script 3')

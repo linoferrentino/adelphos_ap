@@ -47,10 +47,6 @@ class Gateway(ABC):
     # is a request, for a socket it is a line of text.
     async def new_request(self, request):
 
-        # at the beginning I do not have an async request (or I delete the previous one) 
-        #self.async_ctx = None
-        self.in_error = False
-
         # this pre process can have two outcomes
         # a status code and a string, in this case the status code
         # is given immediately to the outside and the request as string
@@ -67,7 +63,7 @@ class Gateway(ABC):
             # the return is the res_code
             response = res_code
             if (req_str is not None):
-                gCon.log(f"Creating task for request -{req_str}-")
+                #gCon.log(f"Creating task for request -{req_str}-")
                 asyncio.create_task(self.proc_request(req_str))
 
         # this is the processing part of the request
@@ -93,11 +89,13 @@ class Gateway(ABC):
         # the real message will be available at the end of the async call
 
         # OK, now I will check if there has been an exception, if not I can commit
-        if (self.in_error == False):
-            gCon.log(f"[blue]commit[/blue] {self.in_error}")
+        if errno == EAdelhposErrno.DONE_OK:
+            gCon.log(f"[blue]commit[/blue]")
             self.app.dao.commit()
+        elif errno == EAdelhposErrno.ECONTINUE:
+            gCon.log(f"[yellow]DB Continue[/yellow]")
         else:
-            gCon.log(f"[red]rollback[/red] {self.in_error}")
+            gCon.log(f"[red]rollback[/red]")
             self.app.dao.rollback()
 
         # do not ping back the error!
@@ -109,6 +107,7 @@ class Gateway(ABC):
 
         # the result is given also in clear as a return 
         # value for the automating scripts
+        gCon.log(f'==========> return the {payload_encoded} errno {errno}')
         return payload_encoded
 
 
@@ -127,25 +126,23 @@ class Gateway(ABC):
 
 
         try:
-            msg_out = await self.proc_req_bare()
-            errno = EAdelhposErrno.DONE_OK
+            result_proc = await self.proc_req_bare()
+            if isinstance(result_proc, tuple):
+                (errno, msg_out) = result_proc
+            else:
+                msg_out = result_proc
+                errno = EAdelhposErrno.DONE_OK
         except AdelphosException as adex:
             gCon.log(f"USER Error {adex}")
             traceback.print_exc()
             errno = adex.code
             msg_out = f"AdelphosError in your request (you have done a mistake): {adex}"
-            self.in_error = True
         except Exception as ex:
             gCon.log(f"SERVER Error {ex}")
             traceback.print_exc()
             errno = EAdelhposErrno.EGENERIC_SERVER
             msg_out = f"AdelphosError in server (this might be a bug, sorry): {ex}"
-            self.in_error = True
 
-
-        # some gateways will pack the message and the error together.
-        #packed_message = Gateway.pack_message(errno, msg_out)
-        #post_proc_msg = self.post_process_msg(packed_message)
 
         # here I return the simple tuple in clear
         return (errno, msg_out)
@@ -158,7 +155,9 @@ class Gateway(ABC):
                 'res' : errno,
                 'payload' : msg_out 
         }
-        return json.dumps(final_msg)
+        final_str = json.dumps(final_msg)
+        #gCon.log(f"this is the final string {final_str}")
+        return final_str
 
 
     # This is a NOP for all but the AdelphosGateway 

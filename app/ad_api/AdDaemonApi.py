@@ -77,10 +77,9 @@ class AdDaemonApi(BaseApi):
     # this is blocking, it is from client side
     async def echo_remote(self, ad_instance_pack, echomsg):
         msg = self._echo_remote_payload(echomsg)
-        gCon.log(f"------> I will send {msg}")
-        res = await self.gateway.app.ap_gateway.ap_daemon_api.make_request(
+        (errno, answer) = await self.gateway.app.ap_gateway.ap_daemon_api.make_request(
                 ad_instance_pack, msg)
-        return res
+        return (errno, answer)
 
 
 HANDLERS = {
