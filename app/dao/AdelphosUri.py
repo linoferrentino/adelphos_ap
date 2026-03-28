@@ -77,7 +77,6 @@ from app.logging import gCon
 class EAdelphosType(StrEnum):
     ALIAS_TYPE = 'al'
     CHEQUE_TYPE = 'cq'
-    CURRENCY_TYPE = 'cu'
     FAMILY_TYPE = 'fa'
     GROUP_TYPE = 'gr'
     OBJECT_TYPE = 'ob'
@@ -177,8 +176,6 @@ def _parse_uri_type(uri_type_str):
             uri_type = EAdelphosType.ALIAS_TYPE
         case 'cq':
             uri_type = EAdelphosType.CHEQUE_TYPE
-        case 'cu':
-            uri_type = EAdelphosType.CURRENCY_TYPE
         case 'fa':
             uri_type = EAdelphosType.FAMILY_TYPE
         case 'gr':

@@ -41,10 +41,12 @@ class AdInstanceDao(BaseDao):
 
 
     # no discover, it is not async!
-    def get_from_hostname(self, host_name):
+    def get_from_hostname(self, host_name, maybe = True):
         ap_server_dto = self.dao.ap_server_dao.get_from_hostname(host_name)
         if (ap_server_dto is None):
-            return None
+            if maybe:
+                return None
+            raise AdelphosException(None, EAdelhposErrno.ENO_DAEMON_FOR_HOST)
 
         #gCon.log(f"Ok, the server {ap_server_dto} is present, is there a daemon actor?")
 
@@ -56,7 +58,9 @@ class AdInstanceDao(BaseDao):
         # but it could also host an adelphos instance, like the test one.
         if (ap_actor_dto is None):
             #gCon.log("No actor listening")
-            return None
+            if maybe:
+                return None
+            raise AdelphosException(None, EAdelhposErrno.ENO_DAEMON_FOR_HOST)
 
         # OK, now I can get the adelphos instance. If this fails it means that
         # I have registered the actor as only an activitypub daemon,

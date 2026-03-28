@@ -371,21 +371,14 @@ def make_router(app):
         res_code = 404
         if username == DAEMON_ID:
 
-            # I create the Activity Pub Gateway, one for each request,
-            # because we can support concurrent async requests.
-            #gateway = ActivityPubGateway(app)
-
             # this will return the return code and will process the request asynchronously
             res_code = await app.ap_gateway.new_request(request)
 
-            # the result code is given immediately, but the message is processed
-            # asynchronously
         elif test_instance:
 
             # the message is not for the daemon, it might be for some test users
             # that I have .
             res_code = await app.ap_mockup.new_request(request)
-
             
         return Response(status_code = res_code)
 

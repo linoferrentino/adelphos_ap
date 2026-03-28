@@ -147,22 +147,11 @@ async def test_check_echo(adelphos_ad_api):
             await tu.play_script_ws_async(ws, script_allow)
 
 
+@pytest.mark.anyio
+async def test_get_alias(adelphos_ad_api):
 
-def xtest_check_echo(adelphos_ad_api):
+    # In this test we get a remote alias.
 
-    # to test the adelphos api I fake an encapsulated message and I give it
-    # to my app
-    with adelphos_ad_api.websocket_connect("/api/ws") as websocket:
-        websocket.send_text('test_recho msg "hello world" remote_instance localhost:5012')
-        tu.websocket_assert_code(websocket, EAdelhposErrno.ENO_DAEMON_FOR_HOST)
+    pass
 
-        # allow the instance
-        script = [
-            'backdoor password super_secret',
-            'sudo_adelphos_allow remote_adelphos localhost:5012',
-            'sudo_su_push alias ##alice.tapif',
-            ]
-        tu.play_script_on_instance_OK(adelphos_ad_api, script)
-        websocket.send_text('test_recho msg "hello world" remote_instance localhost:5012')
-        tu.websocket_assert_payload_success(websocket, 
-          'hello world ##alice.tapif@localhost:9911 from localhost:5012')
+

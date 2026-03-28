@@ -56,8 +56,40 @@ class TestApi(BaseApi):
         return response
 
 
+    @active_login
+    @only_in_debug
+    async def _hndl_geturi(self):
+        uri = self.gateway.get_param_safe('uri')
+
+        # the uri has all the information required to get it.
+        # the db is federated, so it is possible that also other
+        # servers will have the object, if the information is not
+        # found we might ask other servers as well.
+
+        # remember that we are here in the local machine!
+        # first of all we parse it.
+        urip = uriparse(uri)
+        if urip.host_name is None:
+            raise AdelphosException(f"Cannot route uri {uri}", EAdelhposErrno.ENOROUTEFORURI)
+
+        instance_pack = self.gateway.app.dao.ad_instance_dao.\
+                get_from_hostname(urip.host_name, False)
+
+        #remote_instance = self.gateway.get_param_safe('remote_instance')
+        #instance_pack = self.gateway.app.dao.ad_instance_dao.\
+        #        get_from_hostname(remote_instance)
+        #if instance_pack is None:
+        #    gCon.log(f"No adelphos instance @{remote_instance}")
+        #    raise AdelphosException(None, EAdelhposErrno.ENO_DAEMON_FOR_HOST)
+        response = await self.gateway.app.ad_gateway.ad_daemon_api.\
+                get_uri(instance_pack, uri)
+        return response
+
+
+
 HANDLERS = {
-     'test_recho' : TestApi._hndl_recho
+     'test_recho' : TestApi._hndl_recho,
+     'test_geturi' : TestApi._hndl_geturi,
 }
 
 
