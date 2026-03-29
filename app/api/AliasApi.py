@@ -112,7 +112,7 @@ in your Mastodon inbox to finalize the login."""
         #self.gateway.session.family_dto = family_dto
 
         # the family has a name, the alias has also a nick.
-        gCon.log(f"I have n_family {family_dto}")
+        #gCon.log(f"I have family {family_dto}")
 
         # OK, now I have to get the alias
 
@@ -124,7 +124,7 @@ in your Mastodon inbox to finalize the login."""
             raise AdelphosException("Invalid alias/password",
                                    EAdelhposErrno.EINVALID_USER_OR_PASSWORD)
 
-        gCon.log(f"got the alias {alias_dto}, now we verify")
+        #gCon.log(f"got the alias {alias_dto}, now we verify")
 
         if (force == False):
             ph = PasswordHasher()

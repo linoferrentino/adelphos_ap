@@ -47,10 +47,7 @@ class TestApi(BaseApi):
         msg = self.gateway.get_param_safe('msg')
         remote_instance = self.gateway.get_param_safe('remote_instance')
         instance_pack = self.gateway.app.dao.ad_instance_dao.\
-                get_from_hostname(remote_instance)
-        if instance_pack is None:
-            gCon.log(f"No adelphos instance @{remote_instance}")
-            raise AdelphosException(None, EAdelhposErrno.ENO_DAEMON_FOR_HOST)
+                get_from_hostname(remote_instance, False)
         response = await self.gateway.app.ad_gateway.ad_daemon_api.\
                 echo_remote(instance_pack, msg)
         return response
@@ -69,22 +66,15 @@ class TestApi(BaseApi):
         # remember that we are here in the local machine!
         # first of all we parse it.
         urip = uriparse(uri)
-        if urip.host_name is None:
-            raise AdelphosException(f"Cannot route uri {uri}", EAdelhposErrno.ENOROUTEFORURI)
+        response = await self.gateway.app.dao.uri_factory(urip)
+        #if urip.host_name is None:
+        #    raise AdelphosException(f"Cannot route uri {uri}", EAdelhposErrno.ENOROUTEFORURI)
 
-        instance_pack = self.gateway.app.dao.ad_instance_dao.\
-                get_from_hostname(urip.host_name, False)
-
-        #remote_instance = self.gateway.get_param_safe('remote_instance')
         #instance_pack = self.gateway.app.dao.ad_instance_dao.\
-        #        get_from_hostname(remote_instance)
-        #if instance_pack is None:
-        #    gCon.log(f"No adelphos instance @{remote_instance}")
-        #    raise AdelphosException(None, EAdelhposErrno.ENO_DAEMON_FOR_HOST)
-        response = await self.gateway.app.ad_gateway.ad_daemon_api.\
-                get_uri(instance_pack, uri)
+        #        get_from_hostname(urip.host_name, False)
+        #response = await self.gateway.app.ad_gateway.ad_daemon_api.\
+        #        get_uri(instance_pack, uri)
         return response
-
 
 
 HANDLERS = {

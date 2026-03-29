@@ -23,6 +23,7 @@
 import secrets
 import asyncio
 import json
+import traceback
 
 from app.api.BaseApi import BaseApi
 from app.api.AdelphosException import AdelphosException
@@ -97,10 +98,10 @@ class ApDaemonApi(BaseApi):
         # I put it into the dictionary because I need to retrieve it for the response
         self.async_contexts[int(cur_api_id)] = async_ctx
 
-        gCon.log(f"[blue]my question {self.async_contexts}[/blue]")
+        #gCon.log(f"[blue]my question {self.async_contexts}[/blue]")
         # OK, now I wait for a response!
         # this will block!
-        gCon.log(f"[red]Now I will wait until done![/red] {id(self)}")
+        gCon.log(f"[red]I wait until done![/red]")
         await async_ctx.wait_until_done()
         gCon.log(f"[green]Waited the msg is {async_ctx.answer}[/green]")
 
@@ -119,11 +120,13 @@ class ApDaemonApi(BaseApi):
             errno = EAdelhposErrno.DONE_OK
         except AdelphosException as adex:
             gCon.log(f"[red]GOT EXCEPTION {adex} --> transmit to local[/red]")
+            traceback.print_exc()
             remote_errno = adex.code
             payload_ans = str(adex)
             errno = EAdelhposErrno.EREMOTE_API_EXCEPTION
         except Exception as genex:
             gCon.log(f"[red]GOT GENERIC EXCEPTION {genex}[/red]")
+            traceback.print_exc()
             payload_ans = str(genex)
             remote_errno = EAdelhposErrno.EGENERIC_SERVER
             errno = EAdelhposErrno.EREMOTE_API_EXCEPTION
@@ -136,7 +139,7 @@ class ApDaemonApi(BaseApi):
 
         #gCon.log(f"[yellow]Payload ans {payload_encoded}[/yellow]")
         response_str = self.encode_remote_response(api_id, payload_encoded)
-        gCon.log(f"------> response {response_str} errno {errno}")
+        #gCon.log(f"------> response {response_str} errno {errno}")
 
         # I have to post the response to the activity pub actor which has given
         return (errno, response_str)
@@ -151,7 +154,7 @@ class ApDaemonApi(BaseApi):
         if authorized == False:
             # for me is 'remote'. From the point of view of the adelphos
             # which has done the query this is local
-            raise AdelphosException(f"Not authorized {self.server_dto.host_name}",
+            raise AdelphosException(f"Not authorized {self.gateway.server_dto.host_name}",
                                     EAdelhposErrno.ELOCAL_ADELPHOS_NOT_AUTHORIZED)
 
         payload_str = self.gateway.get_param_safe('payload')

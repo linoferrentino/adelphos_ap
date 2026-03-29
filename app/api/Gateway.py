@@ -107,7 +107,7 @@ class Gateway(ABC):
 
         # the result is given also in clear as a return 
         # value for the automating scripts
-        gCon.log(f'==========> return the {payload_encoded} errno {errno}')
+        #gCon.log(f'==========> return the {payload_encoded} errno {errno}')
         return payload_encoded
 
 

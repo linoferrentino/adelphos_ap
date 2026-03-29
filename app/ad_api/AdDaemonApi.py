@@ -38,7 +38,12 @@ class AdDaemonApi(BaseApi):
 
     async def _hndl_get_uri(self):
         uri = self.gateway.get_param_safe('uri')
-        pass
+        gCon.log(f"[red] you want this uri {uri}[/red]")
+        # I pass the message to the application, hoping it will suceed
+        # not maybe, we want an exception in case of failure
+        response = await self.gateway.app.dao.uri_factory_str(uri)
+        gCon.log(f"[red] got {response} [/red]")
+        return response
 
 
     def _pack_request_message(self, command, param_dict):

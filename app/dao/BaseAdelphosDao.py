@@ -66,7 +66,7 @@ class BaseAdelphosDao(BaseDao):
     async def _get_from_remote_uri(self, uri):
         # get remote adelphos instance
         instance_pack = self.dao.ad_instance_dao.get_from_hostname(uri.host_name)
-        gCon.log(f"got {instance_pack} as adelphos instance")
+        #gCon.log(f"got {instance_pack} as adelphos instance")
 
         if instance_pack is None:
             instance_pack = await self.dao.ad_instance_dao.discover_from_host_name(
@@ -81,6 +81,7 @@ class BaseAdelphosDao(BaseDao):
         remote_dto = await self.dao.app.ad_gateway.ad_daemon_api.\
                 get_uri_remote(instance_pack, uri)
         return remote_dto
+
 
     
     # this method gets the object from this instance or, if not present,
@@ -100,18 +101,23 @@ class BaseAdelphosDao(BaseDao):
         # I have not found it, if the uri is local this is a not recoverable error
         local_uri = self._is_local_uri(uri)
 
-        if (local_uri == False):
+        if local_uri == False:
             gCon.log(f"Uri {uri} not local, go to fediverse!")
             # I try to get the object from the federated db
             dto = await self._get_from_remote_uri(uri)
-
+    
             if (dto is not None):
                 return dto
-
+        else:
+            # this is an error.
+            raise AdelphosException(f"Cannot route uri {uri} without hostname", 
+                                    EAdelhposErrno.ENOROUTEFORURI)
+            
         if (maybe == True):
             return None
 
-        raise AdelphosException(f"Could not find URI {uri}", EAdelhposErrno.EURI_NOT_FOUND)
+        raise AdelphosException(f"Could not find URI {uri}", 
+                                EAdelhposErrno.EURI_NOT_FOUND)
 
 
     # I can query the adelphos db using the local name. All objects in adelphos

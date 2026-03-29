@@ -148,10 +148,29 @@ async def test_check_echo(adelphos_ad_api):
 
 
 @pytest.mark.anyio
-async def test_get_alias(adelphos_ad_api):
+async def XXtest_get_alias(adelphos_ad_api):
 
-    # In this test we get a remote alias.
 
-    pass
+    script_get_uri = [
+    ('backdoor password super_secret', EAdelhposErrno.DONE_OK),
+    ('sudo_su_push alias ##mary.mf', EAdelhposErrno.DONE_OK),
+    # the first fails, we do not have this uri locally.
+    ('test_geturi uri ##bob.bf19@localhost:9911 no_route true', 
+     EAdelhposErrno.EREMOTE_URI_NOT_PRESENT),
+    # this fails because there is not the host.
+    ('test_geturi uri ##bob.bf19@www.fake.org', 
+     EAdelhposErrno.EREM_ADELPHOS_NOT_FOUND),
+    # this succedes
+    ('test_geturi uri ##bob.bf19@localhost:9911', '{ "name" : "bob_19" }'),
+    # now also the local should succeed
+    ('test_geturi uri ##bob.bf19@localhost:9911 no_route true', 
+     '{ "name" : "bob_19" }'),
+            ]
+
+    async with httpx.AsyncClient() as client:
+        async with aconnect_ws("http://localhost:5012/api/ws", client) as ws:
+
+            await tu.play_script_ws_async(ws, script_get_uri)
+
 
 

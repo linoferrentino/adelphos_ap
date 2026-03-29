@@ -34,19 +34,25 @@ class AdInstanceDao(BaseDao):
 
     # No discover, returns the statu quo
     def is_instance_authorized(self, hostname):
-        instance_pack = self.get_from_hostname(hostname)
-        if instance_pack is None:
-            return False
+        instance_pack = self.get_from_hostname(hostname, False)
         return instance_pack.instance.authorized
 
 
+    def get_from_hostname(self, hostname, maybe = True):
+
+        instance_pack = self.get_from_hostname_maybe(hostname)
+        if instance_pack is not None:
+            return instance_pack
+        if maybe == True:
+            return None
+        raise AdelphosException(None, EAdelhposErrno.ENO_DAEMON_FOR_HOST)
+
+
     # no discover, it is not async!
-    def get_from_hostname(self, host_name, maybe = True):
+    def get_from_hostname_maybe(self, host_name):
         ap_server_dto = self.dao.ap_server_dao.get_from_hostname(host_name)
         if (ap_server_dto is None):
-            if maybe:
-                return None
-            raise AdelphosException(None, EAdelhposErrno.ENO_DAEMON_FOR_HOST)
+            return None
 
         #gCon.log(f"Ok, the server {ap_server_dto} is present, is there a daemon actor?")
 
@@ -58,9 +64,7 @@ class AdInstanceDao(BaseDao):
         # but it could also host an adelphos instance, like the test one.
         if (ap_actor_dto is None):
             #gCon.log("No actor listening")
-            if maybe:
-                return None
-            raise AdelphosException(None, EAdelhposErrno.ENO_DAEMON_FOR_HOST)
+            return None
 
         # OK, now I can get the adelphos instance. If this fails it means that
         # I have registered the actor as only an activitypub daemon,
@@ -68,8 +72,7 @@ class AdInstanceDao(BaseDao):
                         'actor_fk', ap_actor_dto.actor_id, AdInstanceDto)
         
         if (ad_instance_dto is None):
-            raise AdelphosException(f"No adelphos instance for {host_name}",
-                                    EAdelhposErrno.ENO_DAEMON_FOR_HOST)
+            return None 
 
         #gCon.log(f"OK, there is already an adelphos instance {ad_instance_dto}")
         return AdInstancePack(ap_server_dto, ap_actor_dto, ad_instance_dto)

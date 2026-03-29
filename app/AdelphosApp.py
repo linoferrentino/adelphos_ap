@@ -13,12 +13,21 @@
 #
 # the main class of adelphos. This defines the application.
 
-from fastapi import FastAPI
 import os
+import aiohttp
+import asyncio
+import re
+
+
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
 
 from app.consts import ADELPHOS_AP_ENV_KEY
 from app.consts import API_POINT
 from app.consts import USER_ID
+
+from app.dao.AdelphosUri import EAdelphosType
+from app.dao.AdelphosUri import uriparse
 
 from app.logging import exit_err
 from app.logging import gCon
@@ -30,10 +39,6 @@ from app.keys import load_keys
 from app.logging import good_bye
 
 from app.dao.AdelphosDb import AdelphosDb
-from contextlib import asynccontextmanager
-import aiohttp
-import asyncio
-
 from app.ap_api.ActivityPubApi import ActivityPubApi
 from app.ap_api.ActivityPubMockup import ActivityPubMockup
 
@@ -54,7 +59,6 @@ from app.ap_api.ActivityPubGateway import ActivityPubGateway
 from app.ad_api.AdelphosGateway import AdelphosGateway
 from .consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
 from app.AdelphosRouter import make_router
-import re
 
 app = None
 
@@ -254,6 +258,19 @@ class MasterAdelphosDao:
         self.ad_instance_dao = AdInstanceDao(self)
         self.family_dao  = FamilyDao(self)
         self.alias_dao   = AliasDao(self)
+
+
+    async def uri_factory_str(self, uristr, maybe = False):
+        urip = uriparse(uristr)
+        return await self.uri_factory(urip, maybe)
+
+
+    async def uri_factory(self, uri, maybe = False):
+        match uri.obj_type:
+            case EAdelphosType.ALIAS_TYPE:
+                return await self.alias_dao.get_from_uri(uri, maybe)
+            case _:
+                raise AdelphosException(None, EUNKNOW_URI_TYPE)
 
 
     def close(self):

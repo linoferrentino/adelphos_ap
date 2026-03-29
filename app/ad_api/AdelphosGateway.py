@@ -70,6 +70,7 @@ class AdelphosGateway(Gateway):
 
     # this is returned as an activity pub message.
     async def outgress_result(self, payload):
-        gCon.log(f"will outgress {payload}")
+        #gCon.log(f"will outgress {payload}")
+        pass
 
 
