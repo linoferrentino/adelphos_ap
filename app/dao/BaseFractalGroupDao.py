@@ -62,7 +62,7 @@ class BaseFractalGroupDao(FdActorDao):
         # final store into the table, I can add the foreign key
         dto_as_dict['local_fk'] = new_id
         self.dao.db.insert_dto_fields("fd_group_family",
-                ('local_fk', 'level'), dto_as_dict)
+                ('local_fk', 'level', 'instance_fk'), dto_as_dict)
 
         #gCon.log(f"Stored the group family {dto}")
         return new_id

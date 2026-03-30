@@ -76,7 +76,7 @@ class FdActorDao(BaseAdelphosDao):
 
         # Here I can store the fd_actor table
         new_id = self.dao.db.insert_dto_fields('fd_actor',
-                ('name', 'instance_fk'), dto_as_dict)
+                ('name',), dto_as_dict)
         
         #gCon.log(f"FdActorDao new id {new_id}")
         dto.fd_actor_id = new_id

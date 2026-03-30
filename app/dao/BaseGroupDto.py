@@ -30,6 +30,9 @@ class BaseGroupDto(FdActorDto):
 
     currency_fk: int 
 
+    # the (adelphos!) instance that contains this group
+    instance_fk: int
+
     equity: float
 
     level: int

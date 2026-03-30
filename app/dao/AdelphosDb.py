@@ -108,7 +108,7 @@ create table ad_instance (
 create table fd_actor(
     fd_actor_id integer primary key,
     name text,
-    instance_fk integer not null references ad_instance(actor_fk),
+    --instance_fk integer not null references ad_instance(actor_fk),
     timestamp text default current_timestamp
     );
  """),
@@ -325,6 +325,21 @@ create table fd_collecting_service(
 # there are some fields which are valid only for level > 0
 # and some other fields which are valid only for level == 0
 # the other fields are common
+
+
+# the basic unit of aggregation, groups are simply families of
+# greater level (and they belong to a 
+#('fd family', """
+#
+# create table fd_family (
+#
+#
+# );
+#
+#
+# """);
+#
+
 ('fd group', """
 create table fd_group_family(
 
@@ -333,6 +348,7 @@ create table fd_group_family(
         parent_group_fk integer references fd_group_family(local_fk),
         boss_fk integer null references fd_alias(local_fk),
         currency_fk integer references fd_currency(local_fk),
+        instance_fk integer not null references ad_instance(actor_fk),
         equity real,
         level integer
 );"""),
@@ -341,7 +357,7 @@ create table fd_group_family(
 ('view fd_group_family_ex', """
 
  create view fd_group_family_ex as select 
- fda.fd_actor_id, fda.name, fda.instance_fk, fda.timestamp,
+ fda.fd_actor_id, fda.name, fdg.instance_fk, fda.timestamp,
  fdg.parent_group_fk, fdg.boss_fk,  
  fdg.currency_fk, fdg.equity, fdg.level
  from fd_actor as fda, fd_group_family as fdg
@@ -373,10 +389,12 @@ create table fd_alias(
 ('view fd_alias_ex', """
 
  create view fd_alias_ex as select
- fda.fd_actor_id, fda.name, fda.instance_fk, fda.timestamp,
+ fda.fd_actor_id, fda.name, fda.timestamp,
  fdl.actor_fk, fdl.family_fk, fdl.password
- from fd_actor as fda, fd_alias as fdl
- where fda.fd_actor_id = fdl.local_fk;
+ from fd_actor as fda, fd_alias as fdl, fd_group_family as fdg
+ where fda.fd_actor_id = fdl.local_fk
+ and
+ fdl.family_fk = fdg.local_fk;
 
  """),
 

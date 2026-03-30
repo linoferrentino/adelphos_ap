@@ -39,9 +39,6 @@ class FdActorDto(BaseDto):
     # name and the family's name
     name: str
 
-    # the (adelphos!) instance from which this federated actor comes
-    instance_fk: int
-
     # this is set by the db engine.
     timestamp: str 
 

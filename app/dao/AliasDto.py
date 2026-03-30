@@ -65,7 +65,7 @@ class AliasExport:
 def alias_dto_create_local(name, actor_fk, family_id, pass_hashed):
 
     alias_dto = AliasDto(
-            None, name, 0, None, # fd_actor fields
+            None, name, None, # fd_actor fields
             actor_fk, family_id, pass_hashed)
 
     return alias_dto
