@@ -19,6 +19,7 @@
 from ..logging import gCon
 from dataclasses import dataclass
 from app.dao.BaseDto import BaseDto
+from typing import NamedTuple
 
 
 # the fields are in the same order as the database
@@ -33,6 +34,11 @@ class ApServerDto(BaseDto):
 
     def get_pk(self):
         return self.server_id
+
+
+class ApServerPack(NamedTuple):
+
+    ob: ApServerDto
 
 
 # this function will create an Activity Pub Server objecct.

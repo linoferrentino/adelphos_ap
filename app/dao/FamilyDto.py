@@ -18,6 +18,7 @@ from app.logging import gCon
 from dataclasses import dataclass
 from app.dao.FdActorDto import FdActorDto
 from app.dao.BaseGroupDto import BaseGroupDto
+from typing import NamedTuple
 
 
 # The family is a level zero group.
@@ -29,6 +30,11 @@ class FamilyDto(BaseGroupDto):
 
     # this class is only a place holder.
     pass
+
+
+class FamilyPack(NamedTuple):
+
+    ob: FamilyDto
 
 
 # this is the constructor for a family.

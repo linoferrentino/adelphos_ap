@@ -42,6 +42,8 @@ class AdDaemonApi(BaseApi):
         # I pass the message to the application, hoping it will suceed
         # not maybe, we want an exception in case of failure
         response = await self.gateway.app.dao.uri_factory_str(uri)
+
+        # I want the uri: but I want to export it, so I null the foreign keys.
         gCon.log(f"[red] got {response} [/red]")
         return response
 

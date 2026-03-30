@@ -381,6 +381,38 @@ create table fd_alias(
  """),
 
 
+# the views relative to the alias, only the relevant field to make a replica
+# on a distant db.
+('view fd_alias_export', """
+
+ create view fd_alias_export as select
+
+ fdact1.name as name, fdact2.name as family, srvinst.host_name as adelphos_instance, 
+ apact.preferred_username, apsrv.host_name
+ 
+ from fd_alias as fda, fd_actor as fdact1, fd_actor as fdact2,
+ ap_actor as apact, ap_server as apsrv,
+ ap_server as srvinst, ad_instance as ad_inst, fd_actor as fdact3
+
+ where
+
+ fda.local_fk = fdact1.actor_id
+ and
+ fda.family_fk = fdact2.actor_id
+ and
+ apact.actor_id = fda.actor_fk
+ and
+ apact.server_fd = ap_server.server_id
+ and
+ fdact1.instance_fk = ad_inst.actor_fk
+ and
+ ad_inst.actor_fk = fdact3.actor_id
+ and
+ fdact3.server_fk = srvinst.server_id;
+
+ """),
+
+
 ('fd_trust_line', """
 create table fd_trust_line (
 
