@@ -174,3 +174,11 @@ async def test_get_alias(adelphos_ad_api):
 
 
 
+@pytest.mark.anyio
+async def ZZtest_get_alias(adelphos_ad_api):
+
+    with adelphos_tl.websocket_connect("/api/ws") as websocket:
+        create_trust_line(websocket, '##john.jf@localhost:5012',
+                          EAdelhposErrno.EURI_NOT_FOUND)
+
+

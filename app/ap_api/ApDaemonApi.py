@@ -120,13 +120,13 @@ class ApDaemonApi(BaseApi):
             errno = EAdelhposErrno.DONE_OK
         except AdelphosException as adex:
             gCon.log(f"[red]GOT EXCEPTION {adex} --> transmit to local[/red]")
-            traceback.print_exc()
+            #traceback.print_exc()
             remote_errno = adex.code
             payload_ans = str(adex)
             errno = EAdelhposErrno.EREMOTE_API_EXCEPTION
         except Exception as genex:
             gCon.log(f"[red]GOT GENERIC EXCEPTION {genex}[/red]")
-            traceback.print_exc()
+            #traceback.print_exc()
             payload_ans = str(genex)
             remote_errno = EAdelhposErrno.EGENERIC_SERVER
             errno = EAdelhposErrno.EREMOTE_API_EXCEPTION

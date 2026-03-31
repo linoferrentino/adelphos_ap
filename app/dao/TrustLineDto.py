@@ -44,23 +44,16 @@ from dataclasses import dataclass
 class TrustLineDto
 
     # I cannot have a trust line greater than my equity!
-    # The currency is mine, I trust Bob with his currency,
-    # I trust Alice with her currency
 
     alias_1_fk: int
     alias_2_fk: int
     referee_fk: int
 
-    # the exchange rate is 1 in case of trust line between two aliases with
-    # the same currency
-    # In the other case we have that a credit from alias 2 is converted multiplying
-    # by the exchange_rate_1_to_2, a credito from alias 1 is conferted dividing by
-    # the same amount
     exchange_rate_1_to_2: float
 
-    # the maximum value for this credit in ``1'' units
+    # the maximum value for this credit, this is in decibel.
     strength_1: float
 
-    interest_1: float
-    interest_2: float
+    #interest_1: float
+    #interest_2: float
 

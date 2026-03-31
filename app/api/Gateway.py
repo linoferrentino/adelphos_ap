@@ -135,12 +135,12 @@ class Gateway(ABC):
                 errno = EAdelhposErrno.DONE_OK
         except AdelphosException as adex:
             gCon.log(f"USER Error {adex}")
-            traceback.print_exc()
+            #traceback.print_exc()
             errno = adex.code
             msg_out = f"AdelphosError in your request (you have done a mistake): {adex}"
         except Exception as ex:
             gCon.log(f"SERVER Error {ex}")
-            traceback.print_exc()
+            #traceback.print_exc()
             errno = EAdelhposErrno.EGENERIC_SERVER
             msg_out = f"AdelphosError in server (this might be a bug, sorry): {ex}"
 
@@ -157,7 +157,7 @@ class Gateway(ABC):
                 'payload' : msg_out
         }
         final_str = json.dumps(final_msg)
-        gCon.log(f"this is the final string {final_str}")
+        #gCon.log(f"this is the final string {final_str}")
         return final_str
 
 

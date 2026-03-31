@@ -54,7 +54,7 @@ class BaseAdelphosDao(BaseDao):
             instance_pack = self.dao.ad_instance_dao.get_from_hostname(uri.host_name, True)
             if instance_pack is None:
                 # This is fatal. The server is not existing, so it cannot be here the object
-                gCon.log(f"No adelphos @{uri.host_name} cached")
+                #gCon.log(f"No adelphos @{uri.host_name} cached")
                 return None
             instance_fk = instance_pack.instance.actor_fk
 
@@ -140,7 +140,7 @@ class BaseAdelphosDao(BaseDao):
         local_uri = self._is_local_uri(uri)
 
         if local_uri == False:
-            gCon.log(f"Uri {uri} not local, go to fediverse!")
+            #gCon.log(f"Uri {uri} not local, go to fediverse!")
             # I try to get the object from the federated db
             dto = await self._get_from_remote_uri(uri)
     

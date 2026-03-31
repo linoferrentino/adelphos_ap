@@ -77,7 +77,7 @@ class AliasDao(FdActorDao):
         # I create here a simple object not linked to activity pub, because
         # it is only a place holder.
         alias_dto = self.create_alias_impl(None, uri.family, instance_id, uri.name, None)
-        gCon.log(f"Return alias {alias_dto} in instance {instance_id}")
+        #gCon.log(f"Return alias {alias_dto} in instance {instance_id}")
         return alias_dto
 
 

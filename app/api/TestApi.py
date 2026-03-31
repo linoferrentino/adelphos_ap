@@ -66,7 +66,7 @@ class TestApi(BaseApi):
         # first of all we parse it.
         urip = uriparse(uri)
         response = await self.gateway.app.dao.uri_factory(urip, no_route)
-        gCon.log(f"[yellow]Got response {response}[/yellow] no_route {no_route}")
+        #gCon.log(f"[yellow]Got response {response}[/yellow] no_route {no_route}")
         if response is None:
             raise AdelphosException("Not found", EAdelhposErrno.EREMOTE_URI_NOT_PRESENT)
         return EAdelhposErrno.DONE_OK

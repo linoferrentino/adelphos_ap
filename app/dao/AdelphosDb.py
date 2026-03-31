@@ -458,16 +458,23 @@ create view fd_alias_ex as select
 
  """),
 
+# the trust line can be also a carrier line
+
 ('fd_trust_line', """
 create table fd_trust_line (
 
         actor_1 integer references fd_actor(fd_actor_id),
         actor_2 integer references fd_actor(fd_actor_id),
-        currency_exchange_rate real,
+        referee integer references fd_actor(fd_actor_id),
+        exchange_rate real,
         strength real,
-        interest real
+        max_weight real,
+        max_dimension real,
+        cost real,
+        state_fk integer references trust_line_state_id(state_id),
+        primary key (actor_1, actor_2, referee)
 
-); """),
+) without rowid; """),
 
 
 ('fd_ticket', """
@@ -477,6 +484,19 @@ create table fd_ticket (
     object_fk integer primary key references fd_sellable(local_fk)
 
     );"""),
+
+
+# a task is something which is to accept or decline
+
+('fd_task', 
+
+ """
+
+ create table fd_task(
+
+    task_id integer primary key
+
+ ); """),
 
 # A user can have a "duty", "something to do, give, or pay"
 
@@ -567,22 +587,22 @@ class AdelphosDb:
 
     # this function will query a remote DAO to get the object (it will
     # be saved locally as a cache)
-    async def import_from_dao_remote(ctx, object_uri):
-        # I have to split the uri, get the local and the remote part.
-        #object_splits = object_uri.split('@')
+    #async def import_from_dao_remote(ctx, object_uri):
+    #    # I have to split the uri, get the local and the remote part.
+    #    #object_splits = object_uri.split('@')
 
-        # Now I have to gquery the remote db.
-        local_uri = object_splits[0]
-        ctx.rem_instance = object_splits[1]
-        
-        rcmd = {
+    #    # Now I have to gquery the remote db.
+    #    local_uri = object_splits[0]
+    #    ctx.rem_instance = object_splits[1]
+    #    
+    #    rcmd = {
 
-                'cmd' : 'daoq',
-                'local_uri': local_uri
-                }
+    #            'cmd' : 'daoq',
+    #            'local_uri': local_uri
+    #            }
 
-        ctx.daemon_post_ob = rcmd
-        await daemon_remote_query(ctx)
+    #    ctx.daemon_post_ob = rcmd
+    #    await daemon_remote_query(ctx)
 
 
     def build_condition_str(self, fields_to_seek):
@@ -780,13 +800,11 @@ where {key_name} = {key_val};
 
         """
 
-        gCon.log(f"The query to update is {sql_update} with dictionary")
-        gCon.log(dto_as_dict)
+        #gCon.log(f"The query to update is {sql_update} with dictionary")
+        #gCon.log(dto_as_dict)
         cur = self._conn.cursor()
         cur.execute(sql_update, dto_as_dict)
         cur.close()
- 
-        return
         
 
     def close(self):

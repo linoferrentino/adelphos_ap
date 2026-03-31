@@ -76,7 +76,6 @@ def adelphos_remote_process_tl():
 
 @pytest.fixture(scope = "module")
 def adelphos_tl(adelphos_remote_process_tl):
-#def adelphos_tl():
     yield from tu.generator_test_client(adelphos_tl_test, True)
 
 
@@ -102,7 +101,7 @@ def test_create_trust_line(adelphos_tl):
 
 
 # this cannot work, now, because we have the need of two independent instances.
-def xx_test_create_trust_line_remote(adelphos_tl):
+def XXtest_create_trust_line_remote(adelphos_tl):
 
     with adelphos_tl.websocket_connect("/api/ws") as websocket:
         create_trust_line(websocket, '##john.jf@localhost:5012',
