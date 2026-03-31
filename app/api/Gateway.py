@@ -150,14 +150,14 @@ class Gateway(ABC):
 
 
     def pack_message(self, errno, msg_out):
-        if msg_out is None or len(msg_out) == 0:
+        if msg_out is None or len(str(msg_out)) == 0:
             msg_out = "Done." if errno == EAdelhposErrno.DONE_OK else "Error."
         final_msg = {
                 'res' : errno,
-                'payload' : msg_out 
+                'payload' : msg_out
         }
         final_str = json.dumps(final_msg)
-        #gCon.log(f"this is the final string {final_str}")
+        gCon.log(f"this is the final string {final_str}")
         return final_str
 
 
@@ -216,5 +216,11 @@ class Gateway(ABC):
             return default
 
         raise AdelphosException(f"Required parameter {param} not found and default not given")
+
+
+
+    def get_bool_param_safe(self, param, default = None):
+        parstr = self.get_param_safe(param, default)
+        return bool(parstr)
 
 

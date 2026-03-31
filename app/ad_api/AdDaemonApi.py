@@ -20,6 +20,7 @@ import json
 from app.dao.AdelphosUri import uriunparse
 from app.logging import gCon
 from app.api.BaseApi import BaseApi
+from app.api.AdelphosException import EAdelhposErrno
 
 
 class AdDaemonApi(BaseApi):
@@ -36,7 +37,7 @@ class AdDaemonApi(BaseApi):
         return answer
 
 
-    async def _hndl_get_uri(self):
+    async def _hndl_exists_uri(self):
         uri = self.gateway.get_param_safe('uri')
         gCon.log(f"[red] you want this uri {uri}[/red]")
         # I pass the message to the application, hoping it will suceed
@@ -44,8 +45,8 @@ class AdDaemonApi(BaseApi):
         response = await self.gateway.app.dao.uri_factory_str(uri)
 
         # I want the uri: but I want to export it, so I null the foreign keys.
-        gCon.log(f"[red] got {response} [/red]")
-        return response
+        gCon.log(f"[red] got {response}, the uri exists [/red]")
+        return True 
 
 
     def _pack_request_message(self, command, param_dict):
@@ -63,6 +64,12 @@ class AdDaemonApi(BaseApi):
         return msg
 
 
+    def _exists_remote_uri_payload(self, uri):
+        msg = self._pack_request_message('add_exists_uri',
+                                                 { 'uri' : uriunparse(uri) } )
+        return msg
+
+
     def _echo_remote_payload(self, msg):
         msg = self._pack_request_message('add_echo', { 'msg' : msg } )
         return msg
@@ -71,6 +78,13 @@ class AdDaemonApi(BaseApi):
     # returns a uri from a remote adelphos
     async def get_uri_remote(self, ad_instance_pack, uri):
         msg = self._get_uri_remote_payload(uri)
+        res = await self.gateway.app.ap_gateway.ap_daemon_api.make_request(
+                ad_instance_pack, msg)
+        return res
+
+
+    async def exists_remote_uri(self, ad_instance_pack, uri):
+        msg = self._exists_remote_uri_payload(uri)
         res = await self.gateway.app.ap_gateway.ap_daemon_api.make_request(
                 ad_instance_pack, msg)
         return res
@@ -91,6 +105,6 @@ class AdDaemonApi(BaseApi):
 
 HANDLERS = {
      'add_echo' : AdDaemonApi._hndl_echo,
-     'add_get_uri' : AdDaemonApi._hndl_get_uri,
+     'add_exists_uri' : AdDaemonApi._hndl_exists_uri,
 }
 

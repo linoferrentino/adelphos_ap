@@ -68,3 +68,9 @@ class BaseFractalGroupDao(FdActorDao):
         return new_id
 
 
+    def get_pk_name(self):
+        return 'local_fk'
+
+
+    def get_table_name(self):
+        return 'fd_group_family'

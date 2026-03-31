@@ -13,7 +13,6 @@ class EAdelhposErrno(IntEnum):
     ECONTINUE = 1 
     EREMOTE_ERROR = 2
     EGENERIC_USER = 3
-    EGENERIC_SERVER = 4
     EREMOTE_API_EXCEPTION = 5
     ECOMMAND_NOT_FOUND = 6
     ENOLOGIN = 7
@@ -28,6 +27,9 @@ class EAdelhposErrno(IntEnum):
     EREM_ADELPHOS_NOT_FOUND = 16
     EUNKNOW_URI_TYPE = 17
 
+    # generic 5xx error
+    EGENERIC_SERVER = 500
+
 
 class AdelphosException(Exception):
 
@@ -35,4 +37,16 @@ class AdelphosException(Exception):
     def __init__(self, msg, code: EAdelhposErrno = EAdelhposErrno.EGENERIC_USER):
         super().__init__(msg)
         self.code = code
+
+
+class AdelphosRuntimeError(AdelphosException):
+
+    def __init__(self, msg):
+        super().__init__(msg, EAdelhposErrno.EGENERIC_SERVER)
+
+
+def adelphos_ok_or_die(val):
+    if val == True:
+        return
+    raise AdelphosRuntimeError("Invariant failed")
 

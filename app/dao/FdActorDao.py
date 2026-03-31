@@ -34,22 +34,11 @@ class FdActorDao(BaseAdelphosDao):
 
     # of course the local queries have instance == 0
 
-    def _try_get_local_numeric_uri(self, uri):
+    def _try_get_local_numeric_uri(self, uri, instance_fk):
 
-        # I query from the local db, but the uri could be not local!
-        if (BaseAdelphosDao._is_local_uri(uri)):
-            instance_fk = 0
-        else:
-            # I have to get the adelphos instance.
-            server_dto = self.dao.server_dao.get_from_hostname(uri.host_name)
-            if (server_dto is None):
-                # This is fatal. The server is not existing, so it cannot be here the object
-                gCon.log(f"No server {uri.host_name}. This object {uri} cannot be here")
-                return None
-            instance_fk = server_dto.server_id
-
+        
         sql_get = f"""
-        select * from {self.view_name} where fd_actor_id = ? and instance_fk = 0
+        select * from {self.view_name} where fd_actor_id = ? and instance_fk = ?
         """
 
         # to be implemented
@@ -59,12 +48,13 @@ class FdActorDao(BaseAdelphosDao):
         return None
 
 
-    def _try_get_local_human_uri(self, uri):
+    def _try_get_local_human_uri(self, uri, instance_fk):
         sql_get = f"""
-        select * from {self.view_name} where name = :name and instance_fk = 0
+        select * from {self.view_name} where name = :name and instance_fk = :instance_fk
         """
         params  = {
-                'name' : uri.name
+                'name' : uri.name,
+                'instance_fk' : instance_fk
                 }
         dto = self.dao.db.get_dto_from_sql(sql_get, params, self.constructor)
         #gCon.log(f"This is the dto {dto}")

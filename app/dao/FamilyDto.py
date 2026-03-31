@@ -39,13 +39,13 @@ class FamilyPack(NamedTuple):
 
 # this is the constructor for a family.
 # it needs less fields, some will be initialized by the database 
-def family_dto_create_local(name):
+def family_dto_create(name, instance_id):
 
     # the family has level zero, and a local family has also the instance zero
 
     fam_dto = FamilyDto(
             None, name, None, #fd_actor fields
-            None, None, 0, None, 0)
+            None, None, instance_id, None, 0)
 
     return fam_dto
 

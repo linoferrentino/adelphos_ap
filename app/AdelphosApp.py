@@ -192,9 +192,9 @@ class AdelphosApp(FastAPI):
 
     def create_root_actor_impl(self, actor_id):
 
-        # Now I have to create the alias, so I use tha ApAliasApi.
-        self.ap_gateway.ap_alias_api.create_alias_impl(actor_id,
-                         'admins', 'root',
+        # Now I have to create the alias
+        self.dao.alias_dao.create_alias_impl(actor_id,
+                         'admins', 0, 'root',
                          self.config['General']['root_password'])
         self.dao.commit()
         #gCon.log(f"[red]DB for  {self.instance} START[/red]")
@@ -265,10 +265,25 @@ class MasterAdelphosDao:
         return await self.uri_factory(urip, maybe)
 
 
-    async def uri_factory(self, uri, maybe = False):
+    # the get_uri will return a cached version if not present locally and
+    # no_route flag is true.
+    async def uri_factory(self, uri, no_route = False, maybe = False):
         match uri.obj_type:
             case EAdelphosType.ALIAS_TYPE:
-                return await self.alias_dao.get_from_uri(uri, maybe)
+                return await self.alias_dao.get_from_uri(uri, no_route, maybe)
+            case _:
+                raise AdelphosException(None, EUNKNOW_URI_TYPE)
+
+
+    def uri_store_cached_str(self, uristr):
+        urip = uriparse(uristr)
+        return uri_store_cached(urip)
+
+
+    def uri_store_cached(self, uri):
+        match uri.obj_type:
+            case EAdelphosType.ALIAS_TYPE:
+                return self.alias_dao.store_cached(uri)
             case _:
                 raise AdelphosException(None, EUNKNOW_URI_TYPE)
 

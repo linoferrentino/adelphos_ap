@@ -52,10 +52,20 @@ class BaseDao(ABC):
         self.update_dict(pk_name, pk_id, dto_as_dict)
 
 
+    # Update only one field
+    def update_field(self, dto, field, value):
+        pk_id = dto.get_pk()
+        pk_name = self.get_pk_name()
+        tbl = self.get_table_name();
+        #gCon.log(f"update {tbl} with  using primary key {pk_name} = {pk_id}")
+        self.dao.db.update_field(tbl, pk_name, pk_id, field, value)
+
+
     # basic implementation
     def update_dict(self, pk_name, pk_id, dto_as_dict):
-        self.dao.db.update_dto(self.get_table_name(),
-                                      pk_name, pk_id, dto_as_dict)
+        tbl = self.get_table_name();
+        gCon.log(f"update {tbl} with  {dto_as_dict} using primary key {pk_name} = {pk_id}")
+        self.dao.db.update_dto(tbl, pk_name, pk_id, dto_as_dict)
 
 
     # this is the abstract method that derived classes must implement

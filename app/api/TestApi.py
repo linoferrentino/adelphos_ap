@@ -25,8 +25,6 @@ import secrets
 from datetime import datetime
 from enum import IntEnum
 from enum import auto
-from app.dao.FamilyDto import family_dto_create_local
-from app.dao.AliasDto import alias_dto_create_local
 from app.api.UserSession import active_login
 
 from app.api.BaseApi import BaseApi
@@ -57,6 +55,7 @@ class TestApi(BaseApi):
     @only_in_debug
     async def _hndl_geturi(self):
         uri = self.gateway.get_param_safe('uri')
+        no_route  = self.gateway.get_bool_param_safe('no_route', False)
 
         # the uri has all the information required to get it.
         # the db is federated, so it is possible that also other
@@ -66,15 +65,11 @@ class TestApi(BaseApi):
         # remember that we are here in the local machine!
         # first of all we parse it.
         urip = uriparse(uri)
-        response = await self.gateway.app.dao.uri_factory(urip)
-        #if urip.host_name is None:
-        #    raise AdelphosException(f"Cannot route uri {uri}", EAdelhposErrno.ENOROUTEFORURI)
-
-        #instance_pack = self.gateway.app.dao.ad_instance_dao.\
-        #        get_from_hostname(urip.host_name, False)
-        #response = await self.gateway.app.ad_gateway.ad_daemon_api.\
-        #        get_uri(instance_pack, uri)
-        return response
+        response = await self.gateway.app.dao.uri_factory(urip, no_route)
+        gCon.log(f"[yellow]Got response {response}[/yellow] no_route {no_route}")
+        if response is None:
+            raise AdelphosException("Not found", EAdelhposErrno.EREMOTE_URI_NOT_PRESENT)
+        return EAdelhposErrno.DONE_OK
 
 
 HANDLERS = {

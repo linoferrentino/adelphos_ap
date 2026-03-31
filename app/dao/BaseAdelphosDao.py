@@ -19,6 +19,7 @@ from ..logging import gCon
 from dataclasses import asdict
 from app.dao.BaseDao import BaseDao
 from app.api.AdelphosException import AdelphosException
+from app.api.AdelphosException import adelphos_ok_or_die
 from app.api.AdelphosException import EAdelhposErrno
 
 
@@ -44,11 +45,25 @@ class BaseAdelphosDao(BaseDao):
 
     # `local' here means in the local db, but the object could be remote and cached here!
     def _try_get_local(self, uri):
+
+        # I query from the local db, but the uri could be not local!
+        if self._is_local_uri(uri):
+            instance_fk = 0
+        else:
+            # I have to get the adelphos instance.
+            instance_pack = self.dao.ad_instance_dao.get_from_hostname(uri.host_name, True)
+            if instance_pack is None:
+                # This is fatal. The server is not existing, so it cannot be here the object
+                gCon.log(f"No adelphos @{uri.host_name} cached")
+                return None
+            instance_fk = instance_pack.instance.actor_fk
+
+
         # the first difference is between a numeric uri and a normal uri
         if (uri.is_numeric):
-            return self._try_get_local_numeric_uri(uri)
+            return self._try_get_local_numeric_uri(uri, instance_fk)
 
-        return self._try_get_local_human_uri(uri)
+        return self._try_get_local_human_uri(uri, instance_fk)
 
 
     # here it is abstract, because we have two bases, the fd_actor and the fd_object
@@ -76,12 +91,31 @@ class BaseAdelphosDao(BaseDao):
             return None
 
         if instance_pack.instance.authorized == 0:
-            raise AdelphosException(None, EAdelhposErrno.EREMOTE_ADELPHOS_NOT_AUTHORIZED)
+            raise AdelphosException(None, 
+                EAdelhposErrno.EREMOTE_ADELPHOS_NOT_AUTHORIZED)
 
-        remote_dto = await self.dao.app.ad_gateway.ad_daemon_api.\
-                get_uri_remote(instance_pack, uri)
+        # I am authorized to go outside, is it existent?
+        remote_dto_exists = await self.dao.app.ad_gateway.ad_daemon_api.\
+            exists_remote_uri(instance_pack, uri)
+
+        if remote_dto_exists == False:
+            return None
+
+        # at this point I can create a placeholder for this URI in my local db.
+        remote_dto = self._store_cached(instance_pack.instance.actor_fk, uri)
         return remote_dto
 
+
+    # this method stores a cached version of the object, it is remote by definition.
+    def _store_cached(self, instance_id, uri):
+
+        adelphos_ok_or_die(not self._is_local_uri(uri))
+
+        # OK, the uri is present, and also the instance is present.
+        # the base_id could be a tuple, as in the case of the alias, which
+        # has two base objects.
+        dto = self._store_base_cached(instance_id, uri)
+        return dto
 
     
     # this method gets the object from this instance or, if not present,
@@ -89,7 +123,7 @@ class BaseAdelphosDao(BaseDao):
     # the URI here is parsed.
     #@abstractmethod
     # if maybe is True we don't complain if the object is not found.
-    async def get_from_uri(self, uri, maybe = False):
+    async def get_from_uri(self, uri, no_route = False, maybe = False):
 
         # first of all I try to know if this object is present in my db, remote or not
         # this function is not async, because I do not leave the instance.
@@ -97,6 +131,10 @@ class BaseAdelphosDao(BaseDao):
 
         if (dto is not None):
             return dto
+
+        if no_route == True:
+            gCon.log(f"uri {uri} is not present locally, but no_route is True")
+            return None
 
         # I have not found it, if the uri is local this is a not recoverable error
         local_uri = self._is_local_uri(uri)

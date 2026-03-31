@@ -57,15 +57,25 @@ class AsyncGetReq(AsyncRequestBase):
 
 
     async def async_req(self, session):
+        try:
+            await self.async_req_try(session)
+        except Exception as ex:
+            gCon.log(f"Exception while trying to get the URL {self._url}")
+            # I put a generic user error
+            self.status_code = 400
+            self.text = str(ex)
+        finally:
+            # Ok, now I can signal the waiting task
+            async with self._cond:
+                self._cond.notify()
+
+
+    async def async_req_try(self, session):
         #gCon.log(f"will request the url {self._url}")
         async with session.get(self._url) as resp:
             self.status_code = resp.status
             self.text = await resp.text()
-
         #gCon.log(f"got response {self.status_code} now I signal")
-        # Ok, now I can signal the waiting task
-        async with self._cond:
-            self._cond.notify()
 
 
 # this class posts the request with the signatures.

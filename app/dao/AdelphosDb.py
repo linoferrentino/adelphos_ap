@@ -108,7 +108,6 @@ create table ad_instance (
 create table fd_actor(
     fd_actor_id integer primary key,
     name text,
-    --instance_fk integer not null references ad_instance(actor_fk),
     timestamp text default current_timestamp
     );
  """),
@@ -347,7 +346,6 @@ create table fd_group_family(
              fd_actor(fd_actor_id),
         parent_group_fk integer references fd_group_family(local_fk),
         boss_fk integer null references fd_alias(local_fk),
-        --currency_fk integer references fd_currency(local_fk),
         instance_fk integer not null references ad_instance(actor_fk),
         equity real,
         level integer
@@ -402,6 +400,35 @@ create view fd_alias_ex as select
 
 # the views relative to the alias, only the relevant field to make a replica
 # on a distant db.
+('view fd_alias_export1', """
+
+ create view fd_alias_export1 as select
+
+ fdact1.name as name, fdact2.name as family, srvinst.host_name as adelphos_instance, 
+ apact.preferred_username, apsrv.host_name
+ 
+ from fd_alias as fda, fd_actor as fdact1, fd_actor as fdact2,
+ ap_actor as apact, ap_server as apsrv,
+ ap_server as srvinst, ad_instance as ad_inst, fd_actor as fdact3
+
+ where
+
+ fda.local_fk = fdact1.actor_id
+ and
+ fda.family_fk = fdact2.actor_id
+ and
+ apact.actor_id = fda.actor_fk
+ and
+ apact.server_fd = ap_server.server_id
+ and
+ fdact1.instance_fk = ad_inst.actor_fk
+ and
+ ad_inst.actor_fk = fdact3.actor_id
+ and
+ fdact3.server_fk = srvinst.server_id;
+
+ """),
+
 ('view fd_alias_export', """
 
  create view fd_alias_export as select
@@ -430,7 +457,6 @@ create view fd_alias_ex as select
  fdact3.server_fk = srvinst.server_id;
 
  """),
-
 
 ('fd_trust_line', """
 create table fd_trust_line (
@@ -728,6 +754,16 @@ insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
     def update_dto(self, table_name, key_name, key_val, dto_as_dict):
         fields = dto_as_dict.keys()
         self.update_dto_fields(table_name, key_name, key_val,  fields, dto_as_dict)
+
+
+    
+    def update_field(self, table_name, key_name, key_val, field, value):
+        fields = (field,)
+        values = {
+                field : value
+                }
+        self.update_dto_fields(table_name, key_name,  key_val, fields, values)
+
 
 
     # generic update for a table with a primary key composed of one field

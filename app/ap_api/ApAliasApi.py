@@ -18,9 +18,8 @@ from app.api.BaseApi import BaseApi
 from app.dao.AdelphosUri import uriparse_type, EAdelphosType
 from app.api.AdelphosException import AdelphosException
 from app.logging import gCon
-from app.dao.FamilyDto import family_dto_create_local
+#from app.dao.FamilyDto import family_dto_create_local
 from argon2 import PasswordHasher
-from app.dao.AliasDto import alias_dto_create_local
 
 class ApAliasApi(BaseApi):
 
@@ -57,29 +56,9 @@ f"family {alias_uri.family} is already existing in this instance")
         ph = PasswordHasher()
         pass_hashed = ph.hash(password)
 
-        self.create_alias_impl(actor_id, alias_uri.family, alias_uri.name,
-                    pass_hashed)
-
-    
-    # this function will simply use the fields and store the rows in db.
-    # this function bypasses all checks! Call it only after validating user input
-    def create_alias_impl(self, actor_id, family, name, password_hashed):
-
-         # let's create the family, for now it will have only a name, not a currency
-        family_dto = family_dto_create_local(family)
-
-        family_id = self.gateway.app.dao.family_dao.store(family_dto)
-
-        # I use the activity pub actor object to link to the alias
-        alias_dto = alias_dto_create_local(name,
-                   actor_id, family_id, password_hashed)
-
-        #gCon.log(f"Create alias {name} with family {family_id} and ap_actor {actor_id}")
-
-        # OK, let't try to add it to the database
-        new_id = self.gateway.app.dao.alias_dao.store(alias_dto)
-
-        return new_id
+        # we are creating here an alias in instance zero.
+        self.gateway.app.dao.alias_dao.create_alias_impl(
+            actor_id, alias_uri.family, 0, alias_uri.name, pass_hashed)
 
 
 # this table is valid for all the objects

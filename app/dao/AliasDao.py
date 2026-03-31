@@ -17,6 +17,8 @@ from app.dao.FdActorDao import FdActorDao
 from ..logging import gCon
 from app.dao.AliasDto import AliasDto
 from app.dao.AliasDto import AliasExDto
+from app.dao.FamilyDto import family_dto_create
+from app.dao.AliasDto import alias_dto_create_local
 
 
 # this is the utility class that handles the business logic
@@ -67,6 +69,42 @@ class AliasDao(FdActorDao):
         #    return None
 
         return AliasExDto(*row)
+
+
+    # the alias has two "actors": himself and the family which he belongs to
+    def _store_base_cached(self, instance_id, uri):
+
+        # I create here a simple object not linked to activity pub, because
+        # it is only a place holder.
+        alias_dto = self.create_alias_impl(None, uri.family, instance_id, uri.name, None)
+        gCon.log(f"Return alias {alias_dto} in instance {instance_id}")
+        return alias_dto
+
+
+    # this function will simply use the fields and store the rows in db.
+    # this function bypasses all checks! Call it only after validating user input
+    def create_alias_impl(self, actor_id, family, instance_id, name, password_hashed):
+
+         # let's create the family
+        family_dto = family_dto_create(family, instance_id)
+
+        family_id = self.dao.family_dao.store(family_dto)
+
+        # I use the activity pub actor object to link to the alias
+        alias_dto = alias_dto_create_local(name,
+                   actor_id, family_id, password_hashed)
+
+        #gCon.log(f"Create alias {name} with family {family_id} and ap_actor {actor_id}")
+
+        # OK, let't try to add it to the database
+        new_id = self.store(alias_dto)
+
+        # this new id is also the boss of the family!
+        family_dto.boss_fk = new_id
+        self.dao.family_dao.update_field(family_dto, 'boss_fk', new_id)
+
+        return alias_dto
+
 
 
 

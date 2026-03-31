@@ -15,6 +15,7 @@
 # This is the module which gives services to interact with the Fediverse
 # and give to Adelphos the translation to its objects.
 from app.api.AdelphosException import AdelphosException
+from app.api.AdelphosException import EAdelhposErrno
 from app.logging import gCon
 from app.ap_api.AsyncRequest import AsyncGetReq
 from app.api.OutgressGateway import post_to_ap_actor_from_local_user
@@ -105,7 +106,8 @@ resource=acct:{actor_instance}"
 
         if (actor_res.status_code != 200):
             raise AdelphosException(
-                    f"remote instance {rem_instance} complains!")
+                    f"remote instance {rem_instance} complains!",
+                    EAdelhposErrno.EREM_ADELPHOS_NOT_FOUND)
 
         actor_ob = json.loads(actor_res.text)
 

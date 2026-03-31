@@ -148,7 +148,7 @@ async def test_check_echo(adelphos_ad_api):
 
 
 @pytest.mark.anyio
-async def XXtest_get_alias(adelphos_ad_api):
+async def test_get_alias(adelphos_ad_api):
 
 
     script_get_uri = [
@@ -161,10 +161,10 @@ async def XXtest_get_alias(adelphos_ad_api):
     ('test_geturi uri ##bob.bf19@www.fake.org', 
      EAdelhposErrno.EREM_ADELPHOS_NOT_FOUND),
     # this succedes
-    ('test_geturi uri ##bob.bf19@localhost:9911', '{ "name" : "bob_19" }'),
+    ('test_geturi uri ##bob.bf19@localhost:9911', EAdelhposErrno.DONE_OK),
     # now also the local should succeed
     ('test_geturi uri ##bob.bf19@localhost:9911 no_route true', 
-     '{ "name" : "bob_19" }'),
+     EAdelhposErrno.DONE_OK),
             ]
 
     async with httpx.AsyncClient() as client:
