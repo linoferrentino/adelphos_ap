@@ -79,7 +79,7 @@ class RootApi(BaseApi):
         await self.gateway.app.dao.ad_instance_dao.\
                 discover_from_host_name(remote_instance)
         msg = f"OK, remote adelphos {remote_instance} discovered and enabled."
-        gCon.log(msg)
+        #gCon.log(msg)
         return msg 
 
 

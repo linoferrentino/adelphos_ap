@@ -101,9 +101,9 @@ class ApDaemonApi(BaseApi):
         #gCon.log(f"[blue]my question {self.async_contexts}[/blue]")
         # OK, now I wait for a response!
         # this will block!
-        gCon.log(f"[red]I wait until done![/red]")
+        #gCon.log(f"[red]I wait until done![/red]")
         await async_ctx.wait_until_done()
-        gCon.log(f"[green]Waited the msg is {async_ctx.answer}[/green]")
+        #gCon.log(f"[green]Waited the msg is {async_ctx.answer}[/green]")
 
         #if async_ctx.answer['res'] == EAdelhposErrno.DONE_OK:
         #    return async_ctx.answer['payload']

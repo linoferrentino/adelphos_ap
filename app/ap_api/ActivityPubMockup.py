@@ -45,7 +45,7 @@ class ActivityPubMockupUser:
 
     # how_many will get the last n messages, -1 means all
     def last_n_messages(self, how_many = -1):
-        gCon.log(f"returning {how_many} messages")
+        #gCon.log(f"returning {how_many} messages")
         if how_many == -1:
             return self.messages
         return self.messages[-1 * how_many:]
@@ -137,7 +137,7 @@ class ActivityPubMockup(ActivityPubBaseGateway):
 
     # override from Gateway
     async def proc_request(self, req_str):
-        gCon.log(f"msg {req_str} for {self.current_logged_user}")
+        #gCon.log(f"msg {req_str} for {self.current_logged_user}")
         self.current_logged_user.incoming_message(req_str)
 
 
@@ -152,7 +152,7 @@ class ActivityPubMockup(ActivityPubBaseGateway):
         if ap_actor is None:
             raise AdelphosException(f"Unknown user {activity_pub_user}")
         ap_server = self.app.dao.ap_server_dao.get_from_id(0)
-        gCon.log(f"forced login of {ap_actor} on {ap_server}")
+        #gCon.log(f"forced login of {ap_actor} on {ap_server}")
         ap_user = ActivityPubMockupUser(self.app, ap_server, ap_actor)
         self.users[activity_pub_user] = ap_user
         self.current_logged_user = ap_user
@@ -180,7 +180,7 @@ class ActivityPubMockup(ActivityPubBaseGateway):
 
 
     def create_demo_user(self, name, alias, password, is_root):
-        gCon.log(f"Creating ap_actor {name} with alias {alias} and password {password}")
+        #gCon.log(f"Creating ap_actor {name} with alias {alias} and password {password}")
         actor_id = self.create_app_actor(name)
         self.app.ap_gateway.ap_alias_api.create_alias_pass(
                 actor_id, alias, password)

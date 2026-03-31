@@ -28,7 +28,7 @@ class BaseGroupDto(FdActorDto):
 
     boss_fk: int
 
-    currency_fk: int 
+    #currency_fk: int 
 
     # the (adelphos!) instance that contains this group
     instance_fk: int

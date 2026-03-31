@@ -347,7 +347,7 @@ create table fd_group_family(
              fd_actor(fd_actor_id),
         parent_group_fk integer references fd_group_family(local_fk),
         boss_fk integer null references fd_alias(local_fk),
-        currency_fk integer references fd_currency(local_fk),
+        --currency_fk integer references fd_currency(local_fk),
         instance_fk integer not null references ad_instance(actor_fk),
         equity real,
         level integer
@@ -359,7 +359,7 @@ create table fd_group_family(
  create view fd_group_family_ex as select 
  fda.fd_actor_id, fda.name, fdg.instance_fk, fda.timestamp,
  fdg.parent_group_fk, fdg.boss_fk,  
- fdg.currency_fk, fdg.equity, fdg.level
+ fdg.equity, fdg.level
  from fd_actor as fda, fd_group_family as fdg
  where fda.fd_actor_id = fdg.local_fk;
 
@@ -716,7 +716,7 @@ select {list_sql_fields} from {table_name} where {field_to_seek} = ?
 insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
 
         """
-        gCon.log(f"Insert sql {sql_insert} with dict {dto_as_dict}")
+        #gCon.log(f"Insert sql {sql_insert} with dict {dto_as_dict}")
         cur = self._conn.cursor()
         cur.execute(sql_insert, dto_as_dict)
         newid = cur.lastrowid

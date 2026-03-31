@@ -34,7 +34,7 @@ class AliasDao(FdActorDao):
 
     # this is a local function, 
     def get_from_name_family_id(self, name, family_id):
-        gCon.log(f"I look for family Id {family_id} and name {name}")
+        #gCon.log(f"I look for family Id {family_id} and name {name}")
         sql_get_local_name_family = """
         select  * from fd_alias_ex  where 
     (
@@ -50,21 +50,21 @@ class AliasDao(FdActorDao):
         row = self.dao.db.execute_and_fetch_one(sql_get_local_name_family,
                                                 (name, family_id))
 
-        gCon.log(f"I have obtained {row}")
-        if (row is None):
-            gCon.log("===== fd actor =====")
-            self.dao.db.dump_table("fd_actor")
-            
-            gCon.log("===== fd alias =====")
-            self.dao.db.dump_table("fd_alias")
+        #gCon.log(f"I have obtained {row}")
+        #if (row is None):
+        #    gCon.log("===== fd actor =====")
+        #    self.dao.db.dump_table("fd_actor")
+        #    
+        #    gCon.log("===== fd alias =====")
+        #    self.dao.db.dump_table("fd_alias")
 
-            gCon.log("===== fd group family =====")
-            self.dao.db.dump_table("fd_group_family")
+        #    gCon.log("===== fd group family =====")
+        #    self.dao.db.dump_table("fd_group_family")
 
-            gCon.log("===== fd alias ex ==== ")
-            self.dao.db.dump_table("fd_alias_ex")
+        #    gCon.log("===== fd alias ex ==== ")
+        #    self.dao.db.dump_table("fd_alias_ex")
 
-            return None
+        #    return None
 
         return AliasExDto(*row)
 
@@ -76,7 +76,7 @@ class AliasDao(FdActorDao):
 
         # first of all I store the base table
 
-        gCon.log(f"Store alias dict {dto_as_dict}")
+        #gCon.log(f"Store alias dict {dto_as_dict}")
 
         new_id = super().store_dict(dto, dto_as_dict)
 
@@ -84,6 +84,6 @@ class AliasDao(FdActorDao):
         dto.local_fk = new_id
 
         self.dao.db.insert_dto_fields("fd_alias", self.ftbl_col_list, dto_as_dict)
-        gCon.log(f"Created new alias {dto}")
+        #gCon.log(f"Created new alias {dto}")
 
 

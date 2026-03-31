@@ -138,7 +138,7 @@ def test_login_remote(adelphos1):
 
 
     # after this I could login to the remote adelphos.
-    gCon.log("-==========================================================")
+    #gCon.log("-==========================================================")
 
     mention = '@daemon@localhost:5011'
     response = httpx.post('http://localhost:5011/_backdoor_api_/post', json = { 

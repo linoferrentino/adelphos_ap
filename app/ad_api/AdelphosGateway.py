@@ -37,13 +37,13 @@ class AdelphosGateway(Gateway):
     # done in the same thread
     async def pre_process_request(self, request):
         decoded = self._decode_daemon_message(request)
-        gCon.log(f"I got req {decoded}")
+        #gCon.log(f"I got req {decoded}")
         return (None, decoded)
 
 
     def parse_request_string(self, command_line):
         remote_json = json.loads(command_line)
-        gCon.log(f"The request decoded is {remote_json}")
+        #gCon.log(f"The request decoded is {remote_json}")
         self.cmd = remote_json['cmd']
         self.cmd_dict = remote_json['params']
 
@@ -62,7 +62,7 @@ class AdelphosGateway(Gateway):
 
     # the AdelphosGateway has another way to process the command line
     def post_process_msg(self, msg_out):
-        gCon.log(f"Will post process {msg_out}")
+        #gCon.log(f"Will post process {msg_out}")
         msg_proc = self._encode_daemon_message(msg_out)
         #gCon.log(f"Got {msg_proc}")
         return msg_proc

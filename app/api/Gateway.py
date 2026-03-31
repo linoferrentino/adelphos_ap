@@ -90,12 +90,13 @@ class Gateway(ABC):
 
         # OK, now I will check if there has been an exception, if not I can commit
         if errno == EAdelhposErrno.DONE_OK:
-            gCon.log(f"[blue]commit[/blue]")
+            #gCon.log(f"[blue]commit[/blue]")
             self.app.dao.commit()
         elif errno == EAdelhposErrno.ECONTINUE:
-            gCon.log(f"[yellow]DB Continue[/yellow]")
+            #gCon.log(f"[yellow]DB Continue[/yellow]")
+            pass
         else:
-            gCon.log(f"[red]rollback[/red]")
+            #gCon.log(f"[red]rollback[/red]")
             self.app.dao.rollback()
 
         # do not ping back the error!
