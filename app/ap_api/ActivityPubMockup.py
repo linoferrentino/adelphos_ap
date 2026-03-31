@@ -180,6 +180,7 @@ class ActivityPubMockup(ActivityPubBaseGateway):
 
 
     def create_demo_user(self, name, alias, password, is_root):
+        gCon.log(f"Creating ap_actor {name} with alias {alias} and password {password}")
         actor_id = self.create_app_actor(name)
         self.app.ap_gateway.ap_alias_api.create_alias_pass(
                 actor_id, alias, password)

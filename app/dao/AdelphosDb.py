@@ -379,7 +379,7 @@ create table fd_group_family(
 create table fd_alias(
 
         local_fk integer primary key references fd_actor(fd_actor_id),
-        actor_fk integer references ap_actor(actor_id) on delete restrict,
+        actor_fk integer references ap_actor(actor_id),
         family_fk integer references fd_group_family(local_fk),
         password text
 
@@ -388,9 +388,10 @@ create table fd_alias(
 
 ('view fd_alias_ex', """
 
- create view fd_alias_ex as select
- fda.fd_actor_id, fda.name, fda.timestamp,
- fdl.actor_fk, fdl.family_fk, fdl.password
+create view fd_alias_ex as select
+ fda.fd_actor_id, fda.name,  fda.timestamp,
+ fdl.actor_fk, fdl.family_fk, fdl.password,
+ fdg.instance_fk
  from fd_actor as fda, fd_alias as fdl, fd_group_family as fdg
  where fda.fd_actor_id = fdl.local_fk
  and
@@ -612,6 +613,24 @@ select {list_sql_fields} from {table_name} where {condition_str}
         return constructor_dto(*row)
 
 
+    # simple debug function
+    def dump_table(self, table, limit_rows = -1):
+
+        sql = f"""select * from {table}"""
+        if limit_rows != -1:
+            sql += f" limit {limit_rows}"
+        cur = self._conn.cursor()
+        cur.execute(sql)
+        i = 0
+        while True:
+            row = cur.fetchone()
+            if row is None:
+                break
+            gCon.log(f"Row {i} : {row}")
+            i += 1
+        cur.close()
+
+
     def get_full_dto_ex(self, table_name, fields_to_seek, 
                 values_to_seek, constructor_dto):
         condition_str = self.build_condition_str(fields_to_seek)
@@ -697,6 +716,7 @@ select {list_sql_fields} from {table_name} where {field_to_seek} = ?
 insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
 
         """
+        gCon.log(f"Insert sql {sql_insert} with dict {dto_as_dict}")
         cur = self._conn.cursor()
         cur.execute(sql_insert, dto_as_dict)
         newid = cur.lastrowid

@@ -29,9 +29,12 @@ from app.dao.FamilyDto import FamilyPack
 # groups, but we list here only the innermost group, because every group
 # has only one parent, from the l-zero group we can go up to all levels.
 
-
+# this is the view of the table, no extra fields
 @dataclass
 class AliasDto(FdActorDto):
+
+    # the foreign key in the FdActorDto table is not part of the class.
+    #local_fk: int
 
     # this is the Activity Pub actor linked to this alias
     actor_fk: int
@@ -57,9 +60,10 @@ class AliasPack(NamedTuple):
 # the AliasExport is only a dataclass needed to store the data
 # of a remote object (to rebuild its URI)
 # it is a dataclass based on the view AliasExport
-class AliasExport:
+@dataclass
+class AliasExDto(AliasDto):
 
-    pass
+    instance_fk: int
     
 
 def alias_dto_create_local(name, actor_fk, family_id, pass_hashed):

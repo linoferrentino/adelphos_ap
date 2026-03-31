@@ -88,7 +88,7 @@ exp {actor_uri}")
 f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
         if server_dto.server_id == 0:
-            gCon.log("[red]This is a locally defined actor![/red]")
+            #gCon.log("[red]This is a locally defined actor![/red]")
             actor = self.get_from_server_path(0, key_parsed.path)
         else:
             # OK, now I can create the actor
@@ -104,7 +104,7 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
         #if (server_dto.server_id != 0):
         #else:
         #    local_actor = 
-        gCon.log(f"Created actor {actor}")
+        #gCon.log(f"Created actor {actor}")
         return actor 
 
 
