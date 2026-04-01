@@ -49,6 +49,8 @@ class TrustLineDto
     alias_2_fk: int
     referee_fk: int
 
+    state_fk: int
+
     exchange_rate_1_to_2: float
 
     # the maximum value for this credit, this is in decibel.

@@ -241,16 +241,15 @@ create table fd_collecting_service(
 
  create table fd_cheque (
 
-        local_fk integer primary key references fd_object(local_id),
+        
+        issuer_fk integer references fd_actor(fd_actor_id),
 
-        master_fk integer references fd_cheque(local_fk),
+        holder_fk integer references fd_actor(fd_actor_id),
 
-        amount real,
+        amount real
 
-        expiry_date text,
 
-        currency_fk integer references fd_currency(local_fk)
- );
+ )
 
 
  """), 
@@ -460,18 +459,28 @@ create view fd_alias_ex as select
 
 # the trust line can be also a carrier line
 
+('fix_trust_line_states', """
+
+create table fix_trust_line_states (
+    state_id integer primary key,
+    state_dsc text
+ );
+
+ """),
+
+
 ('fd_trust_line', """
 create table fd_trust_line (
 
-        actor_1 integer references fd_actor(fd_actor_id),
-        actor_2 integer references fd_actor(fd_actor_id),
-        referee integer references fd_actor(fd_actor_id),
+        actor_1 integer not null references fd_actor(fd_actor_id),
+        actor_2 integer not null references fd_actor(fd_actor_id),
+        referee integer not null references fd_actor(fd_actor_id),
+        state_fk integer not null references fix_trust_line_states(state_id),
         exchange_rate real,
         strength real,
         max_weight real,
         max_dimension real,
         cost real,
-        state_fk integer references trust_line_state_id(state_id),
         primary key (actor_1, actor_2, referee)
 
 ) without rowid; """),
@@ -521,6 +530,10 @@ create table ad_duty(
 
 # this is the entrance point to the federated database in adelphos.
 class AdelphosDb:
+
+
+    def _populate_fix_tables(self):
+        pass
 
 
     def _create_schema(self, app):
@@ -574,6 +587,8 @@ class AdelphosDb:
       
         if (create_schema == True):
             self._create_schema(app)
+
+            self._populate_fix_tables()
 
             # If I am here I have to create also the initial data
             # like the root user and maybe all the initial population
