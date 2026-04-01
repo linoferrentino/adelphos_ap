@@ -28,8 +28,7 @@
 from app.logging import gCon
 
 # the last error encountered.
-#ad_errno = 0
-
+ad_errno = 0
 
 # the object is not thread safe, however every function is a transaction.
 # that is it leaves the world in a consistent state.
@@ -51,7 +50,16 @@ class Adelphos:
 
     # it returns the id of the new alias.
     def alias_create(self, alias_name, alias_family):
-        pass
+        global ad_errno
+
+        if self.dao.get_family(alias_family) is not None:
+            ad_errno = EAdCore.EDUPLICATED_FAMILY
+            return -1
+
+        fam_id = self.dao.add_family(alias_family)
+        alias_id = self.dao.add_alias(alias_name, fam_id)
+
+        return alias_id
 
 
     def get_items(self, alias_id, my_equity):

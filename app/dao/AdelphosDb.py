@@ -22,8 +22,6 @@ import os
 from pathlib import Path
 import sqlite3
 from app.api.AdelphosException import AdelphosException
-from app.consts import USER_ID
-from app.consts import API_POINT
 
 # I import here the specialized DAOs to access the federated objects.
 
@@ -536,7 +534,7 @@ class AdelphosDb:
         pass
 
 
-    def _create_schema(self, app):
+    def _create_schema(self):
         #gCon.log(f"Creating schema...")
 
         # I can add the foreign key constraints only without a transaction.
@@ -554,19 +552,18 @@ class AdelphosDb:
 
 
     # for testing I can also create the file in memory
-    def __init__(self, app):
+    def __init__(self, db_name):
 
-        config = app.config
+        #config = app.config
+        #db_name = config['General']['db_name']
 
-        db_name = config['General']['db_name']
-
-        create_schema = False
+        self.create_schema = False
 
         if (db_name == ":memory:"):
 
             #gCon.log("I will use the in-memory database")
             db_name_complete = db_name
-            create_schema = True
+            self.create_schema = True
             self.mem_db = True
 
         else:
@@ -576,7 +573,7 @@ class AdelphosDb:
             gCon.log(f"I will use database {db_name_complete}")
 
             if (os.path.exists(db_name_complete) == False):
-                create_schema = True
+                self.create_schema = True
 
             self.mem_db = False
 
@@ -585,39 +582,19 @@ class AdelphosDb:
         self._conn = sqlite3.connect(db_name_complete,
                                      autocommit=True)
       
-        if (create_schema == True):
-            self._create_schema(app)
+        if (self.create_schema == True):
+            self._create_schema()
 
             self._populate_fix_tables()
 
             # If I am here I have to create also the initial data
             # like the root user and maybe all the initial population
-            app.post_initialization_needed()
+            #app.post_initialization_needed()
            
 
     def dump_database(self):
         for line in self._conn.iterdump():
             gCon.log(f"{line}")
-
-
-    # this function will query a remote DAO to get the object (it will
-    # be saved locally as a cache)
-    #async def import_from_dao_remote(ctx, object_uri):
-    #    # I have to split the uri, get the local and the remote part.
-    #    #object_splits = object_uri.split('@')
-
-    #    # Now I have to gquery the remote db.
-    #    local_uri = object_splits[0]
-    #    ctx.rem_instance = object_splits[1]
-    #    
-    #    rcmd = {
-
-    #            'cmd' : 'daoq',
-    #            'local_uri': local_uri
-    #            }
-
-    #    ctx.daemon_post_ob = rcmd
-    #    await daemon_remote_query(ctx)
 
 
     def build_condition_str(self, fields_to_seek):

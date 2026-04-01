@@ -38,21 +38,17 @@ from app.config import load_conf
 from app.keys import load_keys
 from app.logging import good_bye
 
-from app.dao.AdelphosDb import AdelphosDb
 from app.ap_api.ActivityPubApi import ActivityPubApi
 from app.ap_api.ActivityPubMockup import ActivityPubMockup
 
 # the actor is ambiguous, we can have the activity pub actor
 # or the adelphos actor
-from app.dao.ApActorDao import ApActorDao
 
 from app.dao.ApServerDao import ApServerDao
 from app.dao.ApServerDto import create_ap_server
 
-from app.dao.FamilyDao import FamilyDao
-from app.dao.CurrencyDao import CurrencyDao 
-from app.dao.AliasDao import AliasDao
-from app.dao.AdInstanceDao import AdInstanceDao
+from app.core.MasterAdelphosDao import MasterAdelphosDao
+
 from app.dao.AdInstanceDto import create_ad_instance
 
 from app.ap_api.ActivityPubGateway import ActivityPubGateway
@@ -136,8 +132,8 @@ class AdelphosApp(FastAPI):
 
     async def post_initialization(self):
         # Now I have to discover the root actor.
-        flag = self._init_schema
-        del self._init_schema
+        flag = self.dao.created_schema_flag()
+        #del self._init_schema
         if (flag == False):
             return
 
@@ -239,71 +235,14 @@ class AdelphosApp(FastAPI):
         return ar.status_code
 
 
-# A simple container for all the DAOs in the system
-class MasterAdelphosDao:
-
-
-    def __init__(self, app):
-        #gCon.log("Creating the Master DAO, first the connection")
-        self.db = AdelphosDb(app)
-        # I take a reference to the application for the configuration
-        self.app = app
-
-        #gCon.log("Creating here the specialized DAOs")
-
-        # I create the specialized DAOs
-        self.currency_dao = CurrencyDao(self)
-        self.ap_actor_dao  = ApActorDao(self)
-        self.ap_server_dao   = ApServerDao(self)
-        self.ad_instance_dao = AdInstanceDao(self)
-        self.family_dao  = FamilyDao(self)
-        self.alias_dao   = AliasDao(self)
-
-
-    async def uri_factory_str(self, uristr, maybe = False):
-        urip = uriparse(uristr)
-        return await self.uri_factory(urip, maybe)
-
-
-    # the get_uri will return a cached version if not present locally and
-    # no_route flag is true.
-    async def uri_factory(self, uri, no_route = False, maybe = False):
-        match uri.obj_type:
-            case EAdelphosType.ALIAS_TYPE:
-                return await self.alias_dao.get_from_uri(uri, no_route, maybe)
-            case _:
-                raise AdelphosException(None, EUNKNOW_URI_TYPE)
-
-
-    def uri_store_cached_str(self, uristr):
-        urip = uriparse(uristr)
-        return uri_store_cached(urip)
-
-
-    def uri_store_cached(self, uri):
-        match uri.obj_type:
-            case EAdelphosType.ALIAS_TYPE:
-                return self.alias_dao.store_cached(uri)
-            case _:
-                raise AdelphosException(None, EUNKNOW_URI_TYPE)
-
-
-    def close(self):
-        self.db.close()
-
-
-    def commit(self):
-        self.db.commit()
-
-
-    def rollback(self):
-        self.db.rollback()
 
 
 @asynccontextmanager
 async def lifespan(app: AdelphosApp):
     #gCon.rule(f"LIFESPAN START {app.instance}")
-    app.dao = MasterAdelphosDao(app)
+
+    db_name = app.config['General']['db_name']
+    app.dao = MasterAdelphosDao(app, db_name)
     ses_worker = asyncio.create_task(session_worker(app))
     daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
     app.conn_hndl = ConnHandler(app)

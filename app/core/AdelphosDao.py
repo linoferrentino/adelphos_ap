@@ -17,8 +17,23 @@
 
 from abc import ABC, abstractmethod
 
+
+# this is the local adelphos dao, not federated. All the methods are 
+# def not async def. So we do not have the ActivityPub part.
 class AdelphosDao(ABC):
 
 
     def alias_dao():
         pass
+
+    
+    @abstractmethod
+    def get_family(self, family):
+        pass
+
+
+    @abstractmethod
+    def add_family(self, family):
+        pass
+
+

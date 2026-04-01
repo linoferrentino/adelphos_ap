@@ -52,22 +52,6 @@ class AliasDao(FdActorDao):
         row = self.dao.db.execute_and_fetch_one(sql_get_local_name_family,
                                                 (name, family_id))
 
-        #gCon.log(f"I have obtained {row}")
-        #if (row is None):
-        #    gCon.log("===== fd actor =====")
-        #    self.dao.db.dump_table("fd_actor")
-        #    
-        #    gCon.log("===== fd alias =====")
-        #    self.dao.db.dump_table("fd_alias")
-
-        #    gCon.log("===== fd group family =====")
-        #    self.dao.db.dump_table("fd_group_family")
-
-        #    gCon.log("===== fd alias ex ==== ")
-        #    self.dao.db.dump_table("fd_alias_ex")
-
-        #    return None
-
         return AliasExDto(*row)
 
 
