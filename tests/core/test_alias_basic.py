@@ -17,6 +17,7 @@ from app.core.Adelphos import Adelphos
 from app.core.EAdErrno import EAdErrno
 from app.core.MemoryAdelphosDao import MemoryAdelphosDao
 from app.core.SqliteAdelphosDao import SqliteAdelphosDao
+from app.federation.MemoryAdelphosSocial import MemoryAdelphosSocial
 
 
 # this is the local world
@@ -25,21 +26,23 @@ from app.core.SqliteAdelphosDao import SqliteAdelphosDao
 def w_local():
 
     ma_dao = MemoryAdelphosDao()
-    adelphos1 = Adelphos('w1', ma_dao)
+    #ma_dao = SqliteAdelphosDao(':memory:')
+    social = MemoryAdelphosSocial()
+    adelphos1 = Adelphos('w1', ma_dao, social)
     return adelphos1
 
 
 def test_add_alias(w_local):
 
-    lino_id = w_local.alias_create('lino', 'ferre', 'pass')
+    lino_id = w_local.alias_create(0, 'lino', 'ferre', 'pass')
     assert lino_id > 0
 
 
 def test_add_dup_family(w_local):
 
-    lino_id = w_local.alias_create('lino', 'ferre', 'pass')
+    lino_id = w_local.alias_create(0, 'lino', 'ferre', 'pass')
     assert lino_id > 0
-    bob_id = w_local.alias_create('bob', 'ferre', 'pass')
+    bob_id = w_local.alias_create(0, 'bob', 'ferre', 'pass')
     assert bob_id == -EAdErrno.EDUPLICATED_FAMILY
 
 

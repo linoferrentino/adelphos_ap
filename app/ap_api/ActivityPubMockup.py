@@ -19,6 +19,7 @@ from app.dao.ApActorDto import create_ap_actor
 from app.consts import API_POINT
 from app.ap_api.ActivityPubGateway import ActivityPubBaseGateway
 from app.api.AdelphosException import AdelphosException
+from app.federation.SocialProvider import SocialProvider
 import time
 
 
@@ -58,7 +59,7 @@ class ActivityPubMockupUser:
 # this ActivityPub object is also a gateway, it gets the POST messages that
 # come from the outside and, if they correspond to real users it will post them
 # in the users's inbox.
-class ActivityPubMockup(ActivityPubBaseGateway):
+class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
 
 
     def __init__(self, app):
@@ -179,9 +180,16 @@ class ActivityPubMockup(ActivityPubBaseGateway):
                         demo_user['password'], is_root)
 
 
+    # SocialProvider interface.
+    def create_user(self, username):
+        return self.create_app_actor(username)
+
+
     def create_demo_user(self, name, alias, password, is_root):
         #gCon.log(f"Creating ap_actor {name} with alias {alias} and password {password}")
         actor_id = self.create_app_actor(name)
+
+        # this is the part which is not relative to activity pub.
         self.app.ap_gateway.ap_alias_api.create_alias_pass(
                 actor_id, alias, password)
         if is_root:

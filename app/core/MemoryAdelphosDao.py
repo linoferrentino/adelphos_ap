@@ -52,24 +52,28 @@ class MemoryAdelphosDao(AdelphosDao):
         return fam_id
     
 
-    def add_alias(self, alias, fam_id, password_hashed):
+    def add_alias(self, actor_id, alias, fam_id, password_hashed):
         alias_id = self.next_alias
         self.next_alias += 1
 
-        alias_dto = alias_dto_create_local(alias, None, fam_id, password_hashed)
+        alias_dto = alias_dto_create_local(alias, actor_id, fam_id, password_hashed)
+        alias_dto.fd_actor_id = alias_id
 
-        self.aliases_by_id[alias_id] = { 'name' : alias, 'fam_fk': fam_id }
+        self.aliases_by_id[alias_id] = alias_dto 
+        self.aliases_by_name[alias] = alias_dto 
+
         return alias_id
 
 
     # here it is a nop
-    def commit():
+    def commit(self):
         pass
 
 
     # here it is an exception!
-    def rollback():
-        raise Exception("This store does not support rollback")
+    def rollback(self):
+        #raise Exception("This store does not support rollback")
+        pass
 
 
 

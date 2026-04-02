@@ -25,6 +25,8 @@ from app.dao.AliasDao import AliasDao
 from app.dao.AdelphosUri import EAdelphosType
 
 # A simple container for all the DAOs in the system
+# this class will be separated in two parts, one local (def)
+# and one remote (async def) used to query the federated DBs.
 class MasterAdelphosDao:
 
 

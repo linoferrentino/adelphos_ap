@@ -15,6 +15,7 @@
 # the sqlite DAO will store the data in db.
 
 from app.core.AdelphosDao import AdelphosDao
+from app.dao.AdelphosDb import AdelphosDb
 
 
 # this is the dao which is only limited to one instance.
@@ -22,5 +23,8 @@ from app.core.AdelphosDao import AdelphosDao
 class SqliteAdelphosDao(AdelphosDao):
 
 
-    def __init__(self):
-        pass
+    def __init__(self, db_name):
+        self.db = AdelphosDb(db_name)
+
+
+

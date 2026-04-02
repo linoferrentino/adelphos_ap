@@ -31,14 +31,30 @@
 from app.logging import gCon
 from app.core.EAdErrno import EAdErrno
 
+def commit_if_ok(func):
+
+    def internal_commit(self, *kwargs):
+        try:
+            res = func(self, *kwargs)
+            self.dao.commit()
+            return res 
+        except Exception as ex:
+            self.dao.rollback()
+            return -self.errno
+
+    return internal_commit
+
+
 
 # the object is not thread safe, however every function is a transaction.
 # that is it leaves the world in a consistent state.
+# I need the social object to post messages to users.
 class Adelphos:
 
-    def __init__(self, name, dao):
+    def __init__(self, name, dao, social):
         self.name = name
         self.dao = dao
+        self.social = social
         self.errno = 0
 
 
@@ -51,17 +67,28 @@ class Adelphos:
         pass
 
 
-    # it returns the id of the new alias.
-    def alias_create(self, alias_name, alias_family, password_clear):
+    #@commit_if_ok
+    def alias_uri_create(self, actor_id, alias_uri, password):
+        pass
 
+
+    # it returns the id of the new alias.
+    @commit_if_ok
+    def alias_create(self, actor_id, alias_name, alias_family, password_clear):
+        return self._alias_create_impl(actor_id, alias_name, alias_family, password_clear)
+
+
+    def _alias_create_impl(self, actor_id, alias_name, alias_family, password_clear):
         fam_id = self.dao.get_family(alias_family)
         if fam_id > 0:
-            return -1 * EAdErrno.EDUPLICATED_FAMILY
+            self.errno = EAdErrno.EDUPLICATED_FAMILY
+            raise Exception()
 
         password_hashed = " " + password_clear
 
         fam_id = self.dao.add_family(alias_family)
-        alias_id = self.dao.add_alias(alias_name, fam_id, password_hashed)
+        alias_id = self.dao.add_alias(actor_id, alias_name, fam_id, password_hashed)
+        self.dao.commit()
 
         return alias_id
 

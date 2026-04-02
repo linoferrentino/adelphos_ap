@@ -55,6 +55,7 @@ from app.ap_api.ActivityPubGateway import ActivityPubGateway
 from app.ad_api.AdelphosGateway import AdelphosGateway
 from .consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
 from app.AdelphosRouter import make_router
+from app.core.Adelphos import Adelphos
 
 app = None
 
@@ -243,6 +244,7 @@ async def lifespan(app: AdelphosApp):
 
     db_name = app.config['General']['db_name']
     app.dao = MasterAdelphosDao(app, db_name)
+    app.kernel = Adelphos(app.instance, app.dao, app.ap_mockup)
     ses_worker = asyncio.create_task(session_worker(app))
     daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
     app.conn_hndl = ConnHandler(app)
