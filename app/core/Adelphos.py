@@ -21,14 +21,16 @@
 # assumes that these are handled at outer layers.
 
 # usually the functions in this class return 0 on OK, -errno in case
-# of error, ad_errno is set to the last error.
+# of error 
 
-# in case -1 is a valid answer the function will return an exception
+# in case a negative value is a valid answer the function will return None
+# and the last error is set in the object.
+
+# each action is part of a transaction.
 
 from app.logging import gCon
+from app.core.EAdErrno import EAdErrno
 
-# the last error encountered.
-ad_errno = 0
 
 # the object is not thread safe, however every function is a transaction.
 # that is it leaves the world in a consistent state.
@@ -37,6 +39,7 @@ class Adelphos:
     def __init__(self, name, dao):
         self.name = name
         self.dao = dao
+        self.errno = 0
 
 
     # the aliases subsystem
@@ -49,15 +52,16 @@ class Adelphos:
 
 
     # it returns the id of the new alias.
-    def alias_create(self, alias_name, alias_family):
-        global ad_errno
+    def alias_create(self, alias_name, alias_family, password_clear):
 
-        if self.dao.get_family(alias_family) is not None:
-            ad_errno = EAdCore.EDUPLICATED_FAMILY
-            return -1
+        fam_id = self.dao.get_family(alias_family)
+        if fam_id > 0:
+            return -1 * EAdErrno.EDUPLICATED_FAMILY
+
+        password_hashed = " " + password_clear
 
         fam_id = self.dao.add_family(alias_family)
-        alias_id = self.dao.add_alias(alias_name, fam_id)
+        alias_id = self.dao.add_alias(alias_name, fam_id, password_hashed)
 
         return alias_id
 

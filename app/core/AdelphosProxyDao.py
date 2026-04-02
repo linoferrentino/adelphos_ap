@@ -12,15 +12,8 @@
 ######################################################
 #
 
-# the sqlite DAO will store the data in db.
+# this is the base class for the proxy interface to the dao.
 
-from app.core.AdelphosDao import AdelphosDao
+class AdelphosProxyDao:
 
-
-# this is the dao which is only limited to one instance.
-# it does not go to other instances no async interface
-class SqliteAdelphosDao(AdelphosDao):
-
-
-    def __init__(self):
-        pass
+    pass

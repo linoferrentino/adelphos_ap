@@ -16,31 +16,60 @@
 
 
 from app.core.AdelphosDao import AdelphosDao
+from app.dao.FamilyDto import family_dto_create
+from app.dao.AliasDto import alias_dto_create_local
 
 
+# The objects here belong to local instance 0
 class MemoryAdelphosDao(AdelphosDao):
 
 
     def __init__(self):
-        self.families = {}
+
+        self.families_by_id = {}
+        self.families_by_name = {}
         self.next_family = 1
-        self.aliases = {}
+
+        self.aliases_by_id = {}
+        self.aliases_by_name = {}
         self.next_alias = 1
 
 
     def get_family(self, family):
-        pass
+        fam_dto = self.families_by_name.get(family)
+        if fam_dto is None:
+            return -1
+        return fam_dto.fd_actor_id
 
 
     def add_family(self, family):
         fam_id = self.next_family
         self.next_family += 1
-        self.families[fam_id] = { 'name' : family }
+        fam_dto = family_dto_create(family, 0)
+        fam_dto.fd_actor_id = fam_id
+        self.families_by_id[fam_id] = fam_dto 
+        self.families_by_name[family] = fam_dto
         return fam_id
     
 
-    def add_alias(self, alias, fam_id):
+    def add_alias(self, alias, fam_id, password_hashed):
         alias_id = self.next_alias
         self.next_alias += 1
-        self.aliases[alias_id] = { 'name' : alias, 'fam_fk': fam_id }
+
+        alias_dto = alias_dto_create_local(alias, None, fam_id, password_hashed)
+
+        self.aliases_by_id[alias_id] = { 'name' : alias, 'fam_fk': fam_id }
         return alias_id
+
+
+    # here it is a nop
+    def commit():
+        pass
+
+
+    # here it is an exception!
+    def rollback():
+        raise Exception("This store does not support rollback")
+
+
+

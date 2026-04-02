@@ -37,3 +37,14 @@ class AdelphosDao(ABC):
         pass
 
 
+    @abstractmethod
+    def commit():
+        pass
+
+
+    @abstractmethod
+    def rollback():
+        pass
+
+
+

@@ -12,15 +12,12 @@
 ######################################################
 #
 
-# the sqlite DAO will store the data in db.
 
-from app.core.AdelphosDao import AdelphosDao
-
-
-# this is the dao which is only limited to one instance.
-# it does not go to other instances no async interface
-class SqliteAdelphosDao(AdelphosDao):
+from enum import IntEnum
 
 
-    def __init__(self):
-        pass
+# there are the core errors, not given to the end user.
+class EAdErrno(IntEnum):
+    EDUPLICATED_FAMILY = 1
+
+
