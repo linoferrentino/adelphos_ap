@@ -62,6 +62,10 @@ class MemoryAdelphosDao(AdelphosDao):
         self.aliases_by_id[alias_id] = alias_dto 
         self.aliases_by_name[alias] = alias_dto 
 
+        # set the boss.
+        fam_dto = self.families_by_id[fam_id]
+        fam_dto.boss_fk = alias_id
+
         return alias_id
 
 

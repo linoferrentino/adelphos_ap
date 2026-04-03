@@ -67,7 +67,7 @@ class AliasDao(FdActorDao):
 
     # this function will simply use the fields and store the rows in db.
     # this function bypasses all checks! Call it only after validating user input
-    def create_alias_impl(self, actor_id, family, instance_id, name, password_hashed):
+    def create_alias_impl_KO(self, actor_id, family, instance_id, name, password_hashed):
 
          # let's create the family
         family_dto = family_dto_create(family, instance_id)

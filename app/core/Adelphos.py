@@ -28,22 +28,10 @@
 
 # each action is part of a transaction.
 
+from argon2 import PasswordHasher
+
+from app.dao.AdelphosUri import uriparse_type, EAdelphosType
 from app.logging import gCon
-from app.core.EAdErrno import EAdErrno
-
-def commit_if_ok(func):
-
-    def internal_commit(self, *kwargs):
-        try:
-            res = func(self, *kwargs)
-            self.dao.commit()
-            return res 
-        except Exception as ex:
-            self.dao.rollback()
-            return -self.errno
-
-    return internal_commit
-
 
 
 # the object is not thread safe, however every function is a transaction.
@@ -55,7 +43,6 @@ class Adelphos:
         self.name = name
         self.dao = dao
         self.social = social
-        self.errno = 0
 
 
     # the aliases subsystem
@@ -67,30 +54,42 @@ class Adelphos:
         pass
 
 
+
+    #def create_alias_pass(self, actor_id, alias, password):
+
+    #    alias_uri = uriparse_type(alias, EAdelphosType.ALIAS_TYPE)
+
+    #    if (alias_uri.is_numeric == True):
+    #        raise AdelphosException("Cannot create a numeric alias")
+
+    #    #gCon.log(f"alias uri created {alias_uri}")
+
+    #    family_dto = self.gateway.app.dao.family_dao.get_from_local_name(
+    #            alias_uri.family)
+
+    #    if (family_dto is not None):
+    #        raise AdelphosException(
+#f"fa#mily {alias_uri.family} is already existing in this instance")
+
+    #    ph = PasswordHasher()
+    #    pass_hashed = ph.hash(password)
+
+    #    # we are creating here an alias in instance zero.
+    #    self.gateway.app.dao.alias_dao.create_alias_impl(
+    #        actor_id, alias_uri.family, 0, alias_uri.name, pass_hashed)
+
+
     #@commit_if_ok
     def alias_uri_create(self, actor_id, alias_uri, password):
-        pass
 
+        alias_uri = uriparse_type(alias, EAdelphosType.ALIAS_TYPE)
 
-    # it returns the id of the new alias.
-    @commit_if_ok
-    def alias_create(self, actor_id, alias_name, alias_family, password_clear):
-        return self._alias_create_impl(actor_id, alias_name, alias_family, password_clear)
+        if (alias_uri.is_numeric == True):
+            raise AdelphosException("Cannot create a numeric alias")
 
+        self._alias_create_impl(actor_id, alias_uri.name,
+            alias_uri.family, password)
 
-    def _alias_create_impl(self, actor_id, alias_name, alias_family, password_clear):
-        fam_id = self.dao.get_family(alias_family)
-        if fam_id > 0:
-            self.errno = EAdErrno.EDUPLICATED_FAMILY
-            raise Exception()
-
-        password_hashed = " " + password_clear
-
-        fam_id = self.dao.add_family(alias_family)
-        alias_id = self.dao.add_alias(actor_id, alias_name, fam_id, password_hashed)
-        self.dao.commit()
-
-        return alias_id
 
 
     def get_items(self, alias_id, my_equity):

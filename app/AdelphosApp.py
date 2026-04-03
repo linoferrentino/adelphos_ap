@@ -29,6 +29,7 @@ from app.consts import USER_ID
 from app.dao.AdelphosUri import EAdelphosType
 from app.dao.AdelphosUri import uriparse
 
+from app.dao.AdelphosDb import AdelphosDb
 from app.logging import exit_err
 from app.logging import gCon
 
@@ -190,10 +191,10 @@ class AdelphosApp(FastAPI):
     def create_root_actor_impl(self, actor_id):
 
         # Now I have to create the alias
-        self.dao.alias_dao.create_alias_impl(actor_id,
+        self.kernel.add_alias(actor_id,
                          'admins', 0, 'root',
                          self.config['General']['root_password'])
-        self.dao.commit()
+        self.kernel.dao.commit()
         #gCon.log(f"[red]DB for  {self.instance} START[/red]")
         #self.dao.db.dump_database()
         #gCon.log(f"[red]DB for  {self.instance} END[/red]")
@@ -243,7 +244,8 @@ async def lifespan(app: AdelphosApp):
     #gCon.rule(f"LIFESPAN START {app.instance}")
 
     db_name = app.config['General']['db_name']
-    app.dao = MasterAdelphosDao(app, db_name)
+    db = AdelphosDb(db_name)
+    app.dao = MasterAdelphosDao(app, db_name, db)
     app.kernel = Adelphos(app.instance, app.dao, app.ap_mockup)
     ses_worker = asyncio.create_task(session_worker(app))
     daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
@@ -268,7 +270,8 @@ async def lifespan(app: AdelphosApp):
     await daemon_worker
     # the last to close is the DB, so that all the modules have a chance to save
     # on DB their transient state.
-    app.dao.close()
+    #app.dao.close()
+    db.close()
 
 
 # this method is called with the app.cond taken.

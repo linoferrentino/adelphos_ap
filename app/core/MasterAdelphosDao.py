@@ -15,12 +15,12 @@
 # the memory DAO will store the data in memory.
 
 from app.dao.AdelphosDb import AdelphosDb
-from app.dao.CurrencyDao import CurrencyDao 
+#from app.dao.CurrencyDao import CurrencyDao 
 from app.dao.ApServerDao import ApServerDao
 from app.dao.ApActorDao import ApActorDao
 from app.dao.AdInstanceDao import AdInstanceDao
-from app.dao.FamilyDao import FamilyDao
-from app.dao.AliasDao import AliasDao
+#from app.dao.FamilyDao import FamilyDao
+#from app.dao.AliasDao import AliasDao
 
 from app.dao.AdelphosUri import EAdelphosType
 
@@ -30,21 +30,22 @@ from app.dao.AdelphosUri import EAdelphosType
 class MasterAdelphosDao:
 
 
-    def __init__(self, app, db_name):
+    def __init__(self, app, db_name, db):
         #gCon.log("Creating the Master DAO, first the connection")
-        self.db = AdelphosDb(db_name)
+        #self.db = AdelphosDb(db_name)
+        self.db = db
         # I take a reference to the application for the configuration
         self.app = app
 
         #gCon.log("Creating here the specialized DAOs")
 
         # I create the specialized DAOs
-        self.currency_dao = CurrencyDao(self)
+        #self.currency_dao = CurrencyDao(self)
         self.ap_actor_dao  = ApActorDao(self)
         self.ap_server_dao   = ApServerDao(self)
         self.ad_instance_dao = AdInstanceDao(self)
-        self.family_dao  = FamilyDao(self)
-        self.alias_dao   = AliasDao(self)
+        #self.family_dao  = FamilyDao(self)
+        #self.alias_dao   = AliasDao(self)
 
 
     def created_schema_flag(self):
@@ -79,8 +80,8 @@ class MasterAdelphosDao:
                 raise AdelphosException(None, EUNKNOW_URI_TYPE)
 
 
-    def close(self):
-        self.db.close()
+    #def close(self):
+    #    self.db.close()
 
 
     def commit(self):

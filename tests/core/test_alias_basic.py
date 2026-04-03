@@ -15,21 +15,28 @@
 import pytest
 from app.core.Adelphos import Adelphos
 from app.core.EAdErrno import EAdErrno
-from app.core.MemoryAdelphosDao import MemoryAdelphosDao
-from app.core.SqliteAdelphosDao import SqliteAdelphosDao
+#from app.core.MemoryAdelphosDao import MemoryAdelphosDao
+from app.core.AdelphosDao import AdelphosDao
+#from app.core.SqliteAdelphosDao import SqliteAdelphosDao
+from app.store.MemoryStore import MemoryStore
 from app.federation.MemoryAdelphosSocial import MemoryAdelphosSocial
-
+from app.dao.AdelphosDb import AdelphosDb
+from app.core.LocalModel import LocalModel
 
 # this is the local world
 #@pytest.fixture(scope = "module")
 @pytest.fixture
 def w_local():
 
-    ma_dao = MemoryAdelphosDao()
+    #ma_dao = MemoryAdelphosDao()
     #ma_dao = SqliteAdelphosDao(':memory:')
-    social = MemoryAdelphosSocial()
-    adelphos1 = Adelphos('w1', ma_dao, social)
-    return adelphos1
+    db = AdelphosDb(':memory:')
+    #db = MemoryStore()
+    #dao = AdelphosDao(db)
+    #social = MemoryAdelphosSocial()
+    #adelphos1 = Adelphos('w1', dao, social)
+    model = LocalModel(0, db)
+    return model 
 
 
 def test_add_alias(w_local):

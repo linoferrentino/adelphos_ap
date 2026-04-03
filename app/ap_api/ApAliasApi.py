@@ -33,11 +33,11 @@ class ApAliasApi(BaseApi):
 
         alias = self.gateway.get_param_safe('alias')
         password = self.gateway.get_param_safe('password')
-        self.create_alias_pass(self.gateway.actor_dto.actor_id, alias, password)
+        self.gateway.app.kernel.alias_uri_create(self.gateway.actor_dto.actor_id, alias, password)
         return f"Created alias {alias} successfully. You can login, now."
 
 
-    def create_alias_pass(self, actor_id, alias, password):
+    def create_alias_pass_remove(self, actor_id, alias, password):
 
         alias_uri = uriparse_type(alias, EAdelphosType.ALIAS_TYPE)
 

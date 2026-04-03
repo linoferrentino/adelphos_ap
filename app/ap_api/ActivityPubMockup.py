@@ -190,8 +190,7 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
         actor_id = self.create_app_actor(name)
 
         # this is the part which is not relative to activity pub.
-        self.app.ap_gateway.ap_alias_api.create_alias_pass(
-                actor_id, alias, password)
+        self.app.kernel.alias_uri_create(actor_id, alias, password)
         if is_root:
             self.app.create_root_actor_impl(actor_id)
 
