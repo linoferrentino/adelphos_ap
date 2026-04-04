@@ -30,14 +30,16 @@ def w_local():
 
     #ma_dao = MemoryAdelphosDao()
     #ma_dao = SqliteAdelphosDao(':memory:')
-    db = AdelphosDb(':memory:')
-    #db = MemoryStore()
+    #db = AdelphosDb(':memory:')
+    db = MemoryStore()
     #dao = AdelphosDao(db)
     #social = MemoryAdelphosSocial()
     #adelphos1 = Adelphos('w1', dao, social)
     model = LocalModel(0, db)
     return model 
 
+
+# the alias is got from the URI
 
 def test_add_alias(w_local):
 

@@ -22,8 +22,13 @@
 from app.dao.FamilyDao import FamilyDao
 from app.dao.AliasDao import AliasDao
 from app.core.EAdErrno import EAdErrno
+from app.core.FamilyModel import FamilyModel
+from app.core.AliasModel import AliasModel
+from app.core.BaseModel import AD_INVALID_ID
+from app.core.BaseModel import BaseModel
 from app.logging import gCon
 import traceback
+from argon2 import PasswordHasher
 
 
 # the local model is always consistent. Every method called
@@ -45,6 +50,10 @@ def commit_if_ok(func):
 
 
 
+# the local mode uses the URI as the identifier.
+
+# the objects do NOT cross the boundary of the model,
+# at the external we only see IDs or objects created from the basic objects.
 
 class LocalModel:
 
@@ -54,8 +63,8 @@ class LocalModel:
     def __init__(self, instance_id, db):
         self.db = db 
         self.instance_id = instance_id
-        self.family_dao  = FamilyDao(self)
-        self.alias_dao   = AliasDao(self)
+        self.family_model  = FamilyModel(self.db)
+        self.alias_model   = AliasModel(self.db)
         self.errno = 0
 
 
@@ -67,21 +76,20 @@ class LocalModel:
     # it returns the id of the new alias.
     def _alias_create_impl(self, actor_id, alias_name, alias_family, password_clear):
 
-        fam_id = self.family_dao.get_from_name(alias_family)
+        fam_id = self.family_model.open_name_id(alias_family)
 
-        if fam_dto is not None:
+        if fam_id != AD_INVALID_ID:
             self.errno = EAdErrno.EDUPLICATED_FAMILY
             raise Exception()
 
         ph = PasswordHasher()
         pass_hashed = ph.hash(password_clear)
 
-        fam_dto = self.family_dao.create(alias_family)
-        alias_dto = self.alias_dao.create(actor_id, alias_name, fam_id, pass_hashed)
+        fam_ob = self.family_model.create(alias_family)
+        alias_ob = self.alias_model.create(actor_id, alias_name, fam_ob, pass_hashed)
 
-        self.family_dao.update(fam_dto, EFamilyDtoFields, alias_dto.fd_actor_id)
+        self.family_model.set_boss(fam_ob, alias_ob)
 
-        return 99
-        return alias_id
+        return BaseModel.get_id(alias_ob)
 
 
