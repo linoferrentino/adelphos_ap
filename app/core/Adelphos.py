@@ -31,27 +31,72 @@
 from argon2 import PasswordHasher
 
 from app.dao.AdelphosUri import uriparse_type, EAdelphosType
+from app.core.LocalModel import LocalModel
+from app.core.InstancesModel import InstancesModel
+
 from app.logging import gCon
 
+from app.federation.SocialListener import SocialListener
 
-# the object is not thread safe, however every function is a transaction.
-# that is it leaves the world in a consistent state.
-# I need the social object to post messages to users.
-class Adelphos:
 
-    def __init__(self, name, dao, social):
+# Adelphos is the main object which orchestrates all the messages.
+class Adelphos(SocialListener):
+
+
+    def __init__(self, config, name, db, social):
+        self.config = config
         self.name = name
-        self.dao = dao
+        self.db = db
         self.social = social
+
+        # this is the Local Model
+        self.model = LocalModel(0, db)
+
+        # I have a set of instances, myself and the allowed ones. 
+        self.instances = InstancesModel()
+
+        self.initialization()
+
+
+    def initialization(self):
+
+        # Now I have to discover the root actor.
+        #flag = self.dao.created_schema_flag()
+        ##del self._init_schema
+        #if (flag == False):
+        #    return
+
+        self.create_myself_as_actor()
+
+        # Now I want to create some other aliases, this MUST BE DONE before,
+        # because the root actor might be internal.
+        self.ap_mockup.create_test_users()
+
+        # when I return from this function the test users are created, so
+        # I can create the root.
+
+        # we have to discover the root actor
+        # in another task, because we might be the target!
+        root_user = self.config['General']['root_user']
+        #gCon.log(f"Creating root user {root_user} for {self.instance}")
+        if (root_user != ':local:'):
+            asyncio.create_task(self.create_root_actor(root_user))
+
+        #gCon.rule(f"COMMIT OF INITIAL DB (minus the root actor) for {self.instance}")
+        self.db.commit()
+
+
+    async def new_post(self, post):
+        pass
 
 
     # the aliases subsystem
-    def alias_ss(self):
-        return self.alias_ss
+    #def alias_ss(self):
+    #    return self.alias_ss
 
 
-    def add_federated_adelphos(self, other_adelphos):
-        pass
+    #def add_federated_adelphos(self, other_adelphos):
+    #    pass
 
 
 
@@ -80,17 +125,17 @@ class Adelphos:
 
 
     #@commit_if_ok
-    def alias_uri_create(self, actor_id, alias_uri, password):
+    #def alias_uri_create(self, actor_id, alias_uri, password):
 
-        alias_uri = uriparse_type(alias, EAdelphosType.ALIAS_TYPE)
+    #    alias_uri = uriparse_type(alias, EAdelphosType.ALIAS_TYPE)
 
-        if (alias_uri.is_numeric == True):
-            raise AdelphosException("Cannot create a numeric alias")
+    #    if (alias_uri.is_numeric == True):
+    #        raise AdelphosException("Cannot create a numeric alias")
 
-        self._alias_create_impl(actor_id, alias_uri.name,
-            alias_uri.family, password)
+    #    self._alias_create_impl(actor_id, alias_uri.name,
+    #        alias_uri.family, password)
 
 
 
-    def get_items(self, alias_id, my_equity):
-        pass
+    #def get_items(self, alias_id, my_equity):
+    #    pass

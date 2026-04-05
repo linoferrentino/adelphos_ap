@@ -30,12 +30,13 @@ from app.dao.AdelphosUri import EAdelphosType
 class MasterAdelphosDao:
 
 
-    def __init__(self, app, db_name, db):
+    #def __init__(self, app, db_name, db):
+    def __init__(self, db):
         #gCon.log("Creating the Master DAO, first the connection")
         #self.db = AdelphosDb(db_name)
         self.db = db
         # I take a reference to the application for the configuration
-        self.app = app
+        #self.app = app
 
         #gCon.log("Creating here the specialized DAOs")
 

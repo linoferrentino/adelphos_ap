@@ -20,6 +20,8 @@ from app.consts import API_POINT
 from app.ap_api.ActivityPubGateway import ActivityPubBaseGateway
 from app.api.AdelphosException import AdelphosException
 from app.federation.SocialProvider import SocialProvider
+from app.ap_api.ActivityPubApi import ActivityPubApi
+from app.core.MasterAdelphosDao import MasterAdelphosDao
 import time
 
 
@@ -62,11 +64,12 @@ class ActivityPubMockupUser:
 class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
 
 
-    def __init__(self, app):
-        self.app = app
+    def __init__(self, db):
+        #self.app = app
         self.users = {}
-        # Only one user logged for now
         self.current_logged_user = None
+        self.ap_api = ActivityPubApi(self)
+        self.dao = MasterAdelphosDao(db)
 
 
     def ensure_logged_user(func):

@@ -12,21 +12,18 @@
 ######################################################
 #
 
-# this is the basic store in adelphos.
-# We have an implementation in sqlite and in memory,
-# but in theory other might follow
+# the social listener is an object able to accept asynchronous messages from the
+# fediverse
 
-from abc import ABC, abstractmethod
-
-
-class AdelphosStore(ABC):
+from abc import ABC
+from abc import abstractmethod
 
 
+class SocialListener(ABC):
+
+
+    # the post is already verified!
     @abstractmethod
-    def rollback(self):
+    async def new_post(self, post):
         pass
 
-
-    #@abstractmethod
-    #def init_needed(self):
-    #    pass

@@ -58,6 +58,8 @@ from .consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
 from app.AdelphosRouter import make_router
 from app.core.Adelphos import Adelphos
 
+from app.store.MemoryStore import MemoryStore
+
 app = None
 
 
@@ -134,10 +136,10 @@ class AdelphosApp(FastAPI):
 
     async def post_initialization(self):
         # Now I have to discover the root actor.
-        flag = self.dao.created_schema_flag()
-        #del self._init_schema
-        if (flag == False):
-            return
+        #flag = self.dao.created_schema_flag()
+        ##del self._init_schema
+        #if (flag == False):
+        #    return
 
         self.create_myself_as_actor()
 
@@ -243,18 +245,19 @@ class AdelphosApp(FastAPI):
 async def lifespan(app: AdelphosApp):
     #gCon.rule(f"LIFESPAN START {app.instance}")
 
-    db_name = app.config['General']['db_name']
-    db = AdelphosDb(db_name)
-    app.dao = MasterAdelphosDao(app, db_name, db)
-    app.kernel = Adelphos(app.instance, app.dao, app.ap_mockup)
+    #db_name = app.config['General']['db_name']
+    #db = AdelphosDb(db_name)
+    db = MemoryStore()
+    ap_mockup = ActivityPubMockup(db)
+    app.kernel = Adelphos(app.config, app.instance, db, ap_mockup)
     ses_worker = asyncio.create_task(session_worker(app))
     daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
     app.conn_hndl = ConnHandler(app)
-    app.ap_api = ActivityPubApi(app)
+    #app.ap_api = ActivityPubApi(app)
 
     # post init
     #gCon.log("Application post initialization start.")
-    await app.post_initialization()
+    #await app.post_initialization()
     #gCon.rule(f"App {app.instance} is ready.")
     yield
 
@@ -264,7 +267,7 @@ async def lifespan(app: AdelphosApp):
     async with app.cond:
         app.cond.notify_all()
     #gCon.log("Please wait for adelphos shutdown")
-    app.ap_api.close()
+    #app.ap_api.close()
     await app.conn_hndl.stop()
     await ses_worker
     await daemon_worker
