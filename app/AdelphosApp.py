@@ -98,7 +98,7 @@ class AdelphosApp(FastAPI):
         # is the enclosed gateway tunneled inside activity pub.
         self.ap_gateway = ActivityPubGateway(self)
         self.ad_gateway = AdelphosGateway(self)
-        self.ap_mockup = ActivityPubMockup(self)
+        #self.ap_mockup = ActivityPubMockup(self)
 
         # create the condition for the http requests and the daemon
         # background cycle.
@@ -248,11 +248,12 @@ async def lifespan(app: AdelphosApp):
     #db_name = app.config['General']['db_name']
     #db = AdelphosDb(db_name)
     db = MemoryStore()
-    ap_mockup = ActivityPubMockup(db)
+    ap_mockup = ActivityPubMockup(app.config, db, True)
     app.kernel = Adelphos(app.config, app.instance, db, ap_mockup)
     ses_worker = asyncio.create_task(session_worker(app))
     daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
-    app.conn_hndl = ConnHandler(app)
+    app.include_router(ap_mockup.get_router())
+
     #app.ap_api = ActivityPubApi(app)
 
     # post init
@@ -335,8 +336,10 @@ def get_app(instance_name, config_file, config):
     #gCon.log(f"Starting Adelphos' instance {instance_name}")
     app = AdelphosApp(instance_name, root_path = API_POINT, lifespan = lifespan)
 
-    router = make_router(app)
-    app.include_router(router)
+    #router = make_router(app)
+
+    app.conn_hndl = ConnHandler(app)
+    app.include_router(app.conn_hndl.get_router())
 
     app.init_instance(config_file, config)
 

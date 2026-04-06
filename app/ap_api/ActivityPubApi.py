@@ -24,6 +24,8 @@ from urllib.parse import urlparse
 from app.consts import DAEMON_ID
 import re
 
+
+# the API is also able to send and receive answers in fediverse.
 class ActivityPubApi:
 
 

@@ -14,6 +14,7 @@
 # this is the Mockup used to store the fake users in this Adelphos instance
 # (useful for testing and integrating)
 
+from fastapi import APIRouter, FastAPI, WebSocket
 from app.logging import gCon
 from app.dao.ApActorDto import create_ap_actor
 from app.consts import API_POINT
@@ -22,6 +23,7 @@ from app.api.AdelphosException import AdelphosException
 from app.federation.SocialProvider import SocialProvider
 from app.ap_api.ActivityPubApi import ActivityPubApi
 from app.core.MasterAdelphosDao import MasterAdelphosDao
+from fastapi import APIRouter, Request, Depends, Query, HTTPException, status, Response
 import time
 
 
@@ -58,18 +60,164 @@ class ActivityPubMockupUser:
         self.messages.append(message)
 
 
+# this is a very simple router to render a FASTApi application an ActivityPub Server
+class ActivityPubRouter(APIRouter):
+
+
+    def __init__(self, apsrv):
+
+        # the last route is added only in case of test instance.
+        if apsrv.do_srv() == False:
+            return
+
+
+        @self.post('/_backdoor_api_/{cmd}')
+        async def _backdoor_api(cmd: str, request : Request):
+            body = await request.body()
+            body_str = body.decode()
+            body_ob = json.loads(body_str)
+            res = await apsrv.proc_cmd(cmd, body_ob)
+            return { 'res' : res }
+
+
+        @self.get("/.well-known/webfinger",
+        description="Adelphos's end point",
+        )
+        async def webfinger(resource: str = Query(..., alias="resource")):
+            return apsrv.webfinger(resource)
+
+    
+        @self.get('/users/{username}')
+        async def info_user(username : str):
+            return apsrv.info_user(username)
+
+
+        @self .post('/users/{username}/inbox')
+        async def user_inbox(username: str, request: Request):
+            return await apsrv.user_inbox(username, request)
+    
+
+
 # this ActivityPub object is also a gateway, it gets the POST messages that
 # come from the outside and, if they correspond to real users it will post them
 # in the users's inbox.
 class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
 
 
-    def __init__(self, db):
+
+    # the Mockup can act also as an ActivityPubProvider.
+    def __init__(self, config, db, do_srv):
         #self.app = app
+        self.config = config
         self.users = {}
         self.current_logged_user = None
         self.ap_api = ActivityPubApi(self)
         self.dao = MasterAdelphosDao(db)
+        self.do_srv = do_srv
+
+
+    async def user_inbox(username: str, request: Request):
+
+        #gCon.log(f"[red]post inbox {username}[/red]")
+
+        res_code = 404
+        if username == DAEMON_ID:
+
+            # this will return the return code and will process the request asynchronously
+            res_code = await self.ap_gateway.new_request(request)
+
+        elif test_instance:
+
+            # the message is not for the daemon, it might be for some test users
+            # that I have .
+            res_code = await self.new_request(request)
+            
+        return Response(status_code = res_code)
+
+
+    def info_user(self, username):
+
+        user_info = self.ap_user_info(username)
+
+        if (user_info is None):
+            return Response(status_code=404)
+
+        host = self.config['General']['host']
+        host_api = host + API_POINT
+
+        instance = self.config['General']['name'] 
+
+        response_ob = {
+            "@context": [
+                "https://www.w3.org/ns/activitystreams",
+                "https://w3id.org/security/v1",
+            ],
+            "id": f"https://{host_api}/users/{username}",
+            "inbox": f"https://{host_api}/users/{username}/inbox",
+            "outbox": f"https://{host_api}/users/{username}/outbox",
+            "type": user_info[0],
+            "name": user_info[2],
+            "preferredUsername": user_info[1],
+            "publicKey": {
+                "id": f"https://{host_api}/users/{username}#main-key",
+                "owner": f"https://{host_api}/users/{username}",
+                "publicKeyPem": app.public_key
+            }
+        }
+
+        resp_json = jsonable_encoder(response_ob)
+        response = JSONResponse(content = resp_json)
+        response.headers['Content-Type'] = 'application/activity+json'
+        return response
+
+
+
+    def webfinger(self, resource):
+
+        host = self.config['General']['host']
+        host_api = host + API_POINT
+
+        ap_user_match = re.match('acct:(.*?)@(.*)$', resource)
+        if (ap_user_match is None):
+            return Response(status_code=401)
+
+        host_rex = ap_user_match.group(2)
+        if (host_rex != host):
+            return Response(status_code=404)
+
+        ap_user_rex = ap_user_match.group(1)
+        if (self.ap_user_exists(ap_user_rex) == False):
+            return Response(status_code=404)
+
+        response = Response(
+            content=json.dumps({
+                "subject": resource,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/activity+json",
+                        "href": f"https://{host_api}/users/{ap_user_rex}"
+                    }
+                ]
+            })
+        )
+        
+        response.headers['Content-Type'] = 'application/jrd+json'
+        return response
+
+
+
+
+    # this is the router relative to the activity pub interface.
+    def get_router(self):
+
+        ap_router = ActivityPubRouter(self)
+        return ap_router
+
+
+    #def is_test_instance(self):
+    #    test_instance = re.match("_test_", self .instance) is not None
+    #    return test_instance
 
 
     def ensure_logged_user(func):

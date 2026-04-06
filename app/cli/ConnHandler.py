@@ -25,6 +25,8 @@ import asyncio
 import traceback
 from datetime import datetime
 
+from fastapi import APIRouter, FastAPI, WebSocket
+from fastapi.responses import HTMLResponse
 
 
 def login_required(func):
@@ -194,6 +196,22 @@ class ClientWs:
         await self.websocket.close()
 
 
+class WebSocketRouter(APIRouter):
+
+    def __init__(self, wshndl):
+        super().__init__()
+
+        @self.get("/daemon_cli")
+        async def daemon_cli_inner():
+            return await wshndl.daemon_cli()
+   
+
+        @self.websocket("/ws")
+        async def websocket_endpoint(websocket: WebSocket):
+            client = await wshndl.accept(websocket)
+            await client.serve_forever()
+
+
 # this object will accept the web sockets and do a garbage collect when
 # they are dead or inactive for a certain period of time
 class ConnHandler:
@@ -203,6 +221,12 @@ class ConnHandler:
         # this is the list of all clients connected.
         self.clients = []
         self.app = app
+
+
+    # gets the router relative to the web sockets.
+    def get_router(self):
+        router = WebSocketRouter(self)
+        return router
 
 
     async def accept(self, websocket):
@@ -223,4 +247,199 @@ class ConnHandler:
         #for ws in self.clients:
             #await ws.websocket.send_text(f"System is going down!")
             #await ws.stop()
+
+
+    # It gives the page into which we can type the commands.
+    async def daemon_cli(self):
+        host = self.app.config['General']['host']
+        host_api = host + API_POINT
+
+        instance = self.app.instance
+
+        html_string = """
+    <!DOCTYPE html>
+    <html>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #8a8a8a;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Chat container */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 10px;
+            overflow-y: scroll;
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: #888 #f2f2f2; /* Firefox */
+        }
+
+
+        /* Custom scrollbar for WebKit browsers */
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-container::-webkit-scrollbar-track {
+            background: #f2f2f2;
+        }
+        .chat-container::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 4px;
+        }
+        .chat-container::-webkit-scrollbar-thumb:hover {
+            background-color: #555;
+        }
+
+        /* Message bubbles */
+        .message {
+            max-width: 70%;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 15px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .sent {
+            background-color: #4CAF50;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+        }
+
+        .received {
+            background-color: #e0e0e0;
+            color: black;
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+        }
+
+        /* Input area */
+        .input-container {
+            display: flex;
+            padding: 10px;
+            background-color: white;
+            border-top: 1px solid #ccc;
+        }
+
+        .input-container input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            outline: none;
+        }
+
+        .input-container button {
+            margin-left: 10px;
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .input-container button:hover {
+            background-color: #45a049;
+        }
+    </style>
+
+    """
+
+        html_string += f"""
+        <head>
+        <title>Welcome to adelphos instance {instance} @ {host}</title>
+        </head>
+        <body>
+            <h1>Adelphos instance: {instance}</h1><br><h2>{DAEMON_ID}@{host}</h2>
+
+    <div class="chat-container" id="chat">
+        <div class="message received">
+
+        <p>
+        Hello from the adelphos daemon running @{host}!
+        <p>
+
+        If you have already created an alias on this instance login with command 'login alias ##$alias.$family password $password' to receive OTP token.
+
+        <p>
+        If you haven't yet created an alias send a message to me from your
+        Mastodon account to create one. The message should be a private mention
+        to the @daemon user at this instance. Like this:
+
+        <p>
+        @daemon@{host} alias_create alias ##<name>.<family> password <password>
+
+        <p>
+        After that come here to login.
+        <p>
+
+        </div>
+    </div>
+
+    <div class="input-container">
+        <input type="text" id="messageInput" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+          <script>
+
+
+                var ws = new WebSocket("wss://{host_api}/ws");"""
+
+        # here we have to change the string without the formatting because it
+        # has the { parenthesis
+        html_string += """
+
+
+    document.getElementById('messageInput').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+
+                ws.onmessage = function(event) {
+                    const chat = document.getElementById("chat");
+                    const msg = document.createElement('div');
+                    msg.classList.add('message', 'received');
+                    msg.textContent = event.data
+                    chat.appendChild(msg)
+                    chat.scrollTop = chat.scrollHeight;
+
+                };
+                function sendMessage(event) {
+                    var input = document.getElementById("messageInput");
+                    msg_total = input.value;
+                    ws.send(msg_total);
+
+                    msg_logged = msg_total.replace(/password .*/, "password XXX")
+                    msg_logged = msg_logged.replace(/token .*/, "token XXX")
+
+
+                    const chat = document.getElementById("chat");
+                    const msg = document.createElement('div');
+                    msg.classList.add('message', 'sent');
+                    msg.textContent = msg_logged;
+                    chat.appendChild(msg)
+                    input.value = '';
+                    chat.scrollTop = chat.scrollHeight;
+                }
+            </script>
+        </body>
+    </html>
+    """
+        return HTMLResponse(html_string)
+
 

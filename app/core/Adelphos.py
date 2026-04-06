@@ -28,7 +28,7 @@
 
 # each action is part of a transaction.
 
-from argon2 import PasswordHasher
+# from argon2 import PasswordHasher
 
 from app.dao.AdelphosUri import uriparse_type, EAdelphosType
 from app.core.LocalModel import LocalModel
@@ -37,6 +37,8 @@ from app.core.InstancesModel import InstancesModel
 from app.logging import gCon
 
 from app.federation.SocialListener import SocialListener
+from app.consts import DAEMON_ID
+
 
 
 # Adelphos is the main object which orchestrates all the messages.
@@ -58,22 +60,29 @@ class Adelphos(SocialListener):
         self.initialization()
 
 
+    def create_myself_as_actor(self):
+
+        self.social.create_user(DAEMON_ID)
+
+
     def initialization(self):
+
+        self.social.register_listener(self)
 
         # Now I have to discover the root actor.
         #flag = self.dao.created_schema_flag()
         ##del self._init_schema
         #if (flag == False):
         #    return
-
         self.create_myself_as_actor()
 
         # Now I want to create some other aliases, this MUST BE DONE before,
         # because the root actor might be internal.
-        self.ap_mockup.create_test_users()
+        self.create_test_users()
 
         # when I return from this function the test users are created, so
         # I can create the root.
+        self.create_root()
 
         # we have to discover the root actor
         # in another task, because we might be the target!

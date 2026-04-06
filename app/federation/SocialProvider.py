@@ -28,7 +28,7 @@ class SocialProvider(ABC):
     
     def __init__(self):
 
-        pass
+        self.listener = None
 
 
     # this methods are called by the fixtures and application to set a test
@@ -37,6 +37,11 @@ class SocialProvider(ABC):
     @abstractmethod
     def create_user(self, username):
         pass
+
+
+    def register_listener(self, listener):
+
+        self.listener = listener
 
 
     # returns the last n messages, they are erased in the inbox, by default
