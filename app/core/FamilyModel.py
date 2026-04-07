@@ -19,9 +19,6 @@ from app.core.BaseModel import BaseModel
 from app.dao.AdelphosUri import AdelphosUri
 from app.dao.AdelphosUri import EAdelphosType
 
-from app.core.BaseModel import AD_INVALID_ID
-from app.core.BaseModel import AD_ID_KEY
-
 
 FM_BOSS_KEY = 'fm_boss_key'
 
@@ -39,11 +36,6 @@ class FamilyModel(BaseModel):
 
     def create(self, name):
         return super().create_base(name)
-
-    #def open_name_id(self, name):
-
-    #    return super()._open_name_id_base(EAdelphosType.FAMILY_TYPE,
-    #                                      name)
 
 
     def set_boss(self, fam_ob, alias_ob):

@@ -44,6 +44,8 @@ class MasterAdelphosDao:
         #self.currency_dao = CurrencyDao(self)
         self.ap_actor_dao  = ApActorDao(self)
         self.ap_server_dao   = ApServerDao(self)
+
+        # the instance model must be moved in adelphos.
         self.ad_instance_dao = AdInstanceDao(self)
         #self.family_dao  = FamilyDao(self)
         #self.alias_dao   = AliasDao(self)

@@ -17,11 +17,13 @@
 from app.dao.AdelphosUri import EAdelphosType
 from app.core.BaseModel import BaseModel
 from app.core.BaseModel import AD_NAME_KEY
-from app.core.BaseModel import AD_ID_KEY
+#from app.core.BaseModel import AD_ID_KEY
 from app.core.BaseModel import AD_ACTOR_ID_KEY
+from app.core.BaseIdModel import BaseIdModel
 
 AD_ALIAS_FAM_ID = 'ad_family_id'
 AD_ALIAS_PASSWORD = 'ad_password'
+
 
 class AliasModel(BaseModel):
 
@@ -35,7 +37,7 @@ class AliasModel(BaseModel):
         new_alias = self.create_base(alias_name, fam_dto[AD_NAME_KEY])
 
         new_alias[AD_ACTOR_ID_KEY] = actor_id
-        new_alias[AD_ALIAS_FAM_ID] = fam_dto[AD_ID_KEY]
+        new_alias[AD_ALIAS_FAM_ID] = BaseIdModel.get_id(fam_dto)
         new_alias[AD_ALIAS_PASSWORD] = pass_hashed
 
         self.db.update(new_alias)

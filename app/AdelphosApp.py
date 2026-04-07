@@ -88,15 +88,15 @@ class AdelphosApp(FastAPI):
             self.config = config
 
         # load the keys
-        key_file = self.config[GENERAL_SECTION][PRIVATE_KEY_FILE_KEY]
-        #gCon.log(f"Get private key from {key_file}")
-        (pub_key, priv_key) = load_keys(key_file)
-        self.public_key = pub_key
-        self.private_key = priv_key
+        #key_file = self.config[GENERAL_SECTION][PRIVATE_KEY_FILE_KEY]
+        ##gCon.log(f"Get private key from {key_file}")
+        #(pub_key, priv_key) = load_keys(key_file)
+        #self.public_key = pub_key
+        #self.private_key = priv_key
 
         # I have two gateways, one which uses activity pub, the other
         # is the enclosed gateway tunneled inside activity pub.
-        self.ap_gateway = ActivityPubGateway(self)
+        #self.ap_gateway = ActivityPubGateway(self)
         self.ad_gateway = AdelphosGateway(self)
         #self.ap_mockup = ActivityPubMockup(self)
 

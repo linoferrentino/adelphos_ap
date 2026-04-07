@@ -19,11 +19,14 @@ from app.logging import gCon
 from app.dao.ApActorDto import create_ap_actor
 from app.consts import API_POINT
 from app.ap_api.ActivityPubGateway import ActivityPubBaseGateway
+from app.ap_api.ActivityPubGateway import ActivityPubGateway
 from app.api.AdelphosException import AdelphosException
 from app.federation.SocialProvider import SocialProvider
 from app.ap_api.ActivityPubApi import ActivityPubApi
 from app.core.MasterAdelphosDao import MasterAdelphosDao
 from fastapi import APIRouter, Request, Depends, Query, HTTPException, status, Response
+from app.consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
+from app.keys import load_keys
 import time
 
 
@@ -104,7 +107,6 @@ class ActivityPubRouter(APIRouter):
 class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
 
 
-
     # the Mockup can act also as an ActivityPubProvider.
     def __init__(self, config, db, do_srv):
         #self.app = app
@@ -113,7 +115,13 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
         self.current_logged_user = None
         self.ap_api = ActivityPubApi(self)
         self.dao = MasterAdelphosDao(db)
+        self.ap_gateway = ActivityPubGateway(self)
         self.do_srv = do_srv
+
+        key_file = self.config[GENERAL_SECTION][PRIVATE_KEY_FILE_KEY]
+        (pub_key, priv_key) = load_keys(key_file)
+        self.public_key = pub_key
+        self.private_key = priv_key
 
 
     async def user_inbox(username: str, request: Request):
@@ -352,7 +360,7 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
         user_inbox = user_path + "/inbox"
         # the server is hard coded to zero, we are in the app realm
         myself_actor = create_ap_actor(0, user_path, user_inbox,
-                                       actor_name, self.app.public_key)
+                                       actor_name, self.public_key)
         if (forced_id is not None):
             myself_actor.actor_id = 0
             actor_id = self.app.dao.ap_actor_dao.store_full_no_ts(myself_actor)

@@ -24,7 +24,7 @@ from app.dao.AliasDao import AliasDao
 from app.core.EAdErrno import EAdErrno
 from app.core.FamilyModel import FamilyModel
 from app.core.AliasModel import AliasModel
-from app.core.BaseModel import AD_INVALID_ID
+from app.core.BaseIdModel import AD_INVALID_ID
 from app.core.BaseModel import BaseModel
 from app.logging import gCon
 import traceback
