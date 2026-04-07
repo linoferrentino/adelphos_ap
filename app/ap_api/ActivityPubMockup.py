@@ -27,11 +27,16 @@ from app.core.MasterAdelphosDao import MasterAdelphosDao
 from fastapi import APIRouter, Request, Depends, Query, HTTPException, status, Response
 from app.consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
 from app.keys import load_keys
+from app.ap_api.ActivityPubServerModel import ActivityPubServerModel
+from app.ap_api.ActivityPubUserModel import ActivityPubUserModel
+from app.dao.ApServerDto import create_ap_server
+from app.federation.SocialListener import SocialListener
 import time
 
 
 # then there is the Mockup user, it listens to events in ActivityPub
-class ActivityPubMockupUser:
+# usually this models a user which gets notifications by adelphos daemon
+class ActivityPubMockupUser(SocialListener):
 
 
     def __init__(self, app, server_dto, actor_dto):
@@ -101,6 +106,7 @@ class ActivityPubRouter(APIRouter):
     
 
 
+
 # this ActivityPub object is also a gateway, it gets the POST messages that
 # come from the outside and, if they correspond to real users it will post them
 # in the users's inbox.
@@ -114,7 +120,9 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
         self.users = {}
         self.current_logged_user = None
         self.ap_api = ActivityPubApi(self)
-        self.dao = MasterAdelphosDao(db)
+        #self.dao = MasterAdelphosDao(db)
+        self.ap_srv_model = ActivityPubServerModel(db)
+        self.ap_user_model = ActivityPubUserModel(db)
         self.ap_gateway = ActivityPubGateway(self)
         self.do_srv = do_srv
 
@@ -122,6 +130,13 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
         (pub_key, priv_key) = load_keys(key_file)
         self.public_key = pub_key
         self.private_key = priv_key
+
+
+    # I create myself as a server: the id is fixed to zero.
+    def initialization(self):
+
+        host = self.config['General']['host']
+        self.ap_srv_model.new_server(host, 0)
 
 
     async def user_inbox(username: str, request: Request):
@@ -325,7 +340,7 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
         return ('actor', activity_pub_user, f"Mockup actor for instance {self.app.instance}")
 
 
-    def create_test_users(self):
+    def create_test_users_OLD(self):
 
         if (self.app.config.get('demo_users') is None):
             gCon.log("no demo users defined")
@@ -340,32 +355,33 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
 
 
     # SocialProvider interface.
-    def create_user(self, username):
-        return self.create_app_actor(username)
+    def create_user(self, username, is_daemon):
+        return self.create_app_actor(username, is_daemon)
 
 
-    def create_demo_user(self, name, alias, password, is_root):
-        #gCon.log(f"Creating ap_actor {name} with alias {alias} and password {password}")
-        actor_id = self.create_app_actor(name)
+    #def create_demo_user(self, name, alias, password, is_root):
+    #    #gCon.log(f"Creating ap_actor {name} with alias {alias} and password {password}")
+    #    actor_id = self.create_app_actor(name)
 
-        # this is the part which is not relative to activity pub.
-        self.app.kernel.alias_uri_create(actor_id, alias, password)
-        if is_root:
-            self.app.create_root_actor_impl(actor_id)
+    #    # this is the part which is not relative to activity pub.
+    #    self.app.kernel.alias_uri_create(actor_id, alias, password)
+    #    if is_root:
+    #        self.app.create_root_actor_impl(actor_id)
 
 
     # creates an actor which sits in the instance (only useful for testing)
-    def create_app_actor(self, actor_name, forced_id = None):
+    def create_app_actor(self, actor_name, is_daemon = True):
         user_path = API_POINT + f"/users/{actor_name}"
         user_inbox = user_path + "/inbox"
+
         # the server is hard coded to zero, we are in the app realm
         myself_actor = create_ap_actor(0, user_path, user_inbox,
                                        actor_name, self.public_key)
-        if (forced_id is not None):
-            myself_actor.actor_id = 0
-            actor_id = self.app.dao.ap_actor_dao.store_full_no_ts(myself_actor)
-        else:
-            actor_id = self.app.dao.ap_actor_dao.store(myself_actor)
+        #if (forced_id is not None):
+        #    myself_actor.actor_id = 0
+        #    actor_id = self.app.dao.ap_actor_dao.store_full_no_ts(myself_actor)
+        #else:
+        actor_id = self.app.dao.ap_actor_dao.store(myself_actor)
 
         #gCon.log(f"Created actor {actor_name} with id {actor_id}")
         return actor_id

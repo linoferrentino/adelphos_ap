@@ -43,14 +43,13 @@ class BaseIdModel(ABC):
         pass
 
 
-    #def open_name_id(self, name, family = None):
-    #    uri_id_key = self.key_str_from_id(ob_id)
+    def _create_base_id(self, forced_id = None):
 
-
-    def _create_base_id(self):
-
-        ob_id = self.next_id
-        self.next_id += 1
+        if forced_id is None:
+            ob_id = self.next_id
+            self.next_id += 1
+        else:
+            ob_id = forced_id
 
         new_ob = {
                 AD_ID_KEY: ob_id,

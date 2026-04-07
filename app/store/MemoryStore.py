@@ -18,7 +18,7 @@ from app.store.AdelphosStore import AdelphosStore
 # a simple key/value pair with transactions.
 # inspired by 
 # https://github.com/zackdever/vsims#
-# transactions do not nest.
+# here transactions do not nest, however
 
 class Block:
     """A block of operations that can be called in reverse order.
@@ -42,6 +42,7 @@ class Block:
         args - arguments to be supplied to the command on rollback
         """
         self.ops.append((command, args))
+
 
     def rollback(self):
         """Call all the logged commands in reverse order."""

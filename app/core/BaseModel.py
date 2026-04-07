@@ -27,7 +27,8 @@ from app.dao.AdelphosUri import EAdelphosType
 from app.core.BaseIdModel import BaseIdModel
 from app.core.BaseIdModel import AD_INVALID_ID
 
-# this should be called BaseUriModel
+# this should be called BaseUriModel, it is the base class
+# for the federated objects.
 class BaseModel(BaseIdModel):
 
 

@@ -23,24 +23,35 @@
 
 from abc import ABC, abstractmethod
 
+
+# the social provider needs a transport.
 class SocialProvider(ABC):
 
     
-    def __init__(self):
+    def __init__(self, transport):
 
-        self.listener = None
+        #self.listener = None
+        self.transport = transport
+        pass
 
 
     # this methods are called by the fixtures and application to set a test
 
     # this returns an id, the integer of the newly created user.
+    # this creates a user which listens to messages.
     @abstractmethod
-    def create_user(self, username):
+    def create_user(self, username, is_daemon):
         pass
 
 
-    def register_listener(self, listener):
+    # this will create a demo user with no password in the social.
+    # it returns the handle of this user.
+    #@abstractmethod
+    #def create_human_user(self, username):
+    #    pass
 
+
+    def register_listener(self, listener):
         self.listener = listener
 
 

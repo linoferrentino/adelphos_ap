@@ -12,22 +12,23 @@
 ######################################################
 #
 # The class that manages the connections.
-
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from websockets.asyncio.server import broadcast
-from app.logging import gCon
-from app.api.AdelphosException import AdelphosException
-from app.api.WebSocketGateway import WebSocketGateway
-from app.dao.AliasDto import AliasDto
-from app.dao.AdelphosUri import uriparse
-from app.api.AliasApi import AliasApi
 import asyncio
 import traceback
 from datetime import datetime
 
 from fastapi import APIRouter, FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
+from websockets.asyncio.server import broadcast
 
+from app.api.AdelphosException import AdelphosException
+from app.api.AliasApi import AliasApi
+from app.api.WebSocketGateway import WebSocketGateway
+from app.cli.CliProvider import CliProvider
+from app.dao.AdelphosUri import uriparse
+from app.dao.AliasDto import AliasDto
+from app.logging import gCon
+from app.transport.SyncRouter import SyncRouter
 
 def login_required(func):
 
@@ -212,20 +213,35 @@ class WebSocketRouter(APIRouter):
             await client.serve_forever()
 
 
+# this is a synchronous router, used to dispactch method calls
+class WebSocketSyncRouter(SyncRouter):
+
+
+    def __init__(self, wshndl):
+        super().__init__()
+        super()._register_route('accept', wshndl.sync_accept)
+
+
+
 # this object will accept the web sockets and do a garbage collect when
 # they are dead or inactive for a certain period of time
-class ConnHandler:
+class ConnHandler(CliProvider):
 
 
+    # TODO remove the dependency on the app
     def __init__(self, app):
-        # this is the list of all clients connected.
         self.clients = []
         self.app = app
 
 
     # gets the router relative to the web sockets.
-    def get_router(self):
+    def get_async_router(self):
         router = WebSocketRouter(self)
+        return router
+
+
+    def get_sync_router(self):
+        router = WebSocketSyncRouter(self)
         return router
 
 

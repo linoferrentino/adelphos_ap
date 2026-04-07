@@ -40,16 +40,23 @@ from app.federation.SocialListener import SocialListener
 from app.consts import DAEMON_ID
 
 
+# this key is present in the db only if the initialization is done.
+
+ADELPHOS_VERSION_KEY = '__adelphos_v'
+
+# just a small number, it will be incremented at each iteration.
+ADELPHOS_CURRENT_VERSION = '0.1'
 
 # Adelphos is the main object which orchestrates all the messages.
 class Adelphos(SocialListener):
 
 
-    def __init__(self, config, name, db, social):
+    def __init__(self, config, name, db, social, cli):
         self.config = config
         self.name = name
         self.db = db
         self.social = social
+        self.cli = cli
 
         # this is the Local Model
         self.model = LocalModel(0, db)
@@ -57,17 +64,63 @@ class Adelphos(SocialListener):
         # I have a set of instances, myself and the allowed ones. 
         self.instances = InstancesModel()
 
-        self.initialization()
+        # I register myself to the social network
+        self.social.register_listener(self)
+
+        cur_version = self.db.get_maybe(ADELPHOS_VERSION_KEY)
+        if cur_version is None:
+            self.initialization()
+            self.db.set(ADELPHOS_VERSION_KEY, ADELPHOS_CURRENT_VERSION)
+            self.db.commit()
+        else:
+            self.load_fixture()
+
+
+    def load_fixture(self):
+
+        self.social.load_fixture()
+        self.get_local_daemon()
+
+
+    def get_local_daemon(self):
+        self.ssn = self.social.get_local_user(DAEMON_ID)
 
 
     def create_myself_as_actor(self):
+        # I publish myself in the social network as a daemon in my server.
+        # the return code is more or less like a Social Security Number
+        self.ssn = self.social.create_user(DAEMON_ID, True)
 
-        self.social.create_user(DAEMON_ID)
+
+    def create_test_users(self):
+
+        if (self.config.get('demo_users') is None):
+            gCon.log("no demo users defined")
+            return
+
+        demo_users = self.config['demo_users']
+
+        for demo_user in demo_users:
+            is_root = demo_user.get('root') == True
+            self.create_demo_user(demo_user['name'], demo_user['alias'],
+                        demo_user['password'], is_root)
+
+
+    def create_demo_user(self, name, alias, password, is_root):
+        #gCon.log(f"Creating ap_actor {name} with alias {alias} and password {password}")
+        actor_id = self.social.create_internal_user(name)
+
+        # this is the part which is not relative to activity pub.
+        self.app.kernel.alias_uri_create(actor_id, alias, password)
+        if is_root:
+            self.app.create_root_actor_impl(actor_id)
+
 
 
     def initialization(self):
 
-        self.social.register_listener(self)
+        self.social.initialization()
+
 
         # Now I have to discover the root actor.
         #flag = self.dao.created_schema_flag()
@@ -109,42 +162,4 @@ class Adelphos(SocialListener):
 
 
 
-    #def create_alias_pass(self, actor_id, alias, password):
 
-    #    alias_uri = uriparse_type(alias, EAdelphosType.ALIAS_TYPE)
-
-    #    if (alias_uri.is_numeric == True):
-    #        raise AdelphosException("Cannot create a numeric alias")
-
-    #    #gCon.log(f"alias uri created {alias_uri}")
-
-    #    family_dto = self.gateway.app.dao.family_dao.get_from_local_name(
-    #            alias_uri.family)
-
-    #    if (family_dto is not None):
-    #        raise AdelphosException(
-#f"fa#mily {alias_uri.family} is already existing in this instance")
-
-    #    ph = PasswordHasher()
-    #    pass_hashed = ph.hash(password)
-
-    #    # we are creating here an alias in instance zero.
-    #    self.gateway.app.dao.alias_dao.create_alias_impl(
-    #        actor_id, alias_uri.family, 0, alias_uri.name, pass_hashed)
-
-
-    #@commit_if_ok
-    #def alias_uri_create(self, actor_id, alias_uri, password):
-
-    #    alias_uri = uriparse_type(alias, EAdelphosType.ALIAS_TYPE)
-
-    #    if (alias_uri.is_numeric == True):
-    #        raise AdelphosException("Cannot create a numeric alias")
-
-    #    self._alias_create_impl(actor_id, alias_uri.name,
-    #        alias_uri.family, password)
-
-
-
-    #def get_items(self, alias_id, my_equity):
-    #    pass

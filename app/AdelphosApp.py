@@ -55,7 +55,7 @@ from app.dao.AdInstanceDto import create_ad_instance
 from app.ap_api.ActivityPubGateway import ActivityPubGateway
 from app.ad_api.AdelphosGateway import AdelphosGateway
 from .consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
-from app.AdelphosRouter import make_router
+#from app.AdelphosRouter import make_router
 from app.core.Adelphos import Adelphos
 
 from app.store.MemoryStore import MemoryStore
@@ -107,11 +107,11 @@ class AdelphosApp(FastAPI):
         # this is the queue of requests that this daemon does
         # to the outside.
         self.requests = list()
-        self._init_schema = False
+        #self._init_schema = False
 
 
-    def post_initialization_needed(self):
-        self._init_schema = True
+    #def post_initialization_needed(self):
+    #    self._init_schema = True
 
 
     # the app can have some fake Activity Pub users defined for testing,
@@ -249,10 +249,13 @@ async def lifespan(app: AdelphosApp):
     #db = AdelphosDb(db_name)
     db = MemoryStore()
     ap_mockup = ActivityPubMockup(app.config, db, True)
-    app.kernel = Adelphos(app.config, app.instance, db, ap_mockup)
+    conn_hndl = ConnHandler(app)
+    app.kernel = Adelphos(app.config, app.instance, db, ap_mockup, conn_hndl)
     ses_worker = asyncio.create_task(session_worker(app))
     daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
     app.include_router(ap_mockup.get_router())
+    app.include_router(conn_hndl.get_router())
+
 
     #app.ap_api = ActivityPubApi(app)
 
@@ -269,7 +272,7 @@ async def lifespan(app: AdelphosApp):
         app.cond.notify_all()
     #gCon.log("Please wait for adelphos shutdown")
     #app.ap_api.close()
-    await app.conn_hndl.stop()
+    await conn_hndl.stop()
     await ses_worker
     await daemon_worker
     # the last to close is the DB, so that all the modules have a chance to save
@@ -338,8 +341,8 @@ def get_app(instance_name, config_file, config):
 
     #router = make_router(app)
 
-    app.conn_hndl = ConnHandler(app)
-    app.include_router(app.conn_hndl.get_router())
+    #app.conn_hndl = ConnHandler(app)
+    #app.include_router(app.conn_hndl.get_router())
 
     app.init_instance(config_file, config)
 

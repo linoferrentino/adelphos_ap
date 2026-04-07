@@ -19,6 +19,17 @@
 from abc import ABC, abstractmethod
 
 
+# the adelphos store is a federated key/value database,
+# it is able to fetch values from remote instances using a social
+# network (in our case activity pub, but it might be different)
+
+
+# the Store is locally consistent and Eventually consistent.
+# it will try to update the objects in the federation with a best effort.
+
+# If it cannot, conflicts will be handled by outer layers, for example
+# a purchase might be rendered void.
+
 class AdelphosStore(ABC):
 
 
