@@ -136,7 +136,12 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
     def initialization(self):
 
         host = self.config['General']['host']
-        self.ap_srv_model.new_server(host, 0)
+        self.srv_id = self.ap_srv_model.new_server(host)
+
+
+    def load_fixture(self):
+        host = self.config['General']['host']
+        self.srv_id = self.ap_srv_model.get_from_host_name(host)
 
 
     async def user_inbox(username: str, request: Request):
@@ -359,6 +364,15 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
         return self.create_app_actor(username, is_daemon)
 
 
+    async def discover_user(self, username, maybe = False):
+        (srv_ob, actor_ob) = await self.ap_api.get_or_discover_actor(username, maybe)
+        return actor_ob.actor_id
+
+
+    def create_internal_user(self, username):
+        return self.create_app_actor(username, False)
+
+
     #def create_demo_user(self, name, alias, password, is_root):
     #    #gCon.log(f"Creating ap_actor {name} with alias {alias} and password {password}")
     #    actor_id = self.create_app_actor(name)
@@ -375,13 +389,16 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
         user_inbox = user_path + "/inbox"
 
         # the server is hard coded to zero, we are in the app realm
-        myself_actor = create_ap_actor(0, user_path, user_inbox,
-                                       actor_name, self.public_key)
+        #myself_actor = create_ap_actor(0, user_path, user_inbox,
+        #                               actor_name, self.public_key)
         #if (forced_id is not None):
         #    myself_actor.actor_id = 0
         #    actor_id = self.app.dao.ap_actor_dao.store_full_no_ts(myself_actor)
         #else:
-        actor_id = self.app.dao.ap_actor_dao.store(myself_actor)
+        #actor_id = self.app.dao.ap_actor_dao.store(myself_actor)
+
+        actor_id = self.ap_user_model.new_user(self.srv_id,
+                user_path, user_inbox, actor_name, self.public_key, is_daemon)
 
         #gCon.log(f"Created actor {actor_name} with id {actor_id}")
         return actor_id

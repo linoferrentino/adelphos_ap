@@ -55,6 +55,7 @@ def commit_if_ok(func):
 # the objects do NOT cross the boundary of the model,
 # at the external we only see IDs or objects created from the basic objects.
 
+# all models are federated! The difference is not in the model, but in the DB!
 class LocalModel:
 
 
@@ -69,8 +70,23 @@ class LocalModel:
 
 
     @commit_if_ok
+    def alias_create_uri(self, actor_id, alias_uri_str, password_clear):
+        alias_uri = uriparse_type(alias_uri_str, EAdelphosType.ALIAS_TYPE)
+        return self._alias_create_impl(actor_id, alias_uri.name, 
+            alias_uri.family, password_clear)
+
+
+    @commit_if_ok
     def alias_create(self, actor_id, alias_name, alias_family, password_clear):
         return self._alias_create_impl(actor_id, alias_name, alias_family, password_clear)
+
+
+    # this can be called also externally to create the root alias
+    @commit_if_ok
+    def alias_create_hashed(self, actor_id, alias_name, alias_family, pass_hashed):
+
+        return self._alias_create_internal_hashed(actor_id, alias_name,
+                                                  alias_family, pass_hashed)
 
 
     # it returns the id of the new alias.
@@ -79,11 +95,19 @@ class LocalModel:
         fam_id = self.family_model.open_name_id(alias_family)
 
         if fam_id != AD_INVALID_ID:
+            # XXX change it into an Adelphos exception
             self.errno = EAdErrno.EDUPLICATED_FAMILY
             raise Exception()
 
         ph = PasswordHasher()
         pass_hashed = ph.hash(password_clear)
+
+        return self._alias_create_internal_hashed(actor_id, alias_name,
+                                                  alias_family, pass_hashed)
+
+    
+
+    def _alias_create_internal_hashed(actor_id, alias_name, alias_family, pass_hashed):
 
         fam_ob = self.family_model.create(alias_family)
         alias_ob = self.alias_model.create(actor_id, alias_name, fam_ob, pass_hashed)

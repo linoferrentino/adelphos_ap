@@ -253,8 +253,8 @@ async def lifespan(app: AdelphosApp):
     app.kernel = Adelphos(app.config, app.instance, db, ap_mockup, conn_hndl)
     ses_worker = asyncio.create_task(session_worker(app))
     daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
-    app.include_router(ap_mockup.get_router())
-    app.include_router(conn_hndl.get_router())
+    app.include_router(ap_mockup.get_async_router())
+    app.include_router(conn_hndl.get_async_router())
 
 
     #app.ap_api = ActivityPubApi(app)

@@ -38,6 +38,8 @@ from app.logging import gCon
 
 from app.federation.SocialListener import SocialListener
 from app.consts import DAEMON_ID
+from app.logging import exit_err
+import asyncio
 
 
 # this key is present in the db only if the initialization is done.
@@ -106,14 +108,31 @@ class Adelphos(SocialListener):
                         demo_user['password'], is_root)
 
 
-    def create_demo_user(self, name, alias, password, is_root):
+    def _add_root_alias(self, actor_id):
+        self.model.alias_create_hashed(actor_id, 'root', 'admins',
+                self.config['General']['root_password'])
+
+
+    def create_demo_user(self, name, alias_uri, password, is_root):
         #gCon.log(f"Creating ap_actor {name} with alias {alias} and password {password}")
         actor_id = self.social.create_internal_user(name)
 
         # this is the part which is not relative to activity pub.
-        self.app.kernel.alias_uri_create(actor_id, alias, password)
+        alias_id = self.model.alias_create_uri(actor_id, alias_uri, password)
+
+        #self.app.kernel.alias_uri_create(actor_id, alias, password)
         if is_root:
-            self.app.create_root_actor_impl(actor_id)
+            self._add_root_alias(actor_id)
+
+
+    async def create_root_actor(self, root_user):
+
+        actor_id = await self.social.discover_user(root_user, True)
+
+        if (root_server is None):
+            exit_err(f"Misconfigured root user {root_user}, cannot resolve.")
+
+        self._add_root_alias(actor_id)
 
 
 
@@ -135,7 +154,7 @@ class Adelphos(SocialListener):
 
         # when I return from this function the test users are created, so
         # I can create the root.
-        self.create_root()
+        #self.create_root()
 
         # we have to discover the root actor
         # in another task, because we might be the target!

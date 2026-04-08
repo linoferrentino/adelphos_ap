@@ -44,6 +44,12 @@ class SocialProvider(ABC):
         pass
 
 
+    @abstractmethod
+    # this does not create the user, but it searches it in the social network
+    async def discover_user(self, username, maybe = False):
+        pass
+
+
     # this will create a demo user with no password in the social.
     # it returns the handle of this user.
     #@abstractmethod

@@ -36,3 +36,5 @@ class ActivityPubServerModel(BaseIdModel):
         server_ob = self._create_base_id(forced_id)
 
         server_ob[AP_HOSTNAME_KEY] = host_name
+
+        return BaseIdModel.get_id(server_ob)
