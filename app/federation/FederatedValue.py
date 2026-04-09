@@ -18,9 +18,13 @@ class FederatedValue:
 
 
     # every object starts at version zero and then we increment it.
+    # when it is locked it cannot 
     def __init__(self, ob):
         self.inner = ob
         self.version = 0
+        # timestamp of the lock, used to prevent deadlocks.
+        self.ts_locked = None
+        self.locked = False
 
 
     async def get(self):

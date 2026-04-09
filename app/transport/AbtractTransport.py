@@ -18,20 +18,31 @@ from abc import ABC
 from abc import abstractmethod
 
 
+# the abstract transport has the methods to post and get json from
+# the external world.
+
+# concrete classes can be sync or async: the interface is synchronous, however,
+# because we shield the complexity
+
 class AbstractTransport(ABC):
 
 
     @abstractmethod
-    async def post_and_wait(self, user_from, user_to, request):
+    def post_json(self, url, json):
         pass
 
 
-    # Passes the message to the extern and returns only the status code.
     @abstractmethod
-    async def post_and_go(self, user_from, user_to, message):
+    def get_json(self, url):
         pass
 
 
-    #@abstractmethod
-    #async def post_and_repeat():
-    #    pass
+    @abstractmethod
+    def start(self):
+        pass
+
+
+    @abstractmethod
+    def stop(self):
+        pass
+

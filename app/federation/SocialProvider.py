@@ -23,9 +23,10 @@
 
 from abc import ABC, abstractmethod
 
+from app.transport.RouterProvider import RouterProvider
 
-# the social provider needs a transport.
-class SocialProvider(ABC):
+# the social provider needs a transport and itself is a RouterProvider
+class SocialProvider(RouterProvider):
 
     
     def __init__(self, transport):

@@ -13,14 +13,8 @@
 #
 
 
-from enum import IntEnum
+class AdelphosCoreException(Exception):
 
-
-# there are the core errors, not given to the end user.
-class EAdErrno(IntEnum):
-    EDUPLICATED_FAMILY = 1
-
-    # generic system error, this is a bug!
-    ESYS = 500
-
-
+    def __init__(self, ad_errno, msg = None):
+        super().__init__(msg)
+        self.errno = ad_errno

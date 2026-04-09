@@ -219,7 +219,7 @@ class WebSocketSyncRouter(SyncRouter):
 
     def __init__(self, wshndl):
         super().__init__()
-        super()._register_route('accept', wshndl.sync_accept)
+        super()._register_get_route('accept', wshndl.sync_accept)
 
 
 

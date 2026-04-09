@@ -31,7 +31,7 @@
 # from argon2 import PasswordHasher
 
 from app.dao.AdelphosUri import uriparse_type, EAdelphosType
-from app.core.LocalModel import LocalModel
+from app.core.algo.AdelphosAlgo import AdelphosAlgo 
 from app.core.InstancesModel import InstancesModel
 
 from app.logging import gCon
@@ -53,15 +53,14 @@ ADELPHOS_CURRENT_VERSION = '0.1'
 class Adelphos(SocialListener):
 
 
-    def __init__(self, config, name, db, social, cli):
+    def __init__(self, config, instance_name, db, social, cli):
         self.config = config
-        self.name = name
         self.db = db
         self.social = social
         self.cli = cli
 
-        # this is the Local Model
-        self.model = LocalModel(0, db)
+        # this is the controller part. 
+        self.aa = AdelphosAlgo(0, db)
 
         # I have a set of instances, myself and the allowed ones. 
         self.instances = InstancesModel()
@@ -109,7 +108,7 @@ class Adelphos(SocialListener):
 
 
     def _add_root_alias(self, actor_id):
-        self.model.alias_create_hashed(actor_id, 'root', 'admins',
+        self.aa.alias_algo.alias_create_hashed(actor_id, 'root', 'admins',
                 self.config['General']['root_password'])
 
 
@@ -118,7 +117,7 @@ class Adelphos(SocialListener):
         actor_id = self.social.create_internal_user(name)
 
         # this is the part which is not relative to activity pub.
-        alias_id = self.model.alias_create_uri(actor_id, alias_uri, password)
+        alias_id = self.aa.alias_algo.alias_create_uri(actor_id, alias_uri, password)
 
         #self.app.kernel.alias_uri_create(actor_id, alias, password)
         if is_root:

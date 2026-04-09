@@ -14,24 +14,27 @@
 # this is the Mockup used to store the fake users in this Adelphos instance
 # (useful for testing and integrating)
 
+import time
+
 from fastapi import APIRouter, FastAPI, WebSocket
-from app.logging import gCon
-from app.dao.ApActorDto import create_ap_actor
-from app.consts import API_POINT
+from fastapi import Request, Depends, Query, HTTPException, status, Response
+
+from app.ap_api.ActivityPubApi import ActivityPubApi
 from app.ap_api.ActivityPubGateway import ActivityPubBaseGateway
 from app.ap_api.ActivityPubGateway import ActivityPubGateway
-from app.api.AdelphosException import AdelphosException
-from app.federation.SocialProvider import SocialProvider
-from app.ap_api.ActivityPubApi import ActivityPubApi
-from app.core.MasterAdelphosDao import MasterAdelphosDao
-from fastapi import APIRouter, Request, Depends, Query, HTTPException, status, Response
-from app.consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
-from app.keys import load_keys
 from app.ap_api.ActivityPubServerModel import ActivityPubServerModel
 from app.ap_api.ActivityPubUserModel import ActivityPubUserModel
+from app.api.AdelphosException import AdelphosException
+from app.consts import API_POINT
+from app.consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
+from app.core.MasterAdelphosDao import MasterAdelphosDao
+from app.dao.ApActorDto import create_ap_actor
 from app.dao.ApServerDto import create_ap_server
 from app.federation.SocialListener import SocialListener
-import time
+from app.federation.SocialProvider import SocialProvider
+from app.keys import load_keys
+from app.logging import gCon
+from app.transport.SyncRouter import SyncRouter
 
 
 # then there is the Mockup user, it listens to events in ActivityPub
@@ -100,11 +103,18 @@ class ActivityPubRouter(APIRouter):
             return apsrv.info_user(username)
 
 
-        @self .post('/users/{username}/inbox')
+        @self.post('/users/{username}/inbox')
         async def user_inbox(username: str, request: Request):
             return await apsrv.user_inbox(username, request)
+
+
+class ActivityPubSyncRouter(SyncRouter):
     
 
+    def __init__(self, ap_mockup):
+        super().__init__()
+        # the sync interface is used to bypass the message dispatching.
+        super()._register_post_route('/user/(.*)/inbox', ap_mockup.user_inbox_sync)
 
 
 # this ActivityPub object is also a gateway, it gets the POST messages that
@@ -237,10 +247,15 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
 
 
     # this is the router relative to the activity pub interface.
-    def get_router(self):
+    def get_async_router(self):
 
         ap_router = ActivityPubRouter(self)
         return ap_router
+
+
+    def get_sync_router(self):
+
+        pass
 
 
     #def is_test_instance(self):

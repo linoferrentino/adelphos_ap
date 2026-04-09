@@ -21,7 +21,7 @@ from app.core.AdelphosDao import AdelphosDao
 from app.store.MemoryStore import MemoryStore
 from app.federation.MemoryAdelphosSocial import MemoryAdelphosSocial
 from app.dao.AdelphosDb import AdelphosDb
-from app.core.LocalModel import LocalModel
+from app.core.algo.AdelphosAlgo import AdelphosAlgo 
 
 # this is the local world
 #@pytest.fixture(scope = "module")
@@ -35,7 +35,7 @@ def w_local():
     #dao = AdelphosDao(db)
     #social = MemoryAdelphosSocial()
     #adelphos1 = Adelphos('w1', dao, social)
-    model = LocalModel(0, db)
+    model = AdelphosAlgo(0, db)
     return model 
 
 
@@ -43,15 +43,15 @@ def w_local():
 
 def test_add_alias(w_local):
 
-    lino_id = w_local.alias_create(0, 'lino', 'ferre', 'pass')
+    lino_id = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
     assert lino_id > 0
 
 
 def test_add_dup_family(w_local):
 
-    lino_id = w_local.alias_create(0, 'lino', 'ferre', 'pass')
+    lino_id = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
     assert lino_id > 0
-    bob_id = w_local.alias_create(0, 'bob', 'ferre', 'pass')
+    bob_id = w_local.alias_algo.alias_create(0, 'bob', 'ferre', 'pass')
     assert bob_id == -EAdErrno.EDUPLICATED_FAMILY
 
 

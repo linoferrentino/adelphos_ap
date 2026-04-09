@@ -24,12 +24,6 @@ from abc import ABC, abstractmethod
 # network (in our case activity pub, but it might be different)
 
 
-# the Store is locally consistent and Eventually consistent.
-# it will try to update the objects in the federation with a best effort.
-
-# If it cannot, conflicts will be handled by outer layers, for example
-# a purchase might be rendered void.
-
 class AdelphosStore(ABC):
 
 
@@ -41,3 +35,6 @@ class AdelphosStore(ABC):
     #@abstractmethod
     #def init_needed(self):
     #    pass
+
+
+
