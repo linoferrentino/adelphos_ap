@@ -35,6 +35,9 @@ class AdelphosTester(SyncRouter):
     @contextlib.contextmanager
     def run_sync(self, config):
 
+        # I set my host, so that I know the local routes..
+        self.host = config['General']['host']
+
         try:
 
             # this is the *local* store, adelphos will layer a federated store

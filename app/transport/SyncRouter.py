@@ -16,12 +16,16 @@
 
 from app.transport.AbstractTransport import AbstractTransport
 from tests.TestResponse import TestResponse
+from urllib.parse import urlsplit
 
 class SyncRouter(AbstractTransport):
 
 
     def __init__(self):
         self.routes = {}
+        self.host = None
+        # the router at first hasn't a gateway
+        self.gateway = None
 
 
     def _register_post_route(self, route, action):
@@ -32,12 +36,24 @@ class SyncRouter(AbstractTransport):
         pass
 
 
-    def post_json(self, url, json):
+    def post_json(self, url_str, json):
         return TestResponse(202, None)
 
 
-    def get_json(self, url):
-        return TestResponse(404, None)
+    def get_json(self, url_str):
+
+        # parse the url lib.
+        parsed_url = urlsplit(url_str)
+
+        if ((parsed_url.netloc is None) or
+            (parsed_url.netloc == self.host)):
+            return TestResponse(404, None)
+        elif self.gateway is None:
+            raise Exception("No gateway and not local net {parsed_url.netloc}")
+        else:
+            return self.gateway.get_json_url(parsed_url)
+        
+
 
 
     def accept(self, server_socket):

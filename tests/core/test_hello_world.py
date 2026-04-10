@@ -49,7 +49,7 @@ def w_remote_2():
 @pytest.fixture
 def federation(w_local_2, w_remote_2):
 
-    federation = FederationTester()
+    federation = FederationTester(w_local_2, w_remote_2)
     with federation.do_playground():
         yield federation
 
