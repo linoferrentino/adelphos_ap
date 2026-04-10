@@ -24,6 +24,12 @@ from abc import abstractmethod
 # concrete classes can be sync or async: the interface is synchronous, however,
 # because we shield the complexity
 
+
+# we can have a sync interface or a async interface.
+# the client will adapt to the correct implementation based on the gateway.
+
+# sync gateways will call the sync interface.
+
 class AbstractTransport(ABC):
 
 
@@ -38,11 +44,23 @@ class AbstractTransport(ABC):
 
 
     @abstractmethod
-    def start(self):
+    async def post_async_json(self, url, json):
         pass
 
 
     @abstractmethod
-    def stop(self):
+    async def get_async_json(self, url):
         pass
+
+    # functions to have the sockets.
+
+    @abstractmethod
+    def accept(self, server_socket):
+        pass
+
+    
+    @abstractmethod
+    async def async_accept(self, server_socket):
+        pass
+
 

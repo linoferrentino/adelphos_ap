@@ -39,6 +39,10 @@ from app.logging import gCon
 from app.federation.SocialListener import SocialListener
 from app.consts import DAEMON_ID
 from app.logging import exit_err
+from app.federation.FederatedStore import FederatedStore
+from app.ap_api.ActivityPubMockup import ActivityPubMockup
+from app.cli.ConnHandler import ConnHandler
+
 import asyncio
 
 
@@ -53,17 +57,24 @@ ADELPHOS_CURRENT_VERSION = '0.1'
 class Adelphos(SocialListener):
 
 
-    def __init__(self, config, instance_name, db, social, cli):
+    def __init__(self, config, instance_name, db, transport):
         self.config = config
+
+        # this will be removed. We use here the Federated Store
         self.db = db
-        self.social = social
-        self.cli = cli
+
+        host_name = config['General']['host']
+        # I can build a federated store with a local db and a transport
+        self.fdb = FederatedStore(host_name, db, transport)
+        self.social = ActivityPubMockup(config, db, True, transport)
+        self.cli = ConnHandler(self, transport)
 
         # this is the controller part. 
+        # we pass to the algo the federated store!
         self.aa = AdelphosAlgo(0, db)
 
         # I have a set of instances, myself and the allowed ones. 
-        self.instances = InstancesModel()
+        #self.instances = InstancesModel()
 
         # I register myself to the social network
         self.social.register_listener(self)

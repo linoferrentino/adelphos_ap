@@ -37,6 +37,7 @@ from app.logging import gCon
 # this holds a session state for the socket.
 class WebSocketGateway(Gateway):
 
+
     def __init__(self, app, websocket):
         super().__init__(app)
         self.websocket = websocket

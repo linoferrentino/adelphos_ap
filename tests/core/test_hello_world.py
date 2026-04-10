@@ -23,19 +23,46 @@ from app.core.algo.AdelphosAlgo import AdelphosAlgo
 
 
 from tests.AdelphosTester import AdelphosTester
+from tests.FederationTester import FederationTester
 
 # this is the basic test. Create an adelphos which responds to sync messages
 # and is able to create an alias.
 
+import tests.adelphoi_test_config as tconf
+
 @pytest.fixture
-def w_local():
+def w_local_2():
 
     tester = AdelphosTester()
-    with tester.run_sync(None):
+    with tester.run_sync(tconf.adelphos_t2_test):
         yield tester
-    
 
-def test_hello(w_local):
 
-    response = w_local.post('/_backdoor_api_/login', json = { 'user' : 'alice'})
-    assert response.status_code == 200
+@pytest.fixture
+def w_remote_2():
+
+    tester = AdelphosTester()
+    with tester.run_sync(tconf.adelphos_remote2_conf):
+        yield tester
+
+
+@pytest.fixture
+def federation(w_local_2, w_remote_2):
+
+    federation = FederationTester()
+    with federation.do_playground():
+        yield federation
+
+
+def test_hello(w_local_2):
+
+    response = w_local_2.post_json('/_backdoor_api_/login', json = { 'user' : 'alice'})
+    assert response.status_code == 202
+
+
+def test_federation(federation):
+
+    response = federation.post_json('https://www.adelphos.it/_backdoor_api_/login', 
+                                    json = None)
+    assert response.status_code == 202
+

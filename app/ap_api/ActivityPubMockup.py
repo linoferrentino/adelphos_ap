@@ -77,20 +77,6 @@ class ActivityPubRouter(APIRouter):
 
     def __init__(self, apsrv):
 
-        # the last route is added only in case of test instance.
-        if apsrv.do_srv() == False:
-            return
-
-
-        @self.post('/_backdoor_api_/{cmd}')
-        async def _backdoor_api(cmd: str, request : Request):
-            body = await request.body()
-            body_str = body.decode()
-            body_ob = json.loads(body_str)
-            res = await apsrv.proc_cmd(cmd, body_ob)
-            return { 'res' : res }
-
-
         @self.get("/.well-known/webfinger",
         description="Adelphos's end point",
         )
@@ -106,6 +92,21 @@ class ActivityPubRouter(APIRouter):
         @self.post('/users/{username}/inbox')
         async def user_inbox(username: str, request: Request):
             return await apsrv.user_inbox(username, request)
+
+
+        # the last route is added only in case of test instance.
+        if apsrv.do_srv() == False:
+            return
+
+
+        @self.post('/_backdoor_api_/{cmd}')
+        async def _backdoor_api(cmd: str, request : Request):
+            body = await request.body()
+            body_str = body.decode()
+            body_ob = json.loads(body_str)
+            res = await apsrv.proc_cmd(cmd, body_ob)
+            return { 'res' : res }
+
 
 
 class ActivityPubSyncRouter(SyncRouter):
@@ -124,9 +125,10 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
 
 
     # the Mockup can act also as an ActivityPubProvider.
-    def __init__(self, config, db, do_srv):
+    def __init__(self, config, db, do_srv, transport):
         #self.app = app
         self.config = config
+        self.transport = transport
         self.users = {}
         self.current_logged_user = None
         self.ap_api = ActivityPubApi(self)

@@ -209,6 +209,7 @@ class WebSocketRouter(APIRouter):
 
         @self.websocket("/ws")
         async def websocket_endpoint(websocket: WebSocket):
+            # router.accept_client_socket()
             client = await wshndl.accept(websocket)
             await client.serve_forever()
 
@@ -229,9 +230,10 @@ class ConnHandler(CliProvider):
 
 
     # TODO remove the dependency on the app
-    def __init__(self, app):
+    def __init__(self, kernel, transport):
         self.clients = []
-        self.app = app
+        self.kernel = kernel
+        self.transport = transport
 
 
     # gets the router relative to the web sockets.

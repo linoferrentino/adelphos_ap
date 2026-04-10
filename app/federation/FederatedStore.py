@@ -21,6 +21,12 @@
 class FederatedStore:
 
 
+    # I initialize myself with my hostname to distinguish my own URIs from the others.
+    def __init__(self, hostname, db, transport):
+
+        self.db = db
+        self.transport = transport
+
 
     # this adds a federation host able to share values with myself.
     def add_federation_host(self, host):
@@ -40,12 +46,31 @@ class FederatedStore:
 
 
     # the store has the concept of a federated transaciton
-    def begin_transaction(self):
-        pass
+    #def begin_transaction(self):
+    #    pass
 
 
-    def get_and_lock_ob_uri(self, transaction_id, uri, maybe = False):
-        pass
+    #def get_and_lock_ob_uri(self, transaction_id, uri, maybe = False):
+    #    pass
+
+
+    ## this is used to create a new transaction.
+    #def compare_and_swap_try(self, uri, old_val, new_val):
+    #    pass
+
+
+    #def compare_and_swap_commit(self, uri):
+    #    pass
+
+
+    # the idea of a federated store is that we have a certain number of URIs
+    # to be updated.
+
+    # I want them to be updated all or none, the transaction initiator will
+    # get the resources and then it performs a CAS on all of them.
+
+    # In case of failure it does a SAC (swap and compare) to return to the previous
+    # item
 
 
     def commit_transaction(self, transaction_id):

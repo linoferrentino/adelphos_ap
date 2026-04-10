@@ -13,6 +13,7 @@
 #
 # the starting point of the adelphos test
 
+import pytest
 from contextlib import asynccontextmanager
 import multiprocessing as mp
 import contextlib
@@ -23,14 +24,6 @@ from app.AdelphosApp import get_app
 # https://stackoverflow.com/questions/57412825/how-to-start-a-uvicorn-fastapi-in-background-when-testing-with-pytest
 # and
 # https://github.com/Kludex/uvicorn/issues/742#issuecomment-674411676
-
-
-import pytest
-
-#@pytest.fixture(scope = "session", autouse = True)
-#def mp_set_start_method():
-#    print ("-------------------------------------------- HELLO ")
-#    mp.set_start_method('spawn')
 
 
 class ProcessServer:

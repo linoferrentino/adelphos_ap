@@ -27,6 +27,8 @@ from argon2 import PasswordHasher
 from app.core.AdelphosCoreException import AdelphosCoreException
 
 from app.core.algo.utils import commit_or_errno
+from app.dao.AdelphosUri import uriparse_type
+from app.dao.AdelphosUri import EAdelphosType
 
 
 class AliasAlgo:

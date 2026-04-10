@@ -14,24 +14,45 @@
 # A class that manages the routing table for a synchronous application
 # (useful in testing)
 
+from app.transport.AbstractTransport import AbstractTransport
+from tests.TestResponse import TestResponse
 
-class SyncRouter:
+class SyncRouter(AbstractTransport):
 
 
     def __init__(self):
         self.routes = {}
 
 
-    def _register_route(self, route, action):
+    def _register_post_route(self, route, action):
         pass
 
 
-    def get(route, *args):
+    def _register_get_route(self, route, action):
+        pass
 
-        return 99
+
+    def post_json(self, url, json):
+        return TestResponse(202, None)
 
 
-    def post(route, *args):
+    def get_json(self, url):
+        return TestResponse(404, None)
 
-        # usually this is the normal return code
-        return 202
+
+    async def post_async_json(self, url, json):
+        raise Exception("Not implemented here")
+
+
+    async def get_async_json(self, url):
+        raise Exception("Not implemented here")
+
+
+    def accept(self, server_socket):
+        pass
+
+
+    async def async_accept(self, server_socket):
+        raise Exception("Not implemented here")
+
+
