@@ -23,8 +23,8 @@ from ..logging import gCon
 class BaseDao(ABC):
 
 
-    def __init__(self, dao):
-        self.dao = dao
+    def __init__(self, db):
+        self.db = db
 
 
     # this method has here a default implementation, but we can override it,

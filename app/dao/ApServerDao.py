@@ -27,8 +27,8 @@ class ApServerDao(BaseDao):
 
 
     # I can set here the context.
-    def __init__(self, dao):
-        super().__init__(dao)
+    def __init__(self, db):
+        super().__init__(db)
         self.table_name = "ap_server"
 
 
@@ -64,14 +64,14 @@ class ApServerDao(BaseDao):
 
     # also this function is local
     def get_from_hostname(self, host_name):
-        server_dto = self.dao.db.get_full_dto(self.table_name,
+        server_dto = self.db.get_full_dto(self.table_name,
                         "host_name", host_name, ApServerDto)
         return server_dto
 
 
     def store_dict(self, server, server_as_dict):
 
-        newid = self.dao.db.insert_dto_fields(self.table_name,
+        newid = self.db.insert_dto_fields(self.table_name,
                             ('host_name',), server_as_dict)
 
         #gCon.log(f"stored {server.host_name} his id {newid}")

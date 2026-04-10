@@ -66,7 +66,7 @@ class Adelphos(SocialListener):
         host_name = config['General']['host']
         # I can build a federated store with a local db and a transport
         self.fdb = FederatedStore(host_name, db, transport)
-        self.social = ActivityPubMockup(config, db, True, transport)
+        self.social = ActivityPubMockup(config, True, transport)
         self.cli = ConnHandler(self, transport)
 
         # this is the controller part. 
@@ -135,9 +135,9 @@ class Adelphos(SocialListener):
             self._add_root_alias(actor_id)
 
 
-    async def create_root_actor(self, root_user):
+    def create_root_actor(self, root_user):
 
-        actor_id = await self.social.discover_user(root_user, True)
+        actor_id = self.social.discover_user(root_user, True)
 
         if (root_server is None):
             exit_err(f"Misconfigured root user {root_user}, cannot resolve.")
@@ -171,7 +171,7 @@ class Adelphos(SocialListener):
         root_user = self.config['General']['root_user']
         #gCon.log(f"Creating root user {root_user} for {self.instance}")
         if (root_user != ':local:'):
-            asyncio.create_task(self.create_root_actor(root_user))
+            self.create_root_actor(root_user)
 
         #gCon.rule(f"COMMIT OF INITIAL DB (minus the root actor) for {self.instance}")
         self.db.commit()

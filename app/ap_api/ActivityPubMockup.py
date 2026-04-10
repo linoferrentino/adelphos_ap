@@ -16,6 +16,8 @@
 
 import time
 
+
+from app.dao.AdelphosDb import AdelphosDb
 from fastapi import APIRouter, FastAPI, WebSocket
 from fastapi import Request, Depends, Query, HTTPException, status, Response
 
@@ -35,6 +37,8 @@ from app.federation.SocialProvider import SocialProvider
 from app.keys import load_keys
 from app.logging import gCon
 from app.transport.SyncRouter import SyncRouter
+from app.dao.ApServerDao import ApServerDao
+from app.dao.ApActorDao import ApActorDao
 
 
 # then there is the Mockup user, it listens to events in ActivityPub
@@ -124,17 +128,24 @@ class ActivityPubSyncRouter(SyncRouter):
 class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
 
 
-    # the Mockup can act also as an ActivityPubProvider.
-    def __init__(self, config, db, do_srv, transport):
+    def __init__(self, config, do_srv, transport):
         #self.app = app
+
+        #db_name = config['General']['db_name']
+        db = AdelphosDb(':memory:')
+
         self.config = config
         self.transport = transport
         self.users = {}
         self.current_logged_user = None
         self.ap_api = ActivityPubApi(self)
         #self.dao = MasterAdelphosDao(db)
-        self.ap_srv_model = ActivityPubServerModel(db)
-        self.ap_user_model = ActivityPubUserModel(db)
+        #self.ap_srv_model = ActivityPubServerModel(db)
+        #self.ap_user_model = ActivityPubUserModel(db)
+
+        self.ap_actor_dao = ApActorDao(db)
+        self.ap_server_dao = ApServerDao(db)
+
         self.ap_gateway = ActivityPubGateway(self)
         self.do_srv = do_srv
 
@@ -144,11 +155,11 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
         self.private_key = priv_key
 
 
-    # I create myself as a server: the id is fixed to zero.
     def initialization(self):
 
         host = self.config['General']['host']
-        self.srv_id = self.ap_srv_model.new_server(host)
+        #self.srv_id = self.ap_srv_model.new_server(host)
+        self.local_server = self.ap_server_dao.create_from_hostname(host)
 
 
     def load_fixture(self):
@@ -381,8 +392,8 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
         return self.create_app_actor(username, is_daemon)
 
 
-    async def discover_user(self, username, maybe = False):
-        (srv_ob, actor_ob) = await self.ap_api.get_or_discover_actor(username, maybe)
+    def discover_user(self, username, maybe = False):
+        (srv_ob, actor_ob) = self.ap_api.get_or_discover_actor(username, maybe)
         return actor_ob.actor_id
 
 
@@ -406,16 +417,16 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
         user_inbox = user_path + "/inbox"
 
         # the server is hard coded to zero, we are in the app realm
-        #myself_actor = create_ap_actor(0, user_path, user_inbox,
-        #                               actor_name, self.public_key)
+        myself_actor = create_ap_actor(self.local_server.server_id, user_path, user_inbox,
+                                       actor_name, self.public_key)
         #if (forced_id is not None):
         #    myself_actor.actor_id = 0
         #    actor_id = self.app.dao.ap_actor_dao.store_full_no_ts(myself_actor)
         #else:
-        #actor_id = self.app.dao.ap_actor_dao.store(myself_actor)
+        actor_id = self.ap_actor_dao.store(myself_actor)
 
-        actor_id = self.ap_user_model.new_user(self.srv_id,
-                user_path, user_inbox, actor_name, self.public_key, is_daemon)
+        #actor_id = self.ap_user_model.new_user(self.srv_id,
+        #        user_path, user_inbox, actor_name, self.public_key, is_daemon)
 
         #gCon.log(f"Created actor {actor_name} with id {actor_id}")
         return actor_id

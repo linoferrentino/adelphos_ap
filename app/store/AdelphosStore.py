@@ -32,6 +32,11 @@ class AdelphosStore(ABC):
         pass
 
 
+    # enumerates the keys with a certain regex calling a callback.
+    def enumerate_keys_regex(self, regex, callback):
+        pass
+
+
     #@abstractmethod
     #def init_needed(self):
     #    pass

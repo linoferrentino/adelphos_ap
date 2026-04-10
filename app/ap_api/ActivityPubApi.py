@@ -29,14 +29,9 @@ import re
 class ActivityPubApi:
 
 
-    # Here I initialize myself with the application, the application is then
-    # used to access the specialized DAOs.
-    def __init__(self, app):
-        self.app = app
-
-    # the api has its own never ending loop to accept the post message that
-    # go elsewhere and it has the logic to send and receive messages to
-    # other adelphoi instances
+    # I am initialized with the ActivityPub server.
+    def __init__(self, apsrv):
+        self.apsrv = apsrv
 
 
     # the close might be not needed, in any case I could store messages which
@@ -69,9 +64,9 @@ class ActivityPubApi:
     # the local data.
     # the return of the function is a tuple (server, actor) which identifies
     # this actor in fediverse.
-    async def get_or_discover_actor(self, fediverse_actor_str, maybe = False):
+    def get_or_discover_actor(self, fediverse_actor_str, maybe = False):
         try:
-            return await self.get_or_discover_actor_impl(fediverse_actor_str)
+            return self.get_or_discover_actor_impl(fediverse_actor_str)
         except AdelphosException as adex:
             if (maybe == True):
                 gCon.log(f"Got exception while discovering actor {adex}")
@@ -79,7 +74,7 @@ class ActivityPubApi:
             raise
 
 
-    async def get_or_discover_actor_impl(self, fediverse_actor_str):
+    def get_or_discover_actor_impl(self, fediverse_actor_str):
 
         # I assume the string is well formed, otherwise it won't have an answer
         # it must begin with a @
@@ -95,7 +90,7 @@ class ActivityPubApi:
         (preferred_username, rem_instance) = user_host
 
         # this is the actor's server 
-        server_actor = self.app.dao.ap_server_dao.get_or_create_from_host_name(\
+        server_actor = self.apsrv.ap_server_dao.get_or_create_from_host_name(\
                 rem_instance)
 
         #gCon.log(f"I have obtained {server_actor} as server")
@@ -103,13 +98,15 @@ class ActivityPubApi:
         actor_query = f"https://{rem_instance}/.well-known/webfinger?\
 resource=acct:{actor_instance}"
 
-        actor_res = AsyncGetReq(actor_query)
-        await self.app.async_req_wait(actor_res)
+        #actor_res = AsyncGetReq(actor_query)
+        #await self.app.async_req_wait(actor_res)
 
-        if (actor_res.status_code != 200):
-            raise AdelphosException(
-                    f"remote instance {rem_instance} complains!",
-                    EAdelhposErrno.EREM_ADELPHOS_NOT_FOUND)
+
+        #if (actor_res.status_code != 200):
+        #    raise AdelphosException(
+        #            f"remote instance {rem_instance} complains!",
+        #            EAdelhposErrno.EREM_ADELPHOS_NOT_FOUND)
+        actor_res = self.apsrv.transport.get_json(actor_query)
 
         actor_ob = json.loads(actor_res.text)
 
@@ -141,7 +138,7 @@ resource=acct:{actor_instance}"
         key_parsed = key_parsed._replace(fragment = "main-key")
 
         # for now I use the ApActorDao
-        actor_dto = await self.app.dao.ap_actor_dao.create_from_uri(
+        actor_dto = self.app.dao.ap_actor_dao.create_from_uri(
                 server_actor, href_user, key_parsed)
         return (server_actor, actor_dto)
 

@@ -43,6 +43,7 @@ class BaseIdModel(ABC):
         pass
 
 
+
     def _create_base_id(self, forced_id = None):
 
         if forced_id is None:

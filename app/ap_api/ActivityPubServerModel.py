@@ -31,6 +31,10 @@ class ActivityPubServerModel(BaseIdModel):
         return f"_ap_srv_${numeric_id}"
 
 
+    def get_or_create_from_host_name(self, host_name):
+        pass
+
+
     def new_server(self, host_name, forced_id = None):
 
         server_ob = self._create_base_id(forced_id)

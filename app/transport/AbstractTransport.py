@@ -33,6 +33,7 @@ from abc import abstractmethod
 class AbstractTransport(ABC):
 
 
+    # these are routed -----> Outbound
     @abstractmethod
     def post_json(self, url, json):
         pass
@@ -43,24 +44,13 @@ class AbstractTransport(ABC):
         pass
 
 
-    @abstractmethod
-    async def post_async_json(self, url, json):
-        pass
+    # <----- Inbound
+    # these are NOT routed, they are called by the underlying transport
 
-
-    @abstractmethod
-    async def get_async_json(self, url):
-        pass
 
     # functions to have the sockets.
-
     @abstractmethod
     def accept(self, server_socket):
         pass
-
     
-    @abstractmethod
-    async def async_accept(self, server_socket):
-        pass
-
 

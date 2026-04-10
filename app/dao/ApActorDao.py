@@ -172,7 +172,7 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
                          'public_key': actor.public_key,
                          }
 
-        newid = self.dao.db.insert_dto_fields(table_name, fields_stored, actor_as_dict)
+        newid = self.db.insert_dto_fields(table_name, fields_stored, actor_as_dict)
         actor.actor_id = newid
         return newid
 

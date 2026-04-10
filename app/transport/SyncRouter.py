@@ -40,19 +40,9 @@ class SyncRouter(AbstractTransport):
         return TestResponse(404, None)
 
 
-    async def post_async_json(self, url, json):
-        raise Exception("Not implemented here")
-
-
-    async def get_async_json(self, url):
-        raise Exception("Not implemented here")
-
-
     def accept(self, server_socket):
         pass
 
 
-    async def async_accept(self, server_socket):
-        raise Exception("Not implemented here")
 
 
