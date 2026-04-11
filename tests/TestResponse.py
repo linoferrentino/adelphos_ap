@@ -18,6 +18,6 @@
 class TestResponse:
 
 
-    def __init__(self, status, text):
+    def __init__(self, status, body):
         self.status_code = status
-        self.text = text 
+        self.body = body 

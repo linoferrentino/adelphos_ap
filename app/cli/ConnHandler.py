@@ -29,6 +29,7 @@ from app.dao.AdelphosUri import uriparse
 from app.dao.AliasDto import AliasDto
 from app.logging import gCon
 from app.transport.SyncRouter import SyncRouter
+from app.transport.RouterProvider import RouterProvider
 
 def login_required(func):
 
@@ -226,7 +227,7 @@ class WebSocketSyncRouter(SyncRouter):
 
 # this object will accept the web sockets and do a garbage collect when
 # they are dead or inactive for a certain period of time
-class ConnHandler(CliProvider):
+class ConnHandler(CliProvider, RouterProvider):
 
 
     # TODO remove the dependency on the app
@@ -242,9 +243,9 @@ class ConnHandler(CliProvider):
         return router
 
 
-    def get_sync_router(self):
-        router = WebSocketSyncRouter(self)
-        return router
+    def register_sync_routes(self, router):
+
+        pass
 
 
     async def accept(self, websocket):

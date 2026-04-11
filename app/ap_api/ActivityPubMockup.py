@@ -15,7 +15,8 @@
 # (useful for testing and integrating)
 
 import time
-
+import re
+import json
 
 from app.dao.AdelphosDb import AdelphosDb
 from fastapi import APIRouter, FastAPI, WebSocket
@@ -39,6 +40,7 @@ from app.logging import gCon
 from app.transport.SyncRouter import SyncRouter
 from app.dao.ApServerDao import ApServerDao
 from app.dao.ApActorDao import ApActorDao
+from app.transport.RouterProvider import RouterProvider
 
 
 # then there is the Mockup user, it listens to events in ActivityPub
@@ -125,7 +127,7 @@ class ActivityPubSyncRouter(SyncRouter):
 # this ActivityPub object is also a gateway, it gets the POST messages that
 # come from the outside and, if they correspond to real users it will post them
 # in the users's inbox.
-class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
+class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
 
 
     def __init__(self, config, do_srv, transport):
@@ -222,6 +224,9 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
         return response
 
 
+    def webfinger_kw(self, kw):
+        return self.webfinger(kw['resource'])
+
 
     def webfinger(self, resource):
 
@@ -266,9 +271,15 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
         return ap_router
 
 
-    def get_sync_router(self):
+    def register_sync_routes(self, router):
+        #@self.get("/.well-known/webfinger",
+        #description="Adelphos's end point",
+        #)
+        #async def webfinger(resource: str = Query(..., alias="resource")):
+        #    return apsrv.webfinger(resource)
+        router._register_get_route("/.well-known/webfinger", self.webfinger_kw, "resource")
 
-        pass
+
 
 
     #def is_test_instance(self):
@@ -317,12 +328,11 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider):
         return self.current_logged_user.last_n_messages(how_many)
 
 
-    # the base method to get the activity pub user for the instance, by
-    # definition it is in the server zero.
+    # the base method to get the activity pub user for the instance.
     # this method DOES not discover (it is not async)
     def _select_test_user(self, activity_pub_user):
-        ap_actor = self.app.dao.ap_actor_dao.get_from_preferred_username(0,
-                              activity_pub_user)
+        ap_actor = self.ap_actor_dao.get_from_preferred_username(
+                self.local_server.server_id, activity_pub_user)
         #gCon.log(f"Obtained actor {ap_actor} for {activity_pub_user}")
         return ap_actor
 

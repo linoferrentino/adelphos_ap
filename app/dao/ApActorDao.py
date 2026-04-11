@@ -116,7 +116,7 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
     # more than one user can have the same preferred_username in different servers.
     def get_from_preferred_username(self, server_fk, preferred_username):
-        return self.dao.db.get_full_dto_ex(self.table_name,
+        return self.db.get_full_dto_ex(self.table_name,
             ('server_fk', 'preferred_username'),
             (server_fk, preferred_username), ApActorDto)
 

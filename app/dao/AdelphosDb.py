@@ -75,14 +75,14 @@ create table ap_actor (
 # are not activity pub instances.
 # However every adelphos instance is linked to an activity pub actor
 # which is its endpoint for the fediverse.
-('instance', """
-create table ad_instance (
-    actor_fk integer primary key,
-    authorized integer,
-    comment text,
-    timestamp text default current_timestamp,
-    foreign key (actor_fk) references ap_actor(actor_id)
-);"""),
+#('instance', """
+#create table ad_instance (
+#    actor_fk integer primary key,
+#    authorized integer,
+#    comment text,
+#    timestamp text default current_timestamp,
+#    foreign key (actor_fk) references ap_actor(actor_id)
+#);"""),
 
 
 # The basis of the adelphos federated database is the adelphos object:
@@ -101,31 +101,31 @@ create table ad_instance (
 # they can be linked, and they belong to an instance.
 # all the objects an actor creates are stored in that instance.
 # if the actor moves the objects he has created move with him.
-('fd_actor', """
-
-create table fd_actor(
-    fd_actor_id integer primary key,
-    name text,
-    timestamp text default current_timestamp
-    );
- """),
-
-
-('fd_actor index', """
-create index fdact_idx ON fd_actor(name);"""),
+#('fd_actor', """
+#
+#create table fd_actor(
+#    fd_actor_id integer primary key,
+#    name text,
+#    timestamp text default current_timestamp
+#    );
+# """),
+#
+#
+#('fd_actor index', """
+#create index fdact_idx ON fd_actor(name);"""),
 
 
 # this is the base class for all the 'inert' objects in adelphos.  they are
 # created by a federated actor (an alias), and they follow him if he moves.
 # the object has a current holder, who might pass it.
-('fd_object', """
-create table fd_object(
-    fd_object_id integer primary key,
-    name text,
-    creator_fk integer references fd_alias(local_fk) on delete restrict,
-    holder_fk integer references fd_alias(local_fk),
-    timestamp text default current_timestamp
- );"""),
+#('fd_object', """
+#create table fd_object(
+#    fd_object_id integer primary key,
+#    name text,
+#    creator_fk integer references fd_alias(local_fk) on delete restrict,
+#    holder_fk integer references fd_alias(local_fk),
+#    timestamp text default current_timestamp
+# );"""),
 
 # there might be the ``future'' object; this is the object which is
 # used to exchange. A transaction is a transfer of credit and debit and
@@ -133,60 +133,60 @@ create table fd_object(
 
 
 # I must create an index on name, as I will sometimes query on this.
-('fd_object index', """
-
-create index fd_object_name_idx on fd_object(name);
-
- """),
-
+#('fd_object index', """
+#
+#create index fd_object_name_idx on fd_object(name);
+#
+# """),
+#
 
 
 # the currency is the base of exchange. In adelphos we do not have a
 # centralized value exchange, the exchange rates are decided by the actor
 # themselves.
-('fd_currency', """
-create table fd_currency(
-
-        local_fk integer primary key references fd_object(local_id),
-        symbol text,
-        human_value real
-
-);"""),
+#('fd_currency', """
+#create table fd_currency(
+#
+#        local_fk integer primary key references fd_object(local_id),
+#        symbol text,
+#        human_value real
+#
+#);"""),
 
 
 # a `sellable' is any-'thing' that can be sold. Something physical.
 # we are not talking here about goods which are sellable but immaterial like
 # software licenses, online tickets, or something like that
-('fd_sellable', """
+#('fd_sellable', """
+#
+#create table fd_sellable(
+#        local_fk integer primary key references fd_object(local_id),
+#        place_fk integer references fd_place(local_fk),
+#        price real,
+#        currency_fk integer references fd_currency(local_fk)
+#        );
+#
+# """),
 
-create table fd_sellable(
-        local_fk integer primary key references fd_object(local_id),
-        place_fk integer references fd_place(local_fk),
-        price real,
-        currency_fk integer references fd_currency(local_fk)
-        );
 
- """),
-
-
-('fd_place', """
-create table fd_place(
-
-        local_fk integer primary key references fd_object(local_id),
-        place_type integer
-);"""),
-
+#('fd_place', """
+#create table fd_place(
+#
+#        local_fk integer primary key references fd_object(local_id),
+#        place_type integer
+#);"""),
+#
 
 # an object can be in a place, where can be collected.
-('fd_collecting_service', """
-create table fd_collecting_service(
-        place_fk integer references fd_place(local_fk),
-        collector_fk integer references fd_alias(local_fk),
-        currency_fk integer references fd_currency(local_fk),
-        price real,
-        primary key (place_fk, collector_fk, currency_fk)
-) without rowid;"""),
-
+#('fd_collecting_service', """
+#create table fd_collecting_service(
+#        place_fk integer references fd_place(local_fk),
+#        collector_fk integer references fd_alias(local_fk),
+#        currency_fk integer references fd_currency(local_fk),
+#        price real,
+#        primary key (place_fk, collector_fk, currency_fk)
+#) without rowid;"""),
+#
 
 # to finalize a selling I have to make a transaction between two actors
 # the transaction is a passage of a cheque from one actor to another.
@@ -208,49 +208,49 @@ create table fd_collecting_service(
 
 # the transaction is always balanced. The sum of values from both side is equal.
 
-('ad_transaction', """
-
- create table ad_transaction(
-
-    transaction_id integer primary key,
-
-    left_to_right_fk integer references fd_object(local_id),
-    right_to_left_fk integer references fd_object(local_id),
-
-    actor_left_fk integer references fd_actor(fd_actor_id),
-    actor_right_fk integer references fd_actor(fd_actor_id),
-
-    state_id integer,
-
-    timestamp text default current_timestamp
-
- );
-
-
- """), 
-
+#('ad_transaction', """
+#
+# create table ad_transaction(
+#
+#    transaction_id integer primary key,
+#
+#    left_to_right_fk integer references fd_object(local_id),
+#    right_to_left_fk integer references fd_object(local_id),
+#
+#    actor_left_fk integer references fd_actor(fd_actor_id),
+#    actor_right_fk integer references fd_actor(fd_actor_id),
+#
+#    state_id integer,
+#
+#    timestamp text default current_timestamp
+#
+# );
+#
+#
+# """), 
+#
 # a cheque is an object that represents an amount of currency which is
 # created by a person and held by another.
 
 # the cheque has a level, this is implicit by the issuer, the creator, however
 # a cheque might also have some components inside.
 # When we obtain a cheque the cashier can ask the issuers to repay it
-('fd_cheque', """
-
- create table fd_cheque (
-
-        
-        issuer_fk integer references fd_actor(fd_actor_id),
-
-        holder_fk integer references fd_actor(fd_actor_id),
-
-        amount real
-
-
- )
-
-
- """), 
+#('fd_cheque', """
+#
+# create table fd_cheque (
+#
+#        
+#        issuer_fk integer references fd_actor(fd_actor_id),
+#
+#        holder_fk integer references fd_actor(fd_actor_id),
+#
+#        amount real
+#
+#
+# )
+#
+#
+# """), 
 
 # a cheque set is a cheque composed of other cheques AT THE SAME LEVEL.
 # this is different from a cheque which is an uplevel version of other sub cheques.
@@ -260,16 +260,16 @@ create table fd_collecting_service(
 
 # it has no any other use, it is not duplicated.
 
-('fd_cheque_set', """
-
- create table fd_cheque_set (
-
-        local_fk integer primary key references fd_object(local_id)
-
-
-
- );"""), 
-
+#('fd_cheque_set', """
+#
+# create table fd_cheque_set (
+#
+#        local_fk integer primary key references fd_object(local_id)
+#
+#
+#
+# );"""), 
+#
 
 
 # as the cheque is a promise to pay money, the future object is a promise
@@ -286,22 +286,22 @@ create table fd_collecting_service(
 # a transaction has a zero sum.
 # ============================
 
-('fd_object_voucher', """
-
- create table fd_object_voucher(
-
-        local_fk integer primary key references fd_object(local_id)
- ); """), 
+#('fd_object_voucher', """
+#
+# create table fd_object_voucher(
+#
+#        local_fk integer primary key references fd_object(local_id)
+# ); """), 
 
 # this is the promise to have a service, like a voucher
 
-('fd_service_voucher', """
-
- create table fd_service_voucher(
-
-        local_fk integer primary key references fd_object(local_id)
-
- ); """), 
+#('fd_service_voucher', """
+#
+# create table fd_service_voucher(
+#
+#        local_fk integer primary key references fd_object(local_id)
+#
+# ); """), 
 
 
 # a cash voucher is the receipt that I have given a certain sum to
@@ -336,30 +336,30 @@ create table fd_collecting_service(
 # """);
 #
 
-('fd group', """
-create table fd_group_family(
-
-        local_fk integer primary key references 
-             fd_actor(fd_actor_id),
-        parent_group_fk integer references fd_group_family(local_fk),
-        boss_fk integer null references fd_alias(local_fk),
-        instance_fk integer not null references ad_instance(actor_fk),
-        equity real,
-        level integer
-);"""),
-
+#('fd group', """
+#create table fd_group_family(
+#
+#        local_fk integer primary key references 
+#             fd_actor(fd_actor_id),
+#        parent_group_fk integer references fd_group_family(local_fk),
+#        boss_fk integer null references fd_alias(local_fk),
+#        instance_fk integer not null references ad_instance(actor_fk),
+#        equity real,
+#        level integer
+#);"""),
+#
 # now the view which does the join between fd_group_family and fd_actor
-('view fd_group_family_ex', """
-
- create view fd_group_family_ex as select 
- fda.fd_actor_id, fda.name, fdg.instance_fk, fda.timestamp,
- fdg.parent_group_fk, fdg.boss_fk,  
- fdg.equity, fdg.level
- from fd_actor as fda, fd_group_family as fdg
- where fda.fd_actor_id = fdg.local_fk;
-
- """),
-
+#('view fd_group_family_ex', """
+#
+# create view fd_group_family_ex as select 
+# fda.fd_actor_id, fda.name, fdg.instance_fk, fda.timestamp,
+# fdg.parent_group_fk, fdg.boss_fk,  
+# fdg.equity, fdg.level
+# from fd_actor as fda, fd_group_family as fdg
+# where fda.fd_actor_id = fdg.local_fk;
+#
+# """),
+#
 
 # the alias is the link between adelphos and activity pub; this means
 # that we have both the links.
@@ -370,159 +370,159 @@ create table fd_group_family(
 
 # the alias table has the session token
 
-('fd_alias', """
-create table fd_alias(
-
-        local_fk integer primary key references fd_actor(fd_actor_id),
-        actor_fk integer references ap_actor(actor_id),
-        family_fk integer references fd_group_family(local_fk),
-        password text
-
-); """),
-
-
-('view fd_alias_ex', """
-
-create view fd_alias_ex as select
- fda.fd_actor_id, fda.name,  fda.timestamp,
- fdl.actor_fk, fdl.family_fk, fdl.password,
- fdg.instance_fk
- from fd_actor as fda, fd_alias as fdl, fd_group_family as fdg
- where fda.fd_actor_id = fdl.local_fk
- and
- fdl.family_fk = fdg.local_fk;
-
- """),
+#('fd_alias', """
+#create table fd_alias(
+#
+#        local_fk integer primary key references fd_actor(fd_actor_id),
+#        actor_fk integer references ap_actor(actor_id),
+#        family_fk integer references fd_group_family(local_fk),
+#        password text
+#
+#); """),
+#
+#
+#('view fd_alias_ex', """
+#
+#create view fd_alias_ex as select
+# fda.fd_actor_id, fda.name,  fda.timestamp,
+# fdl.actor_fk, fdl.family_fk, fdl.password,
+# fdg.instance_fk
+# from fd_actor as fda, fd_alias as fdl, fd_group_family as fdg
+# where fda.fd_actor_id = fdl.local_fk
+# and
+# fdl.family_fk = fdg.local_fk;
+#
+# """),
 
 
 # the views relative to the alias, only the relevant field to make a replica
 # on a distant db.
-('view fd_alias_export1', """
-
- create view fd_alias_export1 as select
-
- fdact1.name as name, fdact2.name as family, srvinst.host_name as adelphos_instance, 
- apact.preferred_username, apsrv.host_name
- 
- from fd_alias as fda, fd_actor as fdact1, fd_actor as fdact2,
- ap_actor as apact, ap_server as apsrv,
- ap_server as srvinst, ad_instance as ad_inst, fd_actor as fdact3
-
- where
-
- fda.local_fk = fdact1.actor_id
- and
- fda.family_fk = fdact2.actor_id
- and
- apact.actor_id = fda.actor_fk
- and
- apact.server_fd = ap_server.server_id
- and
- fdact1.instance_fk = ad_inst.actor_fk
- and
- ad_inst.actor_fk = fdact3.actor_id
- and
- fdact3.server_fk = srvinst.server_id;
-
- """),
-
-('view fd_alias_export', """
-
- create view fd_alias_export as select
-
- fdact1.name as name, fdact2.name as family, srvinst.host_name as adelphos_instance, 
- apact.preferred_username, apsrv.host_name
- 
- from fd_alias as fda, fd_actor as fdact1, fd_actor as fdact2,
- ap_actor as apact, ap_server as apsrv,
- ap_server as srvinst, ad_instance as ad_inst, fd_actor as fdact3
-
- where
-
- fda.local_fk = fdact1.actor_id
- and
- fda.family_fk = fdact2.actor_id
- and
- apact.actor_id = fda.actor_fk
- and
- apact.server_fd = ap_server.server_id
- and
- fdact1.instance_fk = ad_inst.actor_fk
- and
- ad_inst.actor_fk = fdact3.actor_id
- and
- fdact3.server_fk = srvinst.server_id;
-
- """),
+#('view fd_alias_export1', """
+#
+# create view fd_alias_export1 as select
+#
+# fdact1.name as name, fdact2.name as family, srvinst.host_name as adelphos_instance, 
+# apact.preferred_username, apsrv.host_name
+# 
+# from fd_alias as fda, fd_actor as fdact1, fd_actor as fdact2,
+# ap_actor as apact, ap_server as apsrv,
+# ap_server as srvinst, ad_instance as ad_inst, fd_actor as fdact3
+#
+# where
+#
+# fda.local_fk = fdact1.actor_id
+# and
+# fda.family_fk = fdact2.actor_id
+# and
+# apact.actor_id = fda.actor_fk
+# and
+# apact.server_fd = ap_server.server_id
+# and
+# fdact1.instance_fk = ad_inst.actor_fk
+# and
+# ad_inst.actor_fk = fdact3.actor_id
+# and
+# fdact3.server_fk = srvinst.server_id;
+#
+# """),
+#
+#('view fd_alias_export', """
+#
+# create view fd_alias_export as select
+#
+# fdact1.name as name, fdact2.name as family, srvinst.host_name as adelphos_instance, 
+# apact.preferred_username, apsrv.host_name
+# 
+# from fd_alias as fda, fd_actor as fdact1, fd_actor as fdact2,
+# ap_actor as apact, ap_server as apsrv,
+# ap_server as srvinst, ad_instance as ad_inst, fd_actor as fdact3
+#
+# where
+#
+# fda.local_fk = fdact1.actor_id
+# and
+# fda.family_fk = fdact2.actor_id
+# and
+# apact.actor_id = fda.actor_fk
+# and
+# apact.server_fd = ap_server.server_id
+# and
+# fdact1.instance_fk = ad_inst.actor_fk
+# and
+# ad_inst.actor_fk = fdact3.actor_id
+# and
+# fdact3.server_fk = srvinst.server_id;
+#
+# """),
 
 # the trust line can be also a carrier line
 
-('fix_trust_line_states', """
-
-create table fix_trust_line_states (
-    state_id integer primary key,
-    state_dsc text
- );
-
- """),
-
-
-('fd_trust_line', """
-create table fd_trust_line (
-
-        actor_1 integer not null references fd_actor(fd_actor_id),
-        actor_2 integer not null references fd_actor(fd_actor_id),
-        referee integer not null references fd_actor(fd_actor_id),
-        state_fk integer not null references fix_trust_line_states(state_id),
-        exchange_rate real,
-        strength real,
-        max_weight real,
-        max_dimension real,
-        cost real,
-        primary key (actor_1, actor_2, referee)
-
-) without rowid; """),
-
-
-('fd_ticket', """
-
-
-create table fd_ticket (
-    object_fk integer primary key references fd_sellable(local_fk)
-
-    );"""),
+#('fix_trust_line_states', """
+#
+#create table fix_trust_line_states (
+#    state_id integer primary key,
+#    state_dsc text
+# );
+#
+# """),
+#
+#
+#('fd_trust_line', """
+#create table fd_trust_line (
+#
+#        actor_1 integer not null references fd_actor(fd_actor_id),
+#        actor_2 integer not null references fd_actor(fd_actor_id),
+#        referee integer not null references fd_actor(fd_actor_id),
+#        state_fk integer not null references fix_trust_line_states(state_id),
+#        exchange_rate real,
+#        strength real,
+#        max_weight real,
+#        max_dimension real,
+#        cost real,
+#        primary key (actor_1, actor_2, referee)
+#
+#) without rowid; """),
+#
+#
+#('fd_ticket', """
+#
+#
+#create table fd_ticket (
+#    object_fk integer primary key references fd_sellable(local_fk)
+#
+#    );"""),
 
 
 # a task is something which is to accept or decline
 
-('fd_task', 
-
- """
-
- create table fd_task(
-
-    task_id integer primary key
-
- ); """),
-
+#('fd_task', 
+#
+# """
+#
+# create table fd_task(
+#
+#    task_id integer primary key
+#
+# ); """),
+#
 # A user can have a "duty", "something to do, give, or pay"
 
-('ad_duty', """
-
-
-create table ad_duty(
-
-    duty_id integer primary key,
-    duty_type integer,
-    current_state integer,
-    active_actor_fk integer references fd_alias(local_fk),
-    receiving_actor_fk integer references fd_alias(local_fk),
-    timestamp_created text default current_timestamp,
-    timestamp_done text,
-    timestamp_acked text
-    
-);"""),
-
+#('ad_duty', """
+#
+#
+#create table ad_duty(
+#
+#    duty_id integer primary key,
+#    duty_type integer,
+#    current_state integer,
+#    active_actor_fk integer references fd_alias(local_fk),
+#    receiving_actor_fk integer references fd_alias(local_fk),
+#    timestamp_created text default current_timestamp,
+#    timestamp_done text,
+#    timestamp_acked text
+#    
+#);"""),
+#
 ]
 
 

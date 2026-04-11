@@ -46,6 +46,14 @@ class AbstractTransport(ABC):
 
     # <----- Inbound
     # these are NOT routed, they are called by the underlying transport
+    @abstractmethod
+    def in_get_json(self, url_parsed ):
+        pass
+
+
+    @abstractmethod
+    def in_post_json(self, url_parsed, json):
+        pass
 
 
     # functions to have the sockets.
@@ -54,3 +62,6 @@ class AbstractTransport(ABC):
         pass
     
 
+    @abstractmethod
+    def register_routes(self, routable):
+        pass

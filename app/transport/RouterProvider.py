@@ -27,6 +27,6 @@ class RouterProvider(ABC):
 
 
     @abstractmethod
-    def get_sync_router(self):
+    def register_sync_routes(self, router):
         """ The sync router must be attached to sync transports """
         pass

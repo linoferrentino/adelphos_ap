@@ -102,13 +102,13 @@ resource=acct:{actor_instance}"
         #await self.app.async_req_wait(actor_res)
 
 
-        #if (actor_res.status_code != 200):
-        #    raise AdelphosException(
-        #            f"remote instance {rem_instance} complains!",
-        #            EAdelhposErrno.EREM_ADELPHOS_NOT_FOUND)
         actor_res = self.apsrv.transport.get_json(actor_query)
+        if (actor_res.status_code != 200):
+            raise AdelphosException(
+                    f"remote instance {rem_instance} complains!",
+                    EAdelhposErrno.EREM_ADELPHOS_NOT_FOUND)
 
-        actor_ob = json.loads(actor_res.text)
+        actor_ob = json.loads(actor_res.body)
 
         #gCon.log(f"The discovery has given me {actor_ob}")
 

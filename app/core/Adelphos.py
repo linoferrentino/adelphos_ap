@@ -79,6 +79,12 @@ class Adelphos(SocialListener):
         # I register myself to the social network
         self.social.register_listener(self)
 
+
+        # I register the routes: these are my connections to the outside.
+        transport.register_routes(self.social)
+        transport.register_routes(self.cli)
+
+
         cur_version = self.db.get_maybe(ADELPHOS_VERSION_KEY)
         if cur_version is None:
             self.initialization()
