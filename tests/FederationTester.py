@@ -16,33 +16,36 @@
 
 
 import contextlib
-from app.transport.AbstractTransport import AbstractTransport
+from app.transport.AbstractTransport import AbstractGateway
 from tests.TestResponse import TestResponse
 
 
-class FederationTester(AbstractTransport):
+class FederationTester(AbstractGateway):
+
+    def __init__(self):
+
+        self.hosts = list()
 
 
     @contextlib.contextmanager
     def do_playground(self):
 
         try:
-
             yield
         finally:
-
             pass
 
 
+    def add_hosts(self, hosts):
+
+        self.hosts.append(hosts)
+
+
     def post_json(self, url, json):
-
-        assert 0 == 0
-
         return TestResponse(202, None)
 
 
     def get_json(self, url):
-
         return TestResponse(404, None)
 
 

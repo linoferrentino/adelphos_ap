@@ -17,6 +17,8 @@
 from abc import ABC
 from abc import abstractmethod
 
+from app.transport.AbstractGateway import AbstractGateway
+
 
 # the abstract transport has the methods to post and get json from
 # the external world.
@@ -30,18 +32,7 @@ from abc import abstractmethod
 
 # sync gateways will call the sync interface.
 
-class AbstractTransport(ABC):
-
-
-    # these are routed -----> Outbound
-    @abstractmethod
-    def post_json(self, url, json):
-        pass
-
-
-    @abstractmethod
-    def get_json(self, url):
-        pass
+class AbstractTransport(AbstractGateway):
 
 
     # <----- Inbound

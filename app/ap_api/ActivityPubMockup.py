@@ -21,6 +21,8 @@ import json
 from app.dao.AdelphosDb import AdelphosDb
 from fastapi import APIRouter, FastAPI, WebSocket
 from fastapi import Request, Depends, Query, HTTPException, status, Response
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 
 from app.ap_api.ActivityPubApi import ActivityPubApi
 from app.ap_api.ActivityPubGateway import ActivityPubBaseGateway
@@ -41,6 +43,7 @@ from app.transport.SyncRouter import SyncRouter
 from app.dao.ApServerDao import ApServerDao
 from app.dao.ApActorDao import ApActorDao
 from app.transport.RouterProvider import RouterProvider
+
 
 
 # then there is the Mockup user, it listens to events in ActivityPub
@@ -218,7 +221,7 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
             "publicKey": {
                 "id": f"https://{host_api}/users/{username}#main-key",
                 "owner": f"https://{host_api}/users/{username}",
-                "publicKeyPem": app.public_key
+                "publicKeyPem": self.public_key
             }
         }
 
@@ -276,21 +279,9 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
 
 
     def register_sync_routes(self, router):
-        #@self.get("/.well-known/webfinger",
-        #description="Adelphos's end point",
-        #)
-        #async def webfinger(resource: str = Query(..., alias="resource")):
-        #    return apsrv.webfinger(resource)
         router._register_get_route("/.well-known/webfinger", self.webfinger_kw, "resource")
         router._register_get_route(API_POINT + "/users/(?P<username>.*)", 
                                    self.info_user_kw, "username")
-
-        #@self.get('/users/{username}')
-        #async def info_user(username : str):
-        #    return apsrv.info_user(username)
-
-
-
 
 
     #def is_test_instance(self):
@@ -388,10 +379,12 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
 
 
     def ap_user_info(self, activity_pub_user):
-        ap_actor = self.app.dao.ap_actor_dao.get_from_preferred_username(0, activity_pub_user)
+        ap_actor = self.ap_actor_dao.get_from_preferred_username(
+                self.local_server.server_id, activity_pub_user)
         if (ap_actor is None):
             return None
-        return ('actor', activity_pub_user, f"Mockup actor for instance {self.app.instance}")
+        instance = self.config['General']['name']
+        return ('actor', activity_pub_user, f"Mockup actor for instance {instance}")
 
 
     def create_test_users_OLD(self):

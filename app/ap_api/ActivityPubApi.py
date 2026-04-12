@@ -22,6 +22,7 @@ from app.api.OutgressGateway import post_to_ap_actor_from_local_user
 import json
 from urllib.parse import urlparse
 from app.consts import DAEMON_ID
+from app.dao.ApActorDto import create_ap_actor
 import re
 
 
@@ -121,17 +122,29 @@ exp {actor_uri}")
             raise AdelphosException(
 f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
-        if server_dto.server_id == 0:
-            #gCon.log("[red]This is a locally defined actor![/red]")
-            actor = self.get_from_server_path(0, key_parsed.path)
-        else:
-            # OK, now I can create the actor
-            actor = create_ap_actor(server_dto.server_id,
+        
+        actor = self.apsrv.ap_actor_dao.get_from_server_path(
+                server_dto.server_id, key_parsed.path)
+        if actor is not None:
+            return actor
+        actor = create_ap_actor(server_dto.server_id,
                              key_parsed.path,
                              inbox_parsed.path,
                              preferred_username,
                              pub_key_ob['publicKeyPem'])
-            self.store(actor)
+        self.apsrv.ap_actor_dao.store(actor)
+
+
+        #if server_dto.server_id == 0:
+        #    #gCon.log("[red]This is a locally defined actor![/red]")
+        #else:
+        #    # OK, now I can create the actor
+        #    actor = create_ap_actor(server_dto.server_id,
+        #                     key_parsed.path,
+        #                     inbox_parsed.path,
+        #                     preferred_username,
+        #                     pub_key_ob['publicKeyPem'])
+        #    self.apsrv.ap_actor_dao.store(actor)
 
         # if it is zero it is a locally defined actor, we do not store it
         # because it would violate the db integrity

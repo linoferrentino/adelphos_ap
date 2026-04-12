@@ -145,7 +145,7 @@ class Adelphos(SocialListener):
 
         actor_id = self.social.discover_user(root_user, True)
 
-        if (root_server is None):
+        if (actor_id is None):
             exit_err(f"Misconfigured root user {root_user}, cannot resolve.")
 
         self._add_root_alias(actor_id)

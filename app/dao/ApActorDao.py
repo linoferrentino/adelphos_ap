@@ -123,7 +123,7 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
 
     def get_from_server_path(self, server_fk, user_path):
-        return self.dao.db.get_full_dto_ex(self.table_name,
+        return self.db.get_full_dto_ex(self.table_name,
             ('server_fk', 'user_path'),
             (server_fk, user_path), ApActorDto)
 
