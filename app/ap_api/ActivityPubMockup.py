@@ -188,6 +188,10 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
         return Response(status_code = res_code)
 
 
+    def info_user_kw(self, params):
+        return self.info_user(params['username'])
+
+
     def info_user(self, username):
 
         user_info = self.ap_user_info(username)
@@ -278,6 +282,13 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
         #async def webfinger(resource: str = Query(..., alias="resource")):
         #    return apsrv.webfinger(resource)
         router._register_get_route("/.well-known/webfinger", self.webfinger_kw, "resource")
+        router._register_get_route(API_POINT + "/users/(?P<username>.*)", 
+                                   self.info_user_kw, "username")
+
+        #@self.get('/users/{username}')
+        #async def info_user(username : str):
+        #    return apsrv.info_user(username)
+
 
 
 

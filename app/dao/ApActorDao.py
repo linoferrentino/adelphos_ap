@@ -43,17 +43,18 @@ class ApActorDao(BaseDao):
 
 
     # this function will fetch the public key of the actor
-    async def create_from_uri(self, server_dto, actor_uri, key_parsed):
+    def create_from_uri_moved_do_api(self, server_dto, actor_uri, key_parsed):
 
         #gCon.log(f"Create here a cached actor {actor_uri}")
 
-        res_key = AsyncGetReq(actor_uri)
-        await self.dao.app.async_req_wait(res_key)
+        #res_key = AsyncGetReq(actor_uri)
+        res_key = self.apsrv.transport.get_json(actor_uri)
+        #await self.dao.app.async_req_wait(res_key)
 
         if (res_key.status_code != 200):
            raise AdelphosException(f"Could not fetch the public key {res_key.status_code}")
 
-        key_ob_text = res_key.text
+        key_ob_text = res_key.body
 
         key_ob = json.loads(key_ob_text)
 

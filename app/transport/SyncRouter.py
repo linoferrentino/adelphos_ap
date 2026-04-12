@@ -81,7 +81,10 @@ class SyncRouter(AbstractTransport):
 
             parq = {}
             for param in route.params:
-                parq[param] = dict_params[param][0]
+                if param in match_route.groupdict().keys():
+                    parq[param] = match_route.group(param)
+                else:
+                    parq[param] = dict_params[param][0]
             result = route.action(parq)
             return result
         
