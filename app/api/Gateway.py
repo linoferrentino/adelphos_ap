@@ -31,8 +31,8 @@ class Gateway(ABC):
 
     # the application context has in common the Alias API.
     # only this because all the others are used by the WebSocket
-    def __init__(self, app):
-        self.app = app
+    def __init__(self, kernel):
+        self.kernel = kernel 
         self.handlers = dict()
         self.handlers['AdelphosError'] = (self, Gateway._handle_remote_error)
 
@@ -136,12 +136,12 @@ class Gateway(ABC):
                 errno = EAdelhposErrno.DONE_OK
         except AdelphosException as adex:
             gCon.log(f"USER Error {adex}")
-            #traceback.print_exc()
+            traceback.print_exc()
             errno = adex.code
             msg_out = f"AdelphosError in your request (you have done a mistake): {adex}"
         except Exception as ex:
             gCon.log(f"SERVER Error {ex}")
-            #traceback.print_exc()
+            traceback.print_exc()
             errno = EAdelhposErrno.EGENERIC_SERVER
             msg_out = f"AdelphosError in server (this might be a bug, sorry): {ex}"
 

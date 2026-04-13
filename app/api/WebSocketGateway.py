@@ -38,15 +38,15 @@ from app.logging import gCon
 class WebSocketGateway(Gateway):
 
 
-    def __init__(self, app, websocket):
-        super().__init__(app)
+    def __init__(self, kernel, websocket):
+        super().__init__(kernel)
         self.websocket = websocket
 
         self.alias_api = AliasApi(self)
         self.tl_api = TrustLineApi(self)
         self.root_api = RootApi(self)
         
-        if app.is_test_instance():
+        if kernel.is_test_instance():
             self.test_api = TestApi(self)
 
         # the container for the logged user.

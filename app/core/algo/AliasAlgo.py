@@ -27,6 +27,7 @@ from argon2 import PasswordHasher
 from app.core.AdelphosCoreException import AdelphosCoreException
 
 from app.core.algo.utils import commit_or_errno
+from app.core.algo.utils import commit_or_raise
 from app.dao.AdelphosUri import uriparse_type
 from app.dao.AdelphosUri import EAdelphosType
 
@@ -34,8 +35,8 @@ from app.dao.AdelphosUri import EAdelphosType
 class AliasAlgo:
 
 
-    def __init__(self, instance):
-        self.instance = instance
+    def __init__(self, kernel):
+        self.instance = kernel 
 
 
     @commit_or_errno
@@ -71,7 +72,38 @@ class AliasAlgo:
 
         return self._alias_create_internal_hashed(actor_id, alias_name,
                                                   alias_family, pass_hashed)
-    
+
+
+    @commit_or_raise
+    def login_or_die(self, name, family, password, force = False):
+        return self._login_impl(name, family, password, force)
+
+
+    @commit_or_errno
+    def login(self, name, family, password, force = False):
+        return self._login_impl(name, family, password, force)
+
+
+    def _login_impl(self,  name, family, password, force):
+
+        alias_ob = self.instance.alias_model.open_name_id_base(name, family)
+        if alias_ob == None:
+            raise AdelphosCoreException(EAdErrno.EINVALID_USER_OR_PASSWORD,
+                                           f"undefined alias {name}.{family}")
+
+        if force == True:
+            return BaseIdModel.get_id(alias_ob)
+
+        # password check
+        ph = PasswordHasher()
+        try:
+            res = ph.verify(alias_ob.password, password)
+        except:
+            raise AdelphosCoreException(EAdErrno.EINVALID_USER_OR_PASSWORD,
+                                        f"infalid {password}")
+
+
+   
 
     def _alias_create_internal_hashed(self, actor_id, alias_name, alias_family, pass_hashed):
 

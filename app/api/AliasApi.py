@@ -98,6 +98,15 @@ in your Mastodon inbox to finalize the login."""
         if (uri.obj_type != EAdelphosType.ALIAS_TYPE):
             raise AdelphosException(f"type mismatch wanted alias got {uri.obj_type}")
 
+
+        # first of all I check the existence
+        self.gateway.kernel.aa.alias_algo.login_or_die(
+                uri.name, uri.family, password, force)
+
+        # If I am here all is OK
+        assert False
+
+
         # first of all I get the family, the alias needs the family.
         family_dto = self.gateway.app.dao.family_dao\
                 .get_from_local_name(uri.family) 

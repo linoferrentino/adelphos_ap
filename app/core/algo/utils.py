@@ -32,7 +32,26 @@ def commit_or_errno(func):
             return -ex.errno
         except Exception as exc:
             traceback.print_exc()
+            self.instance.db.rollback()
             return -EAdErrno.ESYS
+
+    return internal_commit
+
+
+# decorator to commit only in case of success,
+# rollback otherwise.
+def commit_or_raise(func):
+
+    def internal_commit(self, *kwargs):
+        try:
+            res = func(self, *kwargs)
+            self.instance.db.commit()
+            return res 
+        except Exception as exc:
+            traceback.print_exc()
+            self.instance.db.rollback()
+            # re raise!
+            raise
 
     return internal_commit
 

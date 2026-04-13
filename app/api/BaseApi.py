@@ -25,7 +25,7 @@ from app.api.AdelphosException import EAdelhposErrno
 def only_in_debug(func):
 
     async def check_debug_app(self):
-        if self.gateway.app.is_debug() == False:
+        if self.gateway.kernel.is_debug() == False:
             raise AdelphosException('Only available in debug mode')
         return await func(self)
     return check_debug_app

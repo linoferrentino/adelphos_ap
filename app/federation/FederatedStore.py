@@ -37,11 +37,40 @@ class FederatedStore:
         pass
 
 
-    def get_uri_read(self, uri):
+    #def get_uri_read(self, uri):
+    #    pass
+
+
+    #def get_uri_write(self, uri):
+    #    pass
+
+
+    # does a multiple compare and swap operation on the Federated store
+    # as if has happened atomically or not.
+    # every update is a tuple of two FederatedValue.
+    def mcas(self, list_updates): 
         pass
 
 
-    def get_uri_write(self, uri):
+    # locks the current URI, the URI is passed to the queried DB,
+    # and it will update it with other URIs atomically.
+    def grab_and_lock(self, uri):
+        pass
+
+
+    # this does not lock the object which remains property of the federated
+    # store that holds it.
+    def grab_no_lock(self, uri):
+        pass
+
+
+    # this function DOES NOT cross network boundaries.
+    def _internal_mcas(self, ob_past, ob_new):
+        pass
+
+
+    # regains the updated URI which has been updated.
+    def regain_updated_uri(self, uri):
         pass
 
 
@@ -73,10 +102,10 @@ class FederatedStore:
     # item
 
 
-    def commit_transaction(self, transaction_id):
-        pass
+    #def commit_transaction(self, transaction_id):
+    #    pass
 
 
-    def rollback_transaction(self, transaction_id):
-        pass
+    #def rollback_transaction(self, transaction_id):
+    #    pass
 

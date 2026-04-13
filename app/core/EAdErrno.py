@@ -16,9 +16,11 @@
 from enum import IntEnum
 
 
-# there are the core errors, not given to the end user.
+# there are the core errors.
 class EAdErrno(IntEnum):
+    DONE_OK = 0
     EDUPLICATED_FAMILY = 1
+    EINVALID_USER_OR_PASSWORD = 2
 
     # generic system error, this is a bug!
     ESYS = 500

@@ -33,26 +33,16 @@ from argon2 import PasswordHasher
 
 # the local model is always consistent. Every method called
 # is part of a transaction.
-
-
 # the local mode uses the URI as the identifier.
-
-# the objects do NOT cross the boundary of the model,
-# at the external we only see IDs or objects created from the basic objects.
-
 # all models are federated! The difference is not in the model, but in the DB!
 class AdelphosAlgo:
 
 
-    # I have an instance id, an integer, this is then used to store the data in the same
-    # db without clashes.
     def __init__(self, instance_id, db):
         self.db = db 
         self.instance_id = instance_id
         self.family_model  = FamilyModel(self.db)
         self.alias_model   = AliasModel(self.db)
         self.alias_algo    = AliasAlgo(self)
-        #self.errno = 0
-
 
 

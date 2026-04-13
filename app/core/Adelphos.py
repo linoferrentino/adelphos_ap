@@ -73,7 +73,7 @@ class Adelphos(SocialListener):
 
         # this is the controller part. 
         # we pass to the algo the federated store!
-        self.aa = AdelphosAlgo(0, db)
+        self.aa = AdelphosAlgo(0, self.fdb)
 
         # I have a set of instances, myself and the allowed ones. 
         #self.instances = InstancesModel()

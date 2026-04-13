@@ -17,7 +17,6 @@
 from app.dao.AdelphosUri import EAdelphosType
 from app.core.BaseModel import BaseModel
 from app.core.BaseModel import AD_NAME_KEY
-#from app.core.BaseModel import AD_ID_KEY
 from app.core.BaseModel import AD_ACTOR_ID_KEY
 from app.core.BaseIdModel import BaseIdModel
 
