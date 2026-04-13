@@ -85,6 +85,7 @@ class ActivityPubRouter(APIRouter):
 
 
     def __init__(self, apsrv):
+        super().__init__()
 
         @self.get("/.well-known/webfinger",
         description="Adelphos's end point",
@@ -104,7 +105,7 @@ class ActivityPubRouter(APIRouter):
 
 
         # the last route is added only in case of test instance.
-        if apsrv.do_srv() == False:
+        if apsrv.do_srv == False:
             return
 
 

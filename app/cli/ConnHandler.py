@@ -244,14 +244,13 @@ class ConnHandler(CliProvider, RouterProvider):
 
 
     def register_sync_routes(self, router):
-
         pass
 
 
     async def accept(self, websocket):
 
         await websocket.accept()
-        client = ClientWs(self.app, websocket)
+        client = ClientWs(self.kernel, websocket)
         self.clients.append(client)
         return client
 

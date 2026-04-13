@@ -29,6 +29,7 @@
 # each action is part of a transaction.
 
 # from argon2 import PasswordHasher
+import re
 
 from app.dao.AdelphosUri import uriparse_type, EAdelphosType
 from app.core.algo.AdelphosAlgo import AdelphosAlgo 
@@ -59,6 +60,7 @@ class Adelphos(SocialListener):
 
     def __init__(self, config, instance_name, db, transport):
         self.config = config
+        self.instance = instance_name
 
         # this will be removed. We use here the Federated Store
         self.db = db
@@ -98,6 +100,15 @@ class Adelphos(SocialListener):
 
         self.social.load_fixture()
         self.get_local_daemon()
+
+
+    def is_debug(self):
+        return self.config['General']['debug']
+
+
+    def is_test_instance(self):
+        test_instance = re.match("_test_", self .instance) is not None
+        return test_instance
 
 
     def get_local_daemon(self):

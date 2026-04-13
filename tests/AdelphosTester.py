@@ -56,7 +56,7 @@ class AdelphosTester(SyncRouter):
 
         finally:
 
-            pass
+            db.close()
 
 
     #def post_json(self, url, json):

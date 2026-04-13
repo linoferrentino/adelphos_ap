@@ -56,6 +56,10 @@ class MemoryStore(AdelphosStore):
 
     # there is always a transaction open
     def __init__(self):
+        self.reset()
+
+
+    def reset(self):
         self.undos = Block()
         self.store = {}
 
@@ -114,3 +118,8 @@ class MemoryStore(AdelphosStore):
     # the memory store is automatically updated.
     def update(self, ob):
         pass
+
+
+    # a close automatically rollbacks the last transaction
+    def close(self):
+        self.rollback()

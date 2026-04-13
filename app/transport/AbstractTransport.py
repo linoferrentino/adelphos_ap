@@ -18,6 +18,7 @@ from abc import ABC
 from abc import abstractmethod
 
 from app.transport.AbstractGateway import AbstractGateway
+from app.transport.AbstractRouter import AbstractRouter
 
 
 # the abstract transport has the methods to post and get json from
@@ -32,7 +33,7 @@ from app.transport.AbstractGateway import AbstractGateway
 
 # sync gateways will call the sync interface.
 
-class AbstractTransport(AbstractGateway):
+class AbstractTransport(AbstractGateway, AbstractRouter):
 
 
     # <----- Inbound
@@ -53,6 +54,4 @@ class AbstractTransport(AbstractGateway):
         pass
     
 
-    @abstractmethod
-    def register_routes(self, routable):
-        pass
+

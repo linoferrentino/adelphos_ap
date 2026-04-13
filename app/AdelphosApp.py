@@ -17,11 +17,13 @@ import os
 import aiohttp
 import asyncio
 import re
+import threading
 
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
+from app.ap_api.AsyncRequest import AsyncGetReq
 from app.consts import ADELPHOS_AP_ENV_KEY
 from app.consts import API_POINT
 from app.consts import USER_ID
@@ -54,16 +56,18 @@ from app.dao.AdInstanceDto import create_ad_instance
 
 from app.ap_api.ActivityPubGateway import ActivityPubGateway
 from app.ad_api.AdelphosGateway import AdelphosGateway
-from .consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
+#from .consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
 #from app.AdelphosRouter import make_router
 from app.core.Adelphos import Adelphos
 
 from app.store.MemoryStore import MemoryStore
+from app.transport.AbstractRouter import AbstractRouter
+from app.transport.AbstractGateway import AbstractGateway
 
 app = None
 
 
-class AdelphosApp(FastAPI):
+class AdelphosApp(FastAPI, AbstractRouter, AbstractGateway):
 
 
     # the initialization of adelphos is done in two steps.
@@ -240,6 +244,37 @@ class AdelphosApp(FastAPI):
 
 
 
+    def post_json(self, url, json):
+        
+        pass
+
+
+    def _get_json_th(self, loop, get_req):
+
+        future = asyncio.run_coroutine_threadsafe(self.async_req_wait(get_req), loop)
+        future.result()
+
+
+    # Ugly! But it should be safe, we simply inject a task into the main loop
+    def get_json(self, url):
+
+        get_req = AsyncGetReq(url)
+        loop = asyncio.get_running_loop()
+        # I inject the call in another thread.
+        get_json_th = threading.Thread(target = AdelphosApp._get_json_th, 
+                                       args = (self, loop, get_req))
+        get_json_th.start()
+        get_json_th.join()
+        #loop = asyncio.get_running_loop()
+        #task = asyncio.create_task(self.async_req_wait(get_req))
+        #result = loop.run_until_complete(self.async_req_wait(get_req))
+        return TestResponse(get_req.status_code, get_req.text) 
+
+
+    def register_routes(self, routable):
+        router = routable.get_async_router()
+        self.include_router(router)
+
 
 @asynccontextmanager
 async def lifespan(app: AdelphosApp):
@@ -248,13 +283,15 @@ async def lifespan(app: AdelphosApp):
     #db_name = app.config['General']['db_name']
     #db = AdelphosDb(db_name)
     db = MemoryStore()
-    ap_mockup = ActivityPubMockup(app.config, db, True)
-    conn_hndl = ConnHandler(app)
-    app.kernel = Adelphos(app.config, app.instance, db, ap_mockup, conn_hndl)
+    #ap_mockup = ActivityPubMockup(app.config, db, True)
+    #conn_hndl = ConnHandler(app)
+    app.kernel = Adelphos(app.config, app.instance, db, app)
+
+
     ses_worker = asyncio.create_task(session_worker(app))
     daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
-    app.include_router(ap_mockup.get_async_router())
-    app.include_router(conn_hndl.get_async_router())
+    #app.include_router(ap_mockup.get_async_router())
+    #app.include_router(conn_hndl.get_async_router())
 
 
     #app.ap_api = ActivityPubApi(app)
@@ -272,9 +309,9 @@ async def lifespan(app: AdelphosApp):
         app.cond.notify_all()
     #gCon.log("Please wait for adelphos shutdown")
     #app.ap_api.close()
-    await conn_hndl.stop()
-    await ses_worker
+    #await conn_hndl.stop()
     await daemon_worker
+    await ses_worker
     # the last to close is the DB, so that all the modules have a chance to save
     # on DB their transient state.
     #app.dao.close()
