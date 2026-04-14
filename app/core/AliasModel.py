@@ -23,6 +23,9 @@ from app.core.BaseIdModel import BaseIdModel
 AD_ALIAS_FAM_ID = 'ad_family_id'
 AD_ALIAS_PASSWORD = 'ad_password'
 
+def alias_dto_password(alias_ob):
+    return alias_ob[AD_ALIAS_PASSWORD]
+
 
 class AliasModel(BaseModel):
 

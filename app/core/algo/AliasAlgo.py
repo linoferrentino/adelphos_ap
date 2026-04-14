@@ -31,6 +31,8 @@ from app.core.algo.utils import commit_or_raise
 from app.dao.AdelphosUri import uriparse_type
 from app.dao.AdelphosUri import EAdelphosType
 
+from app.core.AliasModel import alias_dto_password
+
 
 class AliasAlgo:
 
@@ -97,10 +99,12 @@ class AliasAlgo:
         # password check
         ph = PasswordHasher()
         try:
-            res = ph.verify(alias_ob.password, password)
+            res = ph.verify(alias_dto_password(alias_ob), password)
         except:
             raise AdelphosCoreException(EAdErrno.EINVALID_USER_OR_PASSWORD,
                                         f"infalid {password}")
+
+        return BaseModel.get_id(alias_ob)
 
 
    

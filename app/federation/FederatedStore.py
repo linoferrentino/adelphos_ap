@@ -18,7 +18,9 @@
 # the store exposes a sync interface, but internally it might
 # call async functions.
 
-class FederatedStore:
+from app.store.AdelphosStore import AdelphosStore
+
+class FederatedStore(AdelphosStore):
 
 
     # I initialize myself with my hostname to distinguish my own URIs from the others.
@@ -72,6 +74,30 @@ class FederatedStore:
     # regains the updated URI which has been updated.
     def regain_updated_uri(self, uri):
         pass
+
+
+    def commit(self):
+        self.db.commit()
+
+
+    def rollback(self):
+        self.db.rollback()
+
+
+    def close(self):
+        self.db.close()
+
+
+    def set(self, key, value):
+        self.db.set(key, value)
+
+
+    def update(self, ob):
+        pass
+
+
+    def get_maybe(self, key):
+        return self.db.get_maybe(key)
 
 
     # the store has the concept of a federated transaciton
