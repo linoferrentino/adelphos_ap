@@ -14,21 +14,21 @@
 
 
 # the class which holds a federated object in the DB
+# the federated object is linked to other federated objects
+# using the URI.
+
 class FederatedValue:
 
 
     # every object starts at version zero and then we increment it.
     # when it is locked it cannot 
-    def __init__(self, ob):
+    def __init__(self, uri, ob):
+        self.uri = uri
         self.inner = ob
         self.version = 0
         # timestamp of the lock, used to prevent deadlocks.
         self.ts_locked = None
         self.locked = False
-
-
-    async def get(self):
-        return None
 
 
     # the store is not async, we store locally (fast) and then try

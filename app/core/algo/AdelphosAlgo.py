@@ -35,14 +35,20 @@ from argon2 import PasswordHasher
 # is part of a transaction.
 # the local mode uses the URI as the identifier.
 # all models are federated! The difference is not in the model, but in the DB!
+
+# Adelphos uses a federated DB as storage.
+
 class AdelphosAlgo:
 
 
-    def __init__(self, instance_id, db):
-        self.db = db 
-        self.instance_id = instance_id
-        self.family_model  = FamilyModel(self.db)
-        self.alias_model   = AliasModel(self.db)
+    def __init__(self, fdb):
+        self.fdb = fdb 
+
+        # model part
+        self.family_model  = FamilyModel(self.fdb)
+        self.alias_model   = AliasModel(self.fdb)
+
+        # controller part
         self.alias_algo    = AliasAlgo(self)
 
 

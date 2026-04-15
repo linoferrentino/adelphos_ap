@@ -71,6 +71,11 @@ from app.logging import gCon
 # this is a place
 # #pl#stadium_north@www.adelphos.it
 
+# we can have also a fragment, this is useful for the
+# federated database.
+
+# <URI>#path.to.fragment@<HOST>
+
 
 # This enumeration will list all the types in the federated database
 # with their compact representation (two letters).
@@ -83,6 +88,8 @@ class EAdelphosType(StrEnum):
     PLACE_TYPE = 'pl'
     CARRIER_LINE_TYPE = 'cl'
     TRUST_LINE_TYPE = 'tl'
+    DUTY_TYPE = 'DU'
+    TASK_TYPE = 'TK'
 
 
 @dataclass

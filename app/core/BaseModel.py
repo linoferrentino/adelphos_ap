@@ -69,8 +69,6 @@ class BaseModel(BaseIdModel):
 
         uri_key = self._get_uri_key_name(name, family)
 
-        print (f"Searching key {uri_key}")
-
         return self.db.get_maybe(uri_key)
 
 
@@ -79,8 +77,6 @@ class BaseModel(BaseIdModel):
         new_ob = super()._create_base_id()
 
         uri_name_key = self._get_uri_key_name(name, family)
-
-        print (f"uri name key {uri_name_key}")
 
         new_ob[AD_NAME_KEY] = name
 
