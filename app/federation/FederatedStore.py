@@ -128,8 +128,13 @@ class FederatedStore(RouterProvider):
 
     # gets the object associated with this uri string.
     # if maybe is True it does not 
+    # this is the generic method, clients may better use the other friendly methods.
     def open_fv_from_uri_str(self, uri_str, maybe = False, 
                      only_local = False, lock = False, create_if_not_exist = False):
+        pass
+
+
+    def get_uri_local_maybe(self, uri_str):
         pass
 
 

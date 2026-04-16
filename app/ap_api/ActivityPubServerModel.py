@@ -14,13 +14,13 @@
 
 # the Model of an activity pub server
 
-from app.core.BaseIdModel import BaseIdModel
+#from app.core.BaseIdModel import BaseIdModel
 
 
 AP_HOSTNAME_KEY = 'ap_hostname'
 
 
-class ActivityPubServerModel(BaseIdModel):
+class ActivityPubServerModel:
 
 
     def __init__(self, db):

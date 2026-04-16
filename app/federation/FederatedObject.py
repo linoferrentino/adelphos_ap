@@ -18,6 +18,8 @@
 class FederatedObject:
 
 
+    # there are some objects which do not exist in isolation.
+    # they start with a reference count of zero.
     def __init__(self, uri, ob):
         self.ref_count = 1
         self.uri = uri

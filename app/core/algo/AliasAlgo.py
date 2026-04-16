@@ -64,13 +64,16 @@ class AliasAlgo:
     # it returns the id of the new alias.
     def _alias_create_impl(self, actor_id, alias_name, alias_family, password_clear):
 
-        fam_id = self.instance.family_model.open_name_id(alias_family)
+        fam_ob = self.instance.family_model.open_name(alias_family, maybe = True)
 
-        if fam_id != AD_INVALID_ID:
+        if fam_ob is not None:
+            gCon.log(f"fam ob {fam_ob}")
             raise AdelphosCoreException(EAdErrno.EDUPLICATED_FAMILY)
 
         ph = PasswordHasher()
         pass_hashed = ph.hash(password_clear)
+
+        aoao
 
         return self._alias_create_internal_hashed(actor_id, alias_name,
                                                   alias_family, pass_hashed)
@@ -110,6 +113,9 @@ class AliasAlgo:
    
 
     def _alias_create_internal_hashed(self, actor_id, alias_name, alias_family, pass_hashed):
+
+
+        zioa 
 
         fam_ob = self.instance.family_model.create(alias_family)
         alias_ob = self.instance.alias_model.create(actor_id, alias_name, fam_ob, pass_hashed)

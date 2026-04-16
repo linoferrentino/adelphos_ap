@@ -24,25 +24,35 @@ from app.dao.AdelphosUri import AdelphosUri
 from app.dao.AdelphosUri import uriunparse
 from app.dao.AdelphosUri import EAdelphosType
 
-from app.core.BaseIdModel import BaseIdModel
-from app.core.BaseIdModel import AD_INVALID_ID
+#from app.core.BaseIdModel import BaseIdModel
+#from app.core.BaseIdModel import AD_INVALID_ID
 
 # this should be called BaseUriModel, it is the base class
 # for the federated objects.
-class BaseModel(BaseIdModel):
+class BaseModel(ABC):
 
 
-    def __init__(self, db, type_val):
+    def __init__(self, fdb, type_val):
 
-        super().__init__(db)
+        #super().__init__(fdb)
+        self.fdb = fdb
         self.type_val = type_val
 
 
-    def open_name_id(self, name, family = None):
-        ob = self.open_name_id_base(name, family)
-        if ob is None:
-            return AD_INVALID_ID
-        return BaseIdModel.get_id(ob)
+    def open_name(self, name, family = None, maybe = True):
+
+        uri = self._build_uri(name, family)
+        return self.fdb.get_uri_local(uri)
+
+
+        #ob = self.open_name_id_base(name, family)
+
+
+
+    def _build_uri(self, name, family = None):
+        uri = AdelphosUri(self.type_val,
+            False, None, name = name, family = family)
+        return uri
 
 
     def _get_uri_key_name(self, name, family = None):

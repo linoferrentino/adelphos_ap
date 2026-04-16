@@ -24,16 +24,18 @@ def commit_or_errno(func):
     def internal_commit(self, *kwargs):
         try:
             res = func(self, *kwargs)
-            self.instance.db.commit()
+            self.instance.fdb.commit()
             return res 
         except AdelphosCoreException as ex:
-            traceback.print_exc()
-            self.instance.db.rollback()
+            #traceback.print_exc()
+            self.instance.fdb.rollback()
             return -ex.errno
+            raise
         except Exception as exc:
             traceback.print_exc()
-            self.instance.db.rollback()
+            self.instance.fdb.rollback()
             return -EAdErrno.ESYS
+            raise
 
     return internal_commit
 
@@ -45,11 +47,11 @@ def commit_or_raise(func):
     def internal_commit(self, *kwargs):
         try:
             res = func(self, *kwargs)
-            self.instance.db.commit()
+            self.instance.fdb.commit()
             return res 
         except Exception as exc:
             traceback.print_exc()
-            self.instance.db.rollback()
+            self.instance.fdb.rollback()
             # re raise!
             raise
 

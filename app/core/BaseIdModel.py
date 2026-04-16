@@ -24,12 +24,12 @@ AD_INVALID_ID = 0xFFFFFFFF
 
 
 # this is a class that models an object with an id.
-class BaseIdModel(ABC):
+# maybe this class can be deprecated, we do not have numeric Ids any more
+class BaseIdModel_XXX(ABC):
 
 
-    def __init__(self, db):
-        # id 0 is reserved.
-        self.db = db
+    def __init__(self, fdb):
+        self.db = fdb
         self.next_id = 1
 
 

@@ -39,8 +39,8 @@ def w_local():
 
 def test_add_alias(w_local):
 
-    lino_id = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
-    assert lino_id > 0
+    lino_ob = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
+    assert lino_ob is not None
 
 
 def test_add_dup_family(w_local):
