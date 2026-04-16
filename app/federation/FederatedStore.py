@@ -43,6 +43,10 @@ from app.transport.RouterProvider import RouterProvider
 # the object should be called by one thread, usually the async loop,
 # the object will enter the loop already existing, if there is one.
 
+# the store is not tied to a particular URI format: it could function with
+# any type of uris, as long as they are unique and follow a common interface,
+# the federated uri interface.
+
 class FederatedStore(RouterProvider):
 
 

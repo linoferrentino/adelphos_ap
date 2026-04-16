@@ -96,7 +96,8 @@ class EAdelphosType(StrEnum):
 class AdelphosUri:
 
     obj_type: EAdelphosType
-    is_numeric: bool
+    # URi cannot be numeric any more 
+    #is_numeric: bool
     host_name: str
 
     _ : dataclasses.KW_ONLY
@@ -104,7 +105,7 @@ class AdelphosUri:
     name: str = None
     # Only for the aliases we have a family
     family: str = None
-    numeric_id: int = None
+    #numeric_id: int = None
 
 
 
