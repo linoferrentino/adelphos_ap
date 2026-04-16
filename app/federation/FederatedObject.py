@@ -20,8 +20,14 @@ class FederatedObject:
 
     # there are some objects which do not exist in isolation.
     # they start with a reference count of zero.
+    # In adelphos the only 1st class objects are the aliases.
+    # every other object is dependent (in some way or another) with an alias.
     def __init__(self, uri, ob):
         self.ref_count = 1
         self.uri = uri
         self.ob = ob
+
+
+    def get_primitive_value(self, val):
+        pass
 

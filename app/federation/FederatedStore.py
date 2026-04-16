@@ -36,6 +36,13 @@ from app.store.AdelphosStore import AdelphosStore
 
 from app.transport.RouterProvider import RouterProvider
 
+
+# the federated store is not thread safe, but it is transaction safe,
+# that is, it is able to memorize different transactions
+
+# the object should be called by one thread, usually the async loop,
+# the object will enter the loop already existing, if there is one.
+
 class FederatedStore(RouterProvider):
 
 
@@ -47,6 +54,15 @@ class FederatedStore(RouterProvider):
         # you can use a federated store like a local store, in this case
         if transport is not None:
             transport.register_routes(self)
+
+        # at first the transaction set is empty
+        self.transactions = {}
+
+
+    # the federated store can garbage collect the objects which are not
+    # referenced anymore
+    def gc(self):
+        pass
 
 
     def get_async_router(self):
@@ -115,6 +131,12 @@ class FederatedStore(RouterProvider):
         self.db.close()
 
 
+    # creates an object with a certain URI and a certain reference count.
+    # only some objects start with a reference count of one.
+    def create_uri(self, transaction_id, uri_ob, ref_count = 0):
+        pass
+
+
     # opens an URI not for update. It will not be part of the transaction, the result
     # is a FederatedValue
     def open_uri_maybe(self, uri_str):
@@ -141,11 +163,13 @@ class FederatedStore(RouterProvider):
     # this is a transaction: update a certain number of federated values.
     # the idea is to commit all the locked objects.
     # for now I do not see a use case where you should have a partial transaction.
-    def commit(self):
+    # the commit might fail, if some transaction in the meantime has modified
+    # the same objects.
+    def commit(self, transaction_id):
         pass
 
     
-    def rollback(self):
+    def rollback(self, transaction_id):
         pass
 
 
@@ -161,9 +185,11 @@ class FederatedStore(RouterProvider):
     #    return self.db.get_maybe(key)
 
 
-    # the store has the concept of a federated transaciton
-    #def begin_transaction(self):
-    #    pass
+    # the store has the concept of a federated transaction, all transactions
+    # live in isolation, the object returned must be passed to all the modifying
+    # methods.
+    def begin_transaction(self):
+        pass
 
 
     #def get_and_lock_ob_uri(self, transaction_id, uri, maybe = False):
