@@ -25,6 +25,8 @@ import asyncio
 import json
 import traceback
 
+from app.misc.WrapInt import WrapInt
+
 from app.api.BaseApi import BaseApi
 from app.api.AdelphosException import AdelphosException
 from app.api.AdelphosException import EAdelhposErrno
@@ -69,7 +71,7 @@ class ApDaemonApi(BaseApi):
         super().__init__(gateway, HANDLERS)
     
         # I start from a random api sequence.
-        self.remote_api_id = secrets.randbits(31)
+        self.remote_api_id = WrapInt()
         # this holds my async requests done so far.
         self.async_contexts = {}
 
@@ -83,12 +85,12 @@ class ApDaemonApi(BaseApi):
     # this blocks the caller until an answer
     async def make_request(self, ad_instance_pack, request):
 
-        cur_api_id = self.remote_api_id
+        cur_api_id = self.remote_api_id.get_and_inc()
         # wrap around?
-        if self.remote_api_id == 0x7FFFFFFF:
-            self.remote_api_id = 0
-        else:
-            self.remote_api_id += 1
+        #if self.remote_api_id == 0x7FFFFFFF:
+        #    self.remote_api_id = 0
+        #else:
+        #    self.remote_api_id += 1
 
         # I have to encode the request.
         query_txt = f"daemon_q api_id {cur_api_id} payload {request}"

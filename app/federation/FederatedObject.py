@@ -24,15 +24,21 @@ class FederatedObject:
     # they start with a reference count of zero.
     # In adelphos the only 1st class objects are the aliases.
     # every other object is dependent (in some way or another) with an alias.
-    def __init__(self, uri):
-        self.ref_count = 1
+    def __init__(self, uri, ref_count = 0):
+        self.ref_count = ref_count
         self.uri = uri
-        self.ob = ob
+        # the object internally is a simple dict
+        self.ob = {}
         self.version = 0
         self.ts_locked = None
         self.locked = False
 
 
     def get_primitive_value(self, val):
+        pass
+
+
+    # you cannot set a primitive value unless the object is locked.
+    def set_primitive_value(self, key, val):
         pass
 

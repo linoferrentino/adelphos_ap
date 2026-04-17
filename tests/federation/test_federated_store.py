@@ -14,6 +14,7 @@
 
 import pytest
 from app.federation.FederatedStore import FederatedStore
+from app.federation.FederatedStore import FdbException
 from app.transport.SyncRouter import SyncRouter
 from app.store.MemoryStore import MemoryStore
 # we have to test the federation without adelphos
@@ -58,16 +59,20 @@ def fdb1_loc():
 
 def test_set_uri_local(fdb1_loc):
 
-    #fob1 = FedeObClass1()
-
     t1uri = FederatedUriTest(TYPE_T1, 'a')
 
-    # a local uri
-    #uri = AdelphosUri(EAdelphosType.ALIAS_TYPE, None, 
-    #                  name = 'lino', family = 'ferre' )
+    # test of a insert, no transaction no party
+    fob = None
+    with pytest.raises(FdbException):
+        fob = fdb1_loc.create_uri(None, t1uri, 1)
 
-    # the alias 
-    fob = fdb1_loc.create_uri(None, t1uri, 1)
+    t_id = fdb1_loc.begin_transaction()
+    fob = fdb1_loc.create_uri(t_id, t1uri, 1)
 
+    # the object survives a garbage collect, because it has a reference
+    # count of one and it is in the transaction set.
+    fdb1_loc.gc()
 
+    fob_get = fdb1_loc.get_uri_read(t1uri)
+    assert fob.uri == fob_get.uri
 

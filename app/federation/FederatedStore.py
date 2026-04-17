@@ -18,7 +18,6 @@
 # the store exposes a sync interface, but internally it might
 # call async functions.
 
-from app.store.AdelphosStore import AdelphosStore
 
 
 # the FederatedStore uses the transport to access objects which
@@ -34,7 +33,27 @@ from app.store.AdelphosStore import AdelphosStore
 
 # the store has a router it is needed to do remote queries.
 
+import uuid
+
+from app.misc.WrapInt import WrapInt
 from app.transport.RouterProvider import RouterProvider
+from enum import IntEnum
+from datetime import datetime
+from app.federation.FederatedObject import FederatedObject
+
+class EFdbErrors(IntEnum):
+    FDB_OK = 0
+    EFDB_NO_SUCH_TRANSACTION = 1
+    EFDB_NO_LOCAL_URI = 2
+
+
+
+# I have a FdbException
+class FdbException(Exception):
+
+    def __init__(self, error: EFdbErrors, msg = None):
+        super().__init__(msg)
+        self.errno = error
 
 
 # the federated store is not thread safe, but it is transaction safe,
@@ -47,6 +66,25 @@ from app.transport.RouterProvider import RouterProvider
 # any type of uris, as long as they are unique and follow a common interface,
 # the federated uri interface.
 
+
+# the federated transaction collects all changed data in a coherent way.
+# the transaction either it is commited or rolled back in full.
+# the transaction is not durable, unless commited, during the building
+# of the transaction the data is all in memory.
+class FederatedTransaction:
+
+    def __init__(self, tid):
+        self.tid = tid
+        self.working_set = {}
+        self.begin_transaction = datetime.now()
+
+
+    def new_ob(self, fob):
+        pass
+
+
+
+
 class FederatedStore(RouterProvider):
 
 
@@ -55,12 +93,21 @@ class FederatedStore(RouterProvider):
 
         self.db = db
         self.transport = transport
+        self.hostname = hostname
         # you can use a federated store like a local store, in this case
         if transport is not None:
             transport.register_routes(self)
 
         # at first the transaction set is empty
         self.transactions = {}
+
+
+    def is_local_uri(self, uri):
+        if uri.host is None:
+            return True
+        if uri.host == self.hostname:
+            return True
+        return False
 
 
     # the federated store can garbage collect the objects which are not
@@ -138,6 +185,23 @@ class FederatedStore(RouterProvider):
     # creates an object with a certain URI and a certain reference count.
     # only some objects start with a reference count of one.
     def create_uri(self, transaction_id, uri_ob, ref_count = 0):
+
+        # the uri must be local!
+        if self.is_local_uri(uri_ob) == False:
+            raise FdbException(EFdbErrors.EFDB_NO_LOCAL_URI)
+
+        if transaction_id is None:
+            raise FdbException(EFdbErrors.EFDB_NO_SUCH_TRANSACTION)
+        t_ob = self.transactions.get(transaction_id)
+        if t_ob is None:
+            raise FdbException(EFdbErrors.EFDB_NO_SUCH_TRANSACTION)
+        
+        fob = FederatedObject(uri_ob, ref_count)
+        t_ob.new_ob(fob)
+        return fob
+
+
+    def get_uri_read(self, uri_ob):
         pass
 
 
@@ -193,7 +257,11 @@ class FederatedStore(RouterProvider):
     # live in isolation, the object returned must be passed to all the modifying
     # methods.
     def begin_transaction(self):
-        pass
+
+        tid = uuid.uuid4()
+        tob = FederatedTransaction(tid)
+        self.transactions[tid] = tob
+        return tid
 
 
     #def get_and_lock_ob_uri(self, transaction_id, uri, maybe = False):
