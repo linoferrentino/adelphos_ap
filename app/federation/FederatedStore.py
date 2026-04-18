@@ -50,6 +50,9 @@ class EFdbErrors(IntEnum):
     FDB_OK = 0
     EFDB_NO_SUCH_TRANSACTION = 1
     EFDB_NO_LOCAL_URI = 2
+    EFDB_ONLY_LOCAL_STORE = 3
+    EFDB_URI_EXISTS = 4
+    EFDB_NO_SUCH_OB = 5
 
 
 # I have a FdbException
@@ -86,7 +89,26 @@ class FederatedTransaction:
 
 
     def new_ob(self, fob):
-        pass
+        key_uri = fob.uri.unparse()
+
+        if self.modified_uris.get(key_uri) is not None:
+            raise FdbException(EFdbErrors.EFDB_URI_EXISTS)
+
+        if self.deleted_uris.get(key_uri) is not None:
+            del self.deleted_uris[key_uri]
+        
+        self.modified_uris[key_uri] = fob
+
+
+    def get_ob(self, uri_ob):
+
+        key_uri = uri_ob.unparse()
+
+        if self.deleted_uris.get(key_uri) is not None:
+            raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB)
+
+        exist_val = self.modified_uris.get(key_uri)
+        return exist_val
 
 
     def add_read_uri(self, fob):
@@ -222,6 +244,9 @@ class FederatedStore(SocialListener):
 
         t_ob = self.get_tob_safe(t_id)
 
+        if self.db.has_key(uri_ob.unparse()):
+            raise FdbException(EFdbErrors.EFDB_URI_EXISTS)
+
         fob = FederatedObject(uri_ob, ref_count)
         t_ob.new_ob(fob)
         return fob
@@ -234,12 +259,24 @@ class FederatedStore(SocialListener):
 
     def read_ob_in_transaction(self, t_ob, uri_ob):
 
-        # 1. is it local? OK, take it
+        # 1. is it local? OK, take it, and put it into transaction.
+        if self.is_local_uri(uri_ob) == False:
+            if self.social is None:
+                raise FdbException(EFdbErrors.EFDB_ONLY_LOCAL_STORE)
+            return self.read_federated_uri(t_ob, uri_ob)
+
+        # I can simply take the object locally.
+
+        t_ob_in_tx = t_ob.get_ob(uri_ob)
+
+        if t_ob_in_tx is not None:
+            return t_ob_in_tx
+
 
         # 2. it is not local: pass the message to the loop, (async), or call the
         # sync router.
 
-        pass
+
 
 
     def uri_read_no_lock(self, t_id, uri_ob):

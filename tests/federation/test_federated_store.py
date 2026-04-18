@@ -47,14 +47,33 @@ class FederatedUriTest(FederatedUri):
 class FedeObClass1(FederatedObject):
     pass
 
+LOCALHOST = "www.h1.com"
+
 
 @pytest.fixture
 def fdb1_loc():
 
     db = MemoryStore()
-    #sr = SyncRouter()
-    fdg = FederatedStore('www.h1.com', db, None)
+    fdg = FederatedStore(LOCALHOST, db, None)
     return fdg
+
+
+def test_set_uri_local_1(fdb1_loc):
+
+    t1uri = FederatedUriTest(TYPE_T1, 'a', host = LOCALHOST)
+    t_id = fdb1_loc.begin_transaction()
+    fob = fdb1_loc.create_uri(t_id, t1uri, 1)
+    fob_get = fdb1_loc.uri_read_no_lock(t_id, t1uri)
+    assert fob.uri == fob_get.uri
+
+
+def test_set_uri_no_loc(fdb1_loc):
+
+    t1uri = FederatedUriTest(TYPE_T1, 'a', host = 'www.h2.com')
+    t_id = fdb1_loc.begin_transaction()
+    fob = fdb1_loc.create_uri(t_id, t1uri, 1)
+    fob_get = fdb1_loc.uri_read_no_lock(t_id, t1uri)
+    assert fob.uri == fob_get.uri
 
 
 def test_set_uri_local(fdb1_loc):
