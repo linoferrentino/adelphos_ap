@@ -31,7 +31,6 @@ class SocialProvider(RouterProvider):
     
     def __init__(self, transport):
 
-        #self.listener = None
         self.transport = transport
         pass
 
@@ -60,6 +59,11 @@ class SocialProvider(RouterProvider):
 
     def register_listener(self, listener):
         self.listener = listener
+
+
+    # this will retry to pass the message until it succeeds
+    def post_message(self, userid, message):
+        pass
 
 
     # returns the last n messages, they are erased in the inbox, by default

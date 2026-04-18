@@ -73,6 +73,6 @@ def test_set_uri_local(fdb1_loc):
     # count of one and it is in the transaction set.
     fdb1_loc.gc()
 
-    fob_get = fdb1_loc.get_uri_read(t1uri)
+    fob_get = fdb1_loc.uri_read_no_lock(t_id, t1uri)
     assert fob.uri == fob_get.uri
 

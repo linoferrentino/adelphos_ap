@@ -28,6 +28,9 @@
 # #al#lino.ferre@adelphos.it#objects.link
 # the uri can have a fragment, this will lock only the corresponding part.
 
+# Adelphos Database Daemon
+DBSOCIAL_NAME = "AD_DB_D"
+
 
 # the database can have the possibility to know the value of the link
 
@@ -40,12 +43,13 @@ from app.transport.RouterProvider import RouterProvider
 from enum import IntEnum
 from datetime import datetime
 from app.federation.FederatedObject import FederatedObject
+from app.federation.SocialListener import SocialListener
+
 
 class EFdbErrors(IntEnum):
     FDB_OK = 0
     EFDB_NO_SUCH_TRANSACTION = 1
     EFDB_NO_LOCAL_URI = 2
-
 
 
 # I have a FdbException
@@ -75,7 +79,9 @@ class FederatedTransaction:
 
     def __init__(self, tid):
         self.tid = tid
-        self.working_set = {}
+        self.modified_uris = {}
+        self.deleted_uris = {}
+        self.read_uris = {}
         self.begin_transaction = datetime.now()
 
 
@@ -83,23 +89,37 @@ class FederatedTransaction:
         pass
 
 
+    def add_read_uri(self, fob):
+        pass
 
 
-class FederatedStore(RouterProvider):
+# the federated store uses a social network to synchronize to other peers.
+class FederatedStore(SocialListener):
 
 
     # I initialize myself with my hostname to distinguish my own URIs from the others.
-    def __init__(self, hostname, db, transport):
+    def __init__(self, hostname, db, social):
 
         self.db = db
-        self.transport = transport
         self.hostname = hostname
         # you can use a federated store like a local store, in this case
-        if transport is not None:
-            transport.register_routes(self)
+        #if transport is not None:
+        #    transport.register_routes(self)
+        self.social = social
+        if social is not None:
+            social.register_listener(self)
 
         # at first the transaction set is empty
         self.transactions = {}
+
+
+    async def new_post(self, post):
+        pass
+
+
+    # the store has its own async loop which is run forever.
+    async def forever_db_main():
+        pass
 
 
     def is_local_uri(self, uri):
@@ -117,10 +137,15 @@ class FederatedStore(RouterProvider):
 
 
     def get_async_router(self):
+
+        # the async router will start a separated thread and a main loop
         pass
 
 
+    # the sync router won't start another loop
     def register_sync_routes(self, router):
+        router._register_post_route(API_POINT + "/users/(?P<username>.*)", 
+                                   self.info_user_kw, "username")
         pass
 
 
@@ -131,10 +156,6 @@ class FederatedStore(RouterProvider):
 
     def remove_federation_host(self, host):
         pass
-
-
-    #def get_uri_read(self, uri):
-    #    pass
 
 
     #def get_uri_write(self, uri):
@@ -182,27 +203,52 @@ class FederatedStore(RouterProvider):
         self.db.close()
 
 
+    def get_tob_safe(self, t_id):
+        if t_id is None:
+            raise FdbException(EFdbErrors.EFDB_NO_SUCH_TRANSACTION)
+        t_ob = self.transactions.get(t_id)
+        if t_ob is None:
+            raise FdbException(EFdbErrors.EFDB_NO_SUCH_TRANSACTION)
+        return t_ob
+ 
+
     # creates an object with a certain URI and a certain reference count.
     # only some objects start with a reference count of one.
-    def create_uri(self, transaction_id, uri_ob, ref_count = 0):
+    def create_uri(self, t_id, uri_ob, ref_count = 0):
 
         # the uri must be local!
         if self.is_local_uri(uri_ob) == False:
             raise FdbException(EFdbErrors.EFDB_NO_LOCAL_URI)
 
-        if transaction_id is None:
-            raise FdbException(EFdbErrors.EFDB_NO_SUCH_TRANSACTION)
-        t_ob = self.transactions.get(transaction_id)
-        if t_ob is None:
-            raise FdbException(EFdbErrors.EFDB_NO_SUCH_TRANSACTION)
-        
+        t_ob = self.get_tob_safe(t_id)
+
         fob = FederatedObject(uri_ob, ref_count)
         t_ob.new_ob(fob)
         return fob
 
 
-    def get_uri_read(self, uri_ob):
+    # does not belong to a transaction.
+    def uri_snapshot(self, uri_ob):
         pass
+
+
+    def read_ob_in_transaction(self, t_ob, uri_ob):
+
+        # 1. is it local? OK, take it
+
+        # 2. it is not local: pass the message to the loop, (async), or call the
+        # sync router.
+
+        pass
+
+
+    def uri_read_no_lock(self, t_id, uri_ob):
+
+        t_ob = self.get_tob_safe(t_id)
+
+        fob = self.read_ob_in_transaction(t_ob, uri_ob)
+
+        return fob
 
 
     # opens an URI not for update. It will not be part of the transaction, the result
