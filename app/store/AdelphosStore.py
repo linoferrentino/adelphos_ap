@@ -19,6 +19,9 @@
 from abc import ABC, abstractmethod
 
 
+# The store is always in a transaction,
+# but it is NOT thread safe, there is no concept of conflicts, because
+# all the operations are serialized.
 class AdelphosStore(ABC):
 
 
@@ -33,7 +36,35 @@ class AdelphosStore(ABC):
 
 
     @abstractmethod
+    def open(self, conn_string):
+        pass
+
+
+    @abstractmethod
     def close(self):
         pass
 
 
+    @abstractmethod
+    def set(self, key, value):
+        pass
+
+
+    @abstractmethod
+    def get(self, key):
+        pass
+
+
+    @abstractmethod
+    def get_maybe(self, key):
+        pass
+
+    
+    @abstractmethod
+    def has_key(self, key):
+        pass
+
+
+    @abstractmethod
+    def del_key(self, key):
+        pass

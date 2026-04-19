@@ -44,6 +44,8 @@ from enum import IntEnum
 from datetime import datetime
 from app.federation.FederatedObject import FederatedObject
 from app.federation.SocialListener import SocialListener
+from app.federation.FederatedObject import str_to_fob
+import traceback
 
 
 class EFdbErrors(IntEnum):
@@ -89,14 +91,46 @@ class FederatedTransaction:
         self.begin_transaction = datetime.now()
 
 
-    def commit(self):
+    def _check_read_consistency(self):
+        pass
+
+
+    def _do_deletes(self):
+        pass
+
+
+    def _do_updates(self):
+        for k,v in self.modified_uris.items():
+            self._update_uri_str(k, v)
+
+
+    def _update_uri_str(self, key_str, fob):
+        self.fdb.db.set(key_str, fob.to_store_str())
+
+
+    # important! the federated db is not thread safe, but internally it
+    # has an async loop which can give a sort of paralellism
+    def t_commit(self):
 
         # the commit in a federated transaction has become a local commit
-        # in the local db, because all objects have been locked.
+        # in the local db, because all federated objects have been locked.
+        try:
 
-        # check read consistency.
+            self._check_read_consistency()
 
-        pass
+            self._do_deletes()
+
+            self._do_updates()
+
+            # If I am here I can commit the result
+            self.fdb.db.commit()
+
+        except FdbException as fdbex:
+            self.fdb.db.rollback()
+
+        except Exception as ex:
+            traceback.print_exc()
+            raise
 
 
     def new_ob(self, fob):
@@ -120,8 +154,8 @@ class FederatedTransaction:
         return exist_val
 
 
-    def add_read_uri(self, fob):
-        pass
+    def read_ob(self, key_uri, fob):
+        self.read_uris[key_uri] = fob
 
 
 # the federated store uses a social network to synchronize to other peers.
@@ -221,18 +255,6 @@ class FederatedStore(SocialListener):
         pass
 
 
-    def commit(self):
-        self.db.commit()
-
-
-    def rollback(self):
-        self.db.rollback()
-
-
-    def close(self):
-        self.db.close()
-
-
     def get_tob_safe(self, t_id):
         if t_id is None:
             raise FdbException(EFdbErrors.EFDB_NO_SUCH_TRANSACTION)
@@ -265,7 +287,7 @@ class FederatedStore(SocialListener):
         pass
 
 
-    def read_ob_in_transaction(self, t_ob, uri_ob):
+    def read_ob_in_transaction(self, t_ob, uri_ob, maybe = False):
 
         # 1. is it local? OK, take it, and put it into transaction.
         if self.is_local_uri(uri_ob) == False:
@@ -284,11 +306,16 @@ class FederatedStore(SocialListener):
 
         t_ob_str = self.db.get_maybe(key_uri) 
 
-        if t_ob_str is not None:
-            pass
+        if t_ob_str is None:
+            if maybe:
+                return None
+            raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB)
 
-        # 2. it is not local: pass the message to the loop, (async), or call the
-        # sync router.
+        # pass the object read to the transaction.
+        fob = str_to_fob(uri_ob, t_ob_str)
+        t_ob.read_ob(key_uri, fob)
+
+        return fob
 
 
     def uri_read_no_lock(self, t_id, uri_ob):
@@ -323,17 +350,17 @@ class FederatedStore(SocialListener):
         pass
 
 
-    # this is a transaction: update a certain number of federated values.
-    # the idea is to commit all the locked objects.
-    # for now I do not see a use case where you should have a partial transaction.
-    # the commit might fail, if some transaction in the meantime has modified
-    # the same objects.
-    def commit(self, transaction_id):
-        pass
+    ## this is a transaction: update a certain number of federated values.
+    ## the idea is to commit all the locked objects.
+    ## for now I do not see a use case where you should have a partial transaction.
+    ## the commit might fail, if some transaction in the meantime has modified
+    ## the same objects.
+    #def commit(self, transaction_id):
+    #    pass
 
-    
-    def rollback(self, transaction_id):
-        pass
+    #
+    #def rollback(self, transaction_id):
+    #    pass
 
 
     #def set(self, key, value):
@@ -384,7 +411,7 @@ class FederatedStore(SocialListener):
 
     def commit_transaction(self, t_id):
         t_ob = self.get_tob_safe(t_id)
-        t_ob.commit()
+        t_ob.t_commit()
 
 
     #def rollback_transaction(self, transaction_id):

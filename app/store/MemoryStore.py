@@ -65,6 +65,11 @@ class MemoryStore(AdelphosStore):
         self.store = {}
 
 
+    # the memory store is always opened.
+    def open(self, conn_string):
+        pass
+
+
     def set(self, key, value, doLog=True):
         has_key = self.has_key(key)
 
@@ -93,6 +98,10 @@ class MemoryStore(AdelphosStore):
     def has_key(self, key):
         """Determines if the store contains the key."""
         return key in self.store.keys()
+
+
+    def del_key(self, key):
+        self.delete(key)
 
 
     def delete(self, key, doLog=True):
