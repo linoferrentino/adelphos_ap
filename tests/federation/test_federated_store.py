@@ -47,6 +47,7 @@ class FederatedUriTest(FederatedUri):
 class FedeObClass1(FederatedObject):
     pass
 
+
 LOCALHOST = "www.h1.com"
 
 
@@ -54,8 +55,26 @@ LOCALHOST = "www.h1.com"
 def fdb1_loc():
 
     db = MemoryStore()
-    fdg = FederatedStore(LOCALHOST, db, None)
-    return fdg
+    fdb = FederatedStore(LOCALHOST, db, None)
+    return fdb
+
+
+@pytest.fixture
+def fdb1_loc_a(fdb1_loc):
+
+    t1uri = FederatedUriTest(TYPE_T1, 'a')
+    t_id = fdb1_loc.begin_transaction()
+    fob = fdb1_loc.create_uri(t_id, t1uri, 1)
+    fdb1_loc.commit_transaction(t_id)
+    return fdb1_loc
+
+
+def test_after_transaction(fdb1_loc_a):
+
+    t1uri = FederatedUriTest(TYPE_T1, 'a')
+    t_id = fdb1_loc_a.begin_transaction()
+    fob_get = fdb1_loc_a.uri_read_no_lock(t_id, t1uri)
+    t1uri == fob_get.uri
 
 
 def test_set_uri_local_1(fdb1_loc):
@@ -71,9 +90,8 @@ def test_set_uri_no_loc(fdb1_loc):
 
     t1uri = FederatedUriTest(TYPE_T1, 'a', host = 'www.h2.com')
     t_id = fdb1_loc.begin_transaction()
-    fob = fdb1_loc.create_uri(t_id, t1uri, 1)
-    fob_get = fdb1_loc.uri_read_no_lock(t_id, t1uri)
-    assert fob.uri == fob_get.uri
+    with pytest.raises(FdbException):
+        fob = fdb1_loc.create_uri(t_id, t1uri, 1)
 
 
 def test_set_uri_local(fdb1_loc):

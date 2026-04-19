@@ -17,6 +17,18 @@
 
 # a federated object is an object which is identified by a federated uri.
 
+
+# the federated object can be built from a string and serialize itself
+# to a string: 
+
+def fob_to_str(fob):
+    pass
+
+
+def str_to_fob(string):
+    pass
+
+
 class FederatedObject:
 
 

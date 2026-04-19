@@ -12,19 +12,19 @@
 ######################################################
 #
 
-# this is the basic store in adelphos.
+# this is the local basic store in adelphos.
 # We have an implementation in sqlite and in memory,
 # but in theory other might follow
 
 from abc import ABC, abstractmethod
 
 
-# the adelphos store is a federated key/value database,
-# it is able to fetch values from remote instances using a social
-# network (in our case activity pub, but it might be different)
-
-
 class AdelphosStore(ABC):
+
+
+    @abstractmethod
+    def commit(self):
+        pass
 
 
     @abstractmethod
@@ -35,15 +35,5 @@ class AdelphosStore(ABC):
     @abstractmethod
     def close(self):
         pass
-
-    # enumerates the keys with a certain regex calling a callback.
-    #def enumerate_keys_regex(self, regex, callback):
-    #    pass
-
-
-    #@abstractmethod
-    #def init_needed(self):
-    #    pass
-
 
 

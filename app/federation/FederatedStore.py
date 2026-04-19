@@ -80,12 +80,23 @@ class FdbException(Exception):
 # of the transaction the data is all in memory.
 class FederatedTransaction:
 
-    def __init__(self, tid):
+    def __init__(self, tid, fdb):
         self.tid = tid
+        self.fdb = fdb
         self.modified_uris = {}
         self.deleted_uris = {}
         self.read_uris = {}
         self.begin_transaction = datetime.now()
+
+
+    def commit(self):
+
+        # the commit in a federated transaction has become a local commit
+        # in the local db, because all objects have been locked.
+
+        # check read consistency.
+
+        pass
 
 
     def new_ob(self, fob):
@@ -100,14 +111,12 @@ class FederatedTransaction:
         self.modified_uris[key_uri] = fob
 
 
-    def get_ob(self, uri_ob):
+    def get_ob_str(self, uri_str):
 
-        key_uri = uri_ob.unparse()
-
-        if self.deleted_uris.get(key_uri) is not None:
+        if self.deleted_uris.get(uri_str) is not None:
             raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB)
 
-        exist_val = self.modified_uris.get(key_uri)
+        exist_val = self.modified_uris.get(uri_str)
         return exist_val
 
 
@@ -126,7 +135,6 @@ class FederatedStore(SocialListener):
         self.hostname = hostname
         # you can use a federated store like a local store, in this case
         #if transport is not None:
-        #    transport.register_routes(self)
         self.social = social
         if social is not None:
             social.register_listener(self)
@@ -158,17 +166,17 @@ class FederatedStore(SocialListener):
         pass
 
 
-    def get_async_router(self):
+    #def get_async_router(self):
 
-        # the async router will start a separated thread and a main loop
-        pass
+    #    # the async router will start a separated thread and a main loop
+    #    pass
 
 
-    # the sync router won't start another loop
-    def register_sync_routes(self, router):
-        router._register_post_route(API_POINT + "/users/(?P<username>.*)", 
-                                   self.info_user_kw, "username")
-        pass
+    ## the sync router won't start another loop
+    #def register_sync_routes(self, router):
+    #    router._register_post_route(API_POINT + "/users/(?P<username>.*)", 
+    #                               self.info_user_kw, "username")
+    #    pass
 
 
     # this adds a federation host able to share values with myself.
@@ -267,16 +275,20 @@ class FederatedStore(SocialListener):
 
         # I can simply take the object locally.
 
-        t_ob_in_tx = t_ob.get_ob(uri_ob)
+        key_uri = uri_ob.unparse()
+
+        t_ob_in_tx = t_ob.get_ob_str(key_uri)
 
         if t_ob_in_tx is not None:
             return t_ob_in_tx
 
+        t_ob_str = self.db.get_maybe(key_uri) 
+
+        if t_ob_str is not None:
+            pass
 
         # 2. it is not local: pass the message to the loop, (async), or call the
         # sync router.
-
-
 
 
     def uri_read_no_lock(self, t_id, uri_ob):
@@ -342,7 +354,7 @@ class FederatedStore(SocialListener):
     def begin_transaction(self):
 
         tid = uuid.uuid4()
-        tob = FederatedTransaction(tid)
+        tob = FederatedTransaction(tid, self)
         self.transactions[tid] = tob
         return tid
 
@@ -370,8 +382,9 @@ class FederatedStore(SocialListener):
     # item
 
 
-    #def commit_transaction(self, transaction_id):
-    #    pass
+    def commit_transaction(self, t_id):
+        t_ob = self.get_tob_safe(t_id)
+        t_ob.commit()
 
 
     #def rollback_transaction(self, transaction_id):

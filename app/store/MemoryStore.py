@@ -20,6 +20,7 @@ from app.store.AdelphosStore import AdelphosStore
 # https://github.com/zackdever/vsims#
 # here transactions do not nest, however
 
+
 class Block:
     """A block of operations that can be called in reverse order.
 
@@ -116,8 +117,8 @@ class MemoryStore(AdelphosStore):
 
 
     # the memory store is automatically updated.
-    def update(self, ob):
-        pass
+    #def update(self, ob):
+    #    pass
 
 
     # a close automatically rollbacks the last transaction
