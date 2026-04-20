@@ -38,9 +38,9 @@ from app.federation.FdbException import EFdbErrors
 #
 
 def str_to_fob(uri_ob, str_ob):
-    gCon.log(f"loading from {str_ob}")
+    #gCon.log(f"loading from {str_ob}")
     ob = json.loads(str_ob)
-    gCon.log(f"the ob is {ob}")
+    #gCon.log(f"the ob is {ob}")
     fob = FederatedObject(uri_ob, ob = ob, locked = False)
     return fob
 

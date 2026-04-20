@@ -71,6 +71,21 @@ def fdb1_loc_a(fdb1_loc):
     return fdb1_loc
 
 
+def test_write_over_rollback(fdb1_loc_a):
+
+    t1uri = FederatedUriTest(TYPE_T1, 'a')
+    t_id = fdb1_loc_a.begin_transaction()
+    fob_get = fdb1_loc_a.uri_read_lock(t_id, t1uri)
+    fob_get.set_primitive_value('key1', 'val1_new')
+    val = fob_get.get_primitive_value('key1')
+    assert val == 'val1_new'
+    fdb1_loc_a.rollback_transaction(t_id)
+
+    # this should not be possible
+    fob_get.get_primitive_value('key1')
+    assert val == 'val1'
+    
+
 def test_after_transaction(fdb1_loc_a):
 
     t1uri = FederatedUriTest(TYPE_T1, 'a')

@@ -41,12 +41,16 @@ import uuid
 from app.misc.WrapInt import WrapInt
 from app.transport.RouterProvider import RouterProvider
 from enum import IntEnum
+from enum import StrEnum
+from enum import auto
 from datetime import datetime
 from app.federation.FederatedObject import FederatedObject
 from app.federation.SocialListener import SocialListener
 from app.federation.FederatedObject import str_to_fob
 from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
+from app.federation.FederatedUri import FederatedUri
+from dataclasses import dataclass
 
 import traceback
 
@@ -72,9 +76,9 @@ class FederatedTransaction:
     def __init__(self, tid, fdb):
         self.tid = tid
         self.fdb = fdb
-        self.modified_uris = {}
+        self.locked_uris = {} # they might be unmodified, but they belong to this tx
         self.deleted_uris = {}
-        self.read_uris = {}
+        self.read_uris = {} # read only objects.
         self.begin_transaction = datetime.now()
 
 
@@ -87,7 +91,7 @@ class FederatedTransaction:
 
 
     def _do_updates(self):
-        for k,v in self.modified_uris.items():
+        for k,v in self.locked_uris.items():
             self._update_uri_str(k, v)
 
 
@@ -123,13 +127,13 @@ class FederatedTransaction:
     def new_ob(self, fob):
         key_uri = fob.uri.unparse()
 
-        if self.modified_uris.get(key_uri) is not None:
+        if self.locked_uris.get(key_uri) is not None:
             raise FdbException(EFdbErrors.EFDB_URI_EXISTS)
 
         if self.deleted_uris.get(key_uri) is not None:
-            del self.deleted_uris[key_uri]
+            raise FdbException(EFdbErrors.EFDB_URI_DELETED)
         
-        self.modified_uris[key_uri] = fob
+        self.locked_uris[key_uri] = fob
 
 
     def get_ob_str(self, uri_str):
@@ -137,7 +141,7 @@ class FederatedTransaction:
         if self.deleted_uris.get(uri_str) is not None:
             raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB)
 
-        exist_val = self.modified_uris.get(uri_str)
+        exist_val = self.locked_uris.get(uri_str)
         return exist_val
 
 
@@ -145,6 +149,32 @@ class FederatedTransaction:
         self.read_uris[key_uri] = fob
 
 
+class ELockResolution(StrEnum):
+
+    FAIL_FAST = auto()
+    RETRY_TIMEOUT = auto()
+
+
+@dataclass
+class FedStore_ReadCtx:
+    """
+    A simple structure used to store the reading context.
+    
+    This will take care also of the async context used to get the URI from the fediverse
+
+    """
+    uri_ob : FederatedUri
+    t_id : uuid
+    maybe: bool  = False
+    uri_str: str = None
+    must_lock: bool = False 
+    only_local: bool = False
+    lock_resolution : ELockResolution = ELockResolution.FAIL_FAST
+    timeout_deadlock : int = 120
+    tob : FederatedTransaction = None
+    fob : FederatedObject = None
+
+ 
 # the federated store uses a social network to synchronize to other peers.
 class FederatedStore(SocialListener):
 
@@ -185,19 +215,6 @@ class FederatedStore(SocialListener):
     # referenced anymore
     def gc(self):
         pass
-
-
-    #def get_async_router(self):
-
-    #    # the async router will start a separated thread and a main loop
-    #    pass
-
-
-    ## the sync router won't start another loop
-    #def register_sync_routes(self, router):
-    #    router._register_post_route(API_POINT + "/users/(?P<username>.*)", 
-    #                               self.info_user_kw, "username")
-    #    pass
 
 
     # this adds a federation host able to share values with myself.
@@ -271,9 +288,11 @@ class FederatedStore(SocialListener):
         return fob
 
 
-    # does not belong to a transaction.
     def uri_snapshot(self, uri_ob):
+        """ read a snapshot of an object, from this object you CANNOT modify the DB """
         pass
+
+
 
 
     def read_ob_in_transaction(self, t_ob, uri_ob, maybe = False):
@@ -307,11 +326,28 @@ class FederatedStore(SocialListener):
         return fob
 
 
+    def _read_ctx(self, rctx):
+        rctx.tob = self.get_tob_safe(rctx.t_id)
+        rctx.uri_str = rctx.uri_ob.unparse()
+        rctx.fob = rctx.tob.get_ob_str(rctx.uri_str)
+
+
+    def uri_read_lock(self, t_id, uri_ob, lock_resolution = 'fail-fast'):
+        """
+        Reads an object and puts it into the working set of the current transaction.
+    
+        if the object is already locked use the lock_resolution method to know what to do
+        """
+        rctx = FedStore_ReadCtx(uri_ob, t_id, True) 
+        self._read_ctx(rctx)
+        return rctx.fob
+
+
     def uri_read_no_lock(self, t_id, uri_ob):
 
         t_ob = self.get_tob_safe(t_id)
 
-        fob = self.read_ob_in_transaction(t_ob, uri_ob)
+        self.read_ob_in_transaction(t_ob, uri_ob)
 
         return fob
 
