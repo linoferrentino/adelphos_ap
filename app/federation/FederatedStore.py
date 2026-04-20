@@ -45,24 +45,11 @@ from datetime import datetime
 from app.federation.FederatedObject import FederatedObject
 from app.federation.SocialListener import SocialListener
 from app.federation.FederatedObject import str_to_fob
+from app.federation.FdbException import FdbException
+from app.federation.FdbException import EFdbErrors
+
 import traceback
 
-
-class EFdbErrors(IntEnum):
-    FDB_OK = 0
-    EFDB_NO_SUCH_TRANSACTION = 1
-    EFDB_NO_LOCAL_URI = 2
-    EFDB_ONLY_LOCAL_STORE = 3
-    EFDB_URI_EXISTS = 4
-    EFDB_NO_SUCH_OB = 5
-
-
-# I have a FdbException
-class FdbException(Exception):
-
-    def __init__(self, error: EFdbErrors, msg = None):
-        super().__init__(msg)
-        self.errno = error
 
 
 # the federated store is not thread safe, but it is transaction safe,
@@ -277,7 +264,9 @@ class FederatedStore(SocialListener):
         if self.db.has_key(uri_ob.unparse()):
             raise FdbException(EFdbErrors.EFDB_URI_EXISTS)
 
-        fob = FederatedObject(uri_ob, ref_count)
+        # a new object is by definition locked, because it starts in the
+        # transaction
+        fob = FederatedObject(uri_ob, ref_count, locked = True)
         t_ob.new_ob(fob)
         return fob
 

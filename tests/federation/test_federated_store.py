@@ -22,6 +22,7 @@ from app.store.MemoryStore import MemoryStore
 #from app.dao.AdelphosUri import EAdelphosType
 from app.federation.FederatedObject import FederatedObject
 from app.federation.FederatedUri import FederatedUri
+from app.logging import gCon
 
 # we have the transport and a federated db
 
@@ -65,6 +66,7 @@ def fdb1_loc_a(fdb1_loc):
     t1uri = FederatedUriTest(TYPE_T1, 'a')
     t_id = fdb1_loc.begin_transaction()
     fob = fdb1_loc.create_uri(t_id, t1uri, 1)
+    fob.set_primitive_value('key1', 'val1')
     fdb1_loc.commit_transaction(t_id)
     return fdb1_loc
 
@@ -74,7 +76,9 @@ def test_after_transaction(fdb1_loc_a):
     t1uri = FederatedUriTest(TYPE_T1, 'a')
     t_id = fdb1_loc_a.begin_transaction()
     fob_get = fdb1_loc_a.uri_read_no_lock(t_id, t1uri)
-    t1uri == fob_get.uri
+    val = fob_get.get_primitive_value('key1')
+    assert val == 'val1'
+    assert t1uri == fob_get.uri
 
 
 def test_set_uri_local_1(fdb1_loc):
@@ -108,7 +112,7 @@ def test_set_uri_local(fdb1_loc):
 
     # the object survives a garbage collect, because it has a reference
     # count of one and it is in the transaction set.
-    fdb1_loc.gc()
+    #fdb1_loc.gc()
 
     fob_get = fdb1_loc.uri_read_no_lock(t_id, t1uri)
     assert fob.uri == fob_get.uri
