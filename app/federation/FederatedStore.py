@@ -51,8 +51,10 @@ from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
 from app.federation.FederatedUri import FederatedUri
 from dataclasses import dataclass
+from app.logging import gCon
 
 import traceback
+import weakref
 
 
 
@@ -99,6 +101,23 @@ class FederatedTransaction:
         self.fdb.db.set(key_str, fob.to_store_str())
 
 
+    def _release_all_locks(self):
+        for k,v in self.locked_uris.items():
+            gCon.log(f"release lock {v}")
+            v.release_lock()
+            del v
+            
+
+    def t_rollback(self):
+        """ the rollback will release all the locks """
+        try:
+            gCon.log("release all locks")
+            self._release_all_locks()
+        except Exception as ex:
+            traceback.print_exc()
+            self._release_all_locks_emergency()
+
+
     # important! the federated db is not thread safe, but internally it
     # has an async loop which can give a sort of paralellism
     def t_commit(self):
@@ -136,7 +155,7 @@ class FederatedTransaction:
         self.locked_uris[key_uri] = fob
 
 
-    def get_ob_str(self, uri_str):
+    def get_ob(self, uri_str):
 
         if self.deleted_uris.get(uri_str) is not None:
             raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB)
@@ -307,7 +326,7 @@ class FederatedStore(SocialListener):
 
         key_uri = uri_ob.unparse()
 
-        t_ob_in_tx = t_ob.get_ob_str(key_uri)
+        t_ob_in_tx = t_ob.get_ob(key_uri)
 
         if t_ob_in_tx is not None:
             return t_ob_in_tx
@@ -329,7 +348,16 @@ class FederatedStore(SocialListener):
     def _read_ctx(self, rctx):
         rctx.tob = self.get_tob_safe(rctx.t_id)
         rctx.uri_str = rctx.uri_ob.unparse()
-        rctx.fob = rctx.tob.get_ob_str(rctx.uri_str)
+        rctx.fob = rctx.tob.get_ob(rctx.uri_str)
+        if rctx.fob is not None:
+            return
+        t_ob_str = self.db.get_maybe(rctx.uri_str) 
+        if t_ob_str is None:
+            if rctx.maybe:
+                return None
+            raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB)
+        rctx.fob = str_to_fob(rctx.uri_ob, t_ob_str)
+        rctx.tob.read_ob(rctx.uri_str, rctx.fob)
 
 
     def uri_read_lock(self, t_id, uri_ob, lock_resolution = 'fail-fast'):
@@ -340,7 +368,7 @@ class FederatedStore(SocialListener):
         """
         rctx = FedStore_ReadCtx(uri_ob, t_id, True) 
         self._read_ctx(rctx)
-        return rctx.fob
+        return weakref.ref(rctx.fob)
 
 
     def uri_read_no_lock(self, t_id, uri_ob):
@@ -439,6 +467,8 @@ class FederatedStore(SocialListener):
         t_ob.t_commit()
 
 
-    #def rollback_transaction(self, transaction_id):
-    #    pass
+    def rollback_transaction(self, t_id):
+        gCon.log("Rollback")
+        t_ob = self.get_tob_safe(t_id)
+        t_ob.t_rollback()
 

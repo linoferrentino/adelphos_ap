@@ -32,18 +32,12 @@ from app.federation.FdbException import EFdbErrors
 # the federated object can be built from a string and serialize itself
 # to a string: 
 
-#def fob_to_str(fob):
-#    pass
-#
-#
 
 def str_to_fob(uri_ob, str_ob):
-    #gCon.log(f"loading from {str_ob}")
     ob = json.loads(str_ob)
-    #gCon.log(f"the ob is {ob}")
-    fob = FederatedObject(uri_ob, ob = ob, locked = False)
+    obs = FObSerialized(**ob)
+    fob = FederatedObject(uri_ob, ob = obs, locked = False)
     return fob
-
 
 
 # the schema is free: we do not enforce a schema, derived classes should do that
@@ -74,6 +68,11 @@ class FederatedObject:
         else:
             self.ts_locked = False
 
+    
+    def release_lock(self):
+        gCon.log("will release the lock!")
+        pass
+
 
     # gives a string representation of the object suitable to be
     # serialized to the store.
@@ -83,7 +82,7 @@ class FederatedObject:
 
     # Yuou can get a primitive value without locking.
     def get_primitive_value(self, key, maybe = False):
-        return self.ob['fields'][key]
+        return self.ob.fields[key]
 
 
     # you cannot set a primitive value unless the object is locked.
