@@ -84,8 +84,8 @@ def test_write_over_rollback(fdb1_loc_a):
     fdb1_loc_a.rollback_transaction(t_id)
 
     # this should not be possible
-    fob_get().get_primitive_value('key1')
-    assert val == 'val1'
+    with pytest.raises(AttributeError):
+        fob_get().get_primitive_value('key1')
     
 
 def test_after_transaction(fdb1_loc_a):
@@ -93,9 +93,9 @@ def test_after_transaction(fdb1_loc_a):
     t1uri = FederatedUriTest(TYPE_T1, 'a')
     t_id = fdb1_loc_a.begin_transaction()
     fob_get = fdb1_loc_a.uri_read_no_lock(t_id, t1uri)
-    val = fob_get.get_primitive_value('key1')
+    val = fob_get().get_primitive_value('key1')
     assert val == 'val1'
-    assert t1uri == fob_get.uri
+    assert t1uri == fob_get().uri
 
 
 def test_set_uri_local_1(fdb1_loc):
@@ -104,7 +104,7 @@ def test_set_uri_local_1(fdb1_loc):
     t_id = fdb1_loc.begin_transaction()
     fob = fdb1_loc.create_uri(t_id, t1uri, 1)
     fob_get = fdb1_loc.uri_read_no_lock(t_id, t1uri)
-    assert fob.uri == fob_get.uri
+    assert fob.uri == fob_get().uri
 
 
 def test_set_uri_no_loc(fdb1_loc):
@@ -132,5 +132,5 @@ def test_set_uri_local(fdb1_loc):
     #fdb1_loc.gc()
 
     fob_get = fdb1_loc.uri_read_no_lock(t_id, t1uri)
-    assert fob.uri == fob_get.uri
+    assert fob.uri == fob_get().uri
 

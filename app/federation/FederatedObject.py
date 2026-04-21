@@ -33,10 +33,10 @@ from app.federation.FdbException import EFdbErrors
 # to a string: 
 
 
-def str_to_fob(uri_ob, str_ob):
+def str_to_fob(uri_ob, str_ob, locked = False):
     ob = json.loads(str_ob)
     obs = FObSerialized(**ob)
-    fob = FederatedObject(uri_ob, ob = obs, locked = False)
+    fob = FederatedObject(uri_ob, ob = obs, locked = locked)
     return fob
 
 

@@ -57,6 +57,12 @@ import traceback
 import weakref
 
 
+class ELockResolution(StrEnum):
+
+    FAIL_FAST = auto()
+    RETRY_TIMEOUT = auto()
+
+
 
 # the federated store is not thread safe, but it is transaction safe,
 # that is, it is able to memorize different transactions
@@ -102,21 +108,13 @@ class FederatedTransaction:
 
 
     def _release_all_locks(self):
-        for k,v in self.locked_uris.items():
-            gCon.log(f"release lock {v}")
-            v.release_lock()
-            del v
-            
+        self.locked_uris.clear()
+
 
     def t_rollback(self):
         """ the rollback will release all the locks """
-        try:
-            gCon.log("release all locks")
-            self._release_all_locks()
-        except Exception as ex:
-            traceback.print_exc()
-            self._release_all_locks_emergency()
-
+        self._release_all_locks()
+        
 
     # important! the federated db is not thread safe, but internally it
     # has an async loop which can give a sort of paralellism
@@ -168,10 +166,11 @@ class FederatedTransaction:
         self.read_uris[key_uri] = fob
 
 
-class ELockResolution(StrEnum):
-
-    FAIL_FAST = auto()
-    RETRY_TIMEOUT = auto()
+    def read_ob_ctx(self, rctx):
+        if rctx.must_lock:
+            self.locked_uris[rctx.uri_str] = rctx.fob
+        else:
+            self.read_uris[rctx.uri_str] = rctx.fob
 
 
 @dataclass
@@ -230,54 +229,6 @@ class FederatedStore(SocialListener):
         return False
 
 
-    # the federated store can garbage collect the objects which are not
-    # referenced anymore
-    def gc(self):
-        pass
-
-
-    # this adds a federation host able to share values with myself.
-    def add_federation_host(self, host):
-        pass
-
-
-    def remove_federation_host(self, host):
-        pass
-
-
-    #def get_uri_write(self, uri):
-    #    pass
-
-
-    # does a multiple compare and swap operation on the Federated store
-    # as if has happened atomically or not.
-    # every update is a tuple of two FederatedValue.
-    def mcas(self, list_updates): 
-        pass
-
-
-    # locks the current URI, the URI is passed to the queried DB,
-    # and it will update it with other URIs atomically.
-    def grab_and_lock(self, uri):
-        pass
-
-
-    # this does not lock the object which remains property of the federated
-    # store that holds it.
-    def grab_no_lock(self, uri):
-        pass
-
-
-    # this function DOES NOT cross network boundaries.
-    def _internal_mcas(self, ob_past, ob_new):
-        pass
-
-
-    # regains the updated URI which has been updated.
-    def regain_updated_uri(self, uri):
-        pass
-
-
     def get_tob_safe(self, t_id):
         if t_id is None:
             raise FdbException(EFdbErrors.EFDB_NO_SUCH_TRANSACTION)
@@ -312,39 +263,6 @@ class FederatedStore(SocialListener):
         pass
 
 
-
-
-    def read_ob_in_transaction(self, t_ob, uri_ob, maybe = False):
-
-        # 1. is it local? OK, take it, and put it into transaction.
-        if self.is_local_uri(uri_ob) == False:
-            if self.social is None:
-                raise FdbException(EFdbErrors.EFDB_ONLY_LOCAL_STORE)
-            return self.read_federated_uri(t_ob, uri_ob)
-
-        # I can simply take the object locally.
-
-        key_uri = uri_ob.unparse()
-
-        t_ob_in_tx = t_ob.get_ob(key_uri)
-
-        if t_ob_in_tx is not None:
-            return t_ob_in_tx
-
-        t_ob_str = self.db.get_maybe(key_uri) 
-
-        if t_ob_str is None:
-            if maybe:
-                return None
-            raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB)
-
-        # pass the object read to the transaction.
-        fob = str_to_fob(uri_ob, t_ob_str)
-        t_ob.read_ob(key_uri, fob)
-
-        return fob
-
-
     def _read_ctx(self, rctx):
         rctx.tob = self.get_tob_safe(rctx.t_id)
         rctx.uri_str = rctx.uri_ob.unparse()
@@ -356,8 +274,8 @@ class FederatedStore(SocialListener):
             if rctx.maybe:
                 return None
             raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB)
-        rctx.fob = str_to_fob(rctx.uri_ob, t_ob_str)
-        rctx.tob.read_ob(rctx.uri_str, rctx.fob)
+        rctx.fob = str_to_fob(rctx.uri_ob, t_ob_str, rctx.must_lock)
+        rctx.tob.read_ob_ctx(rctx)
 
 
     def uri_read_lock(self, t_id, uri_ob, lock_resolution = 'fail-fast'):
@@ -366,66 +284,16 @@ class FederatedStore(SocialListener):
     
         if the object is already locked use the lock_resolution method to know what to do
         """
-        rctx = FedStore_ReadCtx(uri_ob, t_id, True) 
+        rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = True) 
         self._read_ctx(rctx)
         return weakref.ref(rctx.fob)
 
 
     def uri_read_no_lock(self, t_id, uri_ob):
 
-        t_ob = self.get_tob_safe(t_id)
-
-        self.read_ob_in_transaction(t_ob, uri_ob)
-
-        return fob
-
-
-    # opens an URI not for update. It will not be part of the transaction, the result
-    # is a FederatedValue
-    def open_uri_maybe(self, uri_str):
-        pass
-
-
-    # opens the URI passing it as an object.
-    def open_uri_ob_maybe(self, uri):
-        pass
-
-
-    # gets the object associated with this uri string.
-    # if maybe is True it does not 
-    # this is the generic method, clients may better use the other friendly methods.
-    def open_fv_from_uri_str(self, uri_str, maybe = False, 
-                     only_local = False, lock = False, create_if_not_exist = False):
-        pass
-
-
-    def get_uri_local_maybe(self, uri_str):
-        pass
-
-
-    ## this is a transaction: update a certain number of federated values.
-    ## the idea is to commit all the locked objects.
-    ## for now I do not see a use case where you should have a partial transaction.
-    ## the commit might fail, if some transaction in the meantime has modified
-    ## the same objects.
-    #def commit(self, transaction_id):
-    #    pass
-
-    #
-    #def rollback(self, transaction_id):
-    #    pass
-
-
-    #def set(self, key, value):
-    #    self.db.set(key, value)
-
-
-    #def update(self, ob):
-    #    pass
-
-
-    #def get_maybe(self, key):
-    #    return self.db.get_maybe(key)
+        rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = False) 
+        self._read_ctx(rctx)
+        return weakref.ref(rctx.fob)
 
 
     # the store has the concept of a federated transaction, all transactions
@@ -439,36 +307,12 @@ class FederatedStore(SocialListener):
         return tid
 
 
-    #def get_and_lock_ob_uri(self, transaction_id, uri, maybe = False):
-    #    pass
-
-
-    ## this is used to create a new transaction.
-    #def compare_and_swap_try(self, uri, old_val, new_val):
-    #    pass
-
-
-    #def compare_and_swap_commit(self, uri):
-    #    pass
-
-
-    # the idea of a federated store is that we have a certain number of URIs
-    # to be updated.
-
-    # I want them to be updated all or none, the transaction initiator will
-    # get the resources and then it performs a CAS on all of them.
-
-    # In case of failure it does a SAC (swap and compare) to return to the previous
-    # item
-
-
     def commit_transaction(self, t_id):
         t_ob = self.get_tob_safe(t_id)
         t_ob.t_commit()
 
 
     def rollback_transaction(self, t_id):
-        gCon.log("Rollback")
         t_ob = self.get_tob_safe(t_id)
         t_ob.t_rollback()
 
