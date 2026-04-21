@@ -94,13 +94,26 @@ class FederatedTransaction:
         pass
 
 
-    def _do_deletes(self):
+    def _delete_uri_str(self, k):
         pass
+
+
+    def _do_deletes(self):
+        for k, v in self.deleted_uris.items():
+            self._delete_uri_str(k)
 
 
     def _do_updates(self):
         for k,v in self.locked_uris.items():
+            if v.ob.ref_count == 0:
+                self._delete_uri_str(k)
+            if v.modified == False:
+                return
             self._update_uri_str(k, v)
+
+
+    def _delete_uri_str(self, key_str):
+        self.fdb.db.del_key(key_str)
 
 
     def _update_uri_str(self, key_str, fob):
@@ -255,7 +268,7 @@ class FederatedStore(SocialListener):
         # transaction
         fob = FederatedObject(uri_ob, ref_count, locked = True)
         t_ob.new_ob(fob)
-        return fob
+        return weakref.ref(fob)
 
 
     def uri_snapshot(self, uri_ob):
@@ -289,11 +302,19 @@ class FederatedStore(SocialListener):
         return weakref.ref(rctx.fob)
 
 
-    def uri_read_no_lock(self, t_id, uri_ob):
+    def uri_read_no_lock(self, t_id, uri_ob, maybe = True):
 
-        rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = False) 
+        rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = False, maybe = maybe) 
         self._read_ctx(rctx)
+        if rctx.fob is None:
+            return None
         return weakref.ref(rctx.fob)
+
+
+    # compare and swap the link of three objects taking care of the
+    # reference counts
+    def cas_link(self, tid, parent_ob, key_link, prev_ob, new_ob):
+        pass
 
 
     # the store has the concept of a federated transaction, all transactions

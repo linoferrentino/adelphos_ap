@@ -123,26 +123,50 @@ class FederatedObject:
         prev_link = self.ob.fields.get(key)
 
 
-    #@ensure_lock
-    #def swap_link(self, key, expected_ob, new_ob):
+    @ensure_lock
+    def compare_and_swap_link(self, key, expected_ob, new_ob):
 
-    #    prev_link = self.ob.fields.get(key)
-    #    new_link = val.uri.unparse()
+        prev_link = self.ob.fields.get(key)
 
-    #    if prev_link == new_link:
-    #        if expected_ob == new_ob:
-    #            return
-    #        raise FdbException(EFdbErrors.EFDB_INVALID_URIS)
-    #        
-    #    if expected_ob is not None:
-    #        expected_ob.ob.ref_count -= 1
+        if expected_ob is None:
+            exp_link = None
+        else:
+            exp_link = expected_ob().uri.unparse()
+
+        if prev_link != exp_link:
+            return
+
+        if new_ob is None:
+            new_link = None
+        else:
+            new_link = new_ob().uri.unparse()
+       
+        if prev_link == new_link:
+            return
+
+        if expected_ob is not None:
+            expected_ob()._dec_ref_ob()
+
+        if new_ob is not None:
+            new_ob()._inc_ref_ob()
+
+        self.ob.fields[key] = new_link
+        self.modified = True
 
 
+    @ensure_lock
+    def _dec_ref_ob(self):
+        assert self.ob.ref_count > 0
+        self.ob.ref_count -= 1
+        self.modified = True
 
 
-    #    val.ob.ref_count += 1
-    #    
-    #    pass
+    @ensure_lock
+    def _inc_ref_ob(self):
+        # 0 is valid, it might be created in this transaction.
+        assert self.ob.ref_count >= 0
+        self.ob.ref_count += 1
+        self.modified = True
 
 
     @ensure_lock

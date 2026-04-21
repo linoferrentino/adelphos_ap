@@ -70,7 +70,7 @@ def fdb1_loc_a(fdb1_loc):
     t1uri = FederatedUriTest(TYPE_T1, 'a')
     t_id = fdb1_loc.begin_transaction()
     fob = fdb1_loc.create_uri(t_id, t1uri, 1)
-    fob.set_primitive_value('key1', 'val1')
+    fob().set_primitive_value('key1', 'val1')
     fdb1_loc.commit_transaction(t_id)
     return fdb1_loc
 
@@ -79,13 +79,22 @@ def test_link1(fdb1_loc_a):
 
     t1uri = FederatedUriTest(TYPE_T1, 'a')
     t2uri = FederatedUriTest(TYPE_T2, 'a')
+    t2urib = FederatedUriTest(TYPE_T2, 'b')
     t_id = fdb1_loc_a.begin_transaction()
 
     fob2 = fdb1_loc_a.create_uri(t_id, t2uri)
+    fob2_b = fdb1_loc_a.create_uri(t_id, t2urib)
     fob1 = fdb1_loc_a.uri_read_lock(t_id, t1uri)
-    #fob1().swap_link('uses', None, fob2)
+    fob1().compare_and_swap_link('uses', None, fob2)
+    fdb1_loc_a.commit_transaction(t_id)
 
+    t_id = fdb1_loc_a.begin_transaction()
 
+    fob_get = fdb1_loc_a.uri_read_no_lock(t_id, t2uri)
+    assert fob_get() != None
+     
+    fob_get = fdb1_loc_a.uri_read_no_lock(t_id, t2urib, True)
+    assert fob_get == None
 
 
 def test_write_over_rollback(fdb1_loc_a):
@@ -126,7 +135,7 @@ def test_set_uri_local_1(fdb1_loc):
     t_id = fdb1_loc.begin_transaction()
     fob = fdb1_loc.create_uri(t_id, t1uri, 1)
     fob_get = fdb1_loc.uri_read_no_lock(t_id, t1uri)
-    assert fob.uri == fob_get().uri
+    assert fob().uri == fob_get().uri
 
 
 def test_set_uri_no_loc(fdb1_loc):
@@ -149,10 +158,6 @@ def test_set_uri_local(fdb1_loc):
     t_id = fdb1_loc.begin_transaction()
     fob = fdb1_loc.create_uri(t_id, t1uri, 1)
 
-    # the object survives a garbage collect, because it has a reference
-    # count of one and it is in the transaction set.
-    #fdb1_loc.gc()
-
     fob_get = fdb1_loc.uri_read_no_lock(t_id, t1uri)
-    assert fob.uri == fob_get().uri
+    assert fob().uri == fob_get().uri
 
