@@ -49,6 +49,10 @@ class FedeObClass1(FederatedObject):
     pass
 
 
+class FedeObClass2(FederatedObject):
+    pass
+
+
 LOCALHOST = "www.h1.com"
 
 
@@ -71,6 +75,19 @@ def fdb1_loc_a(fdb1_loc):
     return fdb1_loc
 
 
+def test_link1(fdb1_loc_a):
+
+    t1uri = FederatedUriTest(TYPE_T1, 'a')
+    t2uri = FederatedUriTest(TYPE_T2, 'a')
+    t_id = fdb1_loc_a.begin_transaction()
+
+    fob2 = fdb1_loc_a.create_uri(t_id, t2uri)
+    fob1 = fdb1_loc_a.uri_read_lock(t_id, t1uri)
+    #fob1().swap_link('uses', None, fob2)
+
+
+
+
 def test_write_over_rollback(fdb1_loc_a):
 
     t1uri = FederatedUriTest(TYPE_T1, 'a')
@@ -86,6 +103,11 @@ def test_write_over_rollback(fdb1_loc_a):
     # this should not be possible
     with pytest.raises(AttributeError):
         fob_get().get_primitive_value('key1')
+
+    t_id = fdb1_loc_a.begin_transaction()
+    fob_get = fdb1_loc_a.uri_read_no_lock(t_id, t1uri)
+    val = fob_get().get_primitive_value('key1')
+    assert val == 'val1'
     
 
 def test_after_transaction(fdb1_loc_a):

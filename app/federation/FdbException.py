@@ -22,6 +22,8 @@ class EFdbErrors(IntEnum):
     EFDB_URI_EXISTS = 4
     EFDB_NO_SUCH_OB = 5
     EFDB_NO_LOCK_ON_OB = 6
+    EFDB_INVALID_VAL_TYPE = 7
+    EFDB_INVALID_URIS = 8
 
 
 # I have a FdbException

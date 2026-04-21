@@ -19,6 +19,7 @@ import dataclasses
 from datetime import datetime
 import json
 from app.logging import gCon
+from enum import IntEnum
 
 from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
@@ -40,6 +41,28 @@ def str_to_fob(uri_ob, str_ob, locked = False):
     return fob
 
 
+def ensure_lock(func):
+
+    def _locked_or_croak(self, *args, **kwargs):
+        if self.ts_locked is None:
+            raise FdbException(EFdbErrors.EFDB_NO_LOCK_ON_OB)
+        return func(self, *args, **kwargs)
+
+    return _locked_or_croak
+
+
+def ensure_val_type(atype):
+    def ensure_this_type(func):
+        def is_val_type_or_die(self, key, val):
+            if isinstance(val, atype) == False:
+                raise FdbException(EFdbErrors.EFDB_INVALID_VAL_TYPE)
+            return func(self, key, val)
+        return is_val_type_or_die
+    return ensure_this_type
+
+#want_val_FederatedObject = ensure_val_type(FederatedObject)
+
+
 # the schema is free: we do not enforce a schema, derived classes should do that
 # this is the object as it is stored permanently
 @dataclass
@@ -47,6 +70,23 @@ class FObSerialized:
     version: int
     ref_count: int
     fields: dict = field(default_factory = dict)
+
+
+class FederatedColumnType(IntEnum):
+
+    INTEGER = 0
+    STRING = 1
+    REAL = 2
+    DATETIME = 3
+    BOOL = 4
+    URI = 5
+    ARRAY = 6
+
+
+class FederatedObSchemaTbl(dict):
+
+    pass
+
 
 
 class FederatedObject:
@@ -58,36 +98,58 @@ class FederatedObject:
     # every other object is dependent (in some way or another) with an alias.
     def __init__(self, uri, ref_count = 0, ob = None, locked = False):
         self.uri = uri
-        # the object internally is a simple dict
+        self.modified = False
+
         if ob is None:
             self.ob = FObSerialized(0, ref_count)
         else:
             self.ob = ob
+
         if locked:
             self.ts_locked = datetime.now() 
         else:
             self.ts_locked = False
 
     
-    def release_lock(self):
-        gCon.log("will release the lock!")
-        pass
-
-
-    # gives a string representation of the object suitable to be
-    # serialized to the store.
     def to_store_str(self):
         return json.dumps(asdict(self.ob))
 
 
-    # Yuou can get a primitive value without locking.
     def get_primitive_value(self, key, maybe = False):
         return self.ob.fields[key]
 
 
-    # you cannot set a primitive value unless the object is locked.
+    def get_link(self, key):
+        prev_link = self.ob.fields.get(key)
+
+
+    #@ensure_lock
+    #def swap_link(self, key, expected_ob, new_ob):
+
+    #    prev_link = self.ob.fields.get(key)
+    #    new_link = val.uri.unparse()
+
+    #    if prev_link == new_link:
+    #        if expected_ob == new_ob:
+    #            return
+    #        raise FdbException(EFdbErrors.EFDB_INVALID_URIS)
+    #        
+    #    if expected_ob is not None:
+    #        expected_ob.ob.ref_count -= 1
+
+
+
+
+    #    val.ob.ref_count += 1
+    #    
+    #    pass
+
+
+    @ensure_lock
+    @ensure_val_type(str)
     def set_primitive_value(self, key, val):
-        if self.ts_locked is None:
-            raise FdbException(EFdbErrors.EFDB_NO_LOCK_ON_OB)
-        self.ob.fields[key] = val
+        if self.ob.fields.get(key) != val:
+            self.ob.fields[key] = val
+            self.modified = True
+
 
