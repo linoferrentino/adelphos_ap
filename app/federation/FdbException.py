@@ -24,6 +24,9 @@ class EFdbErrors(IntEnum):
     EFDB_NO_LOCK_ON_OB = 6
     EFDB_INVALID_VAL_TYPE = 7
     EFDB_INVALID_URIS = 8
+    EFDB_UNKNOWN_TYPE = 9
+    EFDB_REQUIRED_FAMILY_MISSING = 10
+    EFDB_FAMILY_NOT_WANTED = 11
 
 
 # I have a FdbException

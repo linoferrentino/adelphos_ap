@@ -50,6 +50,7 @@ from app.federation.FederatedObject import str_to_fob
 from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
 from app.federation.FederatedUri import FederatedUri
+from app.federation.FederatedFactory import FederatedFactory
 from dataclasses import dataclass
 from app.logging import gCon
 
@@ -91,10 +92,7 @@ class FederatedTransaction:
 
 
     def _check_read_consistency(self):
-        pass
-
-
-    def _delete_uri_str(self, k):
+        # XXX to do
         pass
 
 
@@ -104,19 +102,18 @@ class FederatedTransaction:
 
 
     def _do_updates(self):
-        gCon.log("BEGIN UPDATES")
         for k,v in self.locked_uris.items():
-            gCon.log(f"locked {v.uri} ref {v.ob.ref_count}")
             if v.ob.ref_count == 0:
                 self._delete_uri_str(k)
                 continue
             if v.modified == False:
+                # XXX check read consistency
                 continue
             self._update_uri_str(k, v)
+        self.locked_uris.clear()
 
 
     def _delete_uri_str(self, key_str):
-        gCon.log(f"[red]DELETE {key_str}[/red]")
         self.fdb.db.del_key(key_str)
 
 
@@ -168,6 +165,20 @@ class FederatedTransaction:
             raise FdbException(EFdbErrors.EFDB_URI_DELETED)
         
         self.locked_uris[key_uri] = fob
+
+
+    def exists_ob(self, key_uri):
+
+        if self.deleted_uris.get(key_uri) is not None:
+            return False
+
+        if self.read_uris.get(key_uri) is not None:
+            return True
+
+        if self.locked_uris.get(key_uri) is not None:
+            return True
+
+        return None
 
 
     def get_ob(self, uri_str):
@@ -265,12 +276,59 @@ class FederatedStore(SocialListener):
 
         t_ob = self.get_tob_safe(t_id)
 
-        if self.db.has_key(uri_ob.unparse()):
-            raise FdbException(EFdbErrors.EFDB_URI_EXISTS)
+        self.ensure_uri_not_existing(t_ob, uri_ob)
 
         # a new object is by definition locked, because it starts in the
         # transaction
         fob = FederatedObject(uri_ob, ref_count, locked = True)
+        t_ob.new_ob(fob)
+        return weakref.ref(fob)
+
+
+    def _is_present_uri(self, t_ob, uri):
+        key_uri = uri.unparse()
+
+        exists_trx = t_ob.exists_ob(key_uri)
+
+        if exists_trx is None:
+            exists_trx = self.db.has_key(key_uri)
+
+        return exists_trx
+
+
+    def ensure_uri_not_existing(self, t_ob, uri):
+
+        exists_trx = self._is_present_uri(t_ob, uri)
+
+        if exists_trx == True:
+            raise FdbException(EFdbErrors.EFDB_URI_EXISTS)
+
+
+    def new_ob(self, t_id, ob_type, name, family = None, fields = {}):
+
+        registrar = FederatedFactory.get_registrar(ob_type)
+        if registrar is None:
+            raise FdbException(EFdbErrors.EFDB_UNKNOWN_TYPE)
+
+        if registrar.needs_family == True:
+            if family is None:
+                raise FdbException(EFdbErrors.EFDB_REQUIRED_FAMILY_MISSING)
+        else:
+            if family is not None:
+                raise FdbException(EFdbErrors.EFDB_FAMILY_NOT_WANTED)
+
+        uri = FederatedFactory.uri_constructor(ob_type, name, family)
+        
+        t_ob = self.get_tob_safe(t_id)
+
+        self.ensure_uri_not_existing(t_ob, uri)
+
+        if registrar.first_class:
+            ref_count = 1
+        else:
+            ref_count = 0
+
+        fob = registrar.constructor(uri, ref_count, fields = fields, locked = True)
         t_ob.new_ob(fob)
         return weakref.ref(fob)
 
@@ -313,12 +371,6 @@ class FederatedStore(SocialListener):
         if rctx.fob is None:
             return None
         return weakref.ref(rctx.fob)
-
-
-    # compare and swap the link of three objects taking care of the
-    # reference counts
-    def cas_link(self, tid, parent_ob, key_link, prev_ob, new_ob):
-        pass
 
 
     # the store has the concept of a federated transaction, all transactions

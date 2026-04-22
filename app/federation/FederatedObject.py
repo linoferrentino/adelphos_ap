@@ -60,7 +60,15 @@ def ensure_val_type(atype):
         return is_val_type_or_die
     return ensure_this_type
 
-#want_val_FederatedObject = ensure_val_type(FederatedObject)
+
+def enforce_schema(func):
+    def _inner_enforce(self, key, val):
+        schema = self.get_schema()
+        if schema is not None:
+            gCon.log(f"enforcing!!!!! {key}")
+        return func(self, key, val)
+
+    return _inner_enforce
 
 
 # the schema is free: we do not enforce a schema, derived classes should do that
@@ -80,13 +88,21 @@ class FederatedColumnType(IntEnum):
     DATETIME = 3
     BOOL = 4
     URI = 5
-    ARRAY = 6
 
 
-class FederatedObSchemaTbl(dict):
+class FederatedColumnMultiplicityType(IntEnum):
 
-    pass
+    SINGLE_VALUE = 0
+    ARRAY = 1
+    LIST = 2
+    STACK = 3
 
+
+class FederatedColumnRequiredType(IntEnum):
+
+    REQUIRED_NO_DEFAULT = 0
+    NO_REQUIRED_DEFAULT_NULL = 1
+    NO_REQUIRED_DEFAULT_VALUE = 2
 
 
 class FederatedObject:
@@ -96,7 +112,7 @@ class FederatedObject:
     # they start with a reference count of zero.
     # In adelphos the only 1st class objects are the aliases.
     # every other object is dependent (in some way or another) with an alias.
-    def __init__(self, uri, ref_count = 0, ob = None, locked = False):
+    def __init__(self, uri, ref_count = 0, ob = None, locked = False, **kwargs):
         self.uri = uri
         self.modified = False
 
@@ -108,7 +124,17 @@ class FederatedObject:
         if locked:
             self.ts_locked = datetime.now() 
         else:
-            self.ts_locked = False
+            self.ts_locked = None
+
+        schema = self.__class__.get_schema()
+        if schema is None:
+            return
+        fields = kwargs['fields']
+
+
+    @classmethod
+    def get_schema(cls):
+        return None
 
     
     def to_store_str(self):
@@ -158,7 +184,6 @@ class FederatedObject:
     def _dec_ref_ob(self):
         assert self.ob.ref_count > 0
         self.ob.ref_count -= 1
-        gCon.log(f"{self.uri} DEC new ref count {self.ob.ref_count}")
         self.modified = True
 
 
@@ -167,12 +192,12 @@ class FederatedObject:
         # 0 is valid, it might be created in this transaction.
         assert self.ob.ref_count >= 0
         self.ob.ref_count += 1
-        gCon.log(f"{self.uri} INC new ref count {self.ob.ref_count}")
         self.modified = True
 
 
     @ensure_lock
     @ensure_val_type(str)
+    @enforce_schema
     def set_primitive_value(self, key, val):
         if self.ob.fields.get(key) != val:
             self.ob.fields[key] = val

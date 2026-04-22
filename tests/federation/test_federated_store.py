@@ -17,11 +17,10 @@ from app.federation.FederatedStore import FederatedStore
 from app.federation.FederatedStore import FdbException
 from app.transport.SyncRouter import SyncRouter
 from app.store.MemoryStore import MemoryStore
-# we have to test the federation without adelphos
-#from app.dao.AdelphosUri import AdelphosUri
-#from app.dao.AdelphosUri import EAdelphosType
 from app.federation.FederatedObject import FederatedObject
 from app.federation.FederatedUri import FederatedUri
+from app.federation.FederatedFactory import FederatedFactory
+from app.federation.FederatedFactory import FederatedFactoryRegistrar
 from app.logging import gCon
 
 # we have the transport and a federated db
@@ -44,21 +43,44 @@ class FederatedUriTest(FederatedUri):
         return base_name
 
 
-# we test with these two objects
+
 class FedeObClass1(FederatedObject):
 
+    _schema = {
+            'key_int' : 'i',
+            'key_str' : 's',
+    }
 
-    def __init__(self, name):
-        uri = FederatedUriTest(TYPE_T1, name)
-        super().__init__(uri)
+    def __init__(self, uri, ref_count, **kwargs):
+        super().__init__(uri, ref_count, **kwargs)
+
+
+    @classmethod
+    def get_schema(cls):
+        return cls._schema
 
 
 class FedeObClass2(FederatedObject):
 
 
-    def __init__(self, name):
-        uri = FederatedUriTest(TYPE_T2, name)
-        super().__init__(uri)
+    def __init__(self, uri, ref_count, **kwargs):
+        super().__init__(uri, ref_count, **kwargs)
+
+
+FederatedFactory.set_uri_constructor(FederatedUriTest)
+
+# we test with these two objects
+class FedeClass1Factory(FederatedFactory):
+
+    reg = FederatedFactoryRegistrar(FedeObClass1, True, False)
+    FederatedFactory._register_ob_type(TYPE_T1, reg)
+
+
+class FedeClass2Factory(FederatedFactory):
+
+    reg = FederatedFactoryRegistrar(FedeObClass2, False, False)
+    FederatedFactory._register_ob_type(TYPE_T2, reg)
+
 
 
 LOCALHOST = "www.h1.com"
@@ -70,6 +92,20 @@ def fdb1_loc():
     db = MemoryStore()
     fdb = FederatedStore(LOCALHOST, db, None)
     return fdb
+
+
+#def fdb1_fac(fdb1_loc):
+#    fdb1_loc.set_factory(FederatedFactory)
+
+
+def test_new_object_f(fdb1_loc):
+
+    t_id = fdb1_loc.begin_transaction()
+
+    fob1 = fdb1_loc.new_ob(t_id, TYPE_T1, "ob1")
+    assert fob1 != None
+
+    fdb1_loc.commit_transaction(t_id)
 
 
 @pytest.fixture
@@ -96,6 +132,7 @@ def fdb1_link_a(fdb1_loc_a):
     fdb1_loc_a.commit_transaction(t_id)
 
     return fdb1_loc_a
+
  
 
 def test_link2(fdb1_link_a):
