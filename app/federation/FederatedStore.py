@@ -104,15 +104,19 @@ class FederatedTransaction:
 
 
     def _do_updates(self):
+        gCon.log("BEGIN UPDATES")
         for k,v in self.locked_uris.items():
+            gCon.log(f"locked {v.uri} ref {v.ob.ref_count}")
             if v.ob.ref_count == 0:
                 self._delete_uri_str(k)
+                continue
             if v.modified == False:
-                return
+                continue
             self._update_uri_str(k, v)
 
 
     def _delete_uri_str(self, key_str):
+        gCon.log(f"[red]DELETE {key_str}[/red]")
         self.fdb.db.del_key(key_str)
 
 
@@ -291,7 +295,7 @@ class FederatedStore(SocialListener):
         rctx.tob.read_ob_ctx(rctx)
 
 
-    def uri_read_lock(self, t_id, uri_ob, lock_resolution = 'fail-fast'):
+    def uri_read_lock(self, t_id, uri_ob):
         """
         Reads an object and puts it into the working set of the current transaction.
     
@@ -302,7 +306,7 @@ class FederatedStore(SocialListener):
         return weakref.ref(rctx.fob)
 
 
-    def uri_read_no_lock(self, t_id, uri_ob, maybe = True):
+    def uri_read_no_lock(self, t_id, uri_ob, maybe = False):
 
         rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = False, maybe = maybe) 
         self._read_ctx(rctx)

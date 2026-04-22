@@ -158,6 +158,7 @@ class FederatedObject:
     def _dec_ref_ob(self):
         assert self.ob.ref_count > 0
         self.ob.ref_count -= 1
+        gCon.log(f"{self.uri} DEC new ref count {self.ob.ref_count}")
         self.modified = True
 
 
@@ -166,6 +167,7 @@ class FederatedObject:
         # 0 is valid, it might be created in this transaction.
         assert self.ob.ref_count >= 0
         self.ob.ref_count += 1
+        gCon.log(f"{self.uri} INC new ref count {self.ob.ref_count}")
         self.modified = True
 
 

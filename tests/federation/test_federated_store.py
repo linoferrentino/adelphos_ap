@@ -46,11 +46,19 @@ class FederatedUriTest(FederatedUri):
 
 # we test with these two objects
 class FedeObClass1(FederatedObject):
-    pass
+
+
+    def __init__(self, name):
+        uri = FederatedUriTest(TYPE_T1, name)
+        super().__init__(uri)
 
 
 class FedeObClass2(FederatedObject):
-    pass
+
+
+    def __init__(self, name):
+        uri = FederatedUriTest(TYPE_T2, name)
+        super().__init__(uri)
 
 
 LOCALHOST = "www.h1.com"
@@ -73,6 +81,60 @@ def fdb1_loc_a(fdb1_loc):
     fob().set_primitive_value('key1', 'val1')
     fdb1_loc.commit_transaction(t_id)
     return fdb1_loc
+
+
+@pytest.fixture
+def fdb1_link_a(fdb1_loc_a):
+
+    t1uri = FederatedUriTest(TYPE_T1, 'a')
+    t2uri = FederatedUriTest(TYPE_T2, 'a')
+    t_id = fdb1_loc_a.begin_transaction()
+
+    fob2 = fdb1_loc_a.create_uri(t_id, t2uri)
+    fob1 = fdb1_loc_a.uri_read_lock(t_id, t1uri)
+    fob1().compare_and_swap_link('uses', None, fob2)
+    fdb1_loc_a.commit_transaction(t_id)
+
+    return fdb1_loc_a
+ 
+
+def test_link2(fdb1_link_a):
+
+    t1uri = FederatedUriTest(TYPE_T1, 'a')
+    t2uri_old = FederatedUriTest(TYPE_T2, 'a')
+    t2uri_new = FederatedUriTest(TYPE_T2, 'b')
+
+    t_id = fdb1_link_a.begin_transaction()
+
+    fob1 = fdb1_link_a.uri_read_lock(t_id, t1uri)
+    fob2_old = fdb1_link_a.uri_read_lock(t_id, t2uri_old)
+    fob2_new = fdb1_link_a.create_uri(t_id, t2uri_new)
+    fob1().compare_and_swap_link('uses', fob2_old, fob2_new)
+
+    fdb1_link_a.commit_transaction(t_id)
+
+    t_id = fdb1_link_a.begin_transaction()
+
+    fob_get = fdb1_link_a.uri_read_no_lock(t_id, t2uri_old, True)
+    assert fob_get == None
+
+    fob_get = fdb1_link_a.uri_read_no_lock(t_id, t2uri_new)
+    assert fob_get() != None
+     
+
+def test_link1_new(fdb1_link_a):
+
+    t2uri = FederatedUriTest(TYPE_T2, 'a')
+    t2urib = FederatedUriTest(TYPE_T2, 'b')
+
+    t_id = fdb1_link_a.begin_transaction()
+
+    fob_get = fdb1_link_a.uri_read_no_lock(t_id, t2uri)
+    assert fob_get() != None
+     
+    fob_get = fdb1_link_a.uri_read_no_lock(t_id, t2urib, True)
+    assert fob_get == None
+
 
 
 def test_link1(fdb1_loc_a):
