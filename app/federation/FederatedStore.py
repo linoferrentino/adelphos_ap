@@ -227,7 +227,7 @@ class FederatedStore(SocialListener):
 
 
     # I initialize myself with my hostname to distinguish my own URIs from the others.
-    def __init__(self, hostname, db, social):
+    def __init__(self, hostname, db, social, schema_init):
 
         self.db = db
         self.hostname = hostname
@@ -239,6 +239,8 @@ class FederatedStore(SocialListener):
 
         # at first the transaction set is empty
         self.transactions = {}
+
+        schema_init()
 
 
     async def new_post(self, post):

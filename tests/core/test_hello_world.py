@@ -13,7 +13,6 @@
 #
 
 import pytest
-from app.core.Adelphos import Adelphos
 from app.core.EAdErrno import EAdErrno
 from app.core.AdelphosDao import AdelphosDao
 from app.store.MemoryStore import MemoryStore

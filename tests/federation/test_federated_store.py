@@ -77,20 +77,26 @@ class FedeObClass2(FederatedObject):
         super().__init__(uri, ref_count, **kwargs)
 
 
-FederatedFactory.set_uri_constructor(FederatedUriTest)
 
 # we test with these two objects
-class FedeClass1Factory(FederatedFactory):
+#class FedeClass1Factory(FederatedFactory):
+#
+#    reg = FederatedFactoryRegistrar(FedeObClass1, True, False)
+#    FederatedFactory._register_ob_type(TYPE_T1, reg)
+#
+#
+#class FedeClass2Factory(FederatedFactory):
+#
+#    reg = FederatedFactoryRegistrar(FedeObClass2, False, False)
+#    FederatedFactory._register_ob_type(TYPE_T2, reg)
 
+
+def my_test_schema_init():
+    FederatedFactory.set_uri_constructor(FederatedUriTest)
     reg = FederatedFactoryRegistrar(FedeObClass1, True, False)
     FederatedFactory._register_ob_type(TYPE_T1, reg)
-
-
-class FedeClass2Factory(FederatedFactory):
-
     reg = FederatedFactoryRegistrar(FedeObClass2, False, False)
     FederatedFactory._register_ob_type(TYPE_T2, reg)
-
 
 
 LOCALHOST = "www.example.com"
@@ -103,7 +109,7 @@ LOCALHOST3 = "127.0.0.1"
 def fdb1_loc():
 
     db = MemoryStore()
-    fdb = FederatedStore(LOCALHOST, db, None)
+    fdb = FederatedStore(LOCALHOST, db, None, my_test_schema_init)
     return fdb
 
 
@@ -134,8 +140,12 @@ def test_new_object_f(fdb1_loc):
     assert fob1() is None
 
     t1uri = FederatedUriTest(TYPE_T1, 'ob1', None, LOCALHOST)
+    t1uri_1 = FederatedUriTest(TYPE_T1, 'ob1', None, LOCALHOST1)
     t_id = fdb1_loc.begin_transaction()
     fob1 = fdb1_loc.uri_read_no_lock(t_id, t1uri)
+    val_int = fob1().get_primitive_value('key_int')
+    assert val_int == 99
+    fob1 = fdb1_loc.uri_read_no_lock(t_id, t1uri_1)
     val_int = fob1().get_primitive_value('key_int')
     assert val_int == 99
 

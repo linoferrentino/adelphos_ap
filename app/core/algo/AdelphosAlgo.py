@@ -19,16 +19,16 @@
 # it has not a concept of a social network, this
 # is on another layer on top of it.
 
-from app.dao.FamilyDao import FamilyDao
-from app.dao.AliasDao import AliasDao
-from app.core.EAdErrno import EAdErrno
-from app.core.FamilyModel import FamilyModel
-from app.core.AliasModel import AliasModel
-from app.core.BaseIdModel import AD_INVALID_ID
-from app.core.BaseModel import BaseModel
+#from app.dao.FamilyDao import FamilyDao
+#from app.dao.AliasDao import AliasDao
+#from app.core.EAdErrno import EAdErrno
+#from app.core.FamilyModel import FamilyModel
+#from app.core.AliasModel import AliasModel
+#from app.core.BaseIdModel import AD_INVALID_ID
+#from app.core.BaseModel import BaseModel
 from app.core.algo.AliasAlgo import AliasAlgo
-from app.logging import gCon
-from argon2 import PasswordHasher
+#from app.logging import gCon
+#from argon2 import PasswordHasher
 
 
 # the local model is always consistent. Every method called
@@ -45,8 +45,8 @@ class AdelphosAlgo:
         self.fdb = fdb 
 
         # model part
-        self.family_model  = FamilyModel(self.fdb)
-        self.alias_model   = AliasModel(self.fdb)
+        #self.family_model  = FamilyModel(self.fdb)
+        #self.alias_model   = AliasModel(self.fdb)
 
         # controller part
         self.alias_algo    = AliasAlgo(self)

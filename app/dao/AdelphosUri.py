@@ -93,11 +93,9 @@ class EAdelphosType(StrEnum):
 
 
 @dataclass
-class AdelphosUri:
+class AdelphosUri_deprecated:
 
     obj_type: EAdelphosType
-    # URi cannot be numeric any more 
-    #is_numeric: bool
     host_name: str
 
     _ : dataclasses.KW_ONLY

@@ -19,42 +19,73 @@ from app.core.AdelphosCoreException import AdelphosCoreException
 import traceback
 
 # decorator to do the commit fence.
-def commit_or_errno(func):
+#def commit_or_errno(func):
+#
+#    def internal_commit(self, *args, **kwargs):
+#        t_id = self.kernel.fdb.begin_transaction()
+#        kwargs['t_id'] = t_id
+#        try:
+#            res = func(self, *args, **kwargs)
+#            self.kernel.fdb.commit_transaction(t_id)
+#            return res 
+#        except AdelphosCoreException as ex:
+#            #traceback.print_exc()
+#            self.instance.fdb.rollback_transaction(t_id)
+#            return -ex.errno
+#        except Exception as exc:
+#            traceback.print_exc()
+#            self.kernel.fdb.rollback_transaction(t_id)
+#            return -EAdErrno.ESYS
+#
+#    return internal_commit
+#
+#
+## decorator to commit only in case of success,
+## rollback otherwise.
+#def commit_or_raise(func):
+#
+#    def internal_commit(self, *args, **kwargs):
+#        try:
+#            res = func(self, *args, **kwargs)
+#            self.instance.fdb.commit()
+#            return res 
+#        except Exception as exc:
+#            traceback.print_exc()
+#            self.instance.fdb.rollback()
+#            # re raise!
+#            raise
+#
+#    return internal_commit
 
-    def internal_commit(self, *kwargs):
-        try:
-            res = func(self, *kwargs)
-            self.instance.fdb.commit()
-            return res 
-        except AdelphosCoreException as ex:
-            #traceback.print_exc()
-            self.instance.fdb.rollback()
-            return -ex.errno
-            raise
-        except Exception as exc:
-            traceback.print_exc()
-            self.instance.fdb.rollback()
-            return -EAdErrno.ESYS
-            raise
-
-    return internal_commit
 
 
-# decorator to commit only in case of success,
-# rollback otherwise.
-def commit_or_raise(func):
+def federated_transaction(raise_if_fail = True):
 
-    def internal_commit(self, *kwargs):
-        try:
-            res = func(self, *kwargs)
-            self.instance.fdb.commit()
-            return res 
-        except Exception as exc:
-            traceback.print_exc()
-            self.instance.fdb.rollback()
-            # re raise!
-            raise
+    def commit_or_die_maybe(func):
 
-    return internal_commit
+        def internal_commit(self, *args, **kwargs):
+            t_id = self.kernel.fdb.begin_transaction()
+            kwargs['t_id'] = t_id
+            try:
+                res = func(self, *args, **kwargs)
+                self.kernel.fdb.commit_transaction(t_id)
+                return res 
+            except AdelphosCoreException as ex:
+                traceback.print_exc()
+                self.instance.fdb.rollback_transaction(t_id)
+                if raise_if_fail == False:
+                    return -ex.errno
+                raise
+            except Exception as exc:
+                traceback.print_exc()
+                self.kernel.fdb.rollback_transaction(t_id)
+                if raise_if_fail == False:
+                    return -EAdErrno.ESYS
+                raise
+
+        return internal_commit
+
+    return commit_or_die_maybe
+
 
 

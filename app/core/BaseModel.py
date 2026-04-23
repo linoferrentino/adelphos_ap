@@ -95,35 +95,4 @@ class BaseModel(ABC):
         return new_ob
 
 
-    #def open_uri():
-    #    pass
-
-
-    #def open_id():
-    #    pass
-
-
-    #def create():
-    #    pass
-
-
-    #def update():
-    #    pass
-
-
-    #def delete():
-    #    pass
-
-
-    #def read(field):
-    #    pass
-
-
-    #def as_dict(self):
-    #    pass
-
-
-    #def update_dict():
-    #    pass
-
 

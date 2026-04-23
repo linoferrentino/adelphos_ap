@@ -13,7 +13,7 @@
 #
 
 import pytest
-from app.core.Adelphos import Adelphos
+#from app.core.Adelphos import Adelphos
 from app.core.EAdErrno import EAdErrno
 #from app.core.MemoryAdelphosDao import MemoryAdelphosDao
 from app.core.AdelphosDao import AdelphosDao
@@ -23,6 +23,7 @@ from app.federation.MemoryAdelphosSocial import MemoryAdelphosSocial
 from app.dao.AdelphosDb import AdelphosDb
 from app.core.algo.AdelphosAlgo import AdelphosAlgo 
 from app.federation.FederatedStore import FederatedStore
+from app.core.model.schema import adelphos_schema
 
 # this is the local world
 #@pytest.fixture(scope = "module")
@@ -30,7 +31,7 @@ from app.federation.FederatedStore import FederatedStore
 def w_local():
 
     db = MemoryStore()
-    fdb = FederatedStore('www.h1.com', db, None)
+    fdb = FederatedStore('www.h1.com', db, None, adelphos_schema)
     model = AdelphosAlgo(fdb)
     return model 
 
