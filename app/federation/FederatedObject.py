@@ -80,7 +80,7 @@ class FObSerialized:
     fields: dict = field(default_factory = dict)
 
 
-class FederatedColumnType(IntEnum):
+class FObColType(IntEnum):
 
     INTEGER = 0
     STRING = 1
@@ -90,19 +90,28 @@ class FederatedColumnType(IntEnum):
     URI = 5
 
 
-class FederatedColumnMultiplicityType(IntEnum):
+class FObCardType(IntEnum):
 
-    SINGLE_VALUE = 0
+    SCALAR = 0
     ARRAY = 1
     LIST = 2
     STACK = 3
 
 
-class FederatedColumnRequiredType(IntEnum):
+class FObReqType(IntEnum):
 
-    REQUIRED_NO_DEFAULT = 0
+    REQUIRED = 0
     NO_REQUIRED_DEFAULT_NULL = 1
     NO_REQUIRED_DEFAULT_VALUE = 2
+
+
+@dataclass
+class FObColumnDefinition:
+
+    typecol : FObColType
+    cardinality : FObCardType
+    required : FObReqType = FObReqType.NO_REQUIRED_DEFAULT_NULL
+    default_value : object = None
 
 
 class FederatedObject:
@@ -110,26 +119,81 @@ class FederatedObject:
 
     # there are some objects which do not exist in isolation.
     # they start with a reference count of zero.
-    # In adelphos the only 1st class objects are the aliases.
-    # every other object is dependent (in some way or another) with an alias.
     def __init__(self, uri, ref_count = 0, ob = None, locked = False, **kwargs):
         self.uri = uri
-        self.modified = False
 
         if ob is None:
             self.ob = FObSerialized(0, ref_count)
+            self.modified = True
         else:
             self.ob = ob
+            self.modified = False
 
         if locked:
             self.ts_locked = datetime.now() 
         else:
+            assert ob is not None
             self.ts_locked = None
 
         schema = self.__class__.get_schema()
-        if schema is None:
+        if (schema is None) or (ob is not None):
             return
-        fields = kwargs['fields']
+
+        self._enforce_schema_init(schema, kwargs['fields'])
+
+
+    @staticmethod
+    def _enforce_type(col_val, col_type):
+        match col_type:
+            case FObColType.INTEGER:
+                exp_type = int
+            case FObColType.STRING:
+                exp_type = str
+            case FObColType.REAL:
+                exp_type = float
+            case FObColType.BOOL:
+                exp_type = bool
+            case _:
+                exp_type = None
+
+        if exp_type is not None:
+            if isinstance(col_val, exp_type) == False:
+                raise FdbException(EFdbErrors.INVALID_COLUMN_TYPE, 
+                f"exp {exp_type} found {type(col_val)}")
+            return col_val
+
+        assert col_type == FObColType.DATETIME
+
+
+    @staticmethod
+    def _enforce_not_uri(cold_def):
+        if cold_def != FObColType.URI:
+            return
+        raise FdbException(EFdbErrors.EFDB_URIS_MUST_BE_NULLS)
+
+
+    def _enforce_schema_init(self, schema, fields):
+
+        for col_name, col_def in schema.items():
+
+            if col_def.cardinality != FObCardType.SCALAR:
+                self.ob.fields[col_name] = []
+                continue
+
+            col_val = None
+            match col_def.required:
+                case FObReqType.REQUIRED:
+                    FederatedObject._enforce_not_uri(col_def.typecol)
+                    col_val = fields.get(col_name)
+                    if col_val is None:
+                        raise FdbException(EFdbErrors.EFDB_REQUIRED_FIELD_MISSING, col_name) 
+                    col_val = FederatedObject._enforce_type(col_val, col_def.typecol)
+                case FObReqType.NO_REQUIRED_DEFAULT_NULL:
+                    pass
+                case FObReqType.NO_REQUIRED_DEFAULT_VALUE:
+                    FederatedObject._enforce_not_uri(col_def.typecol)
+                    col_val = col_def.default_value
+            self.ob.fields[col_name] = col_val
 
 
     @classmethod

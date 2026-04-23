@@ -37,6 +37,7 @@ DBSOCIAL_NAME = "AD_DB_D"
 # the store has a router it is needed to do remote queries.
 
 import uuid
+import copy
 
 from app.misc.WrapInt import WrapInt
 from app.transport.RouterProvider import RouterProvider
@@ -268,11 +269,14 @@ class FederatedStore(SocialListener):
 
     # creates an object with a certain URI and a certain reference count.
     # only some objects start with a reference count of one.
+    # deprecated, use new_ob instead
     def create_uri(self, t_id, uri_ob, ref_count = 0):
 
         # the uri must be local!
         if self.is_local_uri(uri_ob) == False:
             raise FdbException(EFdbErrors.EFDB_NO_LOCAL_URI)
+
+        uri_ob = self.remove_localhost(uri_ob)
 
         t_ob = self.get_tob_safe(t_id)
 
@@ -338,8 +342,23 @@ class FederatedStore(SocialListener):
         pass
 
 
+    def remove_localhost(self, uriob):
+        if uriob.host is None:
+            return uriob
+        gCon.log(f"[blue]uri is {uriob}[/blue], my host is {self.hostname}")
+        if ((uriob.host == self.hostname) or
+            (uriob.host == '::1') or
+            (uriob.host == 'localhost') or
+            (uriob.host == '127.0.0.1')):
+            copied_uri = copy.copy(uriob)
+            copied_uri.host = None
+            return copied_uri
+        return uriob
+
+
     def _read_ctx(self, rctx):
         rctx.tob = self.get_tob_safe(rctx.t_id)
+        rctx.uri_ob = self.remove_localhost(rctx.uri_ob)
         rctx.uri_str = rctx.uri_ob.unparse()
         rctx.fob = rctx.tob.get_ob(rctx.uri_str)
         if rctx.fob is not None:
@@ -348,7 +367,7 @@ class FederatedStore(SocialListener):
         if t_ob_str is None:
             if rctx.maybe:
                 return None
-            raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB)
+            raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB, rctx.uri_str)
         rctx.fob = str_to_fob(rctx.uri_ob, t_ob_str, rctx.must_lock)
         rctx.tob.read_ob_ctx(rctx)
 

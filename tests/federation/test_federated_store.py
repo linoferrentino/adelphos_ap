@@ -18,6 +18,8 @@ from app.federation.FederatedStore import FdbException
 from app.transport.SyncRouter import SyncRouter
 from app.store.MemoryStore import MemoryStore
 from app.federation.FederatedObject import FederatedObject
+from app.federation.FederatedObject import FObColumnDefinition, FObColType, \
+        FObCardType, FObReqType
 from app.federation.FederatedUri import FederatedUri
 from app.federation.FederatedFactory import FederatedFactory
 from app.federation.FederatedFactory import FederatedFactoryRegistrar
@@ -33,13 +35,13 @@ TYPE_T2 = "TYPE_T2"
 class FederatedUriTest(FederatedUri):
 
     def unparse(self):
-        base_name = "XX" + self.ob_type + "/" + self.name
+        base_name = "XX_test_type_" + self.ob_type + "/name=" + self.name
         if self.family is not None:
-            base_name += f"_f{self.family}"
+            base_name += f"/fam=_f{self.family}"
         if self.host is not None:
-            base_name += f"_f{self.host}"
+            base_name += f"_@f{self.host}"
         if self.fragment is not None:
-            base_name += f"_f{self.fragment}"
+            base_name += f"_#f{self.fragment}"
         return base_name
 
 
@@ -47,8 +49,16 @@ class FederatedUriTest(FederatedUri):
 class FedeObClass1(FederatedObject):
 
     _schema = {
-            'key_int' : 'i',
-            'key_str' : 's',
+            'key_int' : FObColumnDefinition(
+                FObColType.INTEGER,
+                FObCardType.SCALAR,
+                FObReqType.REQUIRED
+                ),
+            'key_str' : FObColumnDefinition(
+                FObColType.STRING,
+                FObCardType.SCALAR,
+                FObReqType.NO_REQUIRED_DEFAULT_NULL
+                )
     }
 
     def __init__(self, uri, ref_count, **kwargs):
@@ -83,7 +93,10 @@ class FedeClass2Factory(FederatedFactory):
 
 
 
-LOCALHOST = "www.h1.com"
+LOCALHOST = "www.example.com"
+LOCALHOST1 = "::1"
+LOCALHOST2 = "localhost"
+LOCALHOST3 = "127.0.0.1"
 
 
 @pytest.fixture
@@ -102,10 +115,29 @@ def test_new_object_f(fdb1_loc):
 
     t_id = fdb1_loc.begin_transaction()
 
-    fob1 = fdb1_loc.new_ob(t_id, TYPE_T1, "ob1")
+    fields = {
+            'key_int' : 99
+            }
+
+    fob1 = fdb1_loc.new_ob(t_id, TYPE_T1, "ob1", fields = fields)
     assert fob1 != None
+    val_int = fob1().get_primitive_value('key_int')
+    assert val_int == 99
+    val_str = fob1().get_primitive_value('key_str')
+    assert val_str is None
+
+    with pytest.raises(KeyError):
+        val_str = fob1().get_primitive_value('key_str111')
 
     fdb1_loc.commit_transaction(t_id)
+
+    assert fob1() is None
+
+    t1uri = FederatedUriTest(TYPE_T1, 'ob1', None, LOCALHOST)
+    t_id = fdb1_loc.begin_transaction()
+    fob1 = fdb1_loc.uri_read_no_lock(t_id, t1uri)
+    val_int = fob1().get_primitive_value('key_int')
+    assert val_int == 99
 
 
 @pytest.fixture
