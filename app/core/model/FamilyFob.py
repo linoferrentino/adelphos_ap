@@ -12,7 +12,7 @@
 ######################################################
 #
 
-# the federated object alias
+# the model part for the family
 
 from app.federation.FederatedObject import FederatedObject
 from app.federation.FederatedObject import FObColumnDefinition, FObColType, \
@@ -24,29 +24,18 @@ from app.core.model.AdelphosUri import EAdelphosType
 from app.federation.FederatedFactory import FederatedFactory
 from app.federation.FederatedFactory import FederatedFactoryRegistrar
 
-class AliasFob(FederatedObject):
+
+class FamilyFob(FederatedObject):
 
     @classmethod
     def register_class(cls):
-        reg = FederatedFactoryRegistrar(cls, True, True)
+        reg = FederatedFactoryRegistrar(cls, False, False)
         FederatedFactory._register_ob_type(cls._type, reg)
  
 
-    _type = EAdelphosType.ALIAS_TYPE
+    _type = EAdelphosType.FAMILY_TYPE
 
     _schema = {
-
-            'actor_id' : FObColumnDefinition(
-                FObColType.INTEGER,
-                FObCardType.SCALAR,
-                FObReqType.REQUIRED
-                ),
-
-            'password' : FObColumnDefinition(
-                FObColType.STRING,
-                FObCardType.SCALAR,
-                FObReqType.REQUIRED
-                ),
 
     }
 

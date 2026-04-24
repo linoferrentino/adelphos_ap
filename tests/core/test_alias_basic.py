@@ -46,12 +46,12 @@ def test_add_alias(w_local):
 
 def test_add_dup_family(w_local):
 
-    lino_id = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
-    assert lino_id > 0
-    alice_id = w_local.alias_algo.alias_create(0, 'alice', 'famal', 'pass99')
-    assert alice_id > 0
-    bob_id = w_local.alias_algo.alias_create(0, 'bob', 'ferre', 'pass')
-    assert bob_id == -EAdErrno.EDUPLICATED_FAMILY
+    lino_ob = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
+    assert lino_ob is not None
+    alice_ob = w_local.alias_algo.alias_create(0, 'alice', 'famal', 'pass99')
+    assert alice_ob is not None
+    bob_ob = w_local.alias_algo.alias_create(0, 'bob', 'ferre', 'pass')
+    assert bob_ob == -EAdErrno.EDUPLICATED_FAMILY
 
 
 def test_login_pass(w_local):

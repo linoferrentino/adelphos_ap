@@ -12,16 +12,22 @@
 ######################################################
 #
 
-from app.federation.FederatedFactory import FederatedFactory
-from app.core.model.AdelphosUri import AdelphosUri
+# the algorithmic part for the families.
 
-from app.core.model.AliasFob import AliasFob
 from app.core.model.FamilyFob import FamilyFob
 
-def adelphos_schema():
+class FamilyAlgo:
 
-    FederatedFactory.set_uri_constructor(AdelphosUri)
-    
-    AliasFob.register_class()
-    FamilyFob.register_class()
+
+    def __init__(self, kernel):
+        self.kernel = kernel 
+
+
+    def exists_family(self, family_name):
+
+        uri_fam = FamilyFob.get_uri(family_name)
+
+        return False
+
+
 

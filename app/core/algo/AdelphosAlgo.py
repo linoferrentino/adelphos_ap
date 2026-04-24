@@ -27,6 +27,7 @@
 #from app.core.BaseIdModel import AD_INVALID_ID
 #from app.core.BaseModel import BaseModel
 from app.core.algo.AliasAlgo import AliasAlgo
+from app.core.algo.FamilyAlgo import FamilyAlgo
 #from app.logging import gCon
 #from argon2 import PasswordHasher
 
@@ -50,5 +51,6 @@ class AdelphosAlgo:
 
         # controller part
         self.alias_algo    = AliasAlgo(self)
+        self.family_algo   = FamilyAlgo(self)
 
 

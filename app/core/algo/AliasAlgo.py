@@ -29,6 +29,7 @@ from argon2 import PasswordHasher
 #from app.core.algo.utils import commit_or_errno
 #from app.core.algo.utils import commit_or_raise
 from app.core.algo.utils import federated_transaction
+from app.core.algo.FamilyAlgo import FamilyAlgo
 from app.core.model.AliasFob import AliasFob
 #from app.dao.AdelphosUri import uriparse_type
 #from app.dao.AdelphosUri import EAdelphosType
@@ -41,14 +42,6 @@ class AliasAlgo:
 
     def __init__(self, kernel):
         self.kernel = kernel 
-
-
-    #@commit_or_errno
-    #def alias_create_uri(self, actor_id, alias_uri_str, password_clear):
-    #    pass
-    #    #alias_uri = uriparse_type(alias_uri_str, EAdelphosType.ALIAS_TYPE)
-    #    #return self._alias_create_impl(actor_id, alias_uri.name, 
-    #    #    alias_uri.family, password_clear)
 
 
     #@commit_or_errno

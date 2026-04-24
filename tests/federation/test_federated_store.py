@@ -69,6 +69,12 @@ class FedeObClass1(FederatedObject):
     def get_schema(cls):
         return cls._schema
 
+    
+    @classmethod
+    def register_class(cls):
+        reg = FederatedFactoryRegistrar(FedeObClass1, True, False)
+        FederatedFactory._register_ob_type(TYPE_T1, reg)
+
 
 class FedeObClass2(FederatedObject):
 
@@ -77,26 +83,18 @@ class FedeObClass2(FederatedObject):
         super().__init__(uri, ref_count, **kwargs)
 
 
-
-# we test with these two objects
-#class FedeClass1Factory(FederatedFactory):
-#
-#    reg = FederatedFactoryRegistrar(FedeObClass1, True, False)
-#    FederatedFactory._register_ob_type(TYPE_T1, reg)
-#
-#
-#class FedeClass2Factory(FederatedFactory):
-#
-#    reg = FederatedFactoryRegistrar(FedeObClass2, False, False)
-#    FederatedFactory._register_ob_type(TYPE_T2, reg)
+    @classmethod
+    def register_class(cls):
+        reg = FederatedFactoryRegistrar(FedeObClass2, False, False)
+        FederatedFactory._register_ob_type(TYPE_T2, reg)
 
 
 def my_test_schema_init():
+
     FederatedFactory.set_uri_constructor(FederatedUriTest)
-    reg = FederatedFactoryRegistrar(FedeObClass1, True, False)
-    FederatedFactory._register_ob_type(TYPE_T1, reg)
-    reg = FederatedFactoryRegistrar(FedeObClass2, False, False)
-    FederatedFactory._register_ob_type(TYPE_T2, reg)
+
+    FedeObClass1.register_class()
+    FedeObClass2.register_class()
 
 
 LOCALHOST = "www.example.com"
@@ -112,9 +110,6 @@ def fdb1_loc():
     fdb = FederatedStore(LOCALHOST, db, None, my_test_schema_init)
     return fdb
 
-
-#def fdb1_fac(fdb1_loc):
-#    fdb1_loc.set_factory(FederatedFactory)
 
 
 def test_new_object_f(fdb1_loc):
