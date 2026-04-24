@@ -23,12 +23,13 @@
 #from app.core.BaseModel import BaseModel
 #from app.logging import gCon
 #import traceback
-#from argon2 import PasswordHasher
+from argon2 import PasswordHasher
 #from app.core.AdelphosCoreException import AdelphosCoreException
 #
 #from app.core.algo.utils import commit_or_errno
 #from app.core.algo.utils import commit_or_raise
 from app.core.algo.utils import federated_transaction
+from app.core.model.AliasFob import AliasFob
 #from app.dao.AdelphosUri import uriparse_type
 #from app.dao.AdelphosUri import EAdelphosType
 #
@@ -54,7 +55,19 @@ class AliasAlgo:
     @federated_transaction(raise_if_fail = False)
     def alias_create(self, actor_id, name, family, password, t_id):
         #return self._alias_create_impl(actor_id, alias_name, alias_family, password_clear)
-        pass
+
+        ph = PasswordHasher()
+        pass_hashed = ph.hash(password)
+
+        fields = {
+                'actor_id' : actor_id,
+                'password': pass_hashed
+        }
+
+        fob1 = self.kernel.fdb.new_ob(t_id, AliasFob._type, name, family, fields = fields)
+
+        return fob1
+ 
 
 
     # this can be called also externally to create the root alias
