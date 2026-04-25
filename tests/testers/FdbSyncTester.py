@@ -12,6 +12,13 @@
 ######################################################
 #
 
+import contextlib
+from app.transport.SyncRouter import SyncRouter
+from app.ap_api.ActivityPubMockup import ActivityPubMockup
+from app.ap_api.ActivityPubMockup import ActivityPubMockupConfig
+from app.federation.FederatedStore import FederatedStore
+
+
 # this is the sync equivalent of AdelphosApp class
 class FdbSyncTester(SyncRouter):
 
@@ -25,10 +32,11 @@ class FdbSyncTester(SyncRouter):
 
         try:
 
-            social = ActivityPubMockup(config, True, self)
-            fdb = FederatedStore(host, db, social, schema_init)
+            config = ActivityPubMockupConfig(self, host)
+            social = ActivityPubMockup(config)
+            self.fdb = FederatedStore(host, db, social, schema_init)
 
-            yield fdb 
+            yield
 
         finally:
 

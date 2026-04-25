@@ -17,6 +17,7 @@
 import time
 import re
 import json
+from dataclasses import dataclass
 
 from app.dao.AdelphosDb import AdelphosDb
 from fastapi import APIRouter, FastAPI, WebSocket
@@ -43,6 +44,7 @@ from app.transport.SyncRouter import SyncRouter
 from app.dao.ApServerDao import ApServerDao
 from app.dao.ApActorDao import ApActorDao
 from app.transport.RouterProvider import RouterProvider
+from app.transport.AbstractTransport import AbstractTransport
 
 
 
@@ -105,7 +107,9 @@ class ActivityPubRouter(APIRouter):
 
 
         # the last route is added only in case of test instance.
-        if apsrv.do_srv == False:
+        flag = apsrv.do_srv
+        del apsrv.do_srv
+        if flag == False:
             return
 
 
@@ -128,20 +132,29 @@ class ActivityPubSyncRouter(SyncRouter):
         super()._register_post_route('/user/(.*)/inbox', ap_mockup.user_inbox_sync)
 
 
+
+@dataclass
+class ActivityPubMockupConfig:
+    transport : AbstractTransport
+    host : str
+    db_name : str = ":memory:"
+    key_file_name : str = ":memory:"
+    do_srv : bool = False
+
+
 # this ActivityPub object is also a gateway, it gets the POST messages that
 # come from the outside and, if they correspond to real users it will post them
 # in the users's inbox.
 class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
 
 
-    def __init__(self, config, do_srv, transport):
+    def __init__(self, config):
         #self.app = app
 
         #db_name = config['General']['db_name']
         db = AdelphosDb(':memory:')
 
-        self.config = config
-        self.transport = transport
+        self.transport = config.transport
         self.users = {}
         self.current_logged_user = None
         self.ap_api = ActivityPubApi(self)
@@ -153,9 +166,9 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
         self.ap_server_dao = ApServerDao(db)
 
         self.ap_gateway = ActivityPubGateway(self)
-        self.do_srv = do_srv
+        self.do_srv = config.do_srv
 
-        key_file = self.config[GENERAL_SECTION][PRIVATE_KEY_FILE_KEY]
+        key_file = config.key_file_name
         (pub_key, priv_key) = load_keys(key_file)
         self.public_key = pub_key
         self.private_key = priv_key
@@ -205,8 +218,6 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
 
         host = self.config['General']['host']
         host_api = host + API_POINT
-
-        instance = self.config['General']['name'] 
 
         response_ob = {
             "@context": [
@@ -283,11 +294,6 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
         router._register_get_route("/.well-known/webfinger", self.webfinger_kw, "resource")
         router._register_get_route(API_POINT + "/users/(?P<username>.*)", 
                                    self.info_user_kw, "username")
-
-
-    #def is_test_instance(self):
-    #    test_instance = re.match("_test_", self .instance) is not None
-    #    return test_instance
 
 
     def ensure_logged_user(func):
@@ -388,18 +394,18 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
         return ('actor', activity_pub_user, f"Mockup actor for instance {instance}")
 
 
-    def create_test_users_OLD(self):
+    #def create_test_users_OLD(self):
 
-        if (self.app.config.get('demo_users') is None):
-            gCon.log("no demo users defined")
-            return
+    #    if (self.app.config.get('demo_users') is None):
+    #        gCon.log("no demo users defined")
+    #        return
 
-        demo_users = self.app.config['demo_users']
+    #    demo_users = self.app.config['demo_users']
 
-        for demo_user in demo_users:
-            is_root = demo_user.get('root') == True
-            self.create_demo_user(demo_user['name'], demo_user['alias'],
-                        demo_user['password'], is_root)
+    #    for demo_user in demo_users:
+    #        is_root = demo_user.get('root') == True
+    #        self.create_demo_user(demo_user['name'], demo_user['alias'],
+    #                    demo_user['password'], is_root)
 
 
     # SocialProvider interface.

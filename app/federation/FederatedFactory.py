@@ -32,6 +32,10 @@ class FederatedFactory:
     registrars = dict()
     uri_constructor = None
 
+    # TODO 
+    #schema_id = None
+    #schema_version = None
+
 
     @classmethod
     def set_uri_constructor(cls, uri_const):
