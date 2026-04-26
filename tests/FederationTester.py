@@ -18,6 +18,7 @@
 import contextlib
 from app.transport.AbstractTransport import AbstractGateway
 from tests.TestResponse import TestResponse
+from urllib.parse import urlsplit
 
 
 class FederationTester(AbstractGateway):
@@ -38,11 +39,27 @@ class FederationTester(AbstractGateway):
 
     def add_hosts(self, hosts):
 
-        self.hosts.append(hosts)
+        self.hosts.extend(hosts)
+
+
+    def _get_routable_host(self, url):
+        urls = urlsplit(url)
+        if urls.scheme != 'https':
+            raise Exception(f"invalid scheme {urls.scheme}")
+
+        for host in self.hosts:
+            if urls.netloc != host.hostname:
+                continue
+            return (urls, host)
+
+        raise Exception(f"No route to host {urls.netloc}")
 
 
     def post_json(self, url, json):
-        return TestResponse(202, None)
+
+        (urls, host) = self._get_routable_host(url)
+        response = host.post_json(urls, json)
+        return response 
 
 
     def get_json(self, url):

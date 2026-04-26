@@ -32,6 +32,8 @@ class FdbSyncTester(SyncRouter):
 
         try:
 
+            self.hostname = host
+
             config = ActivityPubMockupConfig(self, host)
             social = ActivityPubMockup(config)
             self.fdb = FederatedStore(host, db, social, schema_init)

@@ -56,4 +56,7 @@ def federation(fdb1, fdb2):
 
 def test_sync_fdbs(federation):
 
-    assert True
+    response = federation.post_json(f'https://{LOCALHOST}/_backdoor_api_/login', 
+                                    json = None)
+    assert response.status_code == 202
+
