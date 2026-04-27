@@ -29,7 +29,6 @@
 # the uri can have a fragment, this will lock only the corresponding part.
 
 # Adelphos Database Daemon
-DBSOCIAL_NAME = "AD_DB_D"
 
 
 # the database can have the possibility to know the value of the link
@@ -52,6 +51,8 @@ from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
 from app.federation.FederatedUri import FederatedUri
 from app.federation.FederatedFactory import FederatedFactory
+from app.federation.SocialGateway import SocialGateway
+from app.federation.FederatedStoreApi import FederatedStoreApi
 from dataclasses import dataclass
 from app.logging import gCon
 
@@ -223,7 +224,7 @@ class FedStore_ReadCtx:
 
  
 # the federated store uses a social network to synchronize to other peers.
-class FederatedStore(SocialListener):
+class FederatedStore:
 
 
     # I initialize myself with my hostname to distinguish my own URIs from the others.
@@ -232,9 +233,7 @@ class FederatedStore(SocialListener):
         self.db = db
         self.hostname = hostname
 
-        self.social = social
-        if social is not None:
-            social.create_or_register_user(DBSOCIAL_NAME, True, self)
+        self.fede_api = FederatedStoreApi(social)
 
         # at first the transaction set is empty
         self.transactions = {}
@@ -357,8 +356,8 @@ class FederatedStore(SocialListener):
 
 
     def _read_remote_ctx(self, rctx):
+        pass
 
-        self.social.post_message("user", "giveme object")
 
 
     def _read_ctx(self, rctx):
