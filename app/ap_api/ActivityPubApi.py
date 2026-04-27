@@ -12,6 +12,8 @@
 ######################################################
 #
 
+import traceback
+
 # This is the module which gives services to interact with the Fediverse
 # and give to Adelphos the translation to its objects.
 from app.api.AdelphosException import AdelphosException
@@ -69,6 +71,7 @@ class ActivityPubApi:
         try:
             return self.get_or_discover_actor_impl(fediverse_actor_str)
         except AdelphosException as adex:
+            traceback.print_exc()
             if (maybe == True):
                 gCon.log(f"Got exception while discovering actor {adex}")
                 return (None, None)

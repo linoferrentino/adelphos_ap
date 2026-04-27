@@ -28,7 +28,7 @@ from tests.FederationTester import FederationTester
 
 
 @pytest.fixture
-def fdb1():
+def fdbt1():
 
     db = MemoryStore()
     tester = FdbSyncTester()
@@ -37,7 +37,7 @@ def fdb1():
 
 
 @pytest.fixture
-def fdb2():
+def fdbt2():
 
     db = MemoryStore()
     tester = FdbSyncTester()
@@ -46,17 +46,45 @@ def fdb2():
 
 
 @pytest.fixture
-def federation(fdb1, fdb2):
+def federation(fdbt1, fdbt2):
 
     federation = FederationTester()
-    federation.add_hosts( (fdb1, fdb2) )
+    federation.add_hosts( (fdbt1, fdbt2) )
     with federation.do_playground():
         yield federation
 
 
-def test_sync_fdbs(federation):
+def test_sync_fdbs(fdbt1, fdbt2, federation):
 
-    response = federation.post_json(f'https://{LOCALHOST}/_backdoor_api_/login', 
-                                    json = None)
-    assert response.status_code == 202
+    fdb1 = fdbt1.fdb
+
+    t_id = fdb1.begin_transaction()
+
+    fields = {
+            'key_int' : 99
+            }
+
+    fob1 = fdb1.new_ob(t_id, TYPE_T1, "ob1", fields = fields)
+
+    uri_1 = fob1().uri
+
+    fdb1.commit_transaction(t_id)
+
+    fdb2 = fdbt2.fdb
+
+    t_id = fdb2.begin_transaction()
+
+    uri_1.host = LOCALHOST
+
+    fob1 = fdb2.uri_read_no_lock(t_id, uri_1)
+
+    val_int = fob1().get_primitive_value('key_int')
+
+    assert val_int == 99
+
+
+
+    #response = federation.post_json(f'https://{LOCALHOST}/_backdoor_api_/login', 
+    #                                json = None)
+    #assert response.status_code == 202
 

@@ -231,11 +231,10 @@ class FederatedStore(SocialListener):
 
         self.db = db
         self.hostname = hostname
-        # you can use a federated store like a local store, in this case
-        #if transport is not None:
+
         self.social = social
         if social is not None:
-            social.register_listener(self)
+            social.create_or_register_user(DBSOCIAL_NAME, True, self)
 
         # at first the transaction set is empty
         self.transactions = {}
@@ -347,7 +346,6 @@ class FederatedStore(SocialListener):
     def remove_localhost(self, uriob):
         if uriob.host is None:
             return uriob
-        gCon.log(f"[blue]uri is {uriob}[/blue], my host is {self.hostname}")
         if ((uriob.host == self.hostname) or
             (uriob.host == '::1') or
             (uriob.host == 'localhost') or
@@ -358,20 +356,37 @@ class FederatedStore(SocialListener):
         return uriob
 
 
+    def _read_remote_ctx(self, rctx):
+
+        self.social.post_message("user", "giveme object")
+
+
     def _read_ctx(self, rctx):
         rctx.tob = self.get_tob_safe(rctx.t_id)
         rctx.uri_ob = self.remove_localhost(rctx.uri_ob)
+
         rctx.uri_str = rctx.uri_ob.unparse()
         rctx.fob = rctx.tob.get_ob(rctx.uri_str)
         if rctx.fob is not None:
             return
-        t_ob_str = self.db.get_maybe(rctx.uri_str) 
-        if t_ob_str is None:
-            if rctx.maybe:
-                return None
-            raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB, rctx.uri_str)
-        rctx.fob = str_to_fob(rctx.uri_ob, t_ob_str, rctx.must_lock)
-        rctx.tob.read_ob_ctx(rctx)
+
+        first_pass = True
+        while True:
+            t_ob_str = self.db.get_maybe(rctx.uri_str) 
+            if (t_ob_str is None) and first_pass and (rctx.uri_ob.host is not None):
+                first_pass = False
+                t_ob_str = self._read_remote_ctx(rctx)
+                continue
+            break
+
+        if t_ob_str is not None:
+            rctx.fob = str_to_fob(rctx.uri_ob, t_ob_str, rctx.must_lock)
+            rctx.tob.read_ob_ctx(rctx)
+            return
+
+        if rctx.maybe:
+            return None
+        raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB, rctx.uri_str)
 
 
     def uri_read_lock(self, t_id, uri_ob):

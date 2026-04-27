@@ -155,12 +155,10 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
         db = AdelphosDb(':memory:')
 
         self.transport = config.transport
-        self.users = {}
+        self.users = dict()
+        self.listeners = dict()
         self.current_logged_user = None
         self.ap_api = ActivityPubApi(self)
-        #self.dao = MasterAdelphosDao(db)
-        #self.ap_srv_model = ActivityPubServerModel(db)
-        #self.ap_user_model = ActivityPubUserModel(db)
 
         self.ap_actor_dao = ApActorDao(db)
         self.ap_server_dao = ApServerDao(db)
@@ -173,17 +171,24 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
         self.public_key = pub_key
         self.private_key = priv_key
 
-
-    def initialization(self):
-
-        host = self.config['General']['host']
-        #self.srv_id = self.ap_srv_model.new_server(host)
-        self.local_server = self.ap_server_dao.create_from_hostname(host)
+        self.host = config.host
+        self.init()
 
 
-    def load_fixture(self):
-        host = self.config['General']['host']
-        self.srv_id = self.ap_srv_model.get_from_host_name(host)
+    def init(self):
+        self.local_server = self.ap_server_dao.get_or_create_from_host_name(self.host)
+        
+
+    #def initialization(self):
+
+    #    host = self.config['General']['host']
+    #    #self.srv_id = self.ap_srv_model.new_server(host)
+    #    self.local_server = self.ap_server_dao.create_from_hostname(host)
+
+
+    #def load_fixture(self):
+    #    host = self.config['General']['host']
+    #    self.srv_id = self.ap_srv_model.get_from_host_name(host)
 
 
     async def user_inbox(username: str, request: Request):
@@ -324,11 +329,15 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
         return 0
 
 
-    @ensure_logged_user
-    async def post_message(self, body_ob):
+    #@ensure_logged_user
+    async def post_message_OLD(self, body_ob):
         recipient = body_ob['recipient']
         msg = body_ob['msg']
         await self.current_logged_user.post_message(recipient, msg)
+
+
+    def post_message(self, user_handle, msg):
+        pass
 
 
     @ensure_logged_user
@@ -337,8 +346,6 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
         return self.current_logged_user.last_n_messages(how_many)
 
 
-    # the base method to get the activity pub user for the instance.
-    # this method DOES not discover (it is not async)
     def _select_test_user(self, activity_pub_user):
         ap_actor = self.ap_actor_dao.get_from_preferred_username(
                 self.local_server.server_id, activity_pub_user)
@@ -348,8 +355,6 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
 
     # queries the db in order to get the answer
     def ap_user_exists(self, activity_pub_user):
-        # OK, I have to query the db, the server MUST be zero, I only
-        # accept activities for local users.
         ap_actor = self._select_test_user(activity_pub_user)
         if (ap_actor is None):
             return False
@@ -409,8 +414,20 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
 
 
     # SocialProvider interface.
-    def create_user(self, username, is_daemon):
-        return self.create_app_actor(username, is_daemon)
+    def create_user(self, username):
+        return self.create_app_actor(username)
+
+
+    def create_or_register_user(self, username, is_daemon, soc_listener):
+        ap_actor = self._select_test_user(username)
+        if ap_actor is None:
+            self.create_user(username)
+            ap_actor = self._select_test_user(username)
+
+        if is_daemon == True:
+            self.listeners[username] = soc_listener
+
+        return ap_actor.actor_id
 
 
     def discover_user(self, username, maybe = False):
@@ -419,37 +436,19 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
 
 
     def create_internal_user(self, username):
-        return self.create_app_actor(username, False)
-
-
-    #def create_demo_user(self, name, alias, password, is_root):
-    #    #gCon.log(f"Creating ap_actor {name} with alias {alias} and password {password}")
-    #    actor_id = self.create_app_actor(name)
-
-    #    # this is the part which is not relative to activity pub.
-    #    self.app.kernel.alias_uri_create(actor_id, alias, password)
-    #    if is_root:
-    #        self.app.create_root_actor_impl(actor_id)
+        return self.create_app_actor(username)
 
 
     # creates an actor which sits in the instance (only useful for testing)
-    def create_app_actor(self, actor_name, is_daemon = True):
+    def create_app_actor(self, actor_name):
         user_path = API_POINT + f"/users/{actor_name}"
         user_inbox = user_path + "/inbox"
 
-        # the server is hard coded to zero, we are in the app realm
         myself_actor = create_ap_actor(self.local_server.server_id, user_path, user_inbox,
                                        actor_name, self.public_key)
-        #if (forced_id is not None):
-        #    myself_actor.actor_id = 0
-        #    actor_id = self.app.dao.ap_actor_dao.store_full_no_ts(myself_actor)
-        #else:
+
         actor_id = self.ap_actor_dao.store(myself_actor)
 
-        #actor_id = self.ap_user_model.new_user(self.srv_id,
-        #        user_path, user_inbox, actor_name, self.public_key, is_daemon)
-
-        #gCon.log(f"Created actor {actor_name} with id {actor_id}")
         return actor_id
 
 
