@@ -13,16 +13,17 @@
 #
 
 from app.federation.SocialGateway import SocialGateway
+import json
 
 DBSOCIAL_NAME = "AD_DB_D"
 
 
 def ensure_gw(func):
 
-    def _ensure_gw_present(self, uri):
+    def _ensure_gw_present(self, ctx):
         if self.gw is None:
             raise Exception("No gateway")
-        return func(self, uri)
+        return func(self, ctx)
 
     return _ensure_gw_present
 
@@ -36,6 +37,18 @@ class FederatedStoreApi:
             self.gw = SocialGateway(social, DBSOCIAL_NAME)
         else:
             self.gw = None
+
+
+    @ensure_gw
+    def read_remote_uri(self, ctx):
+
+        req = {
+                'uri' : ctx.uri_str,
+                'must_lock' : ctx.must_lock
+                }
+
+        return self.gw.api_req_wait(f"@{DBSOCIAL_NAME}@ctx.uri_ob.host",
+                    json.dumps(req))
 
 
     @ensure_gw

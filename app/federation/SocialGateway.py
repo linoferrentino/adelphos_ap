@@ -13,6 +13,10 @@
 #
 
 from app.federation.SocialListener import SocialListener
+from app.misc.WrapInt import WrapInt
+from app.logging import gCon
+
+
 
 class SocialGateway(SocialListener):
 
@@ -23,14 +27,15 @@ class SocialGateway(SocialListener):
         self.social_tenant = social_tenant
         social.create_or_register_user(social_tenant, True, self)
         self.requests = dict()
+        self.remote_api_id = WrapInt()
 
 
-    def api_gw_waitable(self, api_id):
+    def api_gw_waitable(self, api_id, user_handle, req_json):
         
-        self.social.post_message(f"@{DBSOCIAL_NAME}@rctx.uri_ob.host",
-                                 f"giveme {rctx.uri_str} {api_id}")
+        self.social.post_message(user_handle, req_json)
 
-        yield
+        yield "ooo"
+
 
 
 
@@ -40,9 +45,12 @@ class SocialGateway(SocialListener):
 
         self.requests[api_id] = "xx"
 
-        api = self.api_gw_waitable()
+        api = self.api_gw_waitable(api_id, user_handle, request_json)
 
-        next(api)
+        val = next(api)
+        gCon.log(f"I have obtained {val}")
+
+        return val
 
 
     async def new_post(self, post):

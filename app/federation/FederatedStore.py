@@ -356,8 +356,8 @@ class FederatedStore:
 
 
     def _read_remote_ctx(self, rctx):
-        pass
-
+        remote_ob_str = self.fede_api.read_remote_uri(rctx)
+        return remote_ob_str
 
 
     def _read_ctx(self, rctx):
