@@ -295,6 +295,10 @@ class ActivityPubMockup(ActivityPubBaseGateway, SocialProvider, RouterProvider):
         return ap_router
 
 
+    def get_async_routes(self, router):
+        pass
+
+
     def register_sync_routes(self, router):
         router._register_get_route("/.well-known/webfinger", self.webfinger_kw, "resource")
         router._register_get_route(API_POINT + "/users/(?P<username>.*)", 
