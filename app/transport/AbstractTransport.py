@@ -14,11 +14,8 @@
 
 # this is the low level interface used to post and get messages to an external world
 
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
-from app.transport.AbstractGateway import AbstractGateway
-from app.transport.AbstractRouter import AbstractRouter
 
 
 # the abstract transport has the methods to post and get json from
@@ -33,25 +30,17 @@ from app.transport.AbstractRouter import AbstractRouter
 
 # sync gateways will call the sync interface.
 
-class AbstractTransport(AbstractGateway, AbstractRouter):
+class AbstractTransport(ABC):
 
 
-    # <----- Inbound
-    # these are NOT routed, they are called by the underlying transport
+    # these are routed -----> Outbound
     @abstractmethod
-    def in_get_json(self, url_parsed ):
+    def post_json(self, url, json):
         pass
 
 
     @abstractmethod
-    def in_post_json(self, url_parsed, json):
+    def get_json(self, url):
         pass
-
-
-    # functions to have the sockets.
-    @abstractmethod
-    def accept(self, server_socket):
-        pass
-    
 
 

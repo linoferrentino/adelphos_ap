@@ -39,8 +39,7 @@ async def app(scope, receive, send):
 @pytest.fixture
 def ad1():
 
-    #ad1 = TestClient(app)
-    ad1 = TestClient(ad_get_app())
+    ad1 = TestClient(ad_get_app('www.ex.com'))
     return ad1
 
 

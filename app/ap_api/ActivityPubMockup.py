@@ -28,8 +28,7 @@ from fastapi.responses import JSONResponse
 from app.ap_api.ActivityPubApi import ActivityPubApi
 from app.ap_api.ActivityPubGateway import ActivityPubBaseGateway
 from app.ap_api.ActivityPubGateway import ActivityPubGateway
-#from app.ap_api.ActivityPubServerModel import ActivityPubServerModel
-#from app.ap_api.ActivityPubUserModel import ActivityPubUserModel
+
 from app.api.AdelphosException import AdelphosException
 from app.consts import API_POINT
 from app.consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY

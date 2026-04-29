@@ -43,15 +43,10 @@ class AdelphosAsyncGateway(AbstractTransport):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-#
-#routes = [
-#        Route('/', AdelphosAsyncGateway.homepage),
-#    ]
-#
 
 def ad_get_app(host):
 
-    config = ActivityPubMockupConfig()
+    config = ActivityPubMockupConfig(host)
 
     mockup = ActivityPubMockup()
 

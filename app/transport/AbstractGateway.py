@@ -19,14 +19,20 @@ from abc import abstractmethod
 class AbstractGateway(ABC):
 
 
-    # these are routed -----> Outbound
+    # <----- Inbound
+    # these are NOT routed, they are called by the underlying transport
     @abstractmethod
-    def post_json(self, url, json):
+    def in_get_json(self, url_parsed ):
         pass
 
 
     @abstractmethod
-    def get_json(self, url):
+    def in_post_json(self, url_parsed, json):
         pass
 
+
+    # functions to have the sockets.
+    @abstractmethod
+    def accept(self, server_socket):
+        pass
 
