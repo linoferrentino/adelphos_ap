@@ -22,11 +22,11 @@ def test_sync_route():
 
     aroutable = TRoutable()
 
-    app = SyncApp(routes = aroutable)
+    app = SyncApp(routes = aroutable.get_routes())
 
     test = SyncTester(app)
 
-    response = test.post("inbox/lino", json = { 'msg' : 'do_all' })
+    response = test.post("/inbox/lino", json = { 'msg' : 'do_all' })
 
     assert response.status_code == 200
     assert response.content == b'Hello lino! do_all'

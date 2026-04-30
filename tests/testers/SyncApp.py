@@ -12,19 +12,85 @@
 ######################################################
 #
 
+import re
+
+import asyncio
+
+from tests.testers.SyncRequest import SyncRequest
+from urllib.parse import parse_qs
+
+from starlette.responses import Response
+from app.logging import gCon
+
 
 # a sync version of a Starlette application
 class SyncApp:
 
 
     def __init__(self, routes):
-        self.routes = routes
+
+        #self.routable = routable
+        #routes = routable.get_routes()
+
+        self.get_routes = []
+        self.post_routes = []
+
+        for route in routes:
+            if 'GET' in route.methods:
+                self.get_routes.append(SyncApp._translate_sync_route(route))
+            elif 'POST' in route.methods:
+                self.post_routes.append(SyncApp._translate_sync_route(route))
+            else:
+                raise Exception(f"invalid method in route {route.methods}")
+
+
+    @staticmethod
+    def _translate_sync_route(route):
+        path = route.path
+        match_path_param = re.search(r"\{(.*)\}", path)
+        if match_path_param is None:
+            return route
+        path_trans = re.sub("{" + match_path_param.group(1) + "}", 
+            f"(?P<{match_path_param.group(1)}>[^/]*)", path)
+        route.path = path_trans
+        return route
 
 
     def in_get_json(self, parsed_url):
         return None
 
 
+    def _get_matched_route(self, parsed_url, routes):
+        for route in routes:
+            gCon.log(f"I try to match {route.path} with {parsed_url.path}")
+            match_route = re.match(route.path, parsed_url.path)
+            if match_route is not None:
+                return (route, match_route)
+        return (None, None)
+
+
     def in_post_json(self, parsed_url, in_json):
-        pass
+
+        (route, match_route) = self._get_matched_route(parsed_url, self.post_routes)
+
+        if route is None:
+            return Response(None, 404)
+
+        dict_params = parse_qs(parsed_url.query)
+
+        #parq = {}
+        #for param in route.params:
+        #    if param in match_route.groupdict().keys():
+        #        parq[param] = match_route.group(param)
+        #    else:
+        #        parq[param] = dict_params[param][0]
+        path_params = dict()
+        for k,v in match_route.groupdict().items():
+            path_params[k] = v
+
+        endpoint = route.endpoint
+        request = SyncRequest(dict_params, path_params, in_json)
+        loop = asyncio.get_event_loop()
+        res = loop.run_until_complete(endpoint(request))
+        return res
 

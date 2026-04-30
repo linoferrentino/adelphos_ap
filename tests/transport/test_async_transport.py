@@ -29,7 +29,7 @@ def test_async_route():
 
     test = TestClient(app) 
 
-    response = test.post("inbox/lino", json = { 'msg' : 'do_all' })
+    response = test.post("/inbox/lino", json = { 'msg' : 'do_all' })
 
     assert response.status_code == 200
     assert response.content == b'Hello lino! do_all'
