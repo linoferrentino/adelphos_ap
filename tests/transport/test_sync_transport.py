@@ -12,24 +12,22 @@
 ######################################################
 #
 
-from app.transport.async_mode.AsyncTransport import AsyncTransport
 
 from tests.transport.TRoutable import TRoutable
-
-from starlette.applications import Starlette
-from starlette.testclient import TestClient
-
+from tests.testers.SyncApp import SyncApp
+from tests.testers.SyncTester import SyncTester
 
 
-def test_async_route():
+def test_sync_route():
 
     aroutable = TRoutable()
 
-    app = Starlette(routes = aroutable.get_routes())
+    app = SyncApp(routes = aroutable)
 
-    test = TestClient(app) 
+    test = SyncTester(app)
 
     response = test.post("inbox/lino", json = { 'msg' : 'do_all' })
 
     assert response.status_code == 200
     assert response.content == b'Hello lino! do_all'
+
