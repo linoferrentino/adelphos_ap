@@ -18,13 +18,11 @@ from starlette.responses import PlainTextResponse
 from starlette.responses import Response
 
 
-flag = None
-
 
 class TRoutable(Routable):
 
 
-    def __init__(self, transport):
+    def __init__(self, transport, flag):
         self.transport = transport
 
 
@@ -35,7 +33,7 @@ class TRoutable(Routable):
 
 
     async def post_msg_q(self, request):
-        pass
+        self.transport.get_json(
 
 
     async def post_msg_a(self, request):
@@ -48,8 +46,8 @@ class TRoutable(Routable):
     def get_routes(self):
         routes = [
                 Route("/inbox/{username}", endpoint = self.post_inbox, methods=['POST']),
-                Route("/post_msg_q", endpoint = self.post_msg_q, methods=['POST']),
-                Route("/post_msg_a", endpoint = self.post_msg_a, methods=['POST'])
+                Route("/get_flag", endpoint = self.post_msg_q, methods=['GET']),
+                Route("/post_flag", endpoint = self.post_msg_a, methods=['POST'])
                 ]
         return routes
 
