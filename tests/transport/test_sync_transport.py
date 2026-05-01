@@ -12,22 +12,27 @@
 ######################################################
 #
 
+import pytest
 
 from tests.transport.TRoutable import TRoutable
 from tests.testers.SyncApp import SyncApp
 from tests.testers.SyncTester import SyncTester
+from app.logging import gCon
 
 
-def test_sync_route():
-
+@pytest.fixture
+def sync1():
     aroutable = TRoutable()
-
     app = SyncApp(routes = aroutable.get_routes())
+    return app
 
-    test = SyncTester(app)
+
+def test_sync_route(sync1):
+
+    test = SyncTester(sync1)
 
     response = test.post("/inbox/lino", json = { 'msg' : 'do_all' })
 
     assert response.status_code == 200
-    assert response.content == b'Hello lino! do_all'
+    assert response.body == b'Hello lino! do_all'
 

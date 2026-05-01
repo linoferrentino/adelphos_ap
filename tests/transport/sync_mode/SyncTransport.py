@@ -12,17 +12,12 @@
 ######################################################
 #
 
-
 from app.transport.AbstractTransport import AbstractTransport
 
 
-class AsyncTransport(AbstractTransport):
+class SyncTransport(AbstractTransport):
 
-
-    def __init__(self, loop):
-        self.loop = loop
-
-
+    
     def post_json(self, url, json):
         pass
 

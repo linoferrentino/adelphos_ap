@@ -27,13 +27,27 @@ from app.logging import gCon
 class SyncApp:
 
 
-    def __init__(self, routes):
+    @staticmethod
+    def _create_new_loop():
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+        return loop
+
+
+    def __init__(self, routes, loop = None):
 
         #self.routable = routable
         #routes = routable.get_routes()
 
         self.get_routes = []
         self.post_routes = []
+
+        if loop is not None:
+            self.loop = loop
+        else:
+            self.loop = SyncApp._create_new_loop()
 
         for route in routes:
             if 'GET' in route.methods:
@@ -62,7 +76,7 @@ class SyncApp:
 
     def _get_matched_route(self, parsed_url, routes):
         for route in routes:
-            gCon.log(f"I try to match {route.path} with {parsed_url.path}")
+            #gCon.log(f"I try to match {route.path} with {parsed_url.path}")
             match_route = re.match(route.path, parsed_url.path)
             if match_route is not None:
                 return (route, match_route)
@@ -78,19 +92,12 @@ class SyncApp:
 
         dict_params = parse_qs(parsed_url.query)
 
-        #parq = {}
-        #for param in route.params:
-        #    if param in match_route.groupdict().keys():
-        #        parq[param] = match_route.group(param)
-        #    else:
-        #        parq[param] = dict_params[param][0]
         path_params = dict()
         for k,v in match_route.groupdict().items():
             path_params[k] = v
 
         endpoint = route.endpoint
         request = SyncRequest(dict_params, path_params, in_json)
-        loop = asyncio.get_event_loop()
-        res = loop.run_until_complete(endpoint(request))
+        res = self.loop.run_until_complete(endpoint(request))
         return res
 

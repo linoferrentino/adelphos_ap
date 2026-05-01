@@ -19,15 +19,15 @@ class SyncRequest:
 
         self.query_params = query_params
         self.path_params = path_params 
-        self.json = json
+        self._inner_json = json
+        self.json = self.get_json 
 
 
-    def get_json(self):
-        return self.json
+    async def get_json(self):
+        return self._inner_json
 
 
-    async def json(self):
-
-        return self.get_json()
+    #async def json(self):
+    #    return self.json 
 
 

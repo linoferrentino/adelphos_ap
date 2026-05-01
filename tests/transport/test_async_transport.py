@@ -12,6 +12,8 @@
 ######################################################
 #
 
+import pytest
+
 from app.transport.async_mode.AsyncTransport import AsyncTransport
 
 from tests.transport.TRoutable import TRoutable
@@ -19,17 +21,23 @@ from tests.transport.TRoutable import TRoutable
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
 
+@pytest.fixture
+def app_t1():
 
-
-def test_async_route():
-
-    aroutable = TRoutable()
-
+    transport = AsyncTransport(None)
+    aroutable = TRoutable(transport)
     app = Starlette(routes = aroutable.get_routes())
+    return app
 
-    test = TestClient(app) 
 
+def test_async_route(app_t1):
+
+    test = TestClient(app_t1) 
+    
     response = test.post("/inbox/lino", json = { 'msg' : 'do_all' })
 
     assert response.status_code == 200
     assert response.content == b'Hello lino! do_all'
+
+
+
