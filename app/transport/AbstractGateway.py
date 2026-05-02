@@ -21,18 +21,25 @@ class AbstractGateway(ABC):
 
     # <----- Inbound
     # these are NOT routed, they are called by the underlying transport
+    #@abstractmethod
+    #def in_get_json(self, url_parsed ):
+    #    pass
+
+
+    #@abstractmethod
+    #def in_post_json(self, url_parsed, json):
+    #    pass
+
+
+    ## functions to have the sockets.
+    #@abstractmethod
+    #def accept(self, server_socket):
+    #    pass
+
     @abstractmethod
-    def in_get_json(self, url_parsed ):
+    def _post_json(self, url_parsed, json):
         pass
 
 
-    @abstractmethod
-    def in_post_json(self, url_parsed, json):
+    def _get_json(self, url_parsed):
         pass
-
-
-    # functions to have the sockets.
-    @abstractmethod
-    def accept(self, server_socket):
-        pass
-

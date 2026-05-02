@@ -16,6 +16,9 @@ from app.transport.Routable import Routable
 from starlette.routing import Route
 from starlette.responses import PlainTextResponse
 from starlette.responses import Response
+from starlette.responses import JSONResponse
+
+from app.logging import gCon
 
 
 
@@ -32,9 +35,21 @@ class TRoutable(Routable):
                 f"Hello {request.path_params['username']}! {json_val['msg']}")
 
 
-    async def post_msg_q(self, request):
-        self.transport.get_json(
+    async def get_remote_flag(self, request):
+        json_val = await request.json()
+        dest = json_val['dest']
+        which_flag = json_val['msg']
+        url_to_call = f"https://{dest}/get_local_flag?flag={which_flag}"
+        gCon.log(f"this is my url {url_to_call}")
+        flag = self.transport.get_json(url_to_call)
+        return flag
 
+
+    async def get_local_flag(self, request):
+        which_flag = request.query_params('flag')
+        response = JSONResponse({ 'flag' : 'hello' })
+        return response
+        
 
     async def post_msg_a(self, request):
         json_val = await request.json()
@@ -46,8 +61,8 @@ class TRoutable(Routable):
     def get_routes(self):
         routes = [
                 Route("/inbox/{username}", endpoint = self.post_inbox, methods=['POST']),
-                Route("/get_flag", endpoint = self.post_msg_q, methods=['GET']),
-                Route("/post_flag", endpoint = self.post_msg_a, methods=['POST'])
+                Route("/get_remote_flag", endpoint = self.get_remote_flag, methods=['POST']),
+                Route("/get_local_flag", endpoint = self.get_local_flag, methods=['GET']),
                 ]
         return routes
 
