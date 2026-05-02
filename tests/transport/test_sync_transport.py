@@ -17,6 +17,7 @@ import pytest
 from tests.transport.TRoutable import TRoutable
 from tests.testers.SyncApp import SyncApp
 from tests.testers.SyncTester import SyncTester
+from tests.testers.SyncGateway import SyncGateway
 from tests.transport.sync_mode.SyncTransport import SyncTransport
 from app.logging import gCon
 
@@ -32,7 +33,8 @@ FLAG_2_NEW = "XXXYYY"
 
 @pytest.fixture
 def sync_gateway():
-    pass
+    gateway = SyncGateway()
+    return gateway
 
 
 @pytest.fixture

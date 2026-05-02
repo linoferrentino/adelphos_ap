@@ -37,9 +37,7 @@ class AbstractGateway(ABC):
     #    pass
 
     @abstractmethod
-    def _post_json(self, url_parsed, json):
+    def route_message(self, method, url_parsed, json = None):
         pass
 
 
-    def _get_json(self, url_parsed):
-        pass

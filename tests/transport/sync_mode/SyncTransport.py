@@ -23,6 +23,9 @@ class SyncTransport(AbstractTransport):
         self.host = host
         self.gateway = gateway
 
+        if gateway is not None:
+            gateway.register_dns(self, host)
+
     
     def post_json(self, url, json):
         pass
@@ -40,13 +43,22 @@ class SyncTransport(AbstractTransport):
 
         #raise Exception(f"No route to host {urls.netloc}")
         if urls.netloc != self.host:
-            raise Exception(f"No route to host {urls.netloc}")
+            return (urls, None)
+
+        return (urls, self)
 
 
     def get_json(self, url):
 
         (urls, host) = self._get_routable_host(url)
 
-        pass
+        if host is None:
+            if self.gateway is None:
+                raise Exception(f"No route to host {urls.netloc}")
+
+            return self.gateway.route_message("GET", urls)
+
+        return host.in_get_json(urls)
+
 
 
