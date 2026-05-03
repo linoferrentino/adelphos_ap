@@ -23,6 +23,7 @@ class SyncTransport(AbstractTransport):
     def __init__(self, host, gateway):
         self.host = host
         self.gateway = gateway
+        self.in_app = None
 
         if gateway is not None:
             gateway.register_dns(self, host)
@@ -32,18 +33,26 @@ class SyncTransport(AbstractTransport):
         pass
 
 
+    def register_reverse_path(self, in_app):
+        self.in_app = in_app
+
+
     def get_json(self, url):
         urls = urlsplit(url)
         if urls.netloc == self.host:
             return self.host.in_get_json(urls)
         gCon.log(f"get json {url}")
+        if self.gateway is None:
+            raise Exception(f"Network unavailable. {self.host}")
         return self.gateway.route_message("GET", urls)
 
 
     def in_get_json(self, urlp):
         if urlp.netloc != self.host:
             raise Exception("Invalid host")
-        return self.host.in_get_json(urlp)
+        if self.in_app is None:
+            return Response(500, None)
+        return self.in_app.in_get_json(urlp)
 
 
     #(urls, host) = self._get_routable_host(url)

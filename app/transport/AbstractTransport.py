@@ -17,19 +17,6 @@
 from abc import ABC, abstractmethod
 
 
-
-# the abstract transport has the methods to post and get json from
-# the external world.
-
-# concrete classes can be sync or async: the interface is synchronous, however,
-# because we shield the complexity
-
-
-# we can have a sync interface or a async interface.
-# the client will adapt to the correct implementation based on the gateway.
-
-# sync gateways will call the sync interface.
-
 class AbstractTransport(ABC):
 
 
@@ -46,4 +33,9 @@ class AbstractTransport(ABC):
 
     @abstractmethod
     def in_get_json(self, urlp):
+        pass
+
+
+    @abstractmethod
+    def register_reverse_path(self, routable):
         pass

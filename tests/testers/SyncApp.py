@@ -36,10 +36,13 @@ class SyncApp:
         return loop
 
 
-    def __init__(self, routes, loop = None):
+    def __init__(self, routes, transport, loop = None):
 
         self.get_routes = []
         self.post_routes = []
+
+        if transport is not None:
+            transport.register_reverse_path(self)
 
         if loop is not None:
             self.loop = loop
@@ -68,7 +71,7 @@ class SyncApp:
 
 
     def in_get_json(self, urlp):
-        return None
+        return self._do_sync_req(self.get_routes, urlp)
 
 
     def _get_matched_route(self, parsed_url, routes):
@@ -81,13 +84,17 @@ class SyncApp:
 
 
     def in_post_json(self, parsed_url, in_json):
+        return self._do_sync_req(self.post_routes, parsed_url, in_json)
 
-        (route, match_route) = self._get_matched_route(parsed_url, self.post_routes)
+
+    def _do_sync_req(self, routes, urlp, in_json = None):
+
+        (route, match_route) = self._get_matched_route(urlp, routes)
 
         if route is None:
             return Response(None, 404)
 
-        dict_params = parse_qs(parsed_url.query)
+        dict_params = parse_qs(urlp.query)
 
         path_params = dict()
         for k,v in match_route.groupdict().items():

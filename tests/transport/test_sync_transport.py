@@ -42,7 +42,7 @@ def sync1(sync_gateway):
 
     transport = SyncTransport(HOST_1, sync_gateway)
     aroutable = TRoutable(transport, FLAG_1)
-    app = SyncApp(routes = aroutable.get_routes())
+    app = SyncApp(aroutable.get_routes(), transport)
     return app
 
 
@@ -51,7 +51,7 @@ def sync2(sync_gateway):
 
     transport = SyncTransport(HOST_2, sync_gateway)
     aroutable = TRoutable(transport, FLAG_2)
-    app = SyncApp(routes = aroutable.get_routes())
+    app = SyncApp(aroutable.get_routes(), transport)
     return app
 
 

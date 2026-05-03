@@ -27,6 +27,8 @@ class TRoutable(Routable):
 
     def __init__(self, transport, flag):
         self.transport = transport
+        #if transport is not None:
+        #    self.transport.register_reverse_path(self)
 
 
     async def post_inbox(self, request):
