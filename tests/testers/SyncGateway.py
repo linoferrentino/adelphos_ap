@@ -31,4 +31,11 @@ class SyncGateway(AbstractGateway):
         if transport is None:
             raise Exception(f"No route to host {urlp.netloc}")
 
-        raise Exception("HELLO")
+        match method:
+            case 'GET':
+                return transport.in_get_json(urlp)
+            case 'POST':
+                transport.in_post_json(urlp, json)
+            case _:
+                raise Exception(f"Undefined method {method}")
+

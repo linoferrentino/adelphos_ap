@@ -14,6 +14,7 @@
 
 from app.transport.AbstractTransport import AbstractTransport
 from urllib.parse import urlsplit
+from app.logging import gCon
 
 
 class SyncTransport(AbstractTransport):
@@ -31,34 +32,26 @@ class SyncTransport(AbstractTransport):
         pass
 
 
-    def _get_routable_host(self, url):
-        urls = urlsplit(url)
-        if urls.scheme != 'https':
-            raise Exception(f"invalid scheme {urls.scheme}")
-
-        #for host in self.hosts:
-        #    if urls.netloc != host.hostname:
-        #        continue
-        #    return (urls, host)
-
-        #raise Exception(f"No route to host {urls.netloc}")
-        if urls.netloc != self.host:
-            return (urls, None)
-
-        return (urls, self)
-
-
     def get_json(self, url):
-
-        (urls, host) = self._get_routable_host(url)
-
-        if host is None:
-            if self.gateway is None:
-                raise Exception(f"No route to host {urls.netloc}")
-
-            return self.gateway.route_message("GET", urls)
-
-        return host.in_get_json(urls)
+        urls = urlsplit(url)
+        if urls.netloc == self.host:
+            return self.host.in_get_json(urls)
+        gCon.log(f"get json {url}")
+        return self.gateway.route_message("GET", urls)
 
 
+    def in_get_json(self, urlp):
+        if urlp.netloc != self.host:
+            raise Exception("Invalid host")
+        return self.host.in_get_json(urlp)
+
+
+    #(urls, host) = self._get_routable_host(url)
+    #    if host is None:
+    #        if self.gateway is None:
+    #            raise Exception(f"No route to host {urls.netloc}")
+    #    return host.in_get_json(urls)
+
+    #def in_get_json(self, urlp):
+    #    assert False
 

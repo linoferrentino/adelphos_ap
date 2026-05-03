@@ -38,9 +38,6 @@ class SyncApp:
 
     def __init__(self, routes, loop = None):
 
-        #self.routable = routable
-        #routes = routable.get_routes()
-
         self.get_routes = []
         self.post_routes = []
 
@@ -70,7 +67,7 @@ class SyncApp:
         return route
 
 
-    def in_get_json(self, parsed_url):
+    def in_get_json(self, urlp):
         return None
 
 

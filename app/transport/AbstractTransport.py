@@ -44,3 +44,6 @@ class AbstractTransport(ABC):
         pass
 
 
+    @abstractmethod
+    def in_get_json(self, urlp):
+        pass
