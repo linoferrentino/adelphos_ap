@@ -49,8 +49,9 @@ class TRoutable(Routable):
 
 
     async def get_local_flag(self, request):
-        gCon.log("here the get_local_flag")
-        which_flag = request.query_params('flag')
+        gCon.log(">>>>>> get_local_flag")
+        which_flag = request.query_params['flag']
+        gCon.log(f"flag is {which_flag}")
         response = JSONResponse({ 'flag' : 'hello' })
         return response
         

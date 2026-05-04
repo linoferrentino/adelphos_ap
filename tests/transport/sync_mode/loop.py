@@ -29,15 +29,17 @@ def in_saecula_saeculorum():
         loop = asyncio.get_running_loop()
     except RuntimeError:
         loop = asyncio.new_event_loop()
+    
+    loop.set_debug(True)
     loop_started.set()
-    gCon.log("run forever start")
+    #gCon.log("run forever start")
     loop.run_forever()
-    gCon.log("run forever stop")
+    #gCon.log("run forever stop")
 
 
 def _create_loop():
     global run_loop_th
-    gCon.log(f"Will start the loop! {threading.current_thread()}")
+    #gCon.log(f"Will start the loop! {threading.current_thread()}")
     run_loop_th = threading.Thread(target = in_saecula_saeculorum)
     run_loop_th.start()
 
@@ -48,11 +50,11 @@ def get_loop():
         loop_lock.acquire()
         while True:
             if loop is not None:
-                gCon.log(f"loop is not none, I return it")
+                #gCon.log(f"loop is not none, I return it")
                 return loop
             _create_loop()
             loop_started.wait()
-            gCon.log(f"Event signaled, now loop is {loop}")
+            #gCon.log(f"Event signaled, now loop is {loop}")
             loop_started.clear()
     finally:
         loop_lock.release()
@@ -64,33 +66,56 @@ def stop_loop():
     try:
         loop_lock.acquire()
         if loop is None:
-            gCon.log(f"nothing to stop!")
+            #gCon.log(f"nothing to stop!")
             return
-        gCon.log("loop will be stopped!")
+        #gCon.log("loop will be stopped!")
         loop.call_soon_threadsafe(loop.stop)
         loop = None
         run_loop_th.join()
-        gCon.log(f"loop is stopped! loop is {loop}")
+        #gCon.log(f"loop is stopped! loop is {loop}")
     finally:
         loop_lock.release()
 
 
 def run_coro_in_loop(endpoint, request):
 
+    res = run_coro_in_loop_generator(endpoint, request)
+    return next(res)
+
+
+async def endpoint_wrap(endpoint, request):
+    result = await endpoint(request)
+    gCon.log(f"endpoint wrap {result}")
+    return result
+
+
+def _task_done(task):
+    gCon.log(f"..... task done {task}")
+    yield task
+
+
+def run_coro_in_loop_generator(endpoint, request):
+
     if threading.current_thread() == run_loop_th:
         gCon.log("I am in the loop thread.")
-        result = get_loop().run_until_complete(endpoint(request))
-        #task = asyncio.create_task(endpoint(request))
-        #yield
-        gCon.log(f"result is {result}")
-        return result
-        #result = await task
-        #return result
+        task = asyncio.create_task(endpoint_wrap( endpoint, request))
+        task.add_done_callback(_task_done)
+
+        gCon.log(f"---------< result is {task}")
+        #gCon.log(f"after yield inside the thread {res}")
+        #next(_task_done)
+        yield task
+
 
     gCon.log("I am in the main thread.")
     future = asyncio.run_coroutine_threadsafe(endpoint(request), get_loop())
     res = future.result()
-    return res
+    gCon.log(f"<<<<<<<< result of the future {res}")
+    if isinstance(res, asyncio.Task) == True:
+        gCon.log("HERE! this is a task")
+        res = res.result()
+        gCon.log(f"HERE! this is the result {res}")
+    yield res
 
 
 
