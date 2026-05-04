@@ -15,8 +15,10 @@
 import re
 
 import asyncio
+import threading
 
 from tests.testers.SyncRequest import SyncRequest
+from tests.transport.sync_mode.loop import stop_loop, get_loop, run_coro_in_loop
 from urllib.parse import parse_qs
 
 from starlette.responses import Response
@@ -102,6 +104,8 @@ class SyncApp:
 
         endpoint = route.endpoint
         request = SyncRequest(dict_params, path_params, in_json)
-        res = self.loop.run_until_complete(endpoint(request))
+
+        gCon.log(f"Here I am {urlp}")
+        res = run_coro_in_loop(endpoint, request)
         return res
 

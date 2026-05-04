@@ -19,6 +19,7 @@ from tests.testers.SyncApp import SyncApp
 from tests.testers.SyncTester import SyncTester
 from tests.testers.SyncGateway import SyncGateway
 from tests.transport.sync_mode.SyncTransport import SyncTransport
+from tests.transport.sync_mode.loop import stop_loop, get_loop
 from app.logging import gCon
 
 HOST_1 = "www.host1.org"
@@ -33,8 +34,10 @@ FLAG_2_NEW = "XXXYYY"
 
 @pytest.fixture
 def sync_gateway():
+    get_loop()
     gateway = SyncGateway()
-    return gateway
+    yield gateway
+    stop_loop()
 
 
 @pytest.fixture

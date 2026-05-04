@@ -38,6 +38,7 @@ class TRoutable(Routable):
 
 
     async def get_remote_flag(self, request):
+        gCon.log("here the get_remote_flag")
         json_val = await request.json()
         dest = json_val['dest']
         which_flag = json_val['msg']
@@ -48,6 +49,7 @@ class TRoutable(Routable):
 
 
     async def get_local_flag(self, request):
+        gCon.log("here the get_local_flag")
         which_flag = request.query_params('flag')
         response = JSONResponse({ 'flag' : 'hello' })
         return response

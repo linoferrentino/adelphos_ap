@@ -28,6 +28,12 @@ class SyncTransport(AbstractTransport):
         if gateway is not None:
             gateway.register_dns(self, host)
 
+
+    def get_loop(self):
+        if self.gateway is not None:
+            return self.gateway.get_loop()
+        return 
+
     
     def post_json(self, url, json):
         pass
