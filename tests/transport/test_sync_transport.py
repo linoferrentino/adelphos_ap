@@ -21,6 +21,7 @@ from tests.testers.SyncGateway import SyncGateway
 from tests.transport.sync_mode.SyncTransport import SyncTransport
 from tests.transport.sync_mode.loop import stop_loop, get_loop
 from app.logging import gCon
+import json
 
 HOST_1 = "www.host1.org"
 HOST_2 = "www.host2.org"
@@ -74,6 +75,8 @@ def test_get_flag(sync1, sync2):
     response = test1.post("/get_remote_flag", json = { 
                                           'dest' : HOST_2,
                                           'msg' : 'flag1' })
-    assert response.status_code == 202
+    assert response.status_code == 200
+    jsonres = json.loads(response.body)
+    assert jsonres['flag'] == 'hello'
 
 

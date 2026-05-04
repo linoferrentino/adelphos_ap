@@ -47,7 +47,7 @@ class SyncTransport(AbstractTransport):
         urls = urlsplit(url)
         if urls.netloc == self.host:
             return self.host.in_get_json(urls)
-        gCon.log(f"get json {url}")
+        #gCon.log(f"get json {url}")
         if self.gateway is None:
             raise Exception(f"Network unavailable. {self.host}")
         return self.gateway.route_message("GET", urls)
