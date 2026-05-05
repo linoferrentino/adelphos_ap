@@ -25,19 +25,30 @@ import re
 # And we use for now only GET and PUT
 class AsyncRequestBase(ABC):
 
+
     # I can create an async request using a url and this will create a
     # condition.
-    def __init__(self, url):
-
+    def __init__(self, url = None):
+        if url is None:
+            return
         u = urlsplit(url)
+        self._url = url
+        self._init_split(u, False)
+
+
+    def init_split(self, u):
+        self._init_split(u, True)
+
+
+    def _init_split(self, u, force):
 
         if ((re.match('localhost', u.netloc)) or
             (re.match('127.0.0.1', u.netloc))):
             #gCon.log("Asking localhost, I change to http")
             new_u = u._replace(scheme = 'http')
             self._url = new_u.geturl()
-        else:
-            self._url = url
+        elif force == True:
+            self._url = u.geturl()
 
 
     @abstractmethod

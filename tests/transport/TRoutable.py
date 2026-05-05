@@ -20,6 +20,9 @@ from starlette.responses import JSONResponse
 
 from app.logging import gCon
 
+from contextlib import asynccontextmanager
+
+from app.transport.async_mode.AsyncGateway import AsyncGateway
 
 HOST_1 = "www.host1.org"
 HOST_2 = "www.host2.org"
@@ -70,3 +73,17 @@ class TRoutable(Routable):
         return routes
 
 
+@asynccontextmanager
+async def async_lifespan_gw(app):
+
+    app.running = True
+    gateway = AsyncGateway()
+    app.transport.set_gateway(gateway)
+    await gateway.start(app)
+
+    yield
+
+    app.running = False
+    await gateway.stop()
+
+ 

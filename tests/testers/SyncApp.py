@@ -28,28 +28,13 @@ from app.logging import gCon
 # a sync version of a Starlette application
 class SyncApp:
 
-
-    @staticmethod
-    def _create_new_loop():
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-        return loop
-
-
-    def __init__(self, routes, transport, loop = None):
+    def __init__(self, routes, transport):
 
         self.get_routes = []
         self.post_routes = []
 
         if transport is not None:
             transport.register_reverse_path(self)
-
-        if loop is not None:
-            self.loop = loop
-        else:
-            self.loop = SyncApp._create_new_loop()
 
         for route in routes:
             if 'GET' in route.methods:

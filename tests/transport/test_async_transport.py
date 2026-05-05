@@ -18,25 +18,36 @@ import time
 
 from app.transport.async_mode.AsyncTransport import AsyncTransport
 from tests.transport.TRoutable import TRoutable
-from starlette.applications import Starlette
+#from starlette.applications import Starlette
+from app.transport.async_mode.StarletteWrap import StarletteWrap
 from starlette.testclient import TestClient
 from tests.testers.ProcessWrapper import ProcessWrapper
 from app.logging import gCon
+
+PORT1 = 5999
+PORT2 = 5997
 
 
 @pytest.fixture
 def app_t1():
 
-    transport = AsyncTransport(None)
+    transport = AsyncTransport()
     aroutable = TRoutable(transport, "test")
-    app = Starlette(routes = aroutable.get_routes())
+    app = StarletteWrap(transport = transport, routes = aroutable.get_routes())
     return app
 
 
-@pytest.fixture
-def remote_app():
+@pytest.fixture(scope = "module")
+def remote_app1():
     server = ProcessWrapper()
-    with server.run_in_subprocess(TRoutable, 5999):
+    with server.run_in_subprocess(TRoutable, PORT1):
+        yield
+
+
+@pytest.fixture(scope = "module")
+def remote_app2():
+    server = ProcessWrapper()
+    with server.run_in_subprocess(TRoutable, PORT2):
         yield
 
 
@@ -50,10 +61,20 @@ def test_async_route(app_t1):
     assert response.content == b'Hello lino! do_all'
 
 
-def test_remote_async(remote_app):
+def test_remote_async(remote_app1):
 
     response = httpx.post('http://127.0.0.1:5999/inbox/lino', json = {'msg' : 'do_all'})
     assert response.status_code == 200
     assert response.content == b'Hello lino! do_all'
 
 
+def test_async_comm(remote_app1, remote_app2):
+
+    response = httpx.post(f'http://127.0.0.1:{PORT1}/get_remote_flag', 
+                         json = {
+                             'dest' : f'http://127.0.0.1:{PORT2}',
+                             'msg' : 'flag1'})
+
+    assert response.status_code == 200
+    jsonres = json.loads(response.content)
+    assert jsonres['flag'] == 'hello'

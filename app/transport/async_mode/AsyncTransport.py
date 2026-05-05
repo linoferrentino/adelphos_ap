@@ -14,26 +14,36 @@
 
 
 from app.transport.AbstractTransport import AbstractTransport
+from app.logging import gCon
+from urllib.parse import urlsplit
 
+from app.transport.async_mode.AsyncGateway import AsyncGateway
 
 class AsyncTransport(AbstractTransport):
 
 
-    def __init__(self, loop):
-        self.loop = loop
+    def __init__(self):
+        pass
+
+
+    def set_gateway(self, gateway):
+        self.gateway = gateway
 
 
     def post_json(self, url, json):
-        pass
+        assert False
 
 
     def get_json(self, url):
-        pass
+        gCon.log(f"getting json {url}")
+        urls = urlsplit(url)
+        return self.gateway.route_message("GET", urls)
 
 
     def in_get_json(self, urlp):
-        pass
+        gCon.log(f"IN getting json {urlp}")
+        assert False
 
 
     def register_reverse_path(self, routable):
-        pass
+        assert False
