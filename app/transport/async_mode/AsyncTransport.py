@@ -31,3 +31,9 @@ class AsyncTransport(AbstractTransport):
         pass
 
 
+    def in_get_json(self, urlp):
+        pass
+
+
+    def register_reverse_path(self, routable):
+        pass

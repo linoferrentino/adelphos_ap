@@ -15,6 +15,7 @@
 import pytest
 
 from tests.transport.TRoutable import TRoutable
+from tests.transport.TRoutable import HOST_1, HOST_2, FLAG_1, FLAG_2
 from tests.testers.SyncApp import SyncApp
 from tests.testers.SyncTester import SyncTester
 from tests.testers.SyncGateway import SyncGateway
@@ -22,15 +23,6 @@ from tests.transport.sync_mode.SyncTransport import SyncTransport
 from tests.transport.sync_mode.loop import stop_loop, get_loop
 from app.logging import gCon
 import json
-
-HOST_1 = "www.host1.org"
-HOST_2 = "www.host2.org"
-
-FLAG_1 = "XXXzzz"
-FLAG_1_NEW = "XXXZZZ"
-
-FLAG_2 = "XXXyyy"
-FLAG_2_NEW = "XXXYYY"
 
 
 @pytest.fixture
@@ -79,4 +71,14 @@ def test_get_flag(sync1, sync2):
     jsonres = json.loads(response.body)
     assert jsonres['flag'] == 'hello'
 
+
+def test_get_flag_no(sync1, sync2):
+
+    test1 = SyncTester(sync1)
+    test2 = SyncTester(sync2)
+
+    with pytest.raises(Exception):
+        response = test1.post("/get_remote_flag", json = { 
+                                          'dest' : "www.nohost.com",
+                                          'msg' : 'flag1' })
 

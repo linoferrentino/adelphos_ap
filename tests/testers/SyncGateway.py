@@ -27,7 +27,7 @@ class SyncGateway(AbstractGateway):
 
     def route_message(self, method, urlp, json = None):
 
-        transport = self.hosts[urlp.netloc]
+        transport = self.hosts.get(urlp.netloc)
         if transport is None:
             raise Exception(f"No route to host {urlp.netloc}")
 
