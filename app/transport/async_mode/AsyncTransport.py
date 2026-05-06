@@ -35,7 +35,6 @@ class AsyncTransport(AbstractTransport):
 
 
     async def get_json(self, url):
-        gCon.log(f"getting json {url}")
         urls = urlsplit(url)
         return await self.gateway.route_message("GET", urls)
 

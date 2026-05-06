@@ -43,14 +43,15 @@ class SyncTransport(AbstractTransport):
         self.in_app = in_app
 
 
-    def get_json(self, url):
+    async def get_json(self, url):
         urls = urlsplit(url)
         if urls.netloc == self.host:
             return self.host.in_get_json(urls)
         #gCon.log(f"get json {url}")
         if self.gateway is None:
             raise Exception(f"Network unavailable. {self.host}")
-        return self.gateway.route_message("GET", urls)
+        val = await self.gateway.route_message("GET", urls)
+        return val.body
 
 
     def in_get_json(self, urlp):

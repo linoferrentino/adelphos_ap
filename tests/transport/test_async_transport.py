@@ -15,6 +15,7 @@
 import pytest
 import httpx
 import time
+import json
 
 from app.transport.async_mode.AsyncTransport import AsyncTransport
 from tests.transport.TRoutable import TRoutable
@@ -72,7 +73,7 @@ def test_async_comm(remote_app1, remote_app2):
 
     response = httpx.post(f'http://127.0.0.1:{PORT1}/get_remote_flag', 
                          json = {
-                             'dest' : f'http://127.0.0.1:{PORT2}',
+                             'dest' : f'127.0.0.1:{PORT2}',
                              'msg' : 'flag1'})
 
     assert response.status_code == 200

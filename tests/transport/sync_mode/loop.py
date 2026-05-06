@@ -72,7 +72,8 @@ def stop_loop():
 def run_coro_in_loop(endpoint, request):
 
     res = run_coro_in_loop_generator(endpoint, request)
-    return next(res)
+    res_task = next(res)
+    return res_task
 
 
 def run_coro_in_loop_generator(endpoint, request):

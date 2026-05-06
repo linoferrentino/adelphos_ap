@@ -23,6 +23,7 @@ from app.logging import gCon
 from contextlib import asynccontextmanager
 
 from app.transport.async_mode.AsyncGateway import AsyncGateway
+import json
 
 HOST_1 = "www.host1.org"
 HOST_2 = "www.host2.org"
@@ -55,7 +56,7 @@ class TRoutable(Routable):
         which_flag = json_val['msg']
         url_to_call = f"https://{dest}/get_local_flag?flag={which_flag}"
         flag = await self.transport.get_json(url_to_call)
-        return flag
+        return JSONResponse(json.loads(flag)) 
 
 
     async def get_local_flag(self, request):

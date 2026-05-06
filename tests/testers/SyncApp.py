@@ -90,7 +90,6 @@ class SyncApp:
         endpoint = route.endpoint
         request = SyncRequest(dict_params, path_params, in_json)
 
-        #gCon.log(f"Here I am {urlp}")
         res = run_coro_in_loop(endpoint, request)
         return res
 

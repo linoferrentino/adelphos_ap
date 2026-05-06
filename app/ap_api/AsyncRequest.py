@@ -18,6 +18,7 @@ from abc import ABC, abstractmethod
 from app.logging import gCon
 from urllib.parse import urlsplit
 import re
+import traceback
 
 
 # the base class for all the requests in Adelphos.
@@ -71,6 +72,7 @@ class AsyncGetReq(AsyncRequestBase):
         try:
             await self.async_req_try(session)
         except Exception as ex:
+            traceback.print_exc()
             gCon.log(f"Exception while trying to get the URL {self._url}")
             # I put a generic user error
             self.status_code = 400
@@ -82,11 +84,9 @@ class AsyncGetReq(AsyncRequestBase):
 
 
     async def async_req_try(self, session):
-        gCon.log(f"will request the url {self._url}")
         async with session.get(self._url) as resp:
             self.status_code = resp.status
             self.text = await resp.text()
-        gCon.log(f"got response {self.status_code} now I signal")
 
 
 # this class posts the request with the signatures.

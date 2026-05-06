@@ -32,8 +32,6 @@ class AsyncGateway(AbstractGateway):
 
 
     async def _dequeue_requests_or_wait_lock(self, session):
-     
-        gCon.log(f"req len {len(self.requests)}") 
         while (len(self.requests) != 0):
             req = self.requests.pop()
             asyncio.create_task(req.async_req(session))
@@ -41,7 +39,6 @@ class AsyncGateway(AbstractGateway):
 
 
     async def start(self, app):
-        gCon.log("Starting the gateway")
         self.app = app
         self.ses_worker = asyncio.create_task(self.session_worker(app))
 
@@ -56,26 +53,24 @@ class AsyncGateway(AbstractGateway):
         async with aiohttp.ClientSession(headers = headers_acc) as session:
             while app.running == True:
                 async with app.cond:
-                    gCon.log("something?")
                     await self._dequeue_requests_or_wait_lock(session)
 
 
     async def async_req_push(self, ar):
         async with self.app.cond:
             self.requests.append(ar)
-            gCon.log("append, now I notify")
             self.app.cond.notify_all()
 
 
     async def async_req_wait(self, ar):
         # I have to put it into the list and wait
         await self.async_req_push(ar)
-        gCon.log(f"async req to {ar._url} posted, now I wait")
         while (ar.status_code is None):
             async with ar._cond:
                 await ar._cond.wait()
-        gCon.log(f"got result {ar.status_code} in client request!")
-        return ar.status_code
+        if ar.status_code != 200:
+            raise Exception(f"Got {ar.status_code} from {ar._url}")
+        return ar.text
 
 
     async def route_message(self, method, urlp, json = None):

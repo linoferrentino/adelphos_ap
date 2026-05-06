@@ -14,6 +14,8 @@
 
 from app.transport.AbstractGateway import AbstractGateway
 
+from app.logging import gCon
+
 class SyncGateway(AbstractGateway):
 
 
