@@ -34,10 +34,10 @@ class AsyncTransport(AbstractTransport):
         assert False
 
 
-    def get_json(self, url):
+    async def get_json(self, url):
         gCon.log(f"getting json {url}")
         urls = urlsplit(url)
-        return self.gateway.route_message("GET", urls)
+        return await self.gateway.route_message("GET", urls)
 
 
     def in_get_json(self, urlp):

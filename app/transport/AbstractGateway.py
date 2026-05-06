@@ -20,7 +20,7 @@ class AbstractGateway(ABC):
 
 
     @abstractmethod
-    def route_message(self, method, url_parsed, json = None):
+    async def route_message(self, method, url_parsed, json = None):
         pass
 
 

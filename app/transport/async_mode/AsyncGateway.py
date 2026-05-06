@@ -33,10 +33,11 @@ class AsyncGateway(AbstractGateway):
 
     async def _dequeue_requests_or_wait_lock(self, session):
      
+        gCon.log(f"req len {len(self.requests)}") 
         while (len(self.requests) != 0):
             req = self.requests.pop()
             asyncio.create_task(req.async_req(session))
-        await app.cond.wait()
+        await self.app.cond.wait()
 
 
     async def start(self, app):
@@ -55,43 +56,35 @@ class AsyncGateway(AbstractGateway):
         async with aiohttp.ClientSession(headers = headers_acc) as session:
             while app.running == True:
                 async with app.cond:
+                    gCon.log("something?")
                     await self._dequeue_requests_or_wait_lock(session)
 
 
     async def async_req_push(self, ar):
         async with self.app.cond:
             self.requests.append(ar)
+            gCon.log("append, now I notify")
             self.app.cond.notify_all()
 
 
     async def async_req_wait(self, ar):
         # I have to put it into the list and wait
         await self.async_req_push(ar)
-        #gCon.log(f"async req to {ar._url} posted, now I wait")
+        gCon.log(f"async req to {ar._url} posted, now I wait")
         while (ar.status_code is None):
             async with ar._cond:
                 await ar._cond.wait()
-        #gCon.log(f"got result {ar.status_code} in client request!")
+        gCon.log(f"got result {ar.status_code} in client request!")
         return ar.status_code
 
 
-    def route_message(self, method, urlp, json = None):
-
-        res = self.route_message_generator(method, urlp, json)
-        gCon.log(f"I have {res}")
-        resin = next(res)
-        gCon.log(f"I have {resin}")
-        return resin
-
-
-    def route_message_generator(self, method, urlp, json = None):
+    async def route_message(self, method, urlp, json = None):
 
         if method == "GET":
 
             ar = AsyncGetReq(None)
             ar.init_split(urlp)
-            task = asyncio.create_task(self.async_req_wait(ar))
-            yield 
+            return await self.async_req_wait(ar)
 
         elif method == "POST":
             assert False

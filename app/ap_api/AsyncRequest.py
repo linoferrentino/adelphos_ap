@@ -82,11 +82,11 @@ class AsyncGetReq(AsyncRequestBase):
 
 
     async def async_req_try(self, session):
-        #gCon.log(f"will request the url {self._url}")
+        gCon.log(f"will request the url {self._url}")
         async with session.get(self._url) as resp:
             self.status_code = resp.status
             self.text = await resp.text()
-        #gCon.log(f"got response {self.status_code} now I signal")
+        gCon.log(f"got response {self.status_code} now I signal")
 
 
 # this class posts the request with the signatures.

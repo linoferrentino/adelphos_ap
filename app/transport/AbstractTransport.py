@@ -22,12 +22,12 @@ class AbstractTransport(ABC):
 
     # these are routed -----> Outbound
     @abstractmethod
-    def post_json(self, url, json):
+    async def post_json(self, url, json):
         pass
 
 
     @abstractmethod
-    def get_json(self, url):
+    async def get_json(self, url):
         pass
 
 

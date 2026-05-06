@@ -54,7 +54,7 @@ class TRoutable(Routable):
         dest = json_val['dest']
         which_flag = json_val['msg']
         url_to_call = f"https://{dest}/get_local_flag?flag={which_flag}"
-        flag = self.transport.get_json(url_to_call)
+        flag = await self.transport.get_json(url_to_call)
         return flag
 
 
