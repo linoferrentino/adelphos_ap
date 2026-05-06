@@ -19,11 +19,11 @@ from app.consts import ADELPHOS_AP_ENV_KEY
 from typer import Option
 from typing_extensions import Annotated
 import uvicorn
-from app.AdelphosApp import get_app
+#from app.AdelphosApp import get_app
 from app.logging import gCon
 
 
-def main(
+def main_OLD(
         instance_name:
 Annotated[str, Option( help = f"Name of Adelphos instance, default env var \
 {ADELPHOS_AP_ENV_KEY}")] = None,
@@ -35,6 +35,16 @@ Annotated[str, Option( help = "Config file to use, default: adelphos_ap_${instan
     port = app.config['General']['port']
     gCon.log(f"Will start {instance_name} on port {port}")
     uvicorn.run(app, host="127.0.0.1", port=port, reload=False)
+
+
+def main(
+  instance_name:
+Annotated[str, Option( help = f"Name of Adelphos instance, default env var \
+{ADELPHOS_AP_ENV_KEY}")] = None,
+        config_file:
+Annotated[str, Option( help = "Config file to use, default: adelphos_ap_${instance_name}.toml")] = None
+        ):
+    gCon.log(f"Will start {instance_name}")
 
 
 if __name__ == "__main__":

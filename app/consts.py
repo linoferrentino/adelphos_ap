@@ -2,7 +2,7 @@
 
 
 # this will be deprecated.
-USER_ID = "daemon"
+#USER_ID = "daemon"
 DAEMON_ID = "daemon"
 
 # this env variable is used to get the name of the instance.

@@ -24,6 +24,7 @@ from app.transport.async_mode.AsyncGateway import AsyncGateway
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 from tests.transport.TRoutable import async_lifespan_gw
 import time
+from app.consts import API_POINT
 
 
 LOCALHOST = '127.0.0.1'
@@ -49,6 +50,6 @@ def start_starlette_app(aroutable, port):
     routable = aroutable(transport, "flag")
     app = StarletteWrap(transport = transport, routes = routable.get_routes(), 
                     lifespan = async_lifespan_gw)
-    uvicorn.run(app, host=LOCALHOST, port=port, log_level="debug")
+    uvicorn.run(app, host=LOCALHOST, port=port, log_level="debug", root_path=API_POINT)
 
 
