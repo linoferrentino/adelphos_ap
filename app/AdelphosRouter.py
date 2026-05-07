@@ -13,47 +13,99 @@
 #
 # the router for our application.
 
-from fastapi import APIRouter, FastAPI, WebSocket
-import typer
-from urllib.parse import urlparse
-import sys
-import base64
-from datetime import timedelta
-from datetime import datetime
+#from fastapi import APIRouter, FastAPI, WebSocket
+#import typer
+#from urllib.parse import urlparse
+#import sys
+#import base64
+#from datetime import timedelta
+#from datetime import datetime
+#
+#import json
+#import hashlib
+#import os
+#import uuid
+#from cryptography.hazmat.backends import default_backend as crypto_default_backend
+#from cryptography.hazmat.primitives import serialization as crypto_serialization
+#from cryptography.hazmat.primitives import hashes
+#from cryptography.hazmat.primitives.asymmetric import padding
+#from typing import Union
+#import asyncio
+#
+#from fastapi import FastAPI
+#import json
+#from fastapi import APIRouter, Request, Depends, Query, HTTPException, status, Response
+#
+#from fastapi.encoders import jsonable_encoder
+#from fastapi.responses import JSONResponse
+#
+#from app.logging import gCon
+#from app.config import load_conf
+##from app.ap_api.ActivityPubGateway import ActivityPubGateway
+#import uvicorn
+#import re
+#
+##from app.AdelphosApp import AdelphosApp, get_app
+#from app.consts import DAEMON_ID 
+#from app.consts import API_POINT
+#from fastapi import FastAPI, WebSocket
+#from fastapi.responses import HTMLResponse
+#
 
-import json
-import hashlib
-import os
-import uuid
-from cryptography.hazmat.backends import default_backend as crypto_default_backend
-from cryptography.hazmat.primitives import serialization as crypto_serialization
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
-from typing import Union
-import asyncio
 
-from fastapi import FastAPI
-import json
-from fastapi import APIRouter, Request, Depends, Query, HTTPException, status, Response
-
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
-
+from app.transport.Routable import Routable
+from starlette.routing import Route
+from starlette.responses import Response
 from app.logging import gCon
-from app.config import load_conf
-from app.ap_api.ActivityPubGateway import ActivityPubGateway
-import uvicorn
-import re
+import app.consts as CNST
 
-#from app.AdelphosApp import AdelphosApp, get_app
-from app.consts import DAEMON_ID 
-from app.consts import API_POINT
-from fastapi import FastAPI, WebSocket
-from fastapi.responses import HTMLResponse
+
+class AdelphosRouter(Routable):
+
+
+    def __init__(self, instance_name, config_file = None, config = None):
+        self.instance = instance_name
+
+
+    async def in_webfinger(self, request):
+        user = request.query_params.get('resource')
+        gCon.log(f"Here I am! user is {user}")
+        if user is None:
+            return Response(status_code = 401)
+        return Response(status_code = 404)
+
+
+    async def in_infouser(self, request):
+        pass
+
+
+    async def in_inbox(self, request):
+        pass
+
+
+    def get_routes(self):
+        routes = [
+                Route(CNST.WEBFINGER_ROUTE,
+                      endpoint = self.in_webfinger, methods=['GET']),
+                Route(CNST.USER_DISCOVER_ROUTE, 
+                      endpoint = self.in_infouser, methods=['GET']),
+                Route(CNST.USER_INBOX_ROUTE,
+                      endpoint = self.in_inbox, methods=['POST']),
+                ]
+        return routes
+
+
+    async def init_up(self):
+        pass
+
+
+    async def tear_down(self):
+        pass
 
 
 # I initialize the router with the app.
-class AdelphosRouter(APIRouter):
+#class AdelphosRouter_deprecated(APIRouter):
+class AdelphosRouter_deprecated():
 
 
     def __init__(self, app):

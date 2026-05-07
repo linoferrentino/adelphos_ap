@@ -24,15 +24,6 @@ from app.logging import gCon
 from app.transport.async_mode.AsyncGateway import AsyncGateway
 import json
 
-HOST_1 = "www.host1.org"
-HOST_2 = "www.host2.org"
-
-FLAG_1 = "XXXzzz"
-FLAG_1_NEW = "XXXZZZ"
-
-FLAG_2 = "XXXyyy"
-FLAG_2_NEW = "XXXYYY"
-
 
 
 class TRoutable(Routable):

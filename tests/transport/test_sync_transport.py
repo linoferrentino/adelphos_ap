@@ -15,43 +15,39 @@
 import pytest
 
 from tests.transport.TRoutable import TRoutable
-from tests.transport.TRoutable import HOST_1, HOST_2, FLAG_1, FLAG_2
+#from tests.transport.TRoutable import HOST_1, HOST_2, FLAG_1, FLAG_2
+import tests.test_constants as tc
 from tests.testers.SyncApp import SyncApp
 from tests.testers.SyncTester import SyncTester
-from tests.testers.SyncGateway import SyncGateway
+#from tests.testers.SyncGateway import SyncGateway
 from tests.transport.sync_mode.SyncTransport import SyncTransport
-from tests.transport.sync_mode.loop import stop_loop, get_loop
+#from tests.transport.sync_mode.loop import stop_loop, get_loop
 from app.logging import gCon
+from tests.testers.fixtures import sync_gateway
 import json
 
 
-@pytest.fixture
-def sync_gateway():
-    get_loop()
-    gateway = SyncGateway()
-    yield gateway
-    stop_loop()
+#@pytest.fixture
+#def sync_gateway():
+#    get_loop()
+#    gateway = SyncGateway()
+#    yield gateway
+#    stop_loop()
 
 
 @pytest.fixture
 def sync1(sync_gateway):
 
-    #transport = SyncTransport(HOST_1, sync_gateway)
-    #aroutable = TRoutable(transport, FLAG_1)
-    aroutable = TRoutable(FLAG_1)
-    #app = SyncApp(aroutable.get_routes(), transport)
-    app = SyncApp(HOST_1, aroutable, sync_gateway)
+    aroutable = TRoutable(tc.FLAG_1)
+    app = SyncApp(tc.HOST_1, aroutable, sync_gateway)
     return app
 
 
 @pytest.fixture
 def sync2(sync_gateway):
 
-    #transport = SyncTransport(HOST_2, sync_gateway)
-    #aroutable = TRoutable(transport, FLAG_2)
-    aroutable = TRoutable(FLAG_2)
-    app = SyncApp(HOST_2, aroutable, sync_gateway)
-    #app = SyncApp(aroutable.get_routes(), transport)
+    aroutable = TRoutable(tc.FLAG_2)
+    app = SyncApp(tc.HOST_2, aroutable, sync_gateway)
     return app
 
 
@@ -69,7 +65,7 @@ def test_get_flag(sync1, sync2):
     test1 = SyncTester(sync1)
     test2 = SyncTester(sync2)
     response = test1.post("/get_remote_flag", json = { 
-                                          'dest' : HOST_2,
+                                          'dest' : tc.HOST_2,
                                           'msg' : 'flag1' })
     assert response.status_code == 200
     jsonres = json.loads(response.body)

@@ -31,17 +31,12 @@ class SyncApp:
 
     def __init__(self, host, routable, gateway):
 
-
         transport = SyncTransport(host, self, gateway)
-        #transport.register_reverse_path(self)
-        #transport.set_gateway(gateway)
-
         routable.set_transport(transport)
         routes = routable.get_routes()
 
         self.get_routes = []
         self.post_routes = []
-
 
         for route in routes:
             if 'GET' in route.methods:

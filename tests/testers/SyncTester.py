@@ -18,6 +18,7 @@ from urllib.parse import urlsplit
 
 class SyncTester:
 
+
     def __init__(self, app):
         self.app = app
 
@@ -33,15 +34,17 @@ class SyncTester:
 
 
     def post(self, path, json):
-        if (isinstance(path, str)):
-            urlparse = self._check_path(path)
-        elif (isinstance(path, int)):
-            urlparse = path
-        else:
-            raise Exception(f"type {path} not expected got {type(path)}")
+        urlparse = self._check_path(path)
+        #if (isinstance(path, str)):
+        #    urlparse = self._check_path(path)
+        #elif (isinstance(path, int)):
+        #    urlparse = path
+        #else:
+        #    raise Exception(f"type {path} not expected got {type(path)}")
         return self.app.in_post_json(urlparse, json)
         
 
     def get(self, path):
-        pass
+        urlparse = self._check_path(path)
+        return self.app.in_get_json(urlparse)
 
