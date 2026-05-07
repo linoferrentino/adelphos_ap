@@ -40,7 +40,7 @@ class TRoutable(Routable):
 
 
     def __init__(self, transport, flag):
-        self.transport = transport
+        super().__init__(transport)
         self.flag = flag
 
 
@@ -74,17 +74,30 @@ class TRoutable(Routable):
         return routes
 
 
+    async def init_up(self):
+        pass
+
+
+    async def tear_down(self):
+        pass
+
+
+
 @asynccontextmanager
 async def async_lifespan_gw(app):
 
     app.running = True
-    gateway = AsyncGateway()
-    app.transport.set_gateway(gateway)
-    await gateway.start(app)
+    out_gateway = AsyncGateway()
+    app.transport.set_gateway(out_gateway)
+
+    await out_gateway.start(app)
+    await app.in_gw.init_up()
 
     yield
 
     app.running = False
-    await gateway.stop()
+
+    await app.in_gw.tear_down()
+    await out_gateway.stop()
 
  

@@ -64,10 +64,18 @@ from app.store.MemoryStore import MemoryStore
 from app.transport.AbstractRouter import AbstractRouter
 from app.transport.AbstractGateway import AbstractGateway
 
+from app.transport.Routable import Routable
+from starlette.applications import Starlette
+
 app = None
 
 
-class AdelphosApp(FastAPI, AbstractRouter, AbstractGateway):
+class AdelphosApp(Starlette):
+
+    pass
+
+
+class AdelphosApp_deprecated(FastAPI, AbstractRouter, AbstractGateway):
 
 
     # the initialization of adelphos is done in two steps.
@@ -277,7 +285,7 @@ class AdelphosApp(FastAPI, AbstractRouter, AbstractGateway):
 
 
 @asynccontextmanager
-async def lifespan(app: AdelphosApp):
+async def lifespan_deprecated(app: AdelphosApp):
     #gCon.rule(f"LIFESPAN START {app.instance}")
 
     #db_name = app.config['General']['db_name']
@@ -361,7 +369,7 @@ async def session_worker(app: AdelphosApp):
                 
 
 # I create here the main application object, singleton
-def get_app(instance_name, config_file, config):
+def get_app_deprecated(instance_name, config_file, config):
     global app
 
     if (app is not None):

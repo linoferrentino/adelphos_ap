@@ -34,7 +34,7 @@ def app_t1():
 
     transport = AsyncTransport()
     aroutable = TRoutable(transport, "test")
-    app = StarletteWrap(transport = transport, routes = aroutable.get_routes())
+    app = StarletteWrap(transport = transport, routable = aroutable)
     return app
 
 

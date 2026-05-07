@@ -5,6 +5,8 @@
 #USER_ID = "daemon"
 DAEMON_ID = "daemon"
 
+LOCALHOST = '127.0.0.1'
+
 # this env variable is used to get the name of the instance.
 ADELPHOS_AP_ENV_KEY = "ADELPHOS_AP_INSTANCE"
 

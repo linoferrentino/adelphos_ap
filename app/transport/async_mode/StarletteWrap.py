@@ -19,10 +19,12 @@ import asyncio
 
 class StarletteWrap(Starlette):
 
-    def __init__(self, transport, routes, lifespan = None):
+    def __init__(self, transport, routable, lifespan = None):
+        routes = routable.get_routes()
         super().__init__(routes = routes, lifespan = lifespan)
 
         self.transport = transport
         self.running = False
         self.cond = asyncio.Condition()  
+        self.in_gw = routable
 

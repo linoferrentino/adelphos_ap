@@ -19,8 +19,22 @@ from abc import ABC, abstractmethod
 class Routable(ABC):
 
 
+    def __init__(self, transport):
+        self.transport = transport
+
+
     @abstractmethod
     def get_routes(self):
+        pass
+
+
+    @abstractmethod
+    async def init_up(self):
+        pass
+
+
+    @abstractmethod
+    async def tear_down(self):
         pass
 
 
