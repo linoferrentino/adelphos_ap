@@ -36,18 +36,22 @@ def sync_gateway():
 @pytest.fixture
 def sync1(sync_gateway):
 
-    transport = SyncTransport(HOST_1, sync_gateway)
-    aroutable = TRoutable(transport, FLAG_1)
-    app = SyncApp(aroutable.get_routes(), transport)
+    #transport = SyncTransport(HOST_1, sync_gateway)
+    #aroutable = TRoutable(transport, FLAG_1)
+    aroutable = TRoutable(FLAG_1)
+    #app = SyncApp(aroutable.get_routes(), transport)
+    app = SyncApp(HOST_1, aroutable, sync_gateway)
     return app
 
 
 @pytest.fixture
 def sync2(sync_gateway):
 
-    transport = SyncTransport(HOST_2, sync_gateway)
-    aroutable = TRoutable(transport, FLAG_2)
-    app = SyncApp(aroutable.get_routes(), transport)
+    #transport = SyncTransport(HOST_2, sync_gateway)
+    #aroutable = TRoutable(transport, FLAG_2)
+    aroutable = TRoutable(FLAG_2)
+    app = SyncApp(HOST_2, aroutable, sync_gateway)
+    #app = SyncApp(aroutable.get_routes(), transport)
     return app
 
 

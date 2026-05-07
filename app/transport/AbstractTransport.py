@@ -36,6 +36,6 @@ class AbstractTransport(ABC):
         pass
 
 
-    @abstractmethod
-    def register_reverse_path(self, routable):
-        pass
+    #@abstractmethod
+    #def register_reverse_path(self, routable):
+    #    pass

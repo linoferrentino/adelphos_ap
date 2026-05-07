@@ -19,10 +19,11 @@ from contextlib import asynccontextmanager
 import multiprocessing as mp
 import contextlib
 import uvicorn
-from app.transport.async_mode.AsyncTransport import AsyncTransport
-from app.transport.async_mode.AsyncGateway import AsyncGateway
-from app.transport.async_mode.StarletteWrap import StarletteWrap
-from tests.transport.TRoutable import async_lifespan_gw
+#from app.transport.async_mode.AsyncTransport import AsyncTransport
+#from app.transport.async_mode.AsyncGateway import AsyncGateway
+#from app.transport.async_mode.StarletteWrap import StarletteWrap
+from app.transport.async_mode.StarletteHelper import starlette_app_creator
+#from app.transport.Routable import async_lifespan_gw
 import time
 from app.consts import API_POINT, LOCALHOST
 
@@ -43,10 +44,11 @@ class ProcessWrapper:
 
 def start_starlette_app(aroutable, port):
 
-    transport = AsyncTransport()
-    routable = aroutable(transport, "flag")
-    app = StarletteWrap(transport = transport, routable = routable, 
-                    lifespan = async_lifespan_gw)
+    routable = aroutable("flag")
+    #transport = AsyncTransport()
+    #app = StarletteWrap(transport = transport, routable = routable, 
+    #                lifespan = async_lifespan_gw)
+    app = starlette_app_creator(routable)
     uvicorn.run(app, host=LOCALHOST, port=port, log_level="debug", root_path=API_POINT)
 
 

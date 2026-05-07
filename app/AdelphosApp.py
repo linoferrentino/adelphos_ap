@@ -70,9 +70,28 @@ from starlette.applications import Starlette
 app = None
 
 
-class AdelphosApp(Starlette):
+class AdelphosApp(Routable):
 
-    pass
+
+    def __init__(self, transport, flag):
+        super().__init__(transport)
+
+
+    def get_routes(self):
+        routes = [
+                Route("/inbox/{username}", endpoint = self.post_inbox, methods=['POST']),
+                Route("/get_remote_flag", endpoint = self.get_remote_flag, methods=['POST']),
+                Route("/get_local_flag", endpoint = self.get_local_flag, methods=['GET']),
+                ]
+        return routes
+
+
+    async def init_up(self):
+        pass
+
+
+    async def tear_down(self):
+        pass
 
 
 class AdelphosApp_deprecated(FastAPI, AbstractRouter, AbstractGateway):
@@ -390,6 +409,26 @@ def get_app_deprecated(instance_name, config_file, config):
     #app.include_router(app.conn_hndl.get_router())
 
     app.init_instance(config_file, config)
+
+    return app
+
+
+def get_app(instance_name, config_file, config):
+    global app
+
+    if (app is not None):
+        return app
+
+    if (instance_name is None):
+        instance_name = os.getenv(ADELPHOS_AP_ENV_KEY)
+
+    if (instance_name is None):
+        exit_err(f"No instance defined and {ADELPHOS_AP_ENV_KEY} variable not defined")
+
+    transport = AsyncTransport()
+    adelphos.init_instance(config_file, config)
+
+    app = StarletteWrap(instance_name, lifespan = lifespan)
 
     return app
 

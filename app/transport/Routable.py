@@ -15,11 +15,10 @@
 
 from abc import ABC, abstractmethod
 
-
 class Routable(ABC):
 
 
-    def __init__(self, transport):
+    def set_transport(self, transport):
         self.transport = transport
 
 
@@ -36,5 +35,6 @@ class Routable(ABC):
     @abstractmethod
     async def tear_down(self):
         pass
+
 
 

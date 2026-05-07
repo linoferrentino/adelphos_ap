@@ -20,34 +20,26 @@ from app.logging import gCon
 class SyncTransport(AbstractTransport):
 
 
-    def __init__(self, host, gateway):
+    def __init__(self, host, in_gw, out_gw):
         self.host = host
-        self.gateway = gateway
-        self.in_app = None
+        self.gateway = out_gw 
+        self.in_app = in_gw 
 
-        if gateway is not None:
-            gateway.register_dns(self, host)
-
-
-    def get_loop(self):
-        if self.gateway is not None:
-            return self.gateway.get_loop()
-        return 
+        out_gw.register_dns(self, host)
 
     
     def post_json(self, url, json):
         pass
 
 
-    def register_reverse_path(self, in_app):
-        self.in_app = in_app
+    #def register_reverse_path(self, in_app):
+    #    self.in_app = in_app
 
 
     async def get_json(self, url):
         urls = urlsplit(url)
         if urls.netloc == self.host:
             return self.host.in_get_json(urls)
-        #gCon.log(f"get json {url}")
         if self.gateway is None:
             raise Exception(f"Network unavailable. {self.host}")
         val = await self.gateway.route_message("GET", urls)
@@ -62,12 +54,4 @@ class SyncTransport(AbstractTransport):
         return self.in_app.in_get_json(urlp)
 
 
-    #(urls, host) = self._get_routable_host(url)
-    #    if host is None:
-    #        if self.gateway is None:
-    #            raise Exception(f"No route to host {urls.netloc}")
-    #    return host.in_get_json(urls)
-
-    #def in_get_json(self, urlp):
-    #    assert False
 

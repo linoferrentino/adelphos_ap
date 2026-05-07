@@ -20,7 +20,6 @@ from starlette.responses import JSONResponse
 
 from app.logging import gCon
 
-from contextlib import asynccontextmanager
 
 from app.transport.async_mode.AsyncGateway import AsyncGateway
 import json
@@ -39,8 +38,7 @@ FLAG_2_NEW = "XXXYYY"
 class TRoutable(Routable):
 
 
-    def __init__(self, transport, flag):
-        super().__init__(transport)
+    def __init__(self, flag):
         self.flag = flag
 
 
@@ -83,21 +81,4 @@ class TRoutable(Routable):
 
 
 
-@asynccontextmanager
-async def async_lifespan_gw(app):
 
-    app.running = True
-    out_gateway = AsyncGateway()
-    app.transport.set_gateway(out_gateway)
-
-    await out_gateway.start(app)
-    await app.in_gw.init_up()
-
-    yield
-
-    app.running = False
-
-    await app.in_gw.tear_down()
-    await out_gateway.stop()
-
- 

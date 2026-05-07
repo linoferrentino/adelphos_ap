@@ -19,7 +19,6 @@ import json
 
 from app.transport.async_mode.AsyncTransport import AsyncTransport
 from tests.transport.TRoutable import TRoutable
-#from starlette.applications import Starlette
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 from starlette.testclient import TestClient
 from tests.testers.ProcessWrapper import ProcessWrapper
@@ -32,9 +31,10 @@ PORT2 = 5997
 @pytest.fixture
 def app_t1():
 
-    transport = AsyncTransport()
-    aroutable = TRoutable(transport, "test")
-    app = StarletteWrap(transport = transport, routable = aroutable)
+    #transport = AsyncTransport()
+    #aroutable = TRoutable("test", transport)
+    aroutable = TRoutable("test")
+    app = StarletteWrap(routable = aroutable)
     return app
 
 

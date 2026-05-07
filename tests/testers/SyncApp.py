@@ -18,6 +18,7 @@ import asyncio
 import threading
 
 from tests.testers.SyncRequest import SyncRequest
+from tests.transport.sync_mode.SyncTransport import SyncTransport
 from tests.transport.sync_mode.loop import stop_loop, get_loop, run_coro_in_loop
 from urllib.parse import parse_qs
 
@@ -28,13 +29,19 @@ from app.logging import gCon
 # a sync version of a Starlette application
 class SyncApp:
 
-    def __init__(self, routes, transport):
+    def __init__(self, host, routable, gateway):
+
+
+        transport = SyncTransport(host, self, gateway)
+        #transport.register_reverse_path(self)
+        #transport.set_gateway(gateway)
+
+        routable.set_transport(transport)
+        routes = routable.get_routes()
 
         self.get_routes = []
         self.post_routes = []
 
-        if transport is not None:
-            transport.register_reverse_path(self)
 
         for route in routes:
             if 'GET' in route.methods:
