@@ -69,7 +69,6 @@ class AdelphosRouter(Routable):
 
     async def in_webfinger(self, request):
         user = request.query_params.get('resource')
-        gCon.log(f"Here I am! user is {user}")
         if user is None:
             return Response(status_code = 401)
         return Response(status_code = 404)

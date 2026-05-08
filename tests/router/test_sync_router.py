@@ -42,3 +42,7 @@ def test_webfinger(app1):
     url_query = f"{CNST.WEBFINGER_ROUTE}?resource=malformed"
     response = test1.get(url_query)
     assert response.status_code == 404
+
+    url_query = f"{CNST.WEBFINGER_ROUTE}?resource=acct:daemon@{tc.HOST_1}"
+    response = test1.get(url_query)
+    assert response.status_code == 404
