@@ -39,6 +39,8 @@ class SyncApp:
         self.post_routes = []
 
         for route in routes:
+            if route.methods is None:
+                continue
             if 'GET' in route.methods:
                 self.get_routes.append(SyncApp._translate_sync_route(route))
             elif 'POST' in route.methods:

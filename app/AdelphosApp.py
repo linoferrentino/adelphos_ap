@@ -429,6 +429,9 @@ variable not defined")
 
     #transport = AsyncTransport()
     #adelphos.init_instance(config_file, config)
+
+    #social_provider = ActivityPubMockup()
+
     adelphos_in_gw = AdelphosRouter(instance_name, config)
 
     #app = StarletteWrap(instance_name, lifespan = lifespan)

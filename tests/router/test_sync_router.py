@@ -27,7 +27,7 @@ import tests.test_constants as tc
 
 @pytest.fixture
 def app1(sync_gateway):
-    routable = AdelphosRouter("test")
+    routable = AdelphosRouter("test", None)
     app = SyncApp(tc.HOST_1, routable, sync_gateway)
     return app
 

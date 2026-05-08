@@ -16,8 +16,9 @@ GENERAL_SECTION = "General"
 PRIVATE_KEY_FILE_KEY = "private_key"
 
 
-#####
 WEBFINGER_ROUTE = "/.well-known/webfinger"
 USER_DISCOVER_ROUTE = "/users/{username}"
 USER_INBOX_ROUTE = "/users/{username}/inbox"
+DAEMON_CLI_ROUTE = "/daemon_cli"
+WS_ROUTE = "/ws"
 
