@@ -63,8 +63,9 @@ import app.consts as CNST
 class AdelphosRouter(Routable):
 
 
-    def __init__(self, instance_name, config_file = None, config = None):
-        self.instance = instance_name
+    def __init__(self, instance_name, config):
+        self.instance_name = instance_name
+        self.config = config
 
 
     async def in_webfinger(self, request):

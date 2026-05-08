@@ -13,65 +13,75 @@
 #
 # the main class of adelphos. This defines the application.
 
+#import os
+#import aiohttp
+#import asyncio
+#import re
+#import threading
+#
+#
+#from contextlib import asynccontextmanager
+#from fastapi import FastAPI
+#
+#from app.ap_api.AsyncRequest import AsyncGetReq
+#from app.consts import ADELPHOS_AP_ENV_KEY
+#from app.consts import API_POINT
+#from app.consts import USER_ID
+#
+#from app.dao.AdelphosUri import EAdelphosType
+#from app.dao.AdelphosUri import uriparse
+#
+#from app.dao.AdelphosDb import AdelphosDb
+#from app.logging import exit_err
+#from app.logging import gCon
+#
+#from app.cli.ConnHandler import ConnHandler
+#
+#from app.config import load_conf
+#from app.keys import load_keys
+#from app.logging import good_bye
+#
+#from app.ap_api.ActivityPubApi import ActivityPubApi
+#from app.ap_api.ActivityPubMockup import ActivityPubMockup
+#
+## the actor is ambiguous, we can have the activity pub actor
+## or the adelphos actor
+#
+#from app.dao.ApServerDao import ApServerDao
+#from app.dao.ApServerDto import create_ap_server
+#
+#from app.core.MasterAdelphosDao import MasterAdelphosDao
+#
+#from app.dao.AdInstanceDto import create_ad_instance
+#
+#from app.ap_api.ActivityPubGateway import ActivityPubGateway
+#from app.ad_api.AdelphosGateway import AdelphosGateway
+##from .consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
+##from app.AdelphosRouter import make_router
+#from app.core.Adelphos import Adelphos
+#
+#from app.store.MemoryStore import MemoryStore
+#from app.transport.AbstractRouter import AbstractRouter
+#from app.transport.AbstractGateway import AbstractGateway
+#
+#from app.transport.Routable import Routable
+#from starlette.applications import Starlette
+
+
 import os
-import aiohttp
-import asyncio
-import re
-import threading
-
-
-from contextlib import asynccontextmanager
-from fastapi import FastAPI
-
-from app.ap_api.AsyncRequest import AsyncGetReq
-from app.consts import ADELPHOS_AP_ENV_KEY
-from app.consts import API_POINT
-from app.consts import USER_ID
-
-from app.dao.AdelphosUri import EAdelphosType
-from app.dao.AdelphosUri import uriparse
-
-from app.dao.AdelphosDb import AdelphosDb
 from app.logging import exit_err
 from app.logging import gCon
-
-from app.cli.ConnHandler import ConnHandler
-
+from app.consts import ADELPHOS_AP_ENV_KEY
 from app.config import load_conf
-from app.keys import load_keys
-from app.logging import good_bye
+from app.AdelphosRouter import AdelphosRouter
+from app.transport.async_mode.StarletteHelper import starlette_app_creator
 
-from app.ap_api.ActivityPubApi import ActivityPubApi
-from app.ap_api.ActivityPubMockup import ActivityPubMockup
-
-# the actor is ambiguous, we can have the activity pub actor
-# or the adelphos actor
-
-from app.dao.ApServerDao import ApServerDao
-from app.dao.ApServerDto import create_ap_server
-
-from app.core.MasterAdelphosDao import MasterAdelphosDao
-
-from app.dao.AdInstanceDto import create_ad_instance
-
-from app.ap_api.ActivityPubGateway import ActivityPubGateway
-from app.ad_api.AdelphosGateway import AdelphosGateway
-#from .consts import GENERAL_SECTION, PRIVATE_KEY_FILE_KEY
-#from app.AdelphosRouter import make_router
-from app.core.Adelphos import Adelphos
-
-from app.store.MemoryStore import MemoryStore
-from app.transport.AbstractRouter import AbstractRouter
-from app.transport.AbstractGateway import AbstractGateway
-
-from app.transport.Routable import Routable
-from starlette.applications import Starlette
 
 app = None
 
 
-
-class AdelphosApp_deprecated(FastAPI, AbstractRouter, AbstractGateway):
+#class AdelphosApp_deprecated(FastAPI, AbstractRouter, AbstractGateway):
+class AdelphosApp_deprecated:
 
 
     # the initialization of adelphos is done in two steps.
@@ -280,8 +290,9 @@ class AdelphosApp_deprecated(FastAPI, AbstractRouter, AbstractGateway):
         self.include_router(router)
 
 
-@asynccontextmanager
-async def lifespan_deprecated(app: AdelphosApp):
+#@asynccontextmanager
+#async def lifespan_deprecated(app: AdelphosApp):
+async def lifespan_deprecated(app):
     #gCon.rule(f"LIFESPAN START {app.instance}")
 
     #db_name = app.config['General']['db_name']
@@ -325,7 +336,7 @@ async def lifespan_deprecated(app: AdelphosApp):
 # this method is called with the app.cond taken.
 # this method will take all the requests in queue and start
 # their soft-thread
-async def _dequeue_requests_or_wait_lock(session, app: AdelphosApp):
+async def _dequeue_requests_or_wait_lock(session, app):
      
     while (len(app.requests) != 0):
         req = app.requests.pop()
@@ -333,7 +344,7 @@ async def _dequeue_requests_or_wait_lock(session, app: AdelphosApp):
     await app.cond.wait()
 
 
-async def daemon_bg_cycle(app: AdelphosApp):
+async def daemon_bg_cycle(app):
 
     while app.running == True:
         async with app.cond:
@@ -351,7 +362,7 @@ async def daemon_bg_cycle(app: AdelphosApp):
 
 # this is the session worker that holds the session and
 # does the async requests 
-async def session_worker(app: AdelphosApp):
+async def session_worker(app):
 
     headers_acc = {"Accept" : "application/activity+json"}
 
@@ -375,7 +386,7 @@ def get_app_deprecated(instance_name, config_file, config):
         instance_name = os.getenv(ADELPHOS_AP_ENV_KEY)
 
     if (instance_name is None):
-        exit_err(f"No instance defined and {ADELPHOS_AP_ENV_KEY} variable not defined")
+        exit_err(f"No instance given on command line and {ADELPHOS_AP_ENV_KEY} variable not defined")
 
     #gCon.log(f"Starting Adelphos' instance {instance_name}")
     app = AdelphosApp(instance_name, root_path = API_POINT, lifespan = lifespan)
@@ -400,17 +411,25 @@ def get_app(instance_name = None, config_file = None, config = None):
         instance_name = os.getenv(ADELPHOS_AP_ENV_KEY)
 
     if (instance_name is None):
-        exit_err(f"No instance defined and {ADELPHOS_AP_ENV_KEY} variable not defined")
-
-    if ((config_file is None) and (config is None)):
-        exit_err(f"At least config_file or config must be not None")
+        exit_err(f"No instance given on command line and {ADELPHOS_AP_ENV_KEY} \
+variable not defined")
 
     if ((config_file is not None) and (config is not None)):
         exit_err(f"You cannot set both config and config_file")
 
+    if config is None:
+        config = load_conf(instance_name, config_file)
+
+    #if instance_name != config['name']
+
+    gCon.log(f"Starting adelphos instance {instance_name}")
+
+    #if ((config_file is None) and (config is None)):
+    #    exit_err(f"At least config_file or config must be not None")
+
     #transport = AsyncTransport()
     #adelphos.init_instance(config_file, config)
-    adelphos_router = AdelphosRouter(instance_name)
+    adelphos_in_gw = AdelphosRouter(instance_name, config)
 
     #app = StarletteWrap(instance_name, lifespan = lifespan)
     app = starlette_app_creator(adelphos_in_gw)

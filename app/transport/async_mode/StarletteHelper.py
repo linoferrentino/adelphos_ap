@@ -18,11 +18,10 @@ from app.transport.async_mode.AsyncTransport import AsyncTransport
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 from app.transport.async_mode.AsyncGateway import AsyncGateway
 
+from app.logging import gCon
+
 
 def starlette_app_creator(routable):
-    #transport = AsyncTransport()
-    #routable.set_transport(transport)
-    #app = StarletteWrap(transport = transport, routable = routable, 
     app = StarletteWrap(routable = routable, lifespan = async_lifespan_gw)
     return app
 

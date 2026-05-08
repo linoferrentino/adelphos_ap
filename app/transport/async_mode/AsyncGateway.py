@@ -44,6 +44,8 @@ class AsyncGateway(AbstractGateway):
 
 
     async def stop(self):
+        async with self.app.cond:
+            self.app.cond.notify_all()
         await self.ses_worker
 
 

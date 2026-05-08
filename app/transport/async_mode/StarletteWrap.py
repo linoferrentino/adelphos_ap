@@ -34,6 +34,10 @@ class StarletteWrap(Starlette):
         self.in_gw = routable
 
 
+    def get_config(self):
+        return self.in_gw.config
+
+
     def set_out_gateway(self, gw):
         self.transport.set_gateway(gw)
 
