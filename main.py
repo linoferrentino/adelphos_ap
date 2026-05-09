@@ -52,7 +52,9 @@ Annotated[str, Option( help = "Config file to use, default: adelphos_ap_${instan
     config = app.get_config()
     port = config['General']['port']
     gCon.log(f"Starting instance {instance_name} on port {port}")
-    uvicorn.run(app, host=LOCALHOST, port=port, reload=False, root_path=API_POINT)
+    uvicorn.run(app, host=LOCALHOST, port=port, reload=False, root_path=API_POINT,
+                log_level = "debug")
+                #uvicorn.run(app, host=LOCALHOST, port=port, reload=False, 
 
 
 if __name__ == "__main__":

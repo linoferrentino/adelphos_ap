@@ -20,5 +20,6 @@ WEBFINGER_ROUTE = "/.well-known/webfinger"
 USER_DISCOVER_ROUTE = "/users/{username}"
 USER_INBOX_ROUTE = "/users/{username}/inbox"
 DAEMON_CLI_ROUTE = "/daemon_cli"
-WS_ROUTE = "/ws"
+#WS_ROUTE = f"{API_POINT}/ws"
+WS_ROUTE = f"/ws"
 

@@ -233,7 +233,7 @@ class AdelphosRouter(Routable):
 
           <script>
 
-                var ws = new WebSocket("wss://{host_api}/ws");"""
+                var ws = new WebSocket("wss://{host}/ws");"""
 
                 #var ws = new WebSocket("wss://{host_api}/ws");
         # here we have to change the string without the formatting because it
@@ -279,17 +279,13 @@ class AdelphosRouter(Routable):
         </body>
     </html>
     """
-        gCon.log("sssssssssssssssssssssss")
         return HTMLResponse(html_string)
 
 
-    async def in_websocket(websocket: WebSocket):
-        gCon.log("111")
+    async def in_websocket(self, websocket: WebSocket):
         await websocket.accept()
-        gCon.log(f"111 xxxx")
         text = await websocket.receive_text()
         await websocket.send_text(f"Hello, world! {text}")
-        gCon.log(f"222 ")
         await websocket.close()
 
 
@@ -301,10 +297,8 @@ class AdelphosRouter(Routable):
                       endpoint = self.in_infouser, methods=['GET']),
                 Route(CNST.USER_INBOX_ROUTE,
                       endpoint = self.in_inbox, methods=['POST']),
-                #Route(CNST.DAEMON_CLI_ROUTE, AdelphosDaemonCli),
                 Route(CNST.DAEMON_CLI_ROUTE, self.in_daemon_cli, methods=['GET']),
-                #Route(CNST.WS_ROUTE, AdelphosWebSocket),
-                #WebSocketRoute(CNST.WS_ROUTE, self.in_websocket),
+                WebSocketRoute(CNST.WS_ROUTE, self.in_websocket),
                 ]
         return routes
 
@@ -473,7 +467,7 @@ class AdelphosRouter_deprecated():
           <script>
 
 
-                var ws = new WebSocket("wss://{host_api}/ws");"""
+                var ws = new WebSocket("wss://{host}/ws");"""
 
         # here we have to change the string without the formatting because it
         # has the { parenthesis
