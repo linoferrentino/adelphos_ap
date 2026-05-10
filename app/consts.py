@@ -12,8 +12,9 @@ ADELPHOS_AP_ENV_KEY = "ADELPHOS_AP_INSTANCE"
 
 API_POINT = "/api"
 
-GENERAL_SECTION = "General"
-PRIVATE_KEY_FILE_KEY = "private_key"
+CNF_GENERAL_SECTION = "General"
+CNF_PRIVATE_KEY_FILE_KEY = "private_key"
+CNF_HOST_KEY = "host"
 
 
 WEBFINGER_ROUTE = "/.well-known/webfinger"
@@ -21,6 +22,4 @@ USER_DISCOVER_ROUTE = "/users/{username}"
 USER_INBOX_ROUTE = "/users/{username}/inbox"
 DAEMON_CLI_ROUTE = f"/daemon_cli"
 WS_ROUTE = f"/ws"
-#DAEMON_CLI_ROUTE = f"{API_POINT}/daemon_cli"
-#WS_ROUTE = f"{API_POINT}/ws"
 

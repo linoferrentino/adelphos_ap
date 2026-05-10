@@ -52,32 +52,65 @@
 #from fastapi.responses import HTMLResponse
 #
 
+import re
+import json
 
-from app.transport.Routable import Routable
 from starlette.routing import Route
 from starlette.routing import WebSocketRoute
 from starlette.responses import Response
 from starlette.responses import HTMLResponse
+from starlette.websockets import WebSocket
+
+import app.consts as CNST
+from app.logging import gCon
+
+from app.transport.Routable import Routable
 from app.endpoints.AdelphosDaemonCli import AdelphosDaemonCli
 from app.endpoints.AdelphosWebSocket import AdelphosWebSocket
-from starlette.websockets import WebSocket
-from app.logging import gCon
-import app.consts as CNST
+from app.federation.SocialProvider import SocialProvider
+
 
 
 class AdelphosRouter(Routable):
 
 
-    def __init__(self, instance_name, config):
+    def __init__(self, instance_name, config, social : SocialProvider = None):
         self.instance_name = instance_name
         self.config = config
+        self.social = social
 
 
     async def in_webfinger(self, request):
-        user = request.query_params.get('resource')
-        if user is None:
+        resource = request.query_params.get('resource')
+        if resource is None:
             return Response(status_code = 401)
-        return Response(status_code = 404)
+        
+        ap_user_match = re.match('acct:(.*?)@(.*)$', resource[0])
+        if (ap_user_match is None):
+            return Response(status_code=401)
+
+        ap_user_rex = ap_user_match.group(1)
+        if (self.social.local_user_exists(ap_user_rex) == False):
+            return Response(status_code=404)
+
+        host = self.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
+        host_api = f"{host}/{CNST.API_POINT}"
+
+        response = Response(
+            content=json.dumps({
+                "subject": resource,
+                "links": [
+                    {
+                        "rel": "self",
+                        "type": "application/activity+json",
+                        "href": f"https://{host_api}/users/{ap_user_rex}"
+                    }
+                ]
+            })
+        )
+        
+        response.headers['Content-Type'] = 'application/jrd+json'
+        return response
 
 
     async def in_infouser(self, request):

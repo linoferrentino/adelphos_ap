@@ -12,8 +12,25 @@
 ######################################################
 #
 
+
+adelphos_stub =  {"General": {
+    "debug": True, 
+    "port": 7777, 
+    "db_name": ":memory:", 
+    "private_key": ":memory:", 
+    "host":  "localhost:7777", 
+    "root_user": ":local:", 
+    # the password for alice is dual, one is for her being a normal alias in adelphos,
+    # the other as a super user, the super user does not participate in the transactions
+    "root_password": "$argon2id$v=19$m=65536,t=3,p=4$o/oGlKYis246QARUaT/0cw$7zu3oQuS1wz4Ddk/pc6NjLfTcac6YGmEX2VRGymtXrI"
+    }, 
+            "demo_users": [
+    {"name": "alice99", "alias": "##alice.af", "password": "alice11", "root" : True}, 
+    {"name": "bobzz", "alias": "##bob2.bf", "password": "bob22"}]
+}
+
+
 adelphos_t2_test =  {"General": {
-    "name" : "_test_adelphos_t2",
     "debug": True, 
     "port": 9911, 
     "db_name": ":memory:", 
@@ -29,8 +46,8 @@ adelphos_t2_test =  {"General": {
     {"name": "bobzz", "alias": "##bob2.bf", "password": "bob22"}]
 }
 
+
 adelphos_remote2_conf  =  {"General": {
-    "name" : "_test_adelphos_remote2",
     "debug": True, 
     "port": 5011, 
     "db_name": ":memory:", 

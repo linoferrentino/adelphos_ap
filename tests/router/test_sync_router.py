@@ -19,15 +19,19 @@ import app.consts as CNST
 from app.AdelphosRouter import AdelphosRouter
 
 from tests.testers.fixtures import sync_gateway
+from tests.testers.fixtures import social_stub
+
 from tests.testers.SyncApp import SyncApp
 from tests.testers.SyncTester import SyncTester
 
 import tests.test_constants as tc
+import tests.adelphoi_test_config as tconf
+
 
 
 @pytest.fixture
-def app1(sync_gateway):
-    routable = AdelphosRouter("test", None)
+def app1(sync_gateway, social_stub):
+    routable = AdelphosRouter("test", tconf.adelphos_stub, social_stub)
     app = SyncApp(tc.HOST_1, routable, sync_gateway)
     return app
 
@@ -41,8 +45,10 @@ def test_webfinger(app1):
 
     url_query = f"{CNST.WEBFINGER_ROUTE}?resource=malformed"
     response = test1.get(url_query)
-    assert response.status_code == 404
+    assert response.status_code == 401
 
     url_query = f"{CNST.WEBFINGER_ROUTE}?resource=acct:daemon@{tc.HOST_1}"
     response = test1.get(url_query)
-    assert response.status_code == 404
+    assert response.status_code == 200
+
+
