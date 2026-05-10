@@ -233,7 +233,10 @@ class AdelphosRouter(Routable):
 
           <script>
 
-                var ws = new WebSocket("wss://{host}/ws");"""
+                var ws = new WebSocket("wss://{host_api}/ws");"""
+
+###################################### NEW 
+
 
                 #var ws = new WebSocket("wss://{host_api}/ws");
         # here we have to change the string without the formatting because it
@@ -468,6 +471,8 @@ class AdelphosRouter_deprecated():
 
 
                 var ws = new WebSocket("wss://{host}/ws");"""
+
+                ##################### OLD OLD OLD OLD
 
         # here we have to change the string without the formatting because it
         # has the { parenthesis
