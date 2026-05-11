@@ -17,7 +17,7 @@ import asyncio
 from urllib.parse import urlsplit
 from contextlib import ContextDecorator
 
-from tests.transport.sync_mode.loop import run_coro_in_loop
+from tests.transport.sync_mode.loop import run_coro_in_loop, get_loop
 from app.logging import gCon
 
 
@@ -99,15 +99,21 @@ class WebSocketSync(ContextDecorator):
         gCon.log(f"[red]{id(self)}[/red] receive_text {self.buffer} server {self.is_server}")
         text = run_coro_in_loop(self.receive_text_blocking_async, self)
         gCon.log(f"[red]{id(self)}[/red] temp RECEIVE {text}")
-        if isinstance(text, asyncio.Task) == True:
-            gCon.log("Waiting result")
-            text = text.result()
+        #if isinstance(text, asyncio.Task) == True:
+        #    gCon.log("Waiting result")
+        #    try:
+        #        get_loop().run_until_complete(text)
+        #        text = text.result()
+        #    except Exception as ex:
+        #        gCon.log(f"HELP {ex}")
+        #        raise ex
+        #    gCon.log("OOOOO")
 
         gCon.log(f"FINAL RECEIVE {text}")
         #if self.is_server:
         #else:
         #    text = run_coro_in_loop(self.receive_text_blocking_async, self)
-        #return text
+        return text
 
 
     async def receive_text_blocking_async(self, stub = None):
@@ -117,13 +123,15 @@ class WebSocketSync(ContextDecorator):
         else:
             cond = self.cond
         
+        data = None 
+        gCon.log(f"[red]{id(self)}[/red] receive async buffer /{self.buffer}/")
         async with cond:
             while self.buffer is None:
                 gCon.log(f"[red]{id(self)}[/red], server {self.is_server}, I wait to receive")
                 await cond.wait()
-                data = self.buffer
                 gCon.log(f"[red]{id(self)}[/red], exited from cond {data}")
 
+            data = self.buffer
             self.buffer = None
 
         gCon.log(f"[red]{id(self)}[/red] has received {data}")
