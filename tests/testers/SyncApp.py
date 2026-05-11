@@ -59,15 +59,16 @@ class SyncApp:
 
 
     def incoming_websocket(self, path, websock):
-        gCon.log("incoming websocket")
+        #gCon.log("incoming websocket")
         for route in self.ws_routes:
             if route.path != path:
                 gCon.log(f"{route} != {path}")
                 continue
-            gCon.log(f"this is the route {route.endpoint}, I create the pair!")
+            #gCon.log(f"this is the route {route.endpoint}, I create the pair!")
             websock_dup = WebSocketSync(websock)
+            websock.pair_sock = websock_dup
             run_coro_in_loop(route.endpoint, websock_dup, False)
-            gCon.log("started websocket")
+            #gCon.log("started websocket")
             return
         return Response(None, 404)
 

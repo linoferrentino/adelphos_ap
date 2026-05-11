@@ -324,7 +324,7 @@ class AdelphosRouter(Routable):
 
 
     async def in_websocket(self, websocket: WebSocket):
-        gCon.log(f"test ws1 {id(websocket)}")
+        gCon.log(f"[red]{id(websocket)}[/red] in_websocket")
         await websocket.accept()
         gCon.log("test ws2")
         text = await websocket.receive_text()

@@ -27,6 +27,8 @@ from tests.testers.SyncTester import SyncTester
 import tests.test_constants as tc
 import tests.adelphoi_test_config as tconf
 
+from app.logging import gCon
+
 
 
 @pytest.fixture
@@ -41,6 +43,7 @@ def test_ws_sync(app1):
 
     test1 = SyncTester(app1)
     with test1.websocket_connect('/ws') as websocket:
+        gCon.log(f"[red]{id(websocket)}[/red] sending >lino<")
         websocket.send_text("lino")
         data = websocket.receive_text()
         assert data == 'Hello, world! lino'
