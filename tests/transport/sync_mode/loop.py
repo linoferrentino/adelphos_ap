@@ -69,9 +69,11 @@ def stop_loop():
         loop_lock.release()
 
 
-def run_coro_in_loop(endpoint, request):
+def run_coro_in_loop(endpoint, request, wait = True):
 
     res = run_coro_in_loop_generator(endpoint, request)
+    if wait == False:
+        return None
     res_task = next(res)
     return res_task
 
@@ -79,9 +81,11 @@ def run_coro_in_loop(endpoint, request):
 def run_coro_in_loop_generator(endpoint, request):
 
     if threading.current_thread() == run_loop_th:
+        gCon.log("inner thread")
         task = asyncio.create_task(endpoint(request))
         yield task
 
+    gCon.log("outer thread")
     future = asyncio.run_coroutine_threadsafe(endpoint(request), get_loop())
     res = future.result()
     if isinstance(res, asyncio.Task) == True:

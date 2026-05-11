@@ -19,22 +19,32 @@ from app.federation.SocialProvider import SocialProvider
 
 from tests.testers.SyncGateway import SyncGateway
 from tests.transport.sync_mode.loop import stop_loop, get_loop
+from app.logging import gCon
+
+
+class UserStub:
+
+    def __init__(self, user):
+        self.user = user
 
 
 class SocialStub(SocialProvider):
 
 
     def __init__(self, user_list):
-        self.users = user_list
+
+        self.users = { user: UserStub(user) for user in user_list }
 
 
     def get_user_handle(self, user: str) -> int:
-        if user in self.user_list:
-            return self.user_list
+        pass
 
 
     def local_user_exists(self, user: str) -> bool:
-        pass
+        user_local = self.users.get(user)
+        if user_local is None:
+            return False
+        return True
 
 
     def post_message(self, user_handle, message):

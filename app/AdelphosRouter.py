@@ -90,10 +90,15 @@ class AdelphosRouter(Routable):
             return Response(status_code=401)
 
         ap_user_rex = ap_user_match.group(1)
+        ap_host_rex = ap_user_match.group(2)
+        host = self.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
+
+        if ap_host_rex != host:
+            return Response(status_code=404)
+
         if (self.social.local_user_exists(ap_user_rex) == False):
             return Response(status_code=404)
 
-        host = self.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
         host_api = f"{host}/{CNST.API_POINT}"
 
         response = Response(
@@ -319,8 +324,11 @@ class AdelphosRouter(Routable):
 
 
     async def in_websocket(self, websocket: WebSocket):
+        gCon.log(f"test ws1 {id(websocket)}")
         await websocket.accept()
+        gCon.log("test ws2")
         text = await websocket.receive_text()
+        gCon.log("test ws3")
         await websocket.send_text(f"Hello, world! {text}")
         await websocket.close()
 

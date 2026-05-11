@@ -13,15 +13,21 @@
 #
 
 import pytest
-from app.AdelphosRouter import AdelphosRouter
+
 from starlette.testclient import TestClient
-import tests.test_constants as tc
-from app.transport.async_mode.StarletteWrap import StarletteWrap
 from starlette.websockets import WebSocket
 
+from app.AdelphosRouter import AdelphosRouter
+from app.transport.async_mode.StarletteWrap import StarletteWrap
+
+from tests.testers.fixtures import social_stub
+import tests.test_constants as tc
+import tests.adelphoi_test_config as tconf
+
+
 @pytest.fixture
-def app1():
-    aroutable = AdelphosRouter("test", None)
+def app1(social_stub):
+    aroutable = AdelphosRouter("test", tconf.adelphos_stub, social_stub)
     app = StarletteWrap(routable = aroutable)
     return app
 

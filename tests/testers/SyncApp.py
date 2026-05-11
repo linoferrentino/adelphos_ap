@@ -20,6 +20,7 @@ import threading
 from tests.testers.SyncRequest import SyncRequest
 from tests.transport.sync_mode.SyncTransport import SyncTransport
 from tests.transport.sync_mode.loop import stop_loop, get_loop, run_coro_in_loop
+from tests.testers.SyncTester import WebSocketSync
 from urllib.parse import parse_qs
 
 from starlette.routing import WebSocketRoute
@@ -36,20 +37,39 @@ class SyncApp:
         routable.set_transport(transport)
         routes = routable.get_routes()
 
+        self.routable = routable
+
         self.get_routes = []
         self.post_routes = []
+        self.ws_routes = []
 
         for route in routes:
             if isinstance(route, WebSocketRoute) == True:
-                continue
-            if route.methods is None:
-                continue
-            if 'GET' in route.methods:
+                self.add_web_socket_route(route)
+            elif 'GET' in route.methods:
                 self.get_routes.append(SyncApp._translate_sync_route(route))
             elif 'POST' in route.methods:
                 self.post_routes.append(SyncApp._translate_sync_route(route))
             else:
                 raise Exception(f"invalid method in route {route.methods}")
+
+
+    def add_web_socket_route(self, route):
+        self.ws_routes.append(route)
+
+
+    def incoming_websocket(self, path, websock):
+        gCon.log("incoming websocket")
+        for route in self.ws_routes:
+            if route.path != path:
+                gCon.log(f"{route} != {path}")
+                continue
+            gCon.log(f"this is the route {route.endpoint}, I create the pair!")
+            websock_dup = WebSocketSync(websock)
+            run_coro_in_loop(route.endpoint, websock_dup, False)
+            gCon.log("started websocket")
+            return
+        return Response(None, 404)
 
 
     @staticmethod
