@@ -84,8 +84,8 @@ class AdelphosRouter(Routable):
         resource = request.query_params.get('resource')
         if resource is None:
             return Response(status_code = 401)
-        
-        ap_user_match = re.match('acct:(.*?)@(.*)$', resource[0])
+
+        ap_user_match = re.match('acct:(.*?)@(.*)$', resource)
         if (ap_user_match is None):
             return Response(status_code=401)
 
@@ -123,7 +123,12 @@ class AdelphosRouter(Routable):
 
 
     async def in_inbox(self, request):
-        pass
+
+        user = request.path_params['username']
+        body = await request.json()
+        gCon.log(f"inbox {user}, body {body}")
+        self.social.post_message(user, body)
+        return Response(status_code=202)
 
 
     async def in_daemon_cli(self, request):

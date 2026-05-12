@@ -17,7 +17,7 @@ class SyncRequest:
 
     def __init__(self, query_params, path_params, json):
 
-        self.query_params = query_params
+        self.query_params = { k: v[0] for k, v in query_params.items() }
         self.path_params = path_params 
         self._inner_json = json
         self.json = self.get_json 
@@ -26,8 +26,5 @@ class SyncRequest:
     async def get_json(self):
         return self._inner_json
 
-
-    #async def json(self):
-    #    return self.json 
 
 

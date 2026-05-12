@@ -14,11 +14,31 @@
 
 
 import asyncio
+
 from starlette.applications import Starlette
 from app.transport.async_mode.AsyncTransport import AsyncTransport
 from starlette.types import Receive, Scope, Send
+from starlette.responses import Response
+
 from app.consts import API_POINT
 from app.logging import gCon
+
+from app.exc.AdelphosException import AdelphosException 
+from app.exc.AdelphosException import AdErrno
+
+from starlette.middleware import Middleware
+
+class AdelphosExcMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        try:
+            await self.app(scope, receive, send)
+        except AdelphosException as exc:
+            gCon.log(f"XXXXX exception! {exc.errno}")
+            response = Response(status_code = 401)
+            await response(scope, receive, send)
 
 
 class StarletteWrap(Starlette):
@@ -29,12 +49,16 @@ class StarletteWrap(Starlette):
         routable.set_transport(transport)
         routes = routable.get_routes()
 
-        super().__init__(routes = routes, lifespan = lifespan)
+        middleware = [
+                Middleware(AdelphosExcMiddleware),
+                ]
+
+        super().__init__(routes = routes, lifespan = lifespan, middleware = middleware)
 
         self.transport = transport
         self.running = False
         self.cond = asyncio.Condition()  
-        self.in_gw = routable
+        self.routable = routable
 
         self.root_path = root_path
 
@@ -50,7 +74,7 @@ class StarletteWrap(Starlette):
 
 
     def get_config(self):
-        return self.in_gw.config
+        return self.routable.config
 
 
     def set_out_gateway(self, gw):

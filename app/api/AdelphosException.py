@@ -6,7 +6,7 @@ from enum import IntEnum
 from enum import auto
 
 
-class EAdelhposErrno(IntEnum):
+class EAdelhposErrno_deprecated(IntEnum):
 
     DONE_OK = 0
     # not really an error, just to avoid a commit
@@ -31,7 +31,7 @@ class EAdelhposErrno(IntEnum):
     EGENERIC_SERVER = 500
 
 
-class AdelphosException(Exception):
+class AdelphosException_deprecated(Exception):
 
 
     def __init__(self, msg, code: EAdelhposErrno = EAdelhposErrno.EGENERIC_USER):
@@ -39,7 +39,7 @@ class AdelphosException(Exception):
         self.code = code
 
 
-class AdelphosRuntimeError(AdelphosException):
+class AdelphosRuntimeError_deprecated(AdelphosException):
 
     def __init__(self, msg):
         super().__init__(msg, EAdelhposErrno.EGENERIC_SERVER)

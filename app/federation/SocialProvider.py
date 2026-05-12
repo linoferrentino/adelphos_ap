@@ -25,28 +25,14 @@ from abc import ABC, abstractmethod
 
 from app.transport.RouterProvider import RouterProvider
 
-#class SocialProvider(RouterProvider):
+#INVALID_USER_HANDLE = 0xFFFFFFFF
+
 class SocialProvider(ABC):
 
-    
-    #def __init__(self, transport):
-    #    self.transport = transport
-    #    pass
-
 
     #@abstractmethod
-    #def create_user(self, username, is_daemon, listener):
+    #def get_user_handle(self, user: str) -> int:
     #    pass
-
-    
-    #@abstractmethod
-    #def create_or_register_user(self, username):
-    #    pass
-
-
-    @abstractmethod
-    def get_user_handle(self, user: str) -> int:
-        pass
 
 
     @abstractmethod
@@ -54,22 +40,14 @@ class SocialProvider(ABC):
         pass
 
 
-    #@abstractmethod
-    #async def discover_user(self, username, maybe = False):
-    #    pass
-
-
-    #def discover_user_sync(self, username):
-    #    pass
-
-
-    #def register_listener(self, listener):
-    #    self.listener = listener
-
-
     @abstractmethod
-    def post_message(self, user_handle, message):
+    def post_message(self, user, message):
         pass
+
+
+    #@abstractmethod
+    #def login_user(self, user, password):
+    #    pass
 
 
 

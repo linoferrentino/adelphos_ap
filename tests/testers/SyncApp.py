@@ -91,7 +91,6 @@ class SyncApp:
 
     def _get_matched_route(self, parsed_url, routes):
         for route in routes:
-            #gCon.log(f"I try to match {route.path} with {parsed_url.path}")
             match_route = re.match(route.path, parsed_url.path)
             if match_route is not None:
                 return (route, match_route)
