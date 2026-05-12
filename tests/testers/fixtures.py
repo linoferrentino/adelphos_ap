@@ -14,6 +14,7 @@
 
 
 import pytest
+import json
 
 from app.federation.SocialProvider import SocialProvider
 
@@ -29,6 +30,16 @@ class UserStub:
 
     def __init__(self, user):
         self.user = user
+        self.messages = []
+
+
+    def new_msg(self, msg):
+        self.messages.append(msg)
+
+
+    def pop_lst_msg(self):
+        (self.messages, msg) = (self.messages[:-1], self.messages[-1])
+        return msg
 
 
 class SocialStub(SocialProvider):
@@ -45,14 +56,23 @@ class SocialStub(SocialProvider):
             return False
         return True
 
-
-    def post_message(self, user, message):
-        gCon.log(f"user {user} got the message {message}")
+    
+    def _pri_get_user_stub(self, user):
         user_stub = self.users.get(user)
         if user_stub is None:
             raise AdelphosException(AdErrno.USER_DOES_NOT_EXIST)
-        else:
-            gCon.log(f"GOT {user} and I will post!")
+        return user_stub
+ 
+
+    def post_message(self, user, message):
+        user_stub = self._pri_get_user_stub(user)
+        msg = message['msg']
+        user_stub.new_msg(msg)
+
+
+    def login_user(self, user):
+        user_stub = self._pri_get_user_stub(user)
+        return user_stub
 
 
 @pytest.fixture(scope = "module")

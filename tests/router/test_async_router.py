@@ -28,7 +28,11 @@ from tests.testers.SyncApp import SyncApp
 import app.consts as CNST
 from tests.testers.SyncTester import SyncTester
 from app.exc.AdelphosException import AdelphosException
+from app.exc.AdelphosException import parse_exc
 from app.exc.AdelphosException import AdErrno
+from app.logging import gCon
+
+import tests.t_utils as tu
 
 
 #@pytest.fixture
@@ -52,8 +56,6 @@ def app1(social_stub, sync_gateway, request):
 
 
 def test_ws_1(app1):
-
-    #client = TestClient(app1) 
     with app1.websocket_connect(CNST.WS_ROUTE) as websocket:
         websocket.send_text("lino")
         data = websocket.receive_text()
@@ -66,21 +68,25 @@ def test_post_inbox_KO(app1, social_stub):
     jsonmsg = {
             'msg' : f'hello1 {user_in} secret X8a9'
             }
-    with pytest.raises(AdelphosException):
-        response = app1.post(url_post, json = jsonmsg)
+    response = app1.post(url_post, json = jsonmsg)
+    tu.assert_error_code_in_response(response, AdErrno.USER_DOES_NOT_EXIST)
 
 
 def test_post_inbox_ok(app1, social_stub):
-    url_post=CNST.USER_INBOX_ROUTE.format(username = 'demo1')
+    user_in = 'demo1'
+    url_post=CNST.USER_INBOX_ROUTE.format(username = user_in)
     jsonmsg = {
             'msg' : 'hello1 demo1 secret X8a9'
             }
     response = app1.post(url_post, json = jsonmsg)
     assert response.status_code == 202
 
+    user_ob = social_stub.login_user(user_in)
+    msg = user_ob.pop_lst_msg()
+    assert msg == 'hello1 demo1 secret X8a9'
+
 
 def test_webfinger(app1):
-    
     test1 = app1
     url_query = f"{CNST.WEBFINGER_ROUTE}?val=wrong"
     response = test1.get(url_query)

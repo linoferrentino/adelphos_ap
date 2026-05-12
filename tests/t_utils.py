@@ -19,7 +19,9 @@ from fastapi.testclient import TestClient
 from app.AdelphosApp import get_app
 from app.AdelphosApp import del_app
 import json
-from app.api.AdelphosException import EAdelhposErrno
+from app.exc.AdelphosException import parse_exc
+import httpx
+#from app.api.AdelphosException import EAdelhposErrno
 
 
 # must_wait is true when we have to connect to a remote instance.
@@ -109,5 +111,16 @@ def play_script_on_instance_OK(adelphos_instance, script):
         for line in script:
             websocket.send_text(line)
             websocket_assert_code(websocket, EAdelhposErrno.DONE_OK)
+
+
+def assert_error_code_in_response(response, error_expt):
+    assert response.status_code == 401
+    gCon.log(f"response {type(response)} {response.__dict__}")
+    if isinstance(response, httpx.Response) == True:
+        int_code = parse_exc(response._content)
+    else:
+        int_code = parse_exc(response.body)
+    assert int_code == error_expt 
+
 
 

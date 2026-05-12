@@ -34,13 +34,13 @@ async def async_lifespan_gw(app):
     app.set_out_gateway(out_gateway)
 
     await out_gateway.start(app)
-    await app.in_gw.init_up()
+    await app.routable.init_up()
 
     yield
 
     app.running = False
 
-    await app.in_gw.tear_down()
+    await app.routable.tear_down()
     await out_gateway.stop()
 
  

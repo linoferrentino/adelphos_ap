@@ -24,8 +24,22 @@ from tests.testers.SyncTester import WebSocketSync
 from urllib.parse import parse_qs
 
 from starlette.routing import WebSocketRoute
-from starlette.responses import Response
+from starlette.responses import Response, PlainTextResponse 
 from app.logging import gCon
+from app.exc.AdelphosException import AdelphosException 
+
+
+def exception_sync_middleware(func):
+
+    def inner_handler(self, *args):
+        try:
+            return func(self, *args)
+        except AdelphosException as exc:
+            response = PlainTextResponse(f"{exc.out_str}: {exc}",
+                                status_code = 401)
+            return response
+
+    return inner_handler
 
 
 # a sync version of a Starlette application
@@ -58,17 +72,14 @@ class SyncApp:
         self.ws_routes.append(route)
 
 
+    @exception_sync_middleware
     def incoming_websocket(self, path, websock):
-        #gCon.log("incoming websocket")
         for route in self.ws_routes:
             if route.path != path:
-                gCon.log(f"{route} != {path}")
                 continue
-            #gCon.log(f"this is the route {route.endpoint}, I create the pair!")
             websock_dup = WebSocketSync(websock)
             websock.pair_sock = websock_dup
             run_coro_in_loop(route.endpoint, websock_dup, False)
-            #gCon.log("started websocket")
             return
         return Response(None, 404)
 
@@ -85,6 +96,7 @@ class SyncApp:
         return route
 
 
+    @exception_sync_middleware
     def in_get_json(self, urlp):
         return self._do_sync_req(self.get_routes, urlp)
 
@@ -97,6 +109,7 @@ class SyncApp:
         return (None, None)
 
 
+    @exception_sync_middleware
     def in_post_json(self, parsed_url, in_json):
         return self._do_sync_req(self.post_routes, parsed_url, in_json)
 

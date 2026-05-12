@@ -19,6 +19,7 @@ from starlette.applications import Starlette
 from app.transport.async_mode.AsyncTransport import AsyncTransport
 from starlette.types import Receive, Scope, Send
 from starlette.responses import Response
+from starlette.responses import PlainTextResponse
 
 from app.consts import API_POINT
 from app.logging import gCon
@@ -29,15 +30,18 @@ from app.exc.AdelphosException import AdErrno
 from starlette.middleware import Middleware
 
 class AdelphosExcMiddleware:
+
+
     def __init__(self, app):
         self.app = app
+
 
     async def __call__(self, scope, receive, send):
         try:
             await self.app(scope, receive, send)
         except AdelphosException as exc:
-            gCon.log(f"XXXXX exception! {exc.errno}")
-            response = Response(status_code = 401)
+            response = PlainTextResponse(f"{exc.out_str}: {exc}",
+                                         status_code = 401)
             await response(scope, receive, send)
 
 
