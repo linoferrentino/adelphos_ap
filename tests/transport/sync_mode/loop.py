@@ -79,20 +79,9 @@ def run_coro_in_loop(endpoint, request, wait = True):
 def run_coro_in_loop_generator(endpoint, request, wait = True):
 
     if threading.current_thread() == run_loop_th:
-        gCon.log("inner thread")
         task = asyncio.create_task(endpoint(request))
-        gCon.log(f"yielded! {task} wait {wait}")
         yield task
-        #if wait == False:
-        #    yield task
-        #else:
-        #    gCon.log(f"run until complete!!!!!!!!!!!!!!!!!!!!!!!!!")
-        #    get_loop().run_until_complete(task)
-        #    #yield res
-        #    res = task.result()
-        #    gCon.log(f"result of task is {res}")
-
-    gCon.log("outer thread")
+        
     future = asyncio.run_coroutine_threadsafe(endpoint(request), get_loop())
     if wait == True:
         res = future.result()
