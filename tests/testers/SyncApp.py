@@ -17,6 +17,7 @@ import re
 import asyncio
 import threading
 
+from tests.testers.SyncGateway import SyncGateway
 from tests.testers.SyncRequest import SyncRequest
 from tests.transport.sync_mode.SyncTransport import SyncTransport
 from tests.transport.sync_mode.loop import stop_loop, get_loop, run_coro_in_loop
@@ -27,6 +28,8 @@ from starlette.routing import WebSocketRoute
 from starlette.responses import Response, PlainTextResponse 
 from app.logging import gCon
 from app.exc.AdelphosException import AdelphosException 
+
+from contextlib import contextmanager
 
 
 def exception_sync_middleware(func):
@@ -45,9 +48,25 @@ def exception_sync_middleware(func):
 # a sync version of a Starlette application
 class SyncApp:
 
-    def __init__(self, host, routable, gateway):
 
-        transport = SyncTransport(host, self, gateway)
+    gateway = None
+
+
+    def on_startup(self):
+        if SyncApp.gateway is None:
+            SyncApp.gateway = SyncGateway()
+            SyncApp.gateway.start(self)
+        self.set_out_gateway(SyncApp.gateway)
+
+
+    def on_teardown(self):
+        SyncApp.gateway.stop()
+
+
+    def __init__(self, host, routable):
+
+        transport = SyncTransport(host, self)
+        self.transport = transport
         routable.set_transport(transport)
         routes = routable.get_routes()
 
@@ -66,6 +85,10 @@ class SyncApp:
                 self.post_routes.append(SyncApp._translate_sync_route(route))
             else:
                 raise Exception(f"invalid method in route {route.methods}")
+
+
+    def set_out_gateway(self, gw):
+        self.transport.set_out_gateway(gw)
 
 
     def add_web_socket_route(self, route):

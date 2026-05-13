@@ -21,9 +21,9 @@ from tests.testers.SyncApp import SyncApp
 from tests.testers.SyncTester import SyncTester
 #from tests.testers.SyncGateway import SyncGateway
 from tests.transport.sync_mode.SyncTransport import SyncTransport
-#from tests.transport.sync_mode.loop import stop_loop, get_loop
+from tests.transport.sync_mode.loop import stop_loop, get_loop
 from app.logging import gCon
-from tests.testers.fixtures import sync_gateway
+#from tests.testers.fixtures import sync_gateway
 import json
 
 
@@ -34,37 +34,50 @@ import json
 #    yield gateway
 #    stop_loop()
 
+@pytest.fixture
+def loop_manager():
+    get_loop()
+    yield
+    stop_loop()
+
+
 
 @pytest.fixture
-def sync1(sync_gateway):
+#def sync1(sync_gateway):
+def sync1(loop_manager):
 
     aroutable = TRoutable(tc.FLAG_1)
-    app = SyncApp(tc.HOST_1, aroutable, sync_gateway)
+    #app = SyncApp(tc.HOST_1, aroutable, sync_gateway)
+    app = SyncApp(tc.HOST_1, aroutable)
     return app
 
 
 @pytest.fixture
-def sync2(sync_gateway):
+#def sync2(sync_gateway):
+def sync2(loop_manager):
 
     aroutable = TRoutable(tc.FLAG_2)
-    app = SyncApp(tc.HOST_2, aroutable, sync_gateway)
+    app = SyncApp(tc.HOST_2, aroutable)
     return app
 
 
 def test_sync_route(sync1):
 
     test = SyncTester(sync1)
-    response = test.post("/inbox/lino", json = { 'msg' : 'do_all' })
+    with test:
+        response = test.post("/inbox/lino", json = { 'msg' : 'do_all' })
 
-    assert response.status_code == 200
-    assert response.body == b'Hello lino! do_all'
+        assert response.status_code == 200
+        assert response.body == b'Hello lino! do_all'
 
 
 def test_get_flag(sync1, sync2):
 
     test1 = SyncTester(sync1)
     test2 = SyncTester(sync2)
-    response = test1.post("/get_remote_flag", json = { 
+
+    with test1, test2:
+        response = test1.post("/get_remote_flag", json = { 
                                           'dest' : tc.HOST_2,
                                           'msg' : 'flag1' })
     assert response.status_code == 200
@@ -77,7 +90,7 @@ def test_get_flag_no(sync1, sync2):
     test1 = SyncTester(sync1)
     test2 = SyncTester(sync2)
 
-    with pytest.raises(Exception):
+    with test1, test2, pytest.raises(Exception):
         response = test1.post("/get_remote_flag", json = { 
                                           'dest' : "www.nohost.com",
                                           'msg' : 'flag1' })

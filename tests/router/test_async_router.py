@@ -23,7 +23,8 @@ from app.transport.async_mode.StarletteWrap import StarletteWrap
 from tests.testers.fixtures import social_stub
 import tests.test_constants as tc
 import tests.adelphoi_test_config as tconf
-from tests.testers.fixtures import sync_gateway
+#from tests.testers.fixtures import sync_gateway
+from tests.transport.sync_mode.loop import stop_loop, get_loop
 from tests.testers.SyncApp import SyncApp
 import app.consts as CNST
 from tests.testers.SyncTester import SyncTester
@@ -43,16 +44,28 @@ import tests.t_utils as tu
 
 
 @pytest.fixture(scope = "module", params = ['sync', 'async'])
-def app1(social_stub, sync_gateway, request):
+#def app1(social_stub, sync_gateway, request):
+def app1(social_stub, request):
     aroutable = AdelphosRouter("test", tconf.adelphos_stub, social_stub)
     if request.param == 'sync':
         host = aroutable.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
-        app = SyncApp(host, aroutable, sync_gateway)
+        app = SyncApp(host, aroutable)
         wrappedapp = SyncTester(app)
+        get_loop()
     else:
         app = StarletteWrap(routable = aroutable)
         wrappedapp = TestClient(app)
-    return wrappedapp
+
+    yield wrappedapp
+
+    if request.param == 'sync':
+        stop_loop()
+
+
+def test_context(app1):
+
+    with app1 as app:
+        app.post("", json = None)
 
 
 def test_ws_1(app1):

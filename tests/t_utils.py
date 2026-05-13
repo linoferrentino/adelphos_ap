@@ -115,7 +115,6 @@ def play_script_on_instance_OK(adelphos_instance, script):
 
 def assert_error_code_in_response(response, error_expt):
     assert response.status_code == 401
-    gCon.log(f"response {type(response)} {response.__dict__}")
     if isinstance(response, httpx.Response) == True:
         int_code = parse_exc(response._content)
     else:

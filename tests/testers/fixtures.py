@@ -75,12 +75,12 @@ class SocialStub(SocialProvider):
         return user_stub
 
 
-@pytest.fixture(scope = "module")
-def sync_gateway():
-    get_loop()
-    gateway = SyncGateway()
-    yield gateway
-    stop_loop()
+#@pytest.fixture(scope = "module")
+#def sync_gateway():
+#    get_loop()
+#    gateway = SyncGateway()
+#    yield gateway
+#    stop_loop()
 
 
 @pytest.fixture(scope = "module")

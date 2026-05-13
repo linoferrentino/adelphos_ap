@@ -23,7 +23,6 @@ class AdErrno(IntEnum):
 
 
 def parse_exc(err_str):
-    gCon.log(f"this is the err_str {err_str}")
     re_match = re.match(br"Adelphos error: #(\d*)#", err_str)
     if re_match is None:
         return -1

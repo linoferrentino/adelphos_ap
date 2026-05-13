@@ -16,6 +16,7 @@ import asyncio
 
 from urllib.parse import urlsplit
 from contextlib import ContextDecorator
+from contextlib import ExitStack 
 
 from tests.transport.sync_mode.loop import run_coro_in_loop, get_loop
 from app.logging import gCon
@@ -91,11 +92,21 @@ class WebSocketSync(ContextDecorator):
         return data 
 
 
-class SyncTester:
+class SyncTester(ContextDecorator):
 
 
     def __init__(self, app):
         self.app = app
+
+
+    def __enter__(self):
+        self.app.on_startup()
+        return self
+
+
+    def __exit__(self, *exc):
+        self.app.on_teardown()
+        return False
 
 
     def _check_path(self, path):

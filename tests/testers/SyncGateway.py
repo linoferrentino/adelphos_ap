@@ -27,6 +27,14 @@ class SyncGateway(AbstractGateway):
         self.hosts[host] = transport
 
 
+    def start(self, app):
+        pass
+
+
+    def stop(self):
+        pass
+
+ 
     def route_message(self, method, urlp, json = None):
 
         transport = self.hosts.get(urlp.netloc)
