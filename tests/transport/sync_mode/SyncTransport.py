@@ -32,7 +32,7 @@ class SyncTransport(AbstractTransport):
 
     def set_out_gateway(self, gateway):
         self.gateway = gateway 
-        gCon.log(f"{id(self)} registering {self.host}")
+        #gCon.log(f"{id(self)} registering {self.host}")
         gateway.register_dns(self, self.host)
 
     #def register_reverse_path(self, in_app):

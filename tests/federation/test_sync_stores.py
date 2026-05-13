@@ -83,8 +83,3 @@ def test_sync_fdbs(fdbt1, fdbt2, federation):
     assert val_int == 99
 
 
-
-    #response = federation.post_json(f'https://{LOCALHOST}/_backdoor_api_/login', 
-    #                                json = None)
-    #assert response.status_code == 202
-

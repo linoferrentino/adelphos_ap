@@ -36,13 +36,6 @@ from app.logging import gCon
 import tests.t_utils as tu
 
 
-#@pytest.fixture
-#def app1_async(social_stub):
-#    aroutable = AdelphosRouter("test", tconf.adelphos_stub, social_stub)
-#    app = StarletteWrap(routable = aroutable)
-#    return app
-
-
 @pytest.fixture(scope = "module", params = ['sync', 'async'])
 #def app1(social_stub, sync_gateway, request):
 def app1(social_stub, request):
@@ -51,15 +44,15 @@ def app1(social_stub, request):
         host = aroutable.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
         app = SyncApp(host, aroutable)
         wrappedapp = SyncTester(app)
-        get_loop()
+        #get_loop()
     else:
         app = StarletteWrap(routable = aroutable)
         wrappedapp = TestClient(app)
 
-    yield wrappedapp
+    return wrappedapp
 
-    if request.param == 'sync':
-        stop_loop()
+    #if request.param == 'sync':
+    #    stop_loop()
 
 
 def test_context(app1):

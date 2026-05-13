@@ -55,7 +55,7 @@ ADELPHOS_VERSION_KEY = '__adelphos_v'
 ADELPHOS_CURRENT_VERSION = '0.1'
 
 # Adelphos is the main object which orchestrates all the messages.
-class Adelphos(SocialListener):
+class Adelphos_OLD(SocialListener):
 
 
     def __init__(self, config, instance_name, db, transport):

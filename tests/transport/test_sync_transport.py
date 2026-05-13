@@ -36,24 +36,22 @@ import json
 
 @pytest.fixture
 def loop_manager():
-    get_loop()
-    yield
-    stop_loop()
+    #get_loop()
+    #yield
+    #stop_loop()
+    pass
 
 
 
 @pytest.fixture
-#def sync1(sync_gateway):
 def sync1(loop_manager):
 
     aroutable = TRoutable(tc.FLAG_1)
-    #app = SyncApp(tc.HOST_1, aroutable, sync_gateway)
     app = SyncApp(tc.HOST_1, aroutable)
     return app
 
 
 @pytest.fixture
-#def sync2(sync_gateway):
 def sync2(loop_manager):
 
     aroutable = TRoutable(tc.FLAG_2)

@@ -38,6 +38,7 @@ def in_saecula_saeculorum():
 def _create_loop():
     global run_loop_th
     run_loop_th = threading.Thread(target = in_saecula_saeculorum)
+    run_loop_th.daemon = True
     run_loop_th.start()
 
 

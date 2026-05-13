@@ -14,16 +14,18 @@
 
 import pytest
 #from app.core.Adelphos import Adelphos
-from app.core.EAdErrno import EAdErrno
+#from app.core.EAdErrno import EAdErrno
 #from app.core.MemoryAdelphosDao import MemoryAdelphosDao
-from app.core.AdelphosDao import AdelphosDao
+#from app.core.AdelphosDao import AdelphosDao
 #from app.core.SqliteAdelphosDao import SqliteAdelphosDao
 from app.store.MemoryStore import MemoryStore
-from app.federation.MemoryAdelphosSocial import MemoryAdelphosSocial
-from app.dao.AdelphosDb import AdelphosDb
+#from app.federation.MemoryAdelphosSocial import MemoryAdelphosSocial
+#from app.dao.AdelphosDb import AdelphosDb
 from app.core.algo.AdelphosAlgo import AdelphosAlgo 
 from app.federation.FederatedStore import FederatedStore
 from app.core.model.schema import adelphos_schema
+from app.exc.AdelphosException import AdErrno
+
 
 # this is the local world
 #@pytest.fixture(scope = "module")
@@ -35,8 +37,6 @@ def w_local():
     model = AdelphosAlgo(fdb)
     return model 
 
-
-# the alias is got from the URI
 
 def test_add_alias(w_local):
 
@@ -51,7 +51,7 @@ def test_add_dup_family(w_local):
     alice_ob = w_local.alias_algo.alias_create(0, 'alice', 'famal', 'pass99')
     assert alice_ob is not None
     bob_ob = w_local.alias_algo.alias_create(0, 'bob', 'ferre', 'pass')
-    assert bob_ob == -EAdErrno.EDUPLICATED_FAMILY
+    assert bob_ob == -AdErrno.EDUPLICATED_FAMILY
 
 
 def test_login_pass(w_local):
@@ -62,10 +62,10 @@ def test_login_pass(w_local):
     assert res == lino_id
 
     res = w_local.alias_algo.login('lino', 'ferre', 'pass11')
-    assert res == -EAdErrno.EINVALID_USER_OR_PASSWORD
+    assert res == -AdErrno.EINVALID_USER_OR_PASSWORD
     res = w_local.alias_algo.login('lino', 'ferre1', 'pass')
-    assert res == -EAdErrno.EINVALID_USER_OR_PASSWORD
+    assert res == -AdErrno.EINVALID_USER_OR_PASSWORD
     res = w_local.alias_algo.login('lino1', 'ferre', 'pass')
-    assert res == -EAdErrno.EINVALID_USER_OR_PASSWORD
+    assert res == -AdErrno.EINVALID_USER_OR_PASSWORD
 
 

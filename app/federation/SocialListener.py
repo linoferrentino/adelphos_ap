@@ -12,8 +12,6 @@
 ######################################################
 #
 
-# the social listener is an object able to accept asynchronous messages from the
-# fediverse
 
 from abc import ABC
 from abc import abstractmethod
@@ -22,7 +20,6 @@ from abc import abstractmethod
 class SocialListener(ABC):
 
 
-    # the post is already verified!
     @abstractmethod
     async def new_post(self, post):
         pass

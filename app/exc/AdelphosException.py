@@ -20,6 +20,8 @@ from app.logging import gCon
 class AdErrno(IntEnum):
 
     USER_DOES_NOT_EXIST = 1
+    #EDUPLICATED_FAMILY = 2
+    #EINVALID_USER_OR_PASSWORD = 3
 
 
 def parse_exc(err_str):

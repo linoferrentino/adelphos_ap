@@ -277,10 +277,6 @@ class AdelphosRouter(Routable):
 
                 var ws = new WebSocket("wss://{host_api}/ws");"""
 
-###################################### NEW 
-
-
-                #var ws = new WebSocket("wss://{host_api}/ws");
         # here we have to change the string without the formatting because it
         # has the { parenthesis
         html_string += """
@@ -349,11 +345,11 @@ class AdelphosRouter(Routable):
 
 
     async def init_up(self):
-        pass
+        gCon.log("INIT ROUTER")
 
 
     async def tear_down(self):
-        pass
+        gCon.log("tear down ROUTER")
 
 
 # I initialize the router with the app.

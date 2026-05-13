@@ -15,6 +15,8 @@
 
 import asyncio
 
+from app.transport.async_mode.AsyncGateway import AsyncGateway
+from contextlib import asynccontextmanager
 from starlette.applications import Starlette
 from app.transport.async_mode.AsyncTransport import AsyncTransport
 from starlette.types import Receive, Scope, Send
@@ -45,10 +47,28 @@ class AdelphosExcMiddleware:
             await response(scope, receive, send)
 
 
+@asynccontextmanager
+async def async_lifespan_gw(app):
+
+    app.running = True
+    out_gateway = AsyncGateway()
+    app.set_out_gateway(out_gateway)
+
+    await out_gateway.start(app)
+    await app.routable.init_up()
+
+    yield
+
+    app.running = False
+
+    await app.routable.tear_down()
+    await out_gateway.stop()
+
+
 class StarletteWrap(Starlette):
 
 
-    def __init__(self, routable, lifespan = None, root_path = API_POINT):
+    def __init__(self, routable, root_path = API_POINT):
         transport = AsyncTransport()
         routable.set_transport(transport)
         routes = routable.get_routes()
@@ -57,7 +77,8 @@ class StarletteWrap(Starlette):
                 Middleware(AdelphosExcMiddleware),
                 ]
 
-        super().__init__(routes = routes, lifespan = lifespan, middleware = middleware)
+        super().__init__(routes = routes, lifespan = async_lifespan_gw, 
+                         middleware = middleware)
 
         self.transport = transport
         self.running = False

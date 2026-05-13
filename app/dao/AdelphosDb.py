@@ -21,7 +21,7 @@ from ..logging import good_bye
 import os
 from pathlib import Path
 import sqlite3
-from app.api.AdelphosException import AdelphosException
+#from app.api.AdelphosException import AdelphosException
 
 # I import here the specialized DAOs to access the federated objects.
 
