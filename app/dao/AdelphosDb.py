@@ -530,10 +530,6 @@ create table ap_actor (
 class AdelphosDb:
 
 
-    def _populate_fix_tables(self):
-        pass
-
-
     def _create_schema(self):
         #gCon.log(f"Creating schema...")
 
@@ -585,7 +581,6 @@ class AdelphosDb:
         if (self.create_schema == True):
             self._create_schema()
 
-            self._populate_fix_tables()
 
             # If I am here I have to create also the initial data
             # like the root user and maybe all the initial population

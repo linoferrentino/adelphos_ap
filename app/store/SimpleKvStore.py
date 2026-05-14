@@ -22,7 +22,7 @@ from abc import ABC, abstractmethod
 # The store is always in a transaction,
 # but it is NOT thread safe, there is no concept of conflicts, because
 # all the operations are serialized.
-class AdelphosStore(ABC):
+class SimpleKvStore(ABC):
 
 
     @abstractmethod

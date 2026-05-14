@@ -14,12 +14,17 @@
 
 import pytest
 from app.store.MemoryStore import MemoryStore
+from app.store.SqliteStore import SqliteStore
 
-@pytest.fixture
-def mem_1():
+@pytest.fixture(params = ['mem', 'sqlite'])
+def mem_1(request):
 
-    mem_1 = MemoryStore()
-    return mem_1
+    if request.param == 'mem':
+        db = MemoryStore()
+    else:
+        db = SqliteStore()
+
+    return db
 
 
 def test_set_get(mem_1):

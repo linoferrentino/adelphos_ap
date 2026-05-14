@@ -17,6 +17,7 @@ from app.federation.FederatedStore import FederatedStore
 from app.federation.FederatedStore import FdbException
 from app.transport.SyncRouter import SyncRouter
 from app.store.MemoryStore import MemoryStore
+from app.store.SqliteStore import SqliteStore
 from app.logging import gCon
 
 
@@ -26,10 +27,14 @@ from tests.federation.schema_simple import FederatedUriTest
 from tests.federation.schema_simple import my_test_schema_init
 
 
-@pytest.fixture
-def fdb1_loc():
+@pytest.fixture(params = ['mem', 'sqlite'])
+def fdb1_loc(request):
 
-    db = MemoryStore()
+    if request.param == 'mem':
+        db = MemoryStore()
+    else:
+        db = SqliteStore()
+
     fdb = FederatedStore(LOCALHOST, db, None, my_test_schema_init)
     return fdb
 

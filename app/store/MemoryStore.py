@@ -12,7 +12,7 @@
 ######################################################
 #
 
-from app.store.AdelphosStore import AdelphosStore
+from app.store.SimpleKvStore import SimpleKvStore
 
 # the memory store in adelphos
 # a simple key/value pair with transactions.
@@ -52,7 +52,7 @@ class Block:
         self.clear()
 
 
-class MemoryStore(AdelphosStore):
+class MemoryStore(SimpleKvStore):
 
 
     # there is always a transaction open
