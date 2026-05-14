@@ -87,6 +87,7 @@ class FederatedTransaction:
     def __init__(self, tid, fdb):
         self.tid = tid
         self.fdb = fdb
+        self.created_uris = {}
         self.locked_uris = {} # they might be unmodified, but they belong to this tx
         self.deleted_uris = {}
         self.read_uris = {} # read only objects.
@@ -101,6 +102,14 @@ class FederatedTransaction:
     def _do_deletes(self):
         for k, v in self.deleted_uris.items():
             self._delete_uri_str(k)
+
+
+    def _do_creates(self):
+        for k,v in self.created_uris.items():
+            if v.ob.ref_count == 0:
+                continue
+            self._update_uri_str(k, v)
+        self.created_uris.clear()
 
 
     def _do_updates(self):
@@ -146,6 +155,8 @@ class FederatedTransaction:
 
             self._do_updates()
 
+            self._do_creates()
+
             # If I am here I can commit the result
             self.fdb.db.commit()
 
@@ -160,13 +171,13 @@ class FederatedTransaction:
     def new_ob(self, fob):
         key_uri = fob.uri.unparse()
 
-        if self.locked_uris.get(key_uri) is not None:
-            raise FdbException(EFdbErrors.EFDB_URI_EXISTS)
+        #if self.locked_uris.get(key_uri) is not None:
+        #    raise FdbException(EFdbErrors.EFDB_URI_EXISTS)
 
-        if self.deleted_uris.get(key_uri) is not None:
-            raise FdbException(EFdbErrors.EFDB_URI_DELETED)
+        #if self.deleted_uris.get(key_uri) is not None:
+        #    raise FdbException(EFdbErrors.EFDB_URI_DELETED)
         
-        self.locked_uris[key_uri] = fob
+        self.created_uris[key_uri] = fob
 
 
     def exists_ob(self, key_uri):
@@ -180,6 +191,9 @@ class FederatedTransaction:
         if self.locked_uris.get(key_uri) is not None:
             return True
 
+        if self.created_uris.get(key_uri) is not None:
+            return True
+
         return None
 
 
@@ -189,7 +203,14 @@ class FederatedTransaction:
             raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB)
 
         exist_val = self.locked_uris.get(uri_str)
-        return exist_val
+        if exist_val is not None:
+            return exist_val
+
+        maybe_created = self.created_uris.get(uri_str)
+        if maybe_created is not None:
+            return maybe_created
+
+        return None
 
 
     def read_ob(self, key_uri, fob):

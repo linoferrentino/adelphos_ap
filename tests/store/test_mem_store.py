@@ -43,6 +43,9 @@ def test_set_rollback(mem_1):
     with pytest.raises(KeyError):
         val_a = mem_1.get('a')
 
+    val_a = mem_1.get_maybe('a')
+    assert val_a == None
+
     val_a = mem_1.has_key('a')
     assert val_a == False
 
@@ -53,6 +56,9 @@ def test_set_commit_set_rollback(mem_1):
     mem_1.commit()
 
     val_a = mem_1.get('a')
+    assert val_a == 'val-a'
+
+    val_a = mem_1.get_maybe('a')
     assert val_a == 'val-a'
 
     mem_1.set('a', 'second-val')
@@ -73,7 +79,7 @@ def test_set_commit_delete_rollback(mem_1):
     val_a = mem_1.get('a')
     assert val_a == 'val-a'
 
-    mem_1.delete('a')
+    mem_1.del_key('a')
     with pytest.raises(KeyError):
         val_a = mem_1.get('a')
 

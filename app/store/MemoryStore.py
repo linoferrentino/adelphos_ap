@@ -115,6 +115,8 @@ class MemoryStore(SimpleKvStore):
                 self.undos.log(self.set, key, self.get(key), False)
 
             del self.store[key]
+        else:
+            raise KeyError(key)
 
 
     def commit(self):

@@ -35,14 +35,14 @@ class SimpleKvStore(ABC):
         pass
 
 
-    @abstractmethod
-    def open(self, conn_string):
-        pass
+    #@abstractmethod
+    #def open(self, conn_string):
+    #    pass
 
 
-    @abstractmethod
-    def close(self):
-        pass
+    #@abstractmethod
+    #def close(self):
+    #    pass
 
 
     @abstractmethod

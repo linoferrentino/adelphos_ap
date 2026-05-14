@@ -25,15 +25,9 @@ from app.dao.AdelphosDb import AdelphosDb
 class KeyValueStore(dict):
 
 
-    def __init__(self, conn):
-        #self.conn = sqlite3.connect(filename)
-        self.conn = conn
+    def __init__(self, filename):
+        self.conn = sqlite3.connect(filename)
         self.conn.execute("CREATE TABLE IF NOT EXISTS kv (key text unique, value text)")
-
-
-    #def close(self):
-    #    self.conn.commit()
-    #    self.conn.close()
 
 
     def commit(self):
@@ -107,43 +101,37 @@ class KeyValueStore(dict):
 class SqliteStore(SimpleKvStore):
 
     def __init__(self, store_file = ":memory:"):
-        #self.__kv = KeyValueStore(store_file)
-        self.__kv = None
-        self.__db = None
+        self.__kv = KeyValueStore(store_file)
         pass
 
 
     def commit(self):
-        pass
+        self.__kv.commit()
 
 
     def rollback(self):
-        pass
-
-
-    #def open(self, conn_string):
-    #    pass
-
-
-    #def close(self):
-    #    pass
+        self.__kv.rollback()
 
 
     def set(self, key, value):
-        pass
+        self.__kv[key] = value
 
 
     def get(self, key):
-        pass
+        return self.__kv[key]
 
 
     def get_maybe(self, key):
-        pass
+        try:
+            val = self.__kv[key]
+            return val
+        except KeyError:
+            return None
 
     
     def has_key(self, key):
-        pass
+        return key in self.__kv 
 
 
     def del_key(self, key):
-        pass
+        del self.__kv[key]
