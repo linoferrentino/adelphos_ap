@@ -24,7 +24,7 @@ from tests.testers.fixtures import social_stub
 import tests.test_constants as tc
 import tests.adelphoi_test_config as tconf
 #from tests.testers.fixtures import sync_gateway
-from tests.transport.sync_mode.loop import stop_loop, get_loop
+from app.transport.bridge.loop import stop_loop, get_loop
 from tests.testers.SyncApp import SyncApp
 import app.consts as CNST
 from tests.testers.SyncTester import SyncTester

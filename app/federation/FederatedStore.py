@@ -262,8 +262,8 @@ class FederatedStore:
         schema_init()
 
 
-    async def new_post(self, post):
-        pass
+    #async def new_post(self, post):
+    #    pass
 
 
     ## the store has its own async loop which is run forever.

@@ -45,6 +45,10 @@ class SocialProvider(ABC):
         pass
 
 
+    async def out_post_message(self, user):
+        pass
+
+
     #@abstractmethod
     #def login_user(self, user, password):
     #    pass

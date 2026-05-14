@@ -20,7 +20,7 @@ import threading
 from tests.testers.SyncGateway import SyncGateway
 from tests.testers.SyncRequest import SyncRequest
 from tests.transport.sync_mode.SyncTransport import SyncTransport
-from tests.transport.sync_mode.loop import stop_loop, get_loop, run_coro_in_loop
+from app.transport.bridge.loop import stop_loop, get_loop, run_coro_in_loop
 from tests.testers.SyncTester import WebSocketSync
 from urllib.parse import parse_qs
 

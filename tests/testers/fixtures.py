@@ -19,7 +19,7 @@ import json
 from app.federation.SocialProvider import SocialProvider
 
 from tests.testers.SyncGateway import SyncGateway
-from tests.transport.sync_mode.loop import stop_loop, get_loop
+from app.transport.bridge.loop import stop_loop, get_loop
 from app.logging import gCon
 
 from app.exc.AdelphosException import AdelphosException

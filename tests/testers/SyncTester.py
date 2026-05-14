@@ -18,7 +18,7 @@ from urllib.parse import urlsplit
 from contextlib import ContextDecorator
 from contextlib import ExitStack 
 
-from tests.transport.sync_mode.loop import run_coro_in_loop, get_loop
+from app.transport.bridge.loop import run_coro_in_loop, get_loop
 from app.logging import gCon
 
 
