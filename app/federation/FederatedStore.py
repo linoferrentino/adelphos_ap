@@ -53,6 +53,9 @@ from app.federation.FederatedUri import FederatedUri
 from app.federation.FederatedFactory import FederatedFactory
 from app.federation.SocialGateway import SocialGateway
 from app.federation.FederatedStoreApi import FederatedStoreApi
+
+from app.transport.bridge.loop import run_coro_in_loop
+
 from dataclasses import dataclass
 from app.logging import gCon
 
@@ -418,6 +421,10 @@ class FederatedStore:
         rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = True) 
         self._read_ctx(rctx)
         return weakref.ref(rctx.fob)
+
+
+    async def uri_read_no_lock_coro():
+        pass
 
 
     def uri_read_no_lock(self, t_id, uri_ob, maybe = False):

@@ -55,12 +55,12 @@ class SyncApp:
             SyncApp.gateway = SyncGateway()
             SyncApp.gateway.start(self)
         self.set_out_gateway(SyncApp.gateway)
-        run_coro_in_loop(Routable.init_up, self.routable)
+        run_coro_in_loop(Routable.init_up, (self.routable,))
 
 
     def on_teardown(self):
         SyncApp.gateway.stop()
-        run_coro_in_loop(Routable.tear_down, self.routable)
+        run_coro_in_loop(Routable.tear_down, (self.routable,))
 
 
     def __init__(self, host, routable):
@@ -102,7 +102,7 @@ class SyncApp:
                 continue
             websock_dup = WebSocketSync(websock)
             websock.pair_sock = websock_dup
-            run_coro_in_loop(route.endpoint, websock_dup, False)
+            run_coro_in_loop(route.endpoint, (websock_dup,), wait = False)
             return
         return Response(None, 404)
 
@@ -153,6 +153,6 @@ class SyncApp:
         endpoint = route.endpoint
         request = SyncRequest(dict_params, path_params, in_json)
 
-        res = run_coro_in_loop(endpoint, request)
+        res = run_coro_in_loop(endpoint, (request,))
         return res
 

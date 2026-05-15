@@ -66,15 +66,16 @@ class WebSocketSync(ContextDecorator):
 
     def send_text(self, text: str) -> None:
 
-        run_coro_in_loop(self.sending_text_async, text, True)
+        run_coro_in_loop(self.sending_text_async, (text,), wait = True)
 
 
     def receive_text(self) -> str:
-        text = run_coro_in_loop(self.receive_text_blocking_async, self)
+        text = run_coro_in_loop(self.receive_text_blocking_async, ())
         return text
 
 
-    async def receive_text_blocking_async(self, stub = None):
+    #async def receive_text_blocking_async(self, stub = None):
+    async def receive_text_blocking_async(self):
 
         if self.is_server == False:
             cond = self.pair_sock.cond
