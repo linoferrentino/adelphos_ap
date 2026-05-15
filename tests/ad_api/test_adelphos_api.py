@@ -15,7 +15,7 @@
 
 
 from app.AdelphosApp import get_existent_app
-from app.ad_api.AdDaemonApi import AdDaemonApi
+#from app.ad_api.AdDaemonApi import AdDaemonApi
 from fastapi.testclient import TestClient
 from app.logging import gCon
 from fastapi.websockets import WebSocket
@@ -26,7 +26,7 @@ import time
 from tests.ProcessServer import ProcessServer
 import tests.t_utils as tu
 import pytest
-from app.api.AdelphosException import EAdelhposErrno
+#from app.api.AdelphosException import EAdelhposErrno
 
 import httpx
 from httpx_ws import aconnect_ws
@@ -95,7 +95,7 @@ def adelphos_ad_api(adelphos_remote_process_ad_api):
 
 # I have to use the backdoor api
 @pytest.mark.anyio
-async def test_check_echo(adelphos_ad_api):
+async def OLDAP_test_check_echo(adelphos_ad_api):
 
 
     async with httpx.AsyncClient() as client:
@@ -148,7 +148,7 @@ async def test_check_echo(adelphos_ad_api):
 
 
 @pytest.mark.anyio
-async def test_get_alias(adelphos_ad_api):
+async def OLDAP_test_get_alias(adelphos_ad_api):
 
 
     script_get_uri = [

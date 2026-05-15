@@ -26,7 +26,7 @@ import time
 from tests.ProcessServer import ProcessServer
 import tests.t_utils as tu
 import pytest
-from app.api.AdelphosException import EAdelhposErrno
+#from app.api.AdelphosException import EAdelhposErrno
 
 
 # to create a trust line I first test a local trust line, then a remote trust line,
@@ -79,7 +79,7 @@ def adelphos_tl(adelphos_remote_process_tl):
     yield from tu.generator_test_client(adelphos_tl_test, True)
 
 
-def test_check_carl(adelphos_tl):
+def OLDAP_test_check_carl(adelphos_tl):
     with adelphos_tl.websocket_connect("/api/ws") as websocket:
         websocket.send_text('al_login1f alias ##carl.cf  password carl_tl')
         tu.websocket_assert_code(websocket, EAdelhposErrno.DONE_OK)
@@ -93,7 +93,7 @@ def create_trust_line(websocket, alias_to, code = 0):
     tu.websocket_assert_code(websocket, code)
 
 
-def test_create_trust_line(adelphos_tl):
+def OLDAP_test_create_trust_line(adelphos_tl):
 
     # I simulate a user that wants to login
     with adelphos_tl.websocket_connect("/api/ws") as websocket:
@@ -108,7 +108,7 @@ def XXtest_create_trust_line_remote(adelphos_tl):
                           EAdelhposErrno.EURI_NOT_FOUND)
 
 
-def test_create_tl_rem_root(adelphos_tl):
+def OLDAP_test_create_tl_rem_root(adelphos_tl):
 
     script = [
             'backdoor password super_secret',

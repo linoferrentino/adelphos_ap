@@ -25,14 +25,8 @@ from abc import ABC, abstractmethod
 
 from app.transport.RouterProvider import RouterProvider
 
-#INVALID_USER_HANDLE = 0xFFFFFFFF
 
 class SocialProvider(ABC):
-
-
-    #@abstractmethod
-    #def get_user_handle(self, user: str) -> int:
-    #    pass
 
 
     @abstractmethod
@@ -41,11 +35,12 @@ class SocialProvider(ABC):
 
 
     @abstractmethod
-    def post_message(self, user, message):
+    def incoming_message(self, user, message):
         pass
 
 
-    async def out_post_message(self, user):
+    @abstractmethod
+    async def outgoing_message(self, user, message):
         pass
 
 

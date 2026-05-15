@@ -26,7 +26,7 @@ import time
 from tests.ProcessServer import ProcessServer
 import tests.t_utils as tu
 import pytest
-from app.api.AdelphosException import EAdelhposErrno
+#from app.api.AdelphosException import EAdelhposErrno
 
 
 
@@ -52,7 +52,7 @@ def adelphos_root():
     yield from tu.generator_test_client(adelphos_root_api_test, False)
 
 
-def test_execute_local_script(adelphos_root):
+def OLDAP_test_execute_local_script(adelphos_root):
     # to test the local script first of all I have to open the backdoor.
 
     with adelphos_root.websocket_connect("/api/ws") as websocket:

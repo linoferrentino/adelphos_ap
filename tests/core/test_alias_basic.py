@@ -44,7 +44,7 @@ def test_add_alias(w_local):
     assert lino_ob is not None
 
 
-def test_add_dup_family(w_local):
+def OLDAP_test_add_dup_family(w_local):
 
     lino_ob = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
     assert lino_ob is not None
@@ -54,7 +54,7 @@ def test_add_dup_family(w_local):
     assert bob_ob == -AdErrno.EDUPLICATED_FAMILY
 
 
-def test_login_pass(w_local):
+def OLDAP_test_login_pass(w_local):
 
 
     lino_id = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')

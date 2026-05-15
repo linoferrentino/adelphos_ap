@@ -64,10 +64,14 @@ class SocialStub(SocialProvider):
         return user_stub
  
 
-    def post_message(self, user, message):
+    def incoming_message(self, user, message):
         user_stub = self._pri_get_user_stub(user)
         msg = message['msg']
         user_stub.new_msg(msg)
+
+
+    async def outgoing_message(self, user, message):
+        pass
 
 
     def login_user(self, user):

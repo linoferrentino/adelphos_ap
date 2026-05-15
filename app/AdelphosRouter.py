@@ -126,7 +126,7 @@ class AdelphosRouter(Routable):
 
         user = request.path_params['username']
         body = await request.json()
-        self.social.post_message(user, body)
+        self.social.incoming_message(user, body)
         return Response(status_code=202)
 
 

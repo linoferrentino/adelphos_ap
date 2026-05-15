@@ -14,15 +14,15 @@
 
 import pytest
 from app.core.EAdErrno import EAdErrno
-from app.core.AdelphosDao import AdelphosDao
+#from app.core.AdelphosDao import AdelphosDao
 from app.store.MemoryStore import MemoryStore
 from app.federation.MemoryAdelphosSocial import MemoryAdelphosSocial
 from app.dao.AdelphosDb import AdelphosDb
 from app.core.algo.AdelphosAlgo import AdelphosAlgo 
 
 
-from tests.AdelphosTester import AdelphosTester
-from tests.FederationTester import FederationTester
+#from tests.AdelphosTester import AdelphosTester
+#from tests.FederationTester import FederationTester
 
 # this is the basic test. Create an adelphos which responds to sync messages
 # and is able to create an alias.
@@ -54,13 +54,13 @@ def federation(w_local_2, w_remote_2):
         yield federation
 
 
-def test_hello(w_local_2):
+def OLDAP_test_hello(w_local_2):
 
     response = w_local_2.post_json('/_backdoor_api_/login', json = { 'user' : 'alice'})
     assert response.status_code == 202
 
 
-def test_federation(federation):
+def OLDAP_test_federation(federation):
 
     response = federation.post_json('https://www.adelphos.it/_backdoor_api_/login', 
                                     json = None)

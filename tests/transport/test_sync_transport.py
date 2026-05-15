@@ -27,24 +27,9 @@ from app.logging import gCon
 import json
 
 
-#@pytest.fixture
-#def sync_gateway():
-#    get_loop()
-#    gateway = SyncGateway()
-#    yield gateway
-#    stop_loop()
 
 @pytest.fixture
-def loop_manager():
-    #get_loop()
-    #yield
-    #stop_loop()
-    pass
-
-
-
-@pytest.fixture
-def sync1(loop_manager):
+def sync1():
 
     aroutable = TRoutable(tc.FLAG_1)
     app = SyncApp(tc.HOST_1, aroutable)
@@ -52,7 +37,7 @@ def sync1(loop_manager):
 
 
 @pytest.fixture
-def sync2(loop_manager):
+def sync2():
 
     aroutable = TRoutable(tc.FLAG_2)
     app = SyncApp(tc.HOST_2, aroutable)
