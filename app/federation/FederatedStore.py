@@ -264,6 +264,16 @@ class FederatedStore:
 
         schema_init()
 
+        run_coro_in_loop(self.start_async, ())
+
+
+    async def start_async(self):
+        self.db.open()
+
+
+    async def end_async(self):
+        self.db.close()
+
 
     #async def new_post(self, post):
     #    pass
@@ -295,6 +305,10 @@ class FederatedStore:
     # only some objects start with a reference count of one.
     # deprecated, use new_ob instead
     def create_uri(self, t_id, uri_ob, ref_count = 0):
+        return run_coro_in_loop(self.create_uri_coro, (t_id, uri_ob, ref_count))
+
+
+    async def create_uri_coro(self, t_id, uri_ob, ref_count = 0):
 
         # the uri must be local!
         if self.is_local_uri(uri_ob) == False:
@@ -333,6 +347,10 @@ class FederatedStore:
 
 
     def new_ob(self, t_id, ob_type, name, family = None, fields = {}):
+        return run_coro_in_loop(self.new_ob_coro, (t_id, ob_type, name, family, fields))
+
+
+    async def new_ob_coro(self, t_id, ob_type, name, family = None, fields = {}):
 
         registrar = FederatedFactory.get_registrar(ob_type)
         if registrar is None:
@@ -413,6 +431,10 @@ class FederatedStore:
 
 
     def uri_read_lock(self, t_id, uri_ob):
+        return run_coro_in_loop(self.uri_read_lock_coro, (t_id, uri_ob))
+
+
+    async def uri_read_lock_coro(self, t_id, uri_ob):
         """
         Reads an object and puts it into the working set of the current transaction.
     
@@ -429,6 +451,11 @@ class FederatedStore:
 
     def uri_read_no_lock(self, t_id, uri_ob, maybe = False):
 
+        return run_coro_in_loop(self.uri_read_no_lock_coro, (t_id, uri_ob, maybe))
+
+
+    async def uri_read_no_lock_coro(self, t_id, uri_ob, maybe = False):
+
         rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = False, maybe = maybe) 
         self._read_ctx(rctx)
         if rctx.fob is None:
@@ -440,6 +467,10 @@ class FederatedStore:
     # live in isolation, the object returned must be passed to all the modifying
     # methods.
     def begin_transaction(self):
+        return run_coro_in_loop(self.begin_transaction_coro, ())
+
+
+    async def begin_transaction_coro(self):
 
         tid = uuid.uuid4()
         tob = FederatedTransaction(tid, self)
@@ -448,11 +479,19 @@ class FederatedStore:
 
 
     def commit_transaction(self, t_id):
+        run_coro_in_loop(self.commit_transaction_coro, (t_id,))
+
+
+    async def commit_transaction_coro(self, t_id):
         t_ob = self.get_tob_safe(t_id)
         t_ob.t_commit()
 
 
     def rollback_transaction(self, t_id):
+        run_coro_in_loop(self.rollback_transaction_coro, (t_id,))
+
+
+    async def rollback_transaction_coro(self, t_id):
         t_ob = self.get_tob_safe(t_id)
         t_ob.t_rollback()
 

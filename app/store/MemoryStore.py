@@ -55,7 +55,6 @@ class Block:
 class MemoryStore(SimpleKvStore):
 
 
-    # there is always a transaction open
     def __init__(self):
         self.reset()
 
@@ -65,8 +64,7 @@ class MemoryStore(SimpleKvStore):
         self.store = {}
 
 
-    # the memory store is always opened.
-    def open(self, conn_string):
+    def open(self):
         pass
 
 

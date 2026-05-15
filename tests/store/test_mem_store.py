@@ -24,7 +24,9 @@ def mem_1(request):
     else:
         db = SqliteStore()
 
-    return db
+    db.open()
+    yield db
+    db.close()
 
 
 def test_set_get(mem_1):
@@ -82,6 +84,9 @@ def test_set_commit_delete_rollback(mem_1):
     mem_1.del_key('a')
     with pytest.raises(KeyError):
         val_a = mem_1.get('a')
+
+    with pytest.raises(KeyError):
+        mem_1.del_key('a')
 
     mem_1.rollback()
     val_a = mem_1.get('a')

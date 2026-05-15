@@ -30,6 +30,10 @@ class KeyValueStore(dict):
         self.conn.execute("CREATE TABLE IF NOT EXISTS kv (key text unique, value text)")
 
 
+    def close(self):
+        self.conn.close()
+
+
     def commit(self):
         self.conn.commit()
 
@@ -100,13 +104,23 @@ class KeyValueStore(dict):
 
 class SqliteStore(SimpleKvStore):
 
+
     def __init__(self, store_file = ":memory:"):
-        self.__kv = KeyValueStore(store_file)
-        pass
+        self.store_file = store_file
+        self.__kv = None
 
 
     def commit(self):
         self.__kv.commit()
+
+
+    def open(self):
+        self.__kv = KeyValueStore(self.store_file)
+        del self.store_file
+
+
+    def close(self):
+        self.__kv.close()
 
 
     def rollback(self):
