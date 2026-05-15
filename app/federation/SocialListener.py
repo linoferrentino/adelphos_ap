@@ -21,10 +21,5 @@ class SocialListener(ABC):
 
 
     @abstractmethod
-    async def new_post(self, post):
-        pass
-
-
-    @abstractmethod
-    def new_post_sync(self, post):
+    def new_post(self, msg):
         pass

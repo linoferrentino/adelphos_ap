@@ -44,6 +44,11 @@ class SocialProvider(ABC):
         pass
 
 
+    @abstractmethod
+    def create_or_register_user(self, user, *, a_listener = None):
+        pass
+
+
     #@abstractmethod
     #def login_user(self, user, password):
     #    pass

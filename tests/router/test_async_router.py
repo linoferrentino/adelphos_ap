@@ -37,22 +37,17 @@ import tests.t_utils as tu
 
 
 @pytest.fixture(scope = "module", params = ['sync', 'async'])
-#def app1(social_stub, sync_gateway, request):
 def app1(social_stub, request):
     aroutable = AdelphosRouter("test", tconf.adelphos_stub, social_stub)
     if request.param == 'sync':
         host = aroutable.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
         app = SyncApp(host, aroutable)
         wrappedapp = SyncTester(app)
-        #get_loop()
     else:
         app = StarletteWrap(routable = aroutable)
         wrappedapp = TestClient(app)
 
     return wrappedapp
-
-    #if request.param == 'sync':
-    #    stop_loop()
 
 
 def test_context(app1):

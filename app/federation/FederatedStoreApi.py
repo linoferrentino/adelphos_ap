@@ -40,7 +40,7 @@ class FederatedStoreApi:
 
 
     @ensure_gw
-    def read_remote_uri(self, ctx):
+    async def read_remote_uri(self, ctx):
 
         req = {
                 'uri' : ctx.uri_str,

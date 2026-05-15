@@ -74,10 +74,15 @@ from app.federation.SocialProvider import SocialProvider
 class AdelphosRouter(Routable):
 
 
-    def __init__(self, instance_name, config, social : SocialProvider = None):
+    def __init__(self, instance_name, config, 
+                 social : SocialProvider = None, 
+                 kernel = None,
+                 cli_handler= None):
         self.instance_name = instance_name
         self.config = config
         self.social = social
+        self.kernel = kernel
+        self.cli_handler = cli_handler
 
 
     async def in_webfinger(self, request):
@@ -324,9 +329,15 @@ class AdelphosRouter(Routable):
 
 
     async def in_websocket(self, websocket: WebSocket):
+        if self.cli_handler is not None:
+            await self.cli_handler.accept(websocket)
+
+        ##return Response("No cli provider", status_code = 500)
+        #raise Exception("No cli")
+
         await websocket.accept()
-        text = await websocket.receive_text()
-        await websocket.send_text(f"Hello, world! {text}")
+        #text = await websocket.receive_text()
+        await websocket.send_text(f"No cli!")
         await websocket.close()
 
 
@@ -345,11 +356,15 @@ class AdelphosRouter(Routable):
 
 
     async def init_up(self):
-        gCon.log("INIT ROUTER")
+        if self.kernel is None:
+            return
+        await self.kernel.start_async(social)
 
 
     async def tear_down(self):
-        gCon.log("tear down ROUTER")
+        if self.kernel is None:
+            return
+        await self.kernel.stop_async()
 
 
 # I initialize the router with the app.

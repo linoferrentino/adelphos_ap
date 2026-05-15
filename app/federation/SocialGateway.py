@@ -30,6 +30,10 @@ class SocialGateway(SocialListener):
         self.remote_api_id = WrapInt()
 
 
+    async def post_and_wait_ans(self, user, message, *, timeout = 10):
+        pass
+
+
     def api_gw_waitable(self, api_id, user_handle, req_json):
         
         self.social.post_message(user_handle, req_json)

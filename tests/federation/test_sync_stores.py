@@ -54,6 +54,10 @@ def fdbt2():
 #        yield federation
 
 
+def test_read_remote():
+    pass
+
+
 def x_test_sync_fdbs(fdbt1, fdbt2, federation):
 
     fdb1 = fdbt1.fdb

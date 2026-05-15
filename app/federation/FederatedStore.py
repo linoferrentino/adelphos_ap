@@ -53,6 +53,7 @@ from app.federation.FederatedUri import FederatedUri
 from app.federation.FederatedFactory import FederatedFactory
 from app.federation.SocialGateway import SocialGateway
 from app.federation.FederatedStoreApi import FederatedStoreApi
+from app.federation.Kernel import Kernel
 
 from app.transport.bridge.loop import run_coro_in_loop
 
@@ -248,30 +249,34 @@ class FedStore_ReadCtx:
 
  
 # the federated store uses a social network to synchronize to other peers.
-class FederatedStore:
+class FederatedStore(Kernel):
 
 
     # I initialize myself with my hostname to distinguish my own URIs from the others.
-    def __init__(self, hostname, db, social, schema_init):
+    def __init__(self, hostname, db, schema_init):
 
         self.db = db
         self.hostname = hostname
-
-        self.fede_api = FederatedStoreApi(social)
 
         # at first the transaction set is empty
         self.transactions = {}
 
         schema_init()
+        self.fede_api = None
 
-        run_coro_in_loop(self.start_async, ())
+        #run_coro_in_loop(self.start_async, ())
 
 
-    async def start_async(self):
+    def start(self):
+        run_coro_in_loop(self.start_async, (None,))
+        
+
+    async def start_async(self, social):
         self.db.open()
+        self.fede_api = FederatedStoreApi(social)
 
 
-    async def end_async(self):
+    async def stop_async(self):
         self.db.close()
 
 
@@ -397,12 +402,12 @@ class FederatedStore:
         return uriob
 
 
-    def _read_remote_ctx(self, rctx):
-        remote_ob_str = self.fede_api.read_remote_uri(rctx)
+    async def _read_remote_ctx(self, rctx):
+        remote_ob_str = await self.fede_api.read_remote_uri(rctx)
         return remote_ob_str
 
 
-    def _read_ctx(self, rctx):
+    async def _read_ctx(self, rctx):
         rctx.tob = self.get_tob_safe(rctx.t_id)
         rctx.uri_ob = self.remove_localhost(rctx.uri_ob)
 
@@ -416,7 +421,7 @@ class FederatedStore:
             t_ob_str = self.db.get_maybe(rctx.uri_str) 
             if (t_ob_str is None) and first_pass and (rctx.uri_ob.host is not None):
                 first_pass = False
-                t_ob_str = self._read_remote_ctx(rctx)
+                t_ob_str = await self._read_remote_ctx(rctx)
                 continue
             break
 
@@ -441,7 +446,7 @@ class FederatedStore:
         if the object is already locked use the lock_resolution method to know what to do
         """
         rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = True) 
-        self._read_ctx(rctx)
+        await self._read_ctx(rctx)
         return weakref.ref(rctx.fob)
 
 
@@ -457,7 +462,7 @@ class FederatedStore:
     async def uri_read_no_lock_coro(self, t_id, uri_ob, maybe = False):
 
         rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = False, maybe = maybe) 
-        self._read_ctx(rctx)
+        await self._read_ctx(rctx)
         if rctx.fob is None:
             return None
         return weakref.ref(rctx.fob)

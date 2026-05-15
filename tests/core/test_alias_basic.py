@@ -33,7 +33,7 @@ from app.exc.AdelphosException import AdErrno
 def w_local():
 
     db = MemoryStore()
-    fdb = FederatedStore('www.h1.com', db, None, adelphos_schema)
+    fdb = FederatedStore('www.h1.com', db, adelphos_schema)
     model = AdelphosAlgo(fdb)
     return model 
 

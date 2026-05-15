@@ -31,8 +31,6 @@ PORT2 = 5997
 @pytest.fixture
 def app_t1():
 
-    #transport = AsyncTransport()
-    #aroutable = TRoutable("test", transport)
     aroutable = TRoutable("test")
     app = StarletteWrap(routable = aroutable)
     return app

@@ -26,17 +26,7 @@ from tests.federation.schema_simple import TYPE_T1, TYPE_T2
 from tests.federation.schema_simple import FederatedUriTest
 from tests.federation.schema_simple import my_test_schema_init
 
-
-@pytest.fixture(params = ['mem', 'sqlite'])
-def fdb1_loc(request):
-
-    if request.param == 'mem':
-        db = MemoryStore()
-    else:
-        db = SqliteStore()
-
-    fdb = FederatedStore(LOCALHOST, db, None, my_test_schema_init)
-    return fdb
+from tests.federation.fixtures import fdb1_loc
 
 
 def test_new_object_f(fdb1_loc):

@@ -28,13 +28,21 @@ from app.exc.AdelphosException import AdErrno
 
 class UserStub:
 
-    def __init__(self, user):
+    def __init__(self, user, aListener = None):
         self.user = user
-        self.messages = []
+        if aListener is None:
+            self.messages = []
+            self.is_daemon = False
+        else:
+            self.listener = aListener
+            self.is_daemon = True
 
 
     def new_msg(self, msg):
-        self.messages.append(msg)
+        if self.is_daemon:
+            self.listener.new_post(msg)
+        else:
+            self.messages.append(msg)
 
 
     def pop_lst_msg(self):
@@ -46,7 +54,6 @@ class SocialStub(SocialProvider):
 
 
     def __init__(self, user_list):
-
         self.users = { user: UserStub(user) for user in user_list }
 
 
@@ -79,12 +86,11 @@ class SocialStub(SocialProvider):
         return user_stub
 
 
-#@pytest.fixture(scope = "module")
-#def sync_gateway():
-#    get_loop()
-#    gateway = SyncGateway()
-#    yield gateway
-#    stop_loop()
+    def create_or_register_user(self, user, *, listener = None):
+        if user in self.users:
+            raise AdelphosException(AdErrno.USER_ALREADY_EXISTING)
+
+        self.users[user] = UserStub(user, listener)
 
 
 @pytest.fixture(scope = "module")

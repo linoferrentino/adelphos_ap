@@ -21,11 +21,13 @@
 
 from abc import ABC, abstractmethod
 
-from app.transport.RouterProvider import RouterProvider
+#from app.transport.RouterProvider import RouterProvider
 
-class CliProvider(RouterProvider):
+class CliProvider(ABC):
 
-    pass
 
+    @abstractmethod
+    async def accept(self, websocket):
+        pass
 
 
