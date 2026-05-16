@@ -19,7 +19,7 @@ from app.store.MemoryStore import MemoryStore
 from app.store.SqliteStore import SqliteStore
 from app.federation.FederatedStore import FederatedStore
 from tests.federation.schema_simple import my_test_schema_init
-from tests.testers.fixtures import social_stub
+#from tests.testers.fixtures import social_stub
 
 
 @pytest.fixture(params = ['mem', 'sqlite'])

@@ -26,6 +26,10 @@ from abc import ABC, abstractmethod
 class CliProvider(ABC):
 
 
+    def __init__(self, kernel):
+        self.kernel = kernel
+
+
     @abstractmethod
     async def accept(self, websocket):
         pass

@@ -249,7 +249,7 @@ class FedStore_ReadCtx:
 
  
 # the federated store uses a social network to synchronize to other peers.
-class FederatedStore(Kernel):
+class FederatedStore:
 
 
     # I initialize myself with my hostname to distinguish my own URIs from the others.

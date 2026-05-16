@@ -20,9 +20,10 @@ from starlette.websockets import WebSocket
 from app.AdelphosRouter import AdelphosRouter
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 
-from tests.testers.fixtures import social_stub, cli_stub
+#from tests.testers.fixtures import social_stub, cli_stub
 from tests.testers.fixtures import SocialStub
 from tests.testers.fixtures import CliHandlerStub
+from tests.testers.fixtures import EchoKernel
 import tests.test_constants as tc
 import tests.adelphoi_test_config as tconf
 #from tests.testers.fixtures import sync_gateway
@@ -38,9 +39,6 @@ from app.logging import gCon
 import tests.t_utils as tu
 
 
-#@pytest.fixture(scope = "module", params = ['sync', 'async'])
-#def app1(social_stub, request):
-
 @pytest.fixture(scope = "module")
 def aroutable(request):
 
@@ -48,15 +46,17 @@ def aroutable(request):
             else tconf.adelphos_stub
 
     social_stub = SocialStub(('demo1', 'demo2'))
-    cli_stub = CliHandlerStub()
+    kernel = EchoKernel()
+    cli_stub = CliHandlerStub(kernel)
 
     aroutable = AdelphosRouter("test", configuration, 
-                               social_stub, cli_handler = cli_stub)
+                               social_stub, kernel = kernel,
+                               cli_handler = cli_stub)
     return aroutable 
 
 
 @pytest.fixture(scope = "module", params = ['sync', 'async'])
-def app1(aroutable, request):
+def app(aroutable, request):
 
     if request.param == 'sync':
         host = aroutable.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
@@ -68,42 +68,47 @@ def app1(aroutable, request):
 
     return wrappedapp
 
-#@pytest.mark.parametrize('app1', tcon.adelphos_stub, indirect = True)
-#@pytest.mark.parametrize('aroutable', tconf.adelphos_stub, indirect = True)
-@pytest.mark.parametrize('aroutable', ( tconf.adelphos_stub, ), indirect = True)
-def test_context(app1, aroutable):
 
-    with app1 as app:
+@pytest.fixture(scope = "module", params = [ tconf.adelphos_stub, ])
+def routable_stub(aroutable, request):
+    return aroutable
+
+
+@pytest.mark.parametrize('aroutable', ( tconf.adelphos_stub, ), indirect = True)
+def test_context(app, aroutable):
+
+    with app:
         app.post("", json = None)
 
 
-#@pytest.mark.parametrize('aroutable', (tconf.adelphos_stub,), indirect = True)
-def test_ws_1(app1, aroutable):
-    with app1.websocket_connect(CNST.WS_ROUTE) as websocket:
+def test_ws_1(app, aroutable):
+    with app.websocket_connect(CNST.WS_ROUTE) as websocket:
         websocket.send_text("lino")
         data = websocket.receive_text()
         assert data == 'Hello world, lino!'
 
 
-#@pytest.mark.parametrize('aroutable', tconf.adelphos_stub, indirect = True)
-def test_post_inbox_KO(app1, aroutable):
+def test_post_inbox_KO(app, aroutable):
     user_in = 'demo_WHAT'
     url_post=CNST.USER_INBOX_ROUTE.format(username = user_in)
     jsonmsg = {
             'msg' : f'hello1 {user_in} secret X8a9'
             }
-    response = app1.post(url_post, json = jsonmsg)
+    response = app.post(url_post, json = jsonmsg)
     tu.assert_error_code_in_response(response, AdErrno.USER_DOES_NOT_EXIST)
 
 
-#@pytest.mark.parametrize('aroutable', tconf.adelphos_stub, indirect = True)
-def test_post_inbox_ok(app1, aroutable):
+def test_post_from_kernel():
+    pass
+
+
+def test_post_inbox_ok(app, aroutable):
     user_in = 'demo1'
     url_post=CNST.USER_INBOX_ROUTE.format(username = user_in)
     jsonmsg = {
             'msg' : 'hello1 demo1 secret X8a9'
             }
-    response = app1.post(url_post, json = jsonmsg)
+    response = app.post(url_post, json = jsonmsg)
     assert response.status_code == 202
 
     user_ob = aroutable.get_social().login_user(user_in)
@@ -118,9 +123,8 @@ def test_post_inbox_ok(app1, aroutable):
     assert count_msg == 0
 
 
-#@pytest.mark.parametrize('aroutable', tconf.adelphos_stub, indirect = True)
-def test_webfinger(app1, aroutable):
-    test1 = app1
+def test_webfinger(app, aroutable):
+    test1 = app
     url_query = f"{CNST.WEBFINGER_ROUTE}?val=wrong"
     response = test1.get(url_query)
     assert response.status_code == 401
@@ -137,7 +141,7 @@ def test_webfinger(app1, aroutable):
     response = test1.get(url_query)
     assert response.status_code == 404
 
-    host = app1.app.routable.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
+    host = app.app.routable.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
 
     url_query = f"{CNST.WEBFINGER_ROUTE}?resource=acct:demo1@{host}"
     response = test1.get(url_query)

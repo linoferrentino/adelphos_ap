@@ -363,7 +363,7 @@ class AdelphosRouter(Routable):
     async def init_up(self):
         if self.kernel is None:
             return
-        await self.kernel.start_async(social)
+        await self.kernel.start_async(self.social)
 
 
     async def tear_down(self):

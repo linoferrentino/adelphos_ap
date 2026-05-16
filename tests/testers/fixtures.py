@@ -17,6 +17,7 @@ import pytest
 import json
 
 from app.federation.SocialProvider import SocialProvider
+from app.federation.Kernel import Kernel
 
 from tests.testers.SyncGateway import SyncGateway
 from app.transport.bridge.loop import stop_loop, get_loop
@@ -97,6 +98,21 @@ class SocialStub(SocialProvider):
         self.users[user] = UserStub(user, listener)
 
 
+class EchoKernel(Kernel):
+
+    async def start_async(self, social):
+        pass
+
+    
+    async def stop_async(self):
+        pass
+
+
+    async def proc_msg(self, msg):
+        pass
+
+
+
 class CliHandlerStub(CliProvider):
 
     async def accept(self, websocket):
@@ -106,14 +122,14 @@ class CliHandlerStub(CliProvider):
         await websocket.close()
 
 
-@pytest.fixture(scope = "module")
-def social_stub():
-    ss = SocialStub(('demo1', 'demo2'))
-    return ss
-
-
-@pytest.fixture(scope = "module")
-def cli_stub():
-    cli_stub = CliHandlerStub()
-    return cli_stub
+#@pytest.fixture(scope = "module")
+#def social_stub():
+#    ss = SocialStub(('demo1', 'demo2'))
+#    return ss
+#
+#
+#@pytest.fixture(scope = "module")
+#def cli_stub():
+#    cli_stub = CliHandlerStub()
+#    return cli_stub
 

@@ -13,18 +13,15 @@
 #
 
 import pytest
+import json
 
 from tests.transport.TRoutable import TRoutable
-#from tests.transport.TRoutable import HOST_1, HOST_2, FLAG_1, FLAG_2
 import tests.test_constants as tc
 from tests.testers.SyncApp import SyncApp
 from tests.testers.SyncTester import SyncTester
-#from tests.testers.SyncGateway import SyncGateway
 from tests.transport.sync_mode.SyncTransport import SyncTransport
 from app.transport.bridge.loop import stop_loop, get_loop
 from app.logging import gCon
-#from tests.testers.fixtures import sync_gateway
-import json
 
 
 

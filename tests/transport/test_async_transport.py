@@ -39,14 +39,14 @@ def app_t1():
 @pytest.fixture(scope = "module")
 def remote_app1():
     server = ProcessWrapper()
-    with server.run_in_subprocess(TRoutable, PORT1):
+    with server.run_in_subprocess(TRoutable, ("flag1",), PORT1):
         yield
 
 
 @pytest.fixture(scope = "module")
 def remote_app2():
     server = ProcessWrapper()
-    with server.run_in_subprocess(TRoutable, PORT2):
+    with server.run_in_subprocess(TRoutable, ("flag1",), PORT2):
         yield
 
 
