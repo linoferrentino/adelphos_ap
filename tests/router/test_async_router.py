@@ -20,7 +20,7 @@ from starlette.websockets import WebSocket
 from app.AdelphosRouter import AdelphosRouter
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 
-from tests.testers.fixtures import social_stub
+from tests.testers.fixtures import social_stub, cli_stub
 import tests.test_constants as tc
 import tests.adelphoi_test_config as tconf
 #from tests.testers.fixtures import sync_gateway
@@ -37,8 +37,9 @@ import tests.t_utils as tu
 
 
 @pytest.fixture(scope = "module", params = ['sync', 'async'])
-def app1(social_stub, request):
-    aroutable = AdelphosRouter("test", tconf.adelphos_stub, social_stub)
+def app1(social_stub, cli_stub, request):
+    aroutable = AdelphosRouter("test", tconf.adelphos_stub, 
+                               social_stub, cli_handler = cli_stub)
     if request.param == 'sync':
         host = aroutable.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
         app = SyncApp(host, aroutable)
@@ -49,7 +50,7 @@ def app1(social_stub, request):
 
     return wrappedapp
 
-
+#@pytest.mark.parametrize('app1', tcon.adelphos_stub, indirect = True)
 def test_context(app1):
 
     with app1 as app:
@@ -60,7 +61,7 @@ def test_ws_1(app1):
     with app1.websocket_connect(CNST.WS_ROUTE) as websocket:
         websocket.send_text("lino")
         data = websocket.receive_text()
-        assert data == 'Hello, world! lino'
+        assert data == 'Hello world, lino!'
 
 
 def test_post_inbox_KO(app1, social_stub):

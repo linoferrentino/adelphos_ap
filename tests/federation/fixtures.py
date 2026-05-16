@@ -36,7 +36,7 @@ def fdb1_loc(request):
 
 
 @pytest.fixture(params = ['mem', 'sqlite'])
-def fdb1_remote(request, social_stub):
+def fdb1_remote(request):
 
     if request.param == 'mem':
         db = MemoryStore()
@@ -46,5 +46,10 @@ def fdb1_remote(request, social_stub):
     fdb = FederatedStore(LOCALHOST, db, my_test_schema_init)
     fdb.start()
     return fdb
+
+
+@pytest.fixture(scope = "module", params = ['mem', 'sqlite'])
+def federated_kernel(fdb1_loc):
+    pass
 
 

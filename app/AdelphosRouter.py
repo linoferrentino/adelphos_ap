@@ -331,13 +331,14 @@ class AdelphosRouter(Routable):
     async def in_websocket(self, websocket: WebSocket):
         if self.cli_handler is not None:
             await self.cli_handler.accept(websocket)
+            return
 
         ##return Response("No cli provider", status_code = 500)
         #raise Exception("No cli")
 
         await websocket.accept()
         #text = await websocket.receive_text()
-        await websocket.send_text(f"No cli!")
+        await websocket.send_text(f"No cli! {self.cli_handler}")
         await websocket.close()
 
 

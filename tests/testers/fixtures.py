@@ -25,6 +25,8 @@ from app.logging import gCon
 from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
 
+from app.cli.CliProvider import CliProvider
+
 
 class UserStub:
 
@@ -51,7 +53,6 @@ class UserStub:
 
 
 class SocialStub(SocialProvider):
-
 
     def __init__(self, user_list):
         self.users = { user: UserStub(user) for user in user_list }
@@ -93,9 +94,23 @@ class SocialStub(SocialProvider):
         self.users[user] = UserStub(user, listener)
 
 
+class CliHandlerStub(CliProvider):
+
+    async def accept(self, websocket):
+        await websocket.accept()
+        text = await websocket.receive_text()
+        await websocket.send_text(f"Hello world, {text}!")
+        await websocket.close()
+
+
 @pytest.fixture(scope = "module")
 def social_stub():
     ss = SocialStub(('demo1', 'demo2'))
     return ss
 
+
+@pytest.fixture(scope = "module")
+def cli_stub():
+    cli_stub = CliHandlerStub()
+    return cli_stub
 
