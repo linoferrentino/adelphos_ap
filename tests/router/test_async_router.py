@@ -21,6 +21,8 @@ from app.AdelphosRouter import AdelphosRouter
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 
 from tests.testers.fixtures import social_stub, cli_stub
+from tests.testers.fixtures import SocialStub
+from tests.testers.fixtures import CliHandlerStub
 import tests.test_constants as tc
 import tests.adelphoi_test_config as tconf
 #from tests.testers.fixtures import sync_gateway
@@ -36,10 +38,26 @@ from app.logging import gCon
 import tests.t_utils as tu
 
 
-@pytest.fixture(scope = "module", params = ['sync', 'async'])
-def app1(social_stub, cli_stub, request):
-    aroutable = AdelphosRouter("test", tconf.adelphos_stub, 
+#@pytest.fixture(scope = "module", params = ['sync', 'async'])
+#def app1(social_stub, request):
+
+@pytest.fixture(scope = "module")
+def aroutable(request):
+
+    configuration = request.param if hasattr(request, 'param') \
+            else tconf.adelphos_stub
+
+    social_stub = SocialStub(('demo1', 'demo2'))
+    cli_stub = CliHandlerStub()
+
+    aroutable = AdelphosRouter("test", configuration, 
                                social_stub, cli_handler = cli_stub)
+    return aroutable 
+
+
+@pytest.fixture(scope = "module", params = ['sync', 'async'])
+def app1(aroutable, request):
+
     if request.param == 'sync':
         host = aroutable.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
         app = SyncApp(host, aroutable)
@@ -51,20 +69,24 @@ def app1(social_stub, cli_stub, request):
     return wrappedapp
 
 #@pytest.mark.parametrize('app1', tcon.adelphos_stub, indirect = True)
-def test_context(app1):
+#@pytest.mark.parametrize('aroutable', tconf.adelphos_stub, indirect = True)
+@pytest.mark.parametrize('aroutable', ( tconf.adelphos_stub, ), indirect = True)
+def test_context(app1, aroutable):
 
     with app1 as app:
         app.post("", json = None)
 
 
-def test_ws_1(app1):
+#@pytest.mark.parametrize('aroutable', (tconf.adelphos_stub,), indirect = True)
+def test_ws_1(app1, aroutable):
     with app1.websocket_connect(CNST.WS_ROUTE) as websocket:
         websocket.send_text("lino")
         data = websocket.receive_text()
         assert data == 'Hello world, lino!'
 
 
-def test_post_inbox_KO(app1, social_stub):
+#@pytest.mark.parametrize('aroutable', tconf.adelphos_stub, indirect = True)
+def test_post_inbox_KO(app1, aroutable):
     user_in = 'demo_WHAT'
     url_post=CNST.USER_INBOX_ROUTE.format(username = user_in)
     jsonmsg = {
@@ -74,7 +96,8 @@ def test_post_inbox_KO(app1, social_stub):
     tu.assert_error_code_in_response(response, AdErrno.USER_DOES_NOT_EXIST)
 
 
-def test_post_inbox_ok(app1, social_stub):
+#@pytest.mark.parametrize('aroutable', tconf.adelphos_stub, indirect = True)
+def test_post_inbox_ok(app1, aroutable):
     user_in = 'demo1'
     url_post=CNST.USER_INBOX_ROUTE.format(username = user_in)
     jsonmsg = {
@@ -83,12 +106,20 @@ def test_post_inbox_ok(app1, social_stub):
     response = app1.post(url_post, json = jsonmsg)
     assert response.status_code == 202
 
-    user_ob = social_stub.login_user(user_in)
+    user_ob = aroutable.get_social().login_user(user_in)
+
+    count_msg = user_ob.count_msg()
+    assert count_msg == 1
+
     msg = user_ob.pop_lst_msg()
     assert msg == 'hello1 demo1 secret X8a9'
 
+    count_msg = user_ob.count_msg()
+    assert count_msg == 0
 
-def test_webfinger(app1):
+
+#@pytest.mark.parametrize('aroutable', tconf.adelphos_stub, indirect = True)
+def test_webfinger(app1, aroutable):
     test1 = app1
     url_query = f"{CNST.WEBFINGER_ROUTE}?val=wrong"
     response = test1.get(url_query)

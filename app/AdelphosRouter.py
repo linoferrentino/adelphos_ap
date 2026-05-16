@@ -85,6 +85,10 @@ class AdelphosRouter(Routable):
         self.cli_handler = cli_handler
 
 
+    def get_social(self):
+        return self.social
+
+
     async def in_webfinger(self, request):
         resource = request.query_params.get('resource')
         if resource is None:

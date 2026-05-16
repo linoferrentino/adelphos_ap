@@ -27,3 +27,8 @@ class Kernel(ABC):
         pass
 
 
+    @abstractmethod
+    async def proc_msg(self, msg):
+        pass
+
+

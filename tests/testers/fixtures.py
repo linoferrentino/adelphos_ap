@@ -46,6 +46,9 @@ class UserStub:
         else:
             self.messages.append(msg)
 
+    def count_msg(self):
+        return len(self.messages)
+
 
     def pop_lst_msg(self):
         (self.messages, msg) = (self.messages[:-1], self.messages[-1])

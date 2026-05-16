@@ -120,6 +120,10 @@ class SyncTester(ContextDecorator):
         return urls
 
 
+    def get_routable(self):
+        return self.app
+
+
     def websocket_connect(self, path) -> WebSocketSync:
         sock = WebSocketSync()
         self.app.incoming_websocket(path, sock)

@@ -280,6 +280,10 @@ class FederatedStore(Kernel):
         self.db.close()
 
 
+    async def proc_msg(self, msg):
+        pass
+
+
     #async def new_post(self, post):
     #    pass
 
