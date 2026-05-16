@@ -26,17 +26,13 @@ class SyncTransport(AbstractTransport):
         self.gateway = None
     
 
-    def post_json(self, url, json):
-        pass
+    async def post_json(self, url, json):
+        gCon.log(f"posting json {url} {json}")
 
 
     def set_out_gateway(self, gateway):
         self.gateway = gateway 
-        #gCon.log(f"{id(self)} registering {self.host}")
         gateway.register_dns(self, self.host)
-
-    #def register_reverse_path(self, in_app):
-    #    self.in_app = in_app
 
 
     async def get_json(self, url):

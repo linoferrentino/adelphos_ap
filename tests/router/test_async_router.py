@@ -21,8 +21,8 @@ from app.AdelphosRouter import AdelphosRouter
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 
 #from tests.testers.fixtures import social_stub, cli_stub
-from tests.testers.fixtures import SocialStub
 from tests.testers.fixtures import CliHandlerStub
+from tests.testers.fixtures import CliBypassStub
 from tests.testers.fixtures import EchoKernel
 import tests.test_constants as tc
 import tests.adelphoi_test_config as tconf
@@ -35,8 +35,27 @@ from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import parse_exc
 from app.exc.AdelphosException import AdErrno
 from app.logging import gCon
+from app.federation.SimpleSocial import SimpleSocial
 
 import tests.t_utils as tu
+
+
+@pytest.fixture(scope = "module")
+def get_routable():
+
+    def _build_routable_from_config(configuration):
+
+        social_stub = SimpleSocial(('demo1', 'demo2'))
+        kernel = EchoKernel()
+        cli_stub = CliBypassStub(kernel)
+
+        aroutable = AdelphosRouter("test", configuration, 
+                                   social_stub, kernel = kernel,
+                                   cli_handler = cli_stub)
+        return aroutable 
+
+    return _build_routable_from_config
+
 
 
 @pytest.fixture(scope = "module")
@@ -45,7 +64,7 @@ def aroutable(request):
     configuration = request.param if hasattr(request, 'param') \
             else tconf.adelphos_stub
 
-    social_stub = SocialStub(('demo1', 'demo2'))
+    social_stub = SimpleSocial(('demo1', 'demo2'))
     kernel = EchoKernel()
     cli_stub = CliHandlerStub(kernel)
 
@@ -98,8 +117,23 @@ def test_post_inbox_KO(app, aroutable):
     tu.assert_error_code_in_response(response, AdErrno.USER_DOES_NOT_EXIST)
 
 
-def test_post_from_kernel():
-    pass
+def test_post_from_kernel(get_routable):
+    routable1 = get_routable(tconf.adelphos_stub)
+    routable2 = get_routable(tconf.adelphos_t2_test)
+
+    app1 = SyncApp(routable1.get_host(), routable1)
+    app2 = SyncApp(routable2.get_host(), routable2)
+
+    test1 = SyncTester(app1)
+    test2 = SyncTester(app2)
+
+    with test1, test2:
+        with test1.websocket_connect(CNST.WS_ROUTE) as websocket:
+            websocket.send_text("sndpost lino")
+            data = websocket.receive_text()
+            assert data == 'DONE!'
+            
+            #user_ob = aroutable.get_social().login_user(user_in)
 
 
 def test_post_inbox_ok(app, aroutable):

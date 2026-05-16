@@ -29,34 +29,8 @@ from app.exc.AdelphosException import AdErrno
 from app.cli.CliProvider import CliProvider
 
 
-class UserStub:
 
-    def __init__(self, user, aListener = None):
-        self.user = user
-        if aListener is None:
-            self.messages = []
-            self.is_daemon = False
-        else:
-            self.listener = aListener
-            self.is_daemon = True
-
-
-    def new_msg(self, msg):
-        if self.is_daemon:
-            self.listener.new_post(msg)
-        else:
-            self.messages.append(msg)
-
-    def count_msg(self):
-        return len(self.messages)
-
-
-    def pop_lst_msg(self):
-        (self.messages, msg) = (self.messages[:-1], self.messages[-1])
-        return msg
-
-
-class SocialStub(SocialProvider):
+class SocialStub_DEP(SocialProvider):
 
     def __init__(self, user_list):
         self.users = { user: UserStub(user) for user in user_list }
@@ -83,7 +57,10 @@ class SocialStub(SocialProvider):
 
 
     async def outgoing_message(self, user, message):
-        pass
+        gCon.log(f"OOOO {user} {message} {self.transport}")
+        await self.transport.post_json(user, {
+            'msg' : message
+            })
 
 
     def login_user(self, user):
@@ -94,14 +71,14 @@ class SocialStub(SocialProvider):
     def create_or_register_user(self, user, *, listener = None):
         if user in self.users:
             raise AdelphosException(AdErrno.USER_ALREADY_EXISTING)
-
         self.users[user] = UserStub(user, listener)
 
 
 class EchoKernel(Kernel):
 
     async def start_async(self, social):
-        pass
+        gCon.log(f"{id(self)} this is the social {social}")
+        self.social = social
 
     
     async def stop_async(self):
@@ -109,17 +86,45 @@ class EchoKernel(Kernel):
 
 
     async def proc_msg(self, msg):
-        pass
+        host_dest = msg
+        gCon.log(f"{id(self)} proc msg")
+        gCon.log(f"I want to send message to {host_dest} social {self.social}")
+        await self.social.outgoing_message(f"@EchoKernel@{host_dest}", "ping")
+        return "DONE!"
+
+
+class CliBypassStub(CliProvider):
+
+    def __init__(self, kernel):
+        super().__init__(kernel)
+
+
+    async def accept(self, websocket):
+        await websocket.accept()
+        text = await websocket.receive_text()
+        response = await self.kernel.proc_msg(text)
+        await websocket.send_text(f"{response}")
+        await websocket.close()
 
 
 
 class CliHandlerStub(CliProvider):
+
+
+    def __init__(self, kernel):
+        super().__init__(kernel)
+
 
     async def accept(self, websocket):
         await websocket.accept()
         text = await websocket.receive_text()
         await websocket.send_text(f"Hello world, {text}!")
         await websocket.close()
+
+
+        #client = ClientWs(self.kernel, websocket)
+        #self.clients.append(client)
+        #return client
 
 
 #@pytest.fixture(scope = "module")

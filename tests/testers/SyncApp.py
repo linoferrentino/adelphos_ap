@@ -51,16 +51,19 @@ class SyncApp:
     gateway = None
 
     def on_startup(self):
+        gCon.log("SyncApp on_startup")
         if SyncApp.gateway is None:
             SyncApp.gateway = SyncGateway()
             SyncApp.gateway.start(self)
         self.set_out_gateway(SyncApp.gateway)
-        run_coro_in_loop(Routable.init_up, (self.routable,))
+        gCon.log(f"Hello! start init in loop {self.routable}")
+        run_coro_in_loop(self.routable.init_up, ())
+        gCon.log("Hello! start init in loop done")
 
 
     def on_teardown(self):
         SyncApp.gateway.stop()
-        run_coro_in_loop(Routable.tear_down, (self.routable,))
+        run_coro_in_loop(self.routable.tear_down, ())
 
 
     def __init__(self, host, routable):

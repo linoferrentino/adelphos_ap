@@ -89,6 +89,16 @@ class AdelphosRouter(Routable):
         return self.social
 
 
+    def set_transport(self, transport):
+        super().set_transport(transport)
+        self.social.set_transport(transport)
+
+
+    def get_host(self):
+        host = self.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
+        return host
+
+
     async def in_webfinger(self, request):
         resource = request.query_params.get('resource')
         if resource is None:
@@ -100,7 +110,7 @@ class AdelphosRouter(Routable):
 
         ap_user_rex = ap_user_match.group(1)
         ap_host_rex = ap_user_match.group(2)
-        host = self.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
+        host = self.get_host()
 
         if ap_host_rex != host:
             return Response(status_code=404)
@@ -361,6 +371,8 @@ class AdelphosRouter(Routable):
 
 
     async def init_up(self):
+        host = self.get_host()
+        gCon.log(f"{id(self)} {host} init_up")
         if self.kernel is None:
             return
         await self.kernel.start_async(self.social)
