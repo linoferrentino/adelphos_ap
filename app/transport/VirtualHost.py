@@ -14,26 +14,11 @@
 
 from abc import ABC, abstractmethod
 
-class Routable(ABC):
-
-
-    def set_transport(self, transport):
-        self.transport = transport
+class VirtualHost(ABC):
 
 
     @abstractmethod
-    def get_routes(self):
+    def get_config():
         pass
-
-
-    @abstractmethod
-    async def init_up(self):
-        pass
-
-
-    @abstractmethod
-    async def tear_down(self):
-        pass
-
 
 

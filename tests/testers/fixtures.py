@@ -10,7 +10,6 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
 
 
 import pytest
@@ -29,7 +28,6 @@ from app.exc.AdelphosException import AdErrno
 from app.cli.CliProvider import CliProvider
 
 
-
 class EchoKernel(Kernel):
 
     async def start_async(self, social):
@@ -43,7 +41,7 @@ class EchoKernel(Kernel):
 
     async def proc_msg(self, msg):
         host_dest = msg
-        gCon.log(f"{id(self)} proc msg")
+        #gCon.log(f"{id(self)} proc msg")
         gCon.log(f"I want to send message to {host_dest} social {self.social}")
         await self.social.outgoing_message(f"@EchoKernel@{host_dest}", "ping")
         return "DONE!"

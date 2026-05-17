@@ -10,7 +10,6 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
 
 # Wrapper for a starlette application.
 

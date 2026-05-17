@@ -11,29 +11,16 @@
 #
 ######################################################
 
+class TestKernel(Kernel):
 
-from abc import ABC, abstractmethod
-
-class Routable(ABC):
-
-
-    def set_transport(self, transport):
-        self.transport = transport
-
-
-    @abstractmethod
-    def get_routes(self):
+    async def start_async(self, social):
         pass
 
 
-    @abstractmethod
-    async def init_up(self):
+    async def stop_async(self):
         pass
 
 
-    @abstractmethod
-    async def tear_down(self):
+    async def proc_msg(self, msg):
         pass
-
-
-
+ 

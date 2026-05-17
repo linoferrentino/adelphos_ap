@@ -19,7 +19,6 @@ from app.logging import gCon
 
 class StandardCliClient:
 
-
     def __init__(self, kernel, websocket):
         self.kernel = kernel
         self.websocket = websocket
@@ -28,22 +27,7 @@ class StandardCliClient:
     async def _internal_serve(self):
 
         while True:
-            try:
-
-                gCon.log("Waiting...")
-
-                #data = self.websocket.receive_text()
-                #data = await self.websocket.receive_text_blocking_async()
-                data = await self.websocket.receive_text()
-                #data = await asyncio.wait_for(
-                #    self.websocket.receive_text(), 10)
-
-                gCon.log(f"received {data}")
-
-            except asyncio.TimeoutError:
-                gCon.log("are you still there?")
-                continue
-
+            data = await self.websocket.receive_text()
             response = await self.kernel.proc_msg(data)
             await self.websocket.send_text(response)
 
@@ -79,10 +63,7 @@ class StandardCliClient:
             await self.websocket.send_text(f"Error: {err}")
 
 
-
-
 class StandardCliProvider(CliProvider):
-
 
     def __init__(self, kernel):
         self.kernel = kernel
