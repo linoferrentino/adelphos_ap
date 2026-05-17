@@ -123,7 +123,7 @@ ws_cmd_handlers = {
 
 
 # this is the client that will do the cycle to process the messages
-class ClientWs:
+class ClientWs_OLD:
 
 
     def __init__(self, app, websocket):
@@ -227,7 +227,7 @@ class WebSocketSyncRouter(SyncRouter):
 
 # this object will accept the web sockets and do a garbage collect when
 # they are dead or inactive for a certain period of time
-class ConnHandler(CliProvider, RouterProvider):
+class ConnHandler_XX(CliProvider, RouterProvider):
 
 
     # TODO remove the dependency on the app

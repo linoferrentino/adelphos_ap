@@ -29,9 +29,9 @@ class CliProvider(ABC):
     def __init__(self, kernel):
         self.kernel = kernel
 
-
+    
     @abstractmethod
-    async def accept(self, websocket):
+    async def serve_forever(self, websocket):
         pass
 
 

@@ -37,7 +37,6 @@ class ActivityPubNetwork(SocialNetwork):
         super().__init__(router)
 
 
-
     async def post_to_user(self, user, message):
         pass
 

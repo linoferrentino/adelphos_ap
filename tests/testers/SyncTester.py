@@ -20,6 +20,7 @@ from contextlib import ExitStack
 
 from app.transport.bridge.loop import run_coro_in_loop, get_loop
 from app.logging import gCon
+from starlette.websockets import WebSocketDisconnect
 
 
 class WebSocketSync(ContextDecorator):
@@ -45,16 +46,25 @@ class WebSocketSync(ContextDecorator):
             self.cond = asyncio.Condition()
             self.pair_sock = pair_sock
         self.buffer = None
+        self.closed = False
 
 
-    async def sending_text_async(self, text):
-
+    def get_cond(self):
         if self.is_server == False:
             cond = self.pair_sock.cond
         else:
             cond = self.cond
+        return cond
+
+
+    async def sending_text_async(self, text):
+        cond = self.get_cond()
 
         async with cond:
+
+            if self.closed == True:
+                raise WebSocketDisconnect()
+
             self.pair_sock.buffer = text
             cond.notify_all()
 
@@ -74,18 +84,28 @@ class WebSocketSync(ContextDecorator):
         return text
 
 
-    #async def receive_text_blocking_async(self, stub = None):
+    def close(self):
+        run_coro_in_loop(self.close_async, (), wait = False)
+
+
+    async def close_async(self):
+        cond = self.get_cond()
+        async with cond:
+            self.closed = True
+            cond.notify_all()
+
+
     async def receive_text_blocking_async(self):
 
-        if self.is_server == False:
-            cond = self.pair_sock.cond
-        else:
-            cond = self.cond
-        
+        cond = self.get_cond()
+
         data = None 
         async with cond:
             while self.buffer is None:
                 await cond.wait()
+
+            if self.closed == True:
+                raise WebSocketDisconnect()
 
             data = self.buffer
             self.buffer = None

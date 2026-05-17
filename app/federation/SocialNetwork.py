@@ -14,6 +14,20 @@
 
 from abc import ABC, abstractmethod
 
+
+class SocialEncoder(ABC):
+
+    
+    @abstractmethod
+    async def encode_message(self, message):
+        pass
+
+
+    @abstractmethod
+    async def decode_message(self, message):
+        pass
+
+
 class SocialNetwork(ABC):
 
 

@@ -36,6 +36,7 @@ from app.exc.AdelphosException import parse_exc
 from app.exc.AdelphosException import AdErrno
 from app.logging import gCon
 from app.federation.SimpleSocial import SimpleSocial
+from app.cli.StandardCliProvider import StandardCliProvider
 
 import tests.t_utils as tu
 
@@ -47,7 +48,8 @@ def get_routable():
 
         social_stub = SimpleSocial(('demo1', 'demo2'))
         kernel = EchoKernel()
-        cli_stub = CliBypassStub(kernel)
+        #cli_stub = CliBypassStub(kernel)
+        cli_stub = StandardCliProvider(kernel)
 
         aroutable = AdelphosRouter("test", configuration, 
                                    social_stub, kernel = kernel,
@@ -118,6 +120,7 @@ def test_post_inbox_KO(app, aroutable):
 
 
 def test_post_from_kernel(get_routable):
+    user_in = 'demo1'
     routable1 = get_routable(tconf.adelphos_stub)
     routable2 = get_routable(tconf.adelphos_t2_test)
 
@@ -127,13 +130,26 @@ def test_post_from_kernel(get_routable):
     test1 = SyncTester(app1)
     test2 = SyncTester(app2)
 
+    host1 = tconf.adelphos_stub[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
+    host2 = tconf.adelphos_t2_test[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
+
+    gCon.log(f"host1 {host1} host2 {host2}")
+
     with test1, test2:
         with test1.websocket_connect(CNST.WS_ROUTE) as websocket:
-            websocket.send_text("sndpost lino")
+            websocket.send_text(f"sndpost @{user_in}@{host2} echo_test_x918")
             data = websocket.receive_text()
+            gCon.log(f"++++++++ got data {data}")
             assert data == 'DONE!'
+            websocket.close()
             
-            #user_ob = aroutable.get_social().login_user(user_in)
+            #user_ob = routable2.get_social().login_user(user_in)
+            #count_msg = user_ob.count_msg()
+            #assert count_msg == 1
+
+            #msg = user_ob.pop_lst_msg()
+            #assert msg == 'echo_test_x918'
+
 
 
 def test_post_inbox_ok(app, aroutable):
