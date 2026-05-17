@@ -39,7 +39,7 @@ class SocialProvider(ABC):
 
 
     @abstractmethod
-    def incoming_message(self, user, message):
+    async def incoming_message(self, user, message):
         pass
 
 

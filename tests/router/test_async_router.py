@@ -40,7 +40,7 @@ from app.federation.SimpleSocial import SimpleSocial
 import tests.t_utils as tu
 
 
-@pytest.fixture(scope = "module")
+@pytest.fixture(scope = "session")
 def get_routable():
 
     def _build_routable_from_config(configuration):

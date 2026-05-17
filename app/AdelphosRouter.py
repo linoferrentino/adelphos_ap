@@ -68,21 +68,22 @@ from app.transport.Routable import Routable
 from app.endpoints.AdelphosDaemonCli import AdelphosDaemonCli
 from app.endpoints.AdelphosWebSocket import AdelphosWebSocket
 from app.federation.SocialProvider import SocialProvider
-
+from app.federation.ap.ActivityPubNetwork import ActivityPubNetwork
 
 
 class AdelphosRouter(Routable):
 
-
-    def __init__(self, instance_name, config, 
+    def __init__(self, instance_name, config,
                  social : SocialProvider = None, 
                  kernel = None,
                  cli_handler= None):
+
         self.instance_name = instance_name
         self.config = config
         self.social = social
         self.kernel = kernel
         self.cli_handler = cli_handler
+        self.social_net = ActivityPubNetwork(self)
 
 
     def get_social(self):
@@ -97,56 +98,6 @@ class AdelphosRouter(Routable):
     def get_host(self):
         host = self.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
         return host
-
-
-    async def in_webfinger(self, request):
-        resource = request.query_params.get('resource')
-        if resource is None:
-            return Response(status_code = 401)
-
-        ap_user_match = re.match('acct:(.*?)@(.*)$', resource)
-        if (ap_user_match is None):
-            return Response(status_code=401)
-
-        ap_user_rex = ap_user_match.group(1)
-        ap_host_rex = ap_user_match.group(2)
-        host = self.get_host()
-
-        if ap_host_rex != host:
-            return Response(status_code=404)
-
-        if (self.social.local_user_exists(ap_user_rex) == False):
-            return Response(status_code=404)
-
-        host_api = f"{host}/{CNST.API_POINT}"
-
-        response = Response(
-            content=json.dumps({
-                "subject": resource,
-                "links": [
-                    {
-                        "rel": "self",
-                        "type": "application/activity+json",
-                        "href": f"https://{host_api}/users/{ap_user_rex}"
-                    }
-                ]
-            })
-        )
-        
-        response.headers['Content-Type'] = 'application/jrd+json'
-        return response
-
-
-    async def in_infouser(self, request):
-        pass
-
-
-    async def in_inbox(self, request):
-
-        user = request.path_params['username']
-        body = await request.json()
-        self.social.incoming_message(user, body)
-        return Response(status_code=202)
 
 
     async def in_daemon_cli(self, request):
@@ -347,26 +298,18 @@ class AdelphosRouter(Routable):
             await self.cli_handler.accept(websocket)
             return
 
-        ##return Response("No cli provider", status_code = 500)
-        #raise Exception("No cli")
-
         await websocket.accept()
-        #text = await websocket.receive_text()
-        await websocket.send_text(f"No cli! {self.cli_handler}")
+        await websocket.send_text(f"No cli available")
         await websocket.close()
 
 
     def get_routes(self):
-        routes = [
-                Route(CNST.WEBFINGER_ROUTE,
-                      endpoint = self.in_webfinger, methods=['GET']),
-                Route(CNST.USER_DISCOVER_ROUTE, 
-                      endpoint = self.in_infouser, methods=['GET']),
-                Route(CNST.USER_INBOX_ROUTE,
-                      endpoint = self.in_inbox, methods=['POST']),
+        routes = []
+        routes.extend(self.social_net.get_social_routes())
+        routes.extend([
                 Route(CNST.DAEMON_CLI_ROUTE, self.in_daemon_cli, methods=['GET']),
                 WebSocketRoute(CNST.WS_ROUTE, self.in_websocket),
-                ]
+                ])
         return routes
 
 

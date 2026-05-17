@@ -65,7 +65,7 @@ class SimpleSocial(SocialProvider):
         return user_stub
  
 
-    def incoming_message(self, user, message):
+    async def incoming_message(self, user, message):
         user_stub = self._pri_get_user_stub(user)
         msg = message['msg']
         user_stub.new_msg(msg)
