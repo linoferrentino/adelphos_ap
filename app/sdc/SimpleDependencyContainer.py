@@ -13,8 +13,16 @@
 
 
 
-sdc = None
 
 class SimpleDependencyContainer:
 
-    pass
+    def __init__(self, config, *,
+            social = None, 
+            kernel = None,
+            cli_handler= None):
+
+        self.social = social
+        self.kernel = kernel
+        self.cli_handler = cli_handler
+
+

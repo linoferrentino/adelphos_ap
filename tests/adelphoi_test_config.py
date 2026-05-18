@@ -14,7 +14,10 @@
 
 
 adelphos_stub =  {
-        "config" : {
+        "sdc" : {
+            'cli_api' : {
+                'type' : 'social_test_api'
+                },
             },
         "General": {
     "debug": True, 

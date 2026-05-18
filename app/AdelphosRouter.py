@@ -72,6 +72,8 @@ from app.federation.ap.ActivityPubNetwork import ActivityPubNetwork
 
 from app.cli.AdelphosCliRouter import AdelphosCliRouter
 
+import app.sdc.s_utils as sdc
+
 
 class AdelphosRouter(Routable):
 
@@ -82,6 +84,9 @@ class AdelphosRouter(Routable):
 
         self.instance_name = instance_name
         self.config = config
+
+        sdc.build_from(config)
+        
         self.social = social
         self.kernel = kernel
         self.cli_handler = cli_handler
@@ -111,16 +116,10 @@ class AdelphosRouter(Routable):
 
 
     async def init_up(self):
-        #host = self.get_host()
-        #gCon.log(f"{id(self)} {host} init_up")
-        #if self.kernel is None:
-        #    return
         await self.kernel.start_async(self.social)
 
 
     async def tear_down(self):
-        #if self.kernel is None:
-        #    return
         await self.kernel.stop_async()
 
 

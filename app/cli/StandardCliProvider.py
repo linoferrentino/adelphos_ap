@@ -26,8 +26,7 @@ class StandardCliClient:
     def __init__(self, kernel, websocket):
         self.kernel = kernel
         self.websocket = websocket
-        gCon.log(f"cli api ")
-        self.cli_api = sdc.get_ob(CNST.CLI_API)
+        self.cli_api = sdc.get_dep(CNST.CLI_API)
 
 
     async def _internal_serve(self):
