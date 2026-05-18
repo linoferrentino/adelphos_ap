@@ -10,8 +10,7 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
-# The gateway is the entry class to Adelphos.
+
 
 from app.api.AliasApi import AliasApi
 from app.api.TrustLineApi import TrustLineApi
@@ -26,7 +25,7 @@ import traceback
 import json
 
 
-class Gateway(ABC):
+class Gateway_OLD(ABC):
 
 
     # the application context has in common the Alias API.

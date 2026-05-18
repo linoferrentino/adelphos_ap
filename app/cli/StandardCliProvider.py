@@ -16,18 +16,26 @@ from app.cli.CliProvider import CliProvider
 
 from starlette.websockets import WebSocketDisconnect
 from app.logging import gCon
+from app.cli.CliParser import CliParser
+
+import app.sdc.s_utils as sdc
+import app.consts as CNST
 
 class StandardCliClient:
 
     def __init__(self, kernel, websocket):
         self.kernel = kernel
         self.websocket = websocket
+        gCon.log(f"cli api ")
+        self.cli_api = sdc.get_ob(CNST.CLI_API)
 
 
     async def _internal_serve(self):
 
         while True:
             data = await self.websocket.receive_text()
+            #gCon.log(f">>>>>>>>> {data}")
+            #cli_parser = CliParser(data)
             response = await self.kernel.proc_msg(data)
             await self.websocket.send_text(response)
 

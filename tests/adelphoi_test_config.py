@@ -13,7 +13,10 @@
 #
 
 
-adelphos_stub =  {"General": {
+adelphos_stub =  {
+        "config" : {
+            },
+        "General": {
     "debug": True, 
     "port": 7777, 
     "db_name": ":memory:", 

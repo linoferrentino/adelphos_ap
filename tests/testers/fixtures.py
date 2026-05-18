@@ -41,7 +41,6 @@ class EchoKernel(Kernel):
 
     async def proc_msg(self, msg):
         host_dest = msg
-        #gCon.log(f"{id(self)} proc msg")
         gCon.log(f"I want to send message to {host_dest} social {self.social}")
         await self.social.outgoing_message(f"@EchoKernel@{host_dest}", "ping")
         return "DONE!"
@@ -61,9 +60,7 @@ class CliBypassStub(CliProvider):
         await websocket.close()
 
 
-
 class CliHandlerStub(CliProvider):
-
 
     def __init__(self, kernel):
         super().__init__(kernel)

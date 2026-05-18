@@ -75,8 +75,8 @@ from app.cli.AdelphosCliRouter import AdelphosCliRouter
 
 class AdelphosRouter(Routable):
 
-    def __init__(self, instance_name, config,
-                 social : SocialProvider = None, 
+    def __init__(self, instance_name, config, *,
+                 social = None, 
                  kernel = None,
                  cli_handler= None):
 
@@ -111,16 +111,16 @@ class AdelphosRouter(Routable):
 
 
     async def init_up(self):
-        host = self.get_host()
-        gCon.log(f"{id(self)} {host} init_up")
-        if self.kernel is None:
-            return
+        #host = self.get_host()
+        #gCon.log(f"{id(self)} {host} init_up")
+        #if self.kernel is None:
+        #    return
         await self.kernel.start_async(self.social)
 
 
     async def tear_down(self):
-        if self.kernel is None:
-            return
+        #if self.kernel is None:
+        #    return
         await self.kernel.stop_async()
 
 

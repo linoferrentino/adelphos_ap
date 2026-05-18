@@ -48,11 +48,10 @@ def get_routable():
 
         social_stub = SimpleSocial(('demo1', 'demo2'))
         kernel = EchoKernel()
-        #cli_stub = CliBypassStub(kernel)
         cli_stub = StandardCliProvider(kernel)
 
         aroutable = AdelphosRouter("test", configuration, 
-                                   social_stub, kernel = kernel,
+                                   social = social_stub, kernel = kernel,
                                    cli_handler = cli_stub)
         return aroutable 
 
@@ -71,7 +70,7 @@ def aroutable(request):
     cli_stub = CliHandlerStub(kernel)
 
     aroutable = AdelphosRouter("test", configuration, 
-                               social_stub, kernel = kernel,
+                               social = social_stub, kernel = kernel,
                                cli_handler = cli_stub)
     return aroutable 
 
