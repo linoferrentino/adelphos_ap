@@ -17,6 +17,7 @@ from app.cli.CliProvider import CliProvider
 from starlette.websockets import WebSocketDisconnect
 from app.logging import gCon
 from app.cli.CliParser import CliParser
+from app.sdc.Dependencies import Dependencies
 
 import app.sdc.s_utils as sdc
 import app.consts as CNST
@@ -76,16 +77,17 @@ class StandardCliClient:
 
 class StandardCliProvider(CliProvider):
 
-    def __init__(self, kernel):
-        self.kernel = kernel
+    def __init__(self, vhost):
+        self.vhost = vhost
         self.clients = []
 
 
     async def serve_forever(self, websocket):
-        gCon.log(f"StandardCliProvider ================ serve! {self.kernel}")
+        gCon.log(f"StandardCliProvider ================ serve! {self.vhost}")
 
         await websocket.accept()
-        client = StandardCliClient(self.kernel, websocket)
+        kernel = self.vhost.get_dep(Dependencies.KERNEL)
+        client = StandardCliClient(kernel, websocket)
         self.clients.append(client)
         await client.serve_forever()
 

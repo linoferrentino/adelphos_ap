@@ -37,17 +37,18 @@ def build_from(vhost, *,
 
     sdc = config.get('sdc')
     if sdc is None:
-        return None
+        raise Exception("Not found a dependency configuration")
 
     #cont = dep._conts.get(hash_conf)
-    #cont = dep._conts.get(hash_conf)
-    #if cont is not None:
-    #    gCon.log(f"Found a stored container!instance {instance} {hash_conf}")
-    #    dep._active_cont = cont
-    #    return cont
+    cont = dep._conts.get(hash_conf)
+    if cont is not None:
+        gCon.log(f"Found a stored container!instance {instance} {hash_conf}")
+        dep._active_cont = cont
+        return cont
 
     cont = SimpleDependencyContainer(vhost, social = social,
-                                     kernel = kernel, cli_handler = cli_handler)
+                                     kernel = kernel)
+                                     #, cli_handler = cli_handler)
     dep._active_cont = cont
     dep._conts[hash_conf] = cont
     gCon.log(f"config is {sdc} type {type(config)} {hash_conf}")

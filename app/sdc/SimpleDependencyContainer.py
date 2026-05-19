@@ -12,6 +12,8 @@
 ######################################################
 
 from app.federation.ap.ActivityPubNetwork import ActivityPubNetwork
+from tests.testers.fixtures import CliHandlerStub
+from app.cli.StandardCliProvider import StandardCliProvider
 from app.cli.AdelphosCliRouter import AdelphosCliRouter
 from app.sdc.Dependencies import Dependencies
 from app.config import Config
@@ -23,17 +25,34 @@ class SimpleDependencyContainer:
     def __init__(self, vhost, *,
             social = None, 
             kernel = None,
-            cli_handler= None):
+                 ):
+                 #cli_handler= None):
 
         instance = vhost.instance_name
         config = vhost.config
 
+        self.vhost = vhost
         self.config = Config(instance, config)
         self.social = social
         self.kernel = kernel
-        self.cli_handler = cli_handler
+        #self.cli_handler = cli_handler
+        self.cli_handler = self._make_cli_handler()
         self.social_net = ActivityPubNetwork(vhost)
         self.cli_net = AdelphosCliRouter(vhost)
+
+
+    def _make_cli_handler(self):
+
+        cli_handler_type = self.config.config['sdc']['cli_handler']['type']
+        match cli_handler_type:
+            case 'standard_cli':
+                cli_handler = StandardCliProvider(self.vhost)
+            case 'cli_stub':
+                cli_handler = CliHandlerStub(self.vhost)
+            case _:
+                raise Exception(f"Invalid cli handler {cli_handler_type}")
+
+        return cli_handler
 
 
     def get_dep(self, dep):

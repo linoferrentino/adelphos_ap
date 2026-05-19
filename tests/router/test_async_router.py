@@ -48,15 +48,17 @@ from app.sdc.Dependencies import Dependencies
 @pytest.fixture(scope = "session")
 def get_routable():
 
-    def _build_routable_from_config(configuration):
+    def _build_routable_from_config(configuration, build_structure):
 
         social_stub = SimpleSocial(('demo1', 'demo2'))
         kernel = EchoKernel()
-        cli_stub = StandardCliProvider(kernel)
+        #cli_stub = StandardCliProvider(kernel)
+        
+        configuration['sdc'] = build_structure
 
         aroutable = AdelphosRouter("test", configuration, 
-                                   social = social_stub, kernel = kernel,
-                                   cli_handler = cli_stub)
+                                   social = social_stub, kernel = kernel)
+        #, cli_handler = cli_stub)
         return aroutable 
 
     return _build_routable_from_config
@@ -71,11 +73,12 @@ def aroutable(request):
 
     social_stub = SimpleSocial(('demo1', 'demo2'))
     kernel = EchoKernel()
-    cli_stub = CliHandlerStub(kernel)
+    #cli_stub = CliHandlerStub(kernel)
+    configuration['sdc'] = tconf.cli_stub_dep_conf
 
     aroutable = AdelphosRouter("test", configuration, 
-                               social = social_stub, kernel = kernel,
-                               cli_handler = cli_stub)
+                               social = social_stub, kernel = kernel)
+                               #cli_handler = cli_stub)
     return aroutable 
 
 
@@ -128,8 +131,9 @@ def test_post_inbox_KO(app, aroutable):
 def test_post_from_kernel(get_routable):
     user_in = 'demo1'
     gCon.log("==================================== START TEST")
-    routable1 = get_routable(tconf.adelphos_stub)
-    routable2 = get_routable(tconf.adelphos_t2_test)
+    routable1 = get_routable(tconf.adelphos_stub, tconf.simple_tester_config)
+    routable2 = get_routable(tconf.adelphos_t2_test,
+                             tconf.simple_tester_config)
 
     gCon.log(f"rout1 {routable1.sdc} rout2 {routable2.sdc}")
 

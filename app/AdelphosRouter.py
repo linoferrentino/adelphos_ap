@@ -82,14 +82,16 @@ class AdelphosRouter(Routable):
 
     def __init__(self, instance_name, config, *,
                  social = None, 
-                 kernel = None,
-                 cli_handler= None):
+                 kernel = None):
+
+    #, cli_handler= None):
 
         self.instance_name = instance_name
         self.config = config
 
         self.sdc = sdc.build_from(self, social = social,
-            kernel = kernel, cli_handler = cli_handler)
+            kernel = kernel)
+        #, cli_handler = cli_handler)
         
         #self.social = social
         #self.kernel = kernel

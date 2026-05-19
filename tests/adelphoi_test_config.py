@@ -10,15 +10,26 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
+
+simple_tester_config = {
+            'cli_api' : {
+                'type' : 'social_test_api',
+                },
+            'cli_handler' : {
+                'type' : 'standard_cli',
+                },
+            }
+
+
+cli_stub_dep_conf = {
+        'cli_handler' : {
+                'type' : 'cli_stub',
+                },
+        }
 
 
 adelphos_stub =  {
-        "sdc" : {
-            'cli_api' : {
-                'type' : 'social_test_api'
-                },
-            },
         "General": {
     "debug": True, 
     "port": 7777, 
