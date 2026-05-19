@@ -30,18 +30,25 @@ from app.federation.SocialProvider import SocialProvider
 
 from app.federation.SocialNetwork import SocialNetwork
 
+#import app.sdc.s_utils as sdc
+#from app.sdc.SimpleDependencyContainer import Dependencies
+from app.sdc.Dependencies import Dependencies
+#from app.sdc.Dependencies import Dependencies, get_dep
+
 
 class ActivityPubNetwork(SocialNetwork):
 
-    def __init__(self, router):
-        super().__init__(router)
+    def __init__(self, vhost):
+        super().__init__(vhost)
 
 
     async def post_to_user(self, user, message):
+        gCon.log("XX")
         pass
 
 
     async def discover_user(self, user):
+        gCon.log("XX")
         pass
 
 
@@ -56,12 +63,15 @@ class ActivityPubNetwork(SocialNetwork):
 
         ap_user_rex = ap_user_match.group(1)
         ap_host_rex = ap_user_match.group(2)
-        host = self.router.get_host()
+
+        config = self.vhost.get_dep(Dependencies.CONFIG)
+        host = config.get_host()
 
         if ap_host_rex != host:
             return Response(status_code=404)
 
-        if (self.router.social.local_user_exists(ap_user_rex) == False):
+        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        if (social.local_user_exists(ap_user_rex) == False):
             return Response(status_code=404)
 
         host_api = f"{host}/{CNST.API_POINT}"
@@ -84,14 +94,15 @@ class ActivityPubNetwork(SocialNetwork):
 
 
     async def in_infouser(self, request):
+        gCon.log("XX")
         pass
 
 
     async def in_inbox(self, request):
-
+        social = self.vhost.get_dep(Dependencies.SOCIAL)
         user = request.path_params['username']
         body = await request.json()
-        await self.router.social.incoming_message(user, body)
+        await social.incoming_message(user, body)
         return Response(status_code=202)
 
 

@@ -38,6 +38,8 @@ class WebSocketSync(ContextDecorator):
 
     def __init__(self, pair_sock = None):
 
+        gCon.log(f"created socket {id(self)}")
+
         if pair_sock is None:
             self.is_server = False
             self.pair_sock = None
@@ -60,13 +62,16 @@ class WebSocketSync(ContextDecorator):
     async def sending_text_async(self, text):
         cond = self.get_cond()
 
+        gCon.log(f"send x1_ {text}")
         async with cond:
 
             if self.closed == True:
                 raise WebSocketDisconnect()
 
+            gCon.log(f"{id(self)} send x2_ {text} -> to {id(self.pair_sock)}")
             self.pair_sock.buffer = text
             cond.notify_all()
+            gCon.log(f"send x3_ {text} pair {id(self.pair_sock)}")
 
 
     async def accept(self):
@@ -75,6 +80,7 @@ class WebSocketSync(ContextDecorator):
 
 
     def send_text(self, text: str) -> None:
+        gCon.log(f"send_ {text}")
 
         run_coro_in_loop(self.sending_text_async, (text,), wait = True)
 
@@ -97,13 +103,16 @@ class WebSocketSync(ContextDecorator):
 
     async def receive_text_blocking_async(self):
 
+        gCon.log(f"recvd 1")
         cond = self.get_cond()
 
         data = None 
         async with cond:
+            gCon.log(f"{id(self) } recvd 2 {self.buffer} buff {id(self.buffer)}")
             while self.buffer is None:
                 await cond.wait()
 
+            gCon.log(f"recvd 3")
             if self.closed == True:
                 raise WebSocketDisconnect()
 

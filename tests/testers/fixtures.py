@@ -30,9 +30,8 @@ from app.cli.CliProvider import CliProvider
 
 class EchoKernel(Kernel):
 
-    async def start_async(self, social):
-        gCon.log(f"{id(self)} this is the social {social}")
-        self.social = social
+    async def start_async(self):
+        pass
 
     
     async def stop_async(self):
@@ -41,18 +40,19 @@ class EchoKernel(Kernel):
 
     async def proc_msg(self, msg):
         host_dest = msg
-        gCon.log(f"I want to send message to {host_dest} social {self.social}")
-        await self.social.outgoing_message(f"@EchoKernel@{host_dest}", "ping")
+        gCon.log(f"I want to send message to {host_dest} social")
+        #await self.social.outgoing_message(f"@EchoKernel@{host_dest}", "ping")
         return "DONE!"
 
 
 class CliBypassStub(CliProvider):
 
-    def __init__(self, kernel):
-        super().__init__(kernel)
+    #def __init__(self, kernel):
+    #    super().__init__(kernel)
 
 
     async def serve_forever(self, websocket):
+        gCon.log("serve_forever ///////// STUB")
         await websocket.accept()
         text = await websocket.receive_text()
         response = await self.kernel.proc_msg(text)
@@ -62,11 +62,12 @@ class CliBypassStub(CliProvider):
 
 class CliHandlerStub(CliProvider):
 
-    def __init__(self, kernel):
-        super().__init__(kernel)
+    #def __init__(self, kernel):
+    #    super().__init__(kernel)
 
 
     async def serve_forever(self, websocket):
+        gCon.log("serve_forever AAAAAA")
         await websocket.accept()
         text = await websocket.receive_text()
         await websocket.send_text(f"Hello world, {text}!")

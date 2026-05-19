@@ -20,19 +20,24 @@ from starlette.websockets import WebSocket
 from starlette.routing import Route
 from starlette.routing import WebSocketRoute
 
+#import app.sdc.s_utils as sdc
+from app.sdc.Dependencies import Dependencies
+
 
 class AdelphosCliRouter(CliRouter):
 
     def __init__(self, vhost):
-        self.vhost = vhost 
-
+       self.vhost = vhost 
 
     async def in_daemon_cli(self, request):
+        config = self.vhost.get_dep(Dependencies.CONFIG)
 
-        host = self.vhost.config['General']['host']
+        #host = self.vhost.config['General']['host']
+        host = config.get_host()
         host_api = host + CNST.API_POINT
 
-        instance = self.vhost.instance_name
+        #instance = self.vhost.instance_name
+        instance = config.get_instance()
 
         html_string = """
     <!DOCTYPE html>
@@ -221,8 +226,12 @@ class AdelphosCliRouter(CliRouter):
 
 
     async def in_websocket(self, websocket: WebSocket):
-        if self.vhost.cli_handler is not None:
-            await self.vhost.cli_handler.serve_forever(websocket)
+        gCon.log(f"A+SSSSSSSS {self}")
+        cli_handler = self.vhost.get_dep(Dependencies.CLI_HANDLER)
+        gCon.log(f"A+SSSSSSSS {cli_handler}")
+
+        if cli_handler is not None:
+            await cli_handler.serve_forever(websocket)
         else:
             await websocket.accept()
             await websocket.send_text(f"No cli available")

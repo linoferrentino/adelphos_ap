@@ -61,7 +61,7 @@ from starlette.responses import Response
 from starlette.responses import HTMLResponse
 from starlette.websockets import WebSocket
 
-import app.consts as CNST
+#import app.consts as CNST
 from app.logging import gCon
 
 from app.transport.Routable import Routable
@@ -73,6 +73,9 @@ from app.federation.ap.ActivityPubNetwork import ActivityPubNetwork
 from app.cli.AdelphosCliRouter import AdelphosCliRouter
 
 import app.sdc.s_utils as sdc
+from app.sdc.Dependencies import Dependencies
+#from app.sdc.Dependencies import get_dep, Dependencies
+#from app.sdc.SimpleDependencyContainer import Dependencies
 
 
 class AdelphosRouter(Routable):
@@ -85,42 +88,47 @@ class AdelphosRouter(Routable):
         self.instance_name = instance_name
         self.config = config
 
-        sdc.build_from(config)
+        self.sdc = sdc.build_from(self, social = social,
+            kernel = kernel, cli_handler = cli_handler)
         
-        self.social = social
-        self.kernel = kernel
-        self.cli_handler = cli_handler
-        self.social_net = ActivityPubNetwork(self)
-        self.cli_net = AdelphosCliRouter(self)
+        #self.social = social
+        #self.kernel = kernel
+        #self.cli_handler = cli_handler
+        #self.social_net = ActivityPubNetwork(self)
+        #self.cli_net = AdelphosCliRouter(self)
 
 
-    def get_social(self):
-        return self.social
+    def get_dep(self, dep):
+        return self.sdc.get_dep(dep)
 
 
-    def set_transport(self, transport):
-        super().set_transport(transport)
-        self.social.set_transport(transport)
+    #def get_social(self):
+    #    return self.social
 
 
-    def get_host(self):
-        host = self.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
-        return host
+    #def set_transport(self, transport):
+    #    super().set_transport(transport)
+    #    self.social.set_transport(transport)
+
+
+    #def get_host(self):
+    #    host = self.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
+    #    return host
 
 
     def get_routes(self):
         routes = []
-        routes.extend(self.social_net.get_social_routes())
-        routes.extend(self.cli_net.get_cli_routes())
+        routes.extend(self.get_dep(Dependencies.SOCIAL_NET).get_social_routes())
+        routes.extend(self.get_dep(Dependencies.CLI_NET).get_cli_routes())
         return routes
 
 
     async def init_up(self):
-        await self.kernel.start_async(self.social)
+        await self.get_dep(Dependencies.KERNEL).start_async()
 
 
     async def tear_down(self):
-        await self.kernel.stop_async()
+        await self.get_dep(Dependencies.KERNEL).stop_async()
 
 
 # I initialize the router with the app.

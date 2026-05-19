@@ -39,6 +39,10 @@ from app.federation.SimpleSocial import SimpleSocial
 from app.cli.StandardCliProvider import StandardCliProvider
 
 import tests.t_utils as tu
+#import app.sdc.s_utils as sdc
+#from app.sdc.Dependencies import Dependencies, get_dep
+from app.sdc.Dependencies import Dependencies
+
 
 
 @pytest.fixture(scope = "session")
@@ -79,7 +83,9 @@ def aroutable(request):
 def app(aroutable, request):
 
     if request.param == 'sync':
-        host = aroutable.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
+        config = aroutable.get_dep(Dependencies.CONFIG)
+        #host = aroutable.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
+        host = config.get_host()
         app = SyncApp(host, aroutable)
         wrappedapp = SyncTester(app)
     else:
@@ -103,6 +109,7 @@ def test_context(app, aroutable):
 
 def test_ws_1(app, aroutable):
     with app.websocket_connect(CNST.WS_ROUTE) as websocket:
+        gCon.log("AAAAAA ws1")
         websocket.send_text("lino")
         data = websocket.receive_text()
         assert data == 'Hello world, lino!'
@@ -120,17 +127,28 @@ def test_post_inbox_KO(app, aroutable):
 
 def test_post_from_kernel(get_routable):
     user_in = 'demo1'
+    gCon.log("==================================== START TEST")
     routable1 = get_routable(tconf.adelphos_stub)
     routable2 = get_routable(tconf.adelphos_t2_test)
 
-    app1 = SyncApp(routable1.get_host(), routable1)
-    app2 = SyncApp(routable2.get_host(), routable2)
+    gCon.log(f"rout1 {routable1.sdc} rout2 {routable2.sdc}")
+
+    #config = get_dep(Dependencies.CONFIG)
+    config1 = routable1.get_dep(Dependencies.CONFIG)
+    config2 = routable2.get_dep(Dependencies.CONFIG)
+
+    host1 = config1.get_host()
+    host2 = config2.get_host()
+    gCon.log(f"host1 {host1} e {host2}")
+
+    app1 = SyncApp(host1, routable1)
+    app2 = SyncApp(host2, routable2)
 
     test1 = SyncTester(app1)
     test2 = SyncTester(app2)
 
-    host1 = tconf.adelphos_stub[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
-    host2 = tconf.adelphos_t2_test[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
+    #host1 = tconf.adelphos_stub[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
+    #host2 = tconf.adelphos_t2_test[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
 
     gCon.log(f"host1 {host1} host2 {host2}")
 
@@ -160,7 +178,8 @@ def test_post_inbox_ok(app, aroutable):
     response = app.post(url_post, json = jsonmsg)
     assert response.status_code == 202
 
-    user_ob = aroutable.get_social().login_user(user_in)
+    social = aroutable.get_dep(Dependencies.SOCIAL)
+    user_ob = social.login_user(user_in)
 
     count_msg = user_ob.count_msg()
     assert count_msg == 1
@@ -190,7 +209,9 @@ def test_webfinger(app, aroutable):
     response = test1.get(url_query)
     assert response.status_code == 404
 
-    host = app.app.routable.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
+    config = aroutable.get_dep(Dependencies.CONFIG)
+    #host = app.app.routable.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
+    host = config.get_host()
 
     url_query = f"{CNST.WEBFINGER_ROUTE}?resource=acct:demo1@{host}"
     response = test1.get(url_query)

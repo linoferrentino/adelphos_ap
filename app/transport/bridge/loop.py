@@ -23,6 +23,10 @@ loop_lock = threading.Lock()
 loop_started = threading.Event()
 
 
+def my_handler(loop, context):
+    gCon.log(f"Exception in loop! {context}")
+
+
 def in_saecula_saeculorum():
     global loop
     try:
@@ -32,6 +36,7 @@ def in_saecula_saeculorum():
     
     loop.set_debug(True)
     loop_started.set()
+    loop.set_exception_handler(my_handler)
     loop.run_forever()
 
 

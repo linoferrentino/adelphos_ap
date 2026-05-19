@@ -104,8 +104,10 @@ class SyncApp:
             if route.path != path:
                 continue
             websock_dup = WebSocketSync(websock)
+            gCon.log(f"incoming sock {id(websock)} produced {id(websock_dup)}")
             websock.pair_sock = websock_dup
             run_coro_in_loop(route.endpoint, (websock_dup,), wait = False)
+            gCon.log(f"returned {id(websock)}")
             return
         return Response(None, 404)
 

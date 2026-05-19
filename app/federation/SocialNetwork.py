@@ -31,8 +31,8 @@ class SocialEncoder(ABC):
 class SocialNetwork(ABC):
 
 
-    def __init__(self, router):
-        self.router = router
+    def __init__(self, vhost):
+        self.vhost = vhost
 
 
     @abstractmethod

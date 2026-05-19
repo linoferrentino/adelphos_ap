@@ -26,15 +26,16 @@ class StandardCliClient:
     def __init__(self, kernel, websocket):
         self.kernel = kernel
         self.websocket = websocket
-        self.cli_api = sdc.get_dep(CNST.CLI_API)
+        #self.cli_api = sdc.get_dep(CNST.CLI_API)
+        gCon.log(f"HELLO kernel {self.kernel} webs {self.websocket}")
 
 
     async def _internal_serve(self):
 
         while True:
+            gCon.log(f"{self.websocket} here I internal serve")
             data = await self.websocket.receive_text()
-            #gCon.log(f">>>>>>>>> {data}")
-            #cli_parser = CliParser(data)
+            gCon.log(f">>>>>>>>>got: {data} <<<<<<<<<<<<<<<<<<<<<< {self.kernel}")
             response = await self.kernel.proc_msg(data)
             await self.websocket.send_text(response)
 
@@ -59,6 +60,7 @@ class StandardCliClient:
 
 
     async def serve_a_cycle(self):
+        gCon.log("serve_a_cycle")
 
         try:
 
@@ -68,6 +70,8 @@ class StandardCliClient:
 
             # this is a "benign" error, we eat the exception and continue
             await self.websocket.send_text(f"Error: {err}")
+        except Exception as ex:
+            gCon.log("trace?")
 
 
 class StandardCliProvider(CliProvider):
@@ -78,6 +82,7 @@ class StandardCliProvider(CliProvider):
 
 
     async def serve_forever(self, websocket):
+        gCon.log(f"StandardCliProvider ================ serve! {self.kernel}")
 
         await websocket.accept()
         client = StandardCliClient(self.kernel, websocket)

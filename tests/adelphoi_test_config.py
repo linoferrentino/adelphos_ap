@@ -36,7 +36,13 @@ adelphos_stub =  {
 }
 
 
-adelphos_t2_test =  {"General": {
+adelphos_t2_test =  {
+        "sdc" : {
+            'cli_api' : {
+                'type' : 'social_test_api'
+                },
+            },
+        "General": {
     "debug": True, 
     "port": 9911, 
     "db_name": ":memory:", 

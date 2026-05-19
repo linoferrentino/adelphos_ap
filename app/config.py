@@ -9,6 +9,27 @@ from .logging import exit_err
 import json
 
 
+CNF_GENERAL_SECTION = "General"
+CNF_PRIVATE_KEY_FILE_KEY = "private_key"
+CNF_HOST_KEY = "host"
+
+
+class Config:
+
+    def __init__(self, instance, config):
+        self.instance = instance
+        self.config = config
+
+
+    def get_host(self):
+        host = self.config[CNF_GENERAL_SECTION][CNF_HOST_KEY]
+        return host
+
+
+    def get_instance(self):
+        return self.instance
+
+
 def load_conf(instance_name, toml_file):
 
     if (toml_file is None):

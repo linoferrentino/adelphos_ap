@@ -17,39 +17,41 @@ import base64
 from app.logging import gCon
 
 from app.sdc.SimpleDependencyContainer import SimpleDependencyContainer
+#from app.sdc.Dependencies import _conts
+#from app.sdc.Dependencies import _active_cont
+import app.sdc.Dependencies as dep
 
-
-_conts = dict()
-_active_cont = None
-
-
-def build_from(config, *,
+def build_from(vhost, *,
                 social = None, 
                 kernel = None,
                 cli_handler= None):
+    #global _active_cont
+    #global _conts
 
-    global _active_cont
-
+    instance = vhost.instance_name
+    config = vhost.config
     hash_conf = base64.b64encode(hashlib.sha256(
-        str(config).encode('utf-8')).digest())
+        (instance + str(config)).encode('utf-8')).digest())
+
+    #hash_conf = instance
 
     sdc = config.get('sdc')
     if sdc is None:
-        return
+        return None
 
-    cont = _conts.get(hash_conf)
-    if cont is not None:
-        gCon.log("Found a stored container!")
-        _active_cont = cont
-        return
+    #cont = dep._conts.get(hash_conf)
+    #cont = dep._conts.get(hash_conf)
+    #if cont is not None:
+    #    gCon.log(f"Found a stored container!instance {instance} {hash_conf}")
+    #    dep._active_cont = cont
+    #    return cont
 
-    cont = SimpleDependencyContainer(config, social = social,
+    cont = SimpleDependencyContainer(vhost, social = social,
                                      kernel = kernel, cli_handler = cli_handler)
-    _active_cont = cont
-    _conts[hash_conf] = cont
+    dep._active_cont = cont
+    dep._conts[hash_conf] = cont
     gCon.log(f"config is {sdc} type {type(config)} {hash_conf}")
+    return cont
 
 
-def get_dep(dep):
 
-    return None

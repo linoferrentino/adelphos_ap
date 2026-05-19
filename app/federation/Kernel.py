@@ -18,7 +18,7 @@ class Kernel(ABC):
 
 
     @abstractmethod
-    async def start_async(self, social):
+    async def start_async(self):
         pass
 
     

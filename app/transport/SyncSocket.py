@@ -15,7 +15,7 @@
 
 
 # a class that models a bidirectional socket using simple functions
-class SyncSocket:
+class SyncSocket__OLD:
 
 
     def __init__(self, ob_server):
