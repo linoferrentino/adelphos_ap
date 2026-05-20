@@ -51,13 +51,14 @@ def get_routable():
     def _build_routable_from_config(configuration, build_structure):
 
         social_stub = SimpleSocial(('demo1', 'demo2'))
-        kernel = EchoKernel()
+        #kernel = EchoKernel()
         #cli_stub = StandardCliProvider(kernel)
         
         configuration['sdc'] = build_structure
 
-        aroutable = AdelphosRouter("test", configuration, 
-                                   social = social_stub, kernel = kernel)
+        aroutable = AdelphosRouter("test", configuration)
+                                    #, social = social_stub)
+                                    #, kernel = kernel)
         #, cli_handler = cli_stub)
         return aroutable 
 
@@ -71,13 +72,14 @@ def aroutable(request):
     configuration = request.param if hasattr(request, 'param') \
             else tconf.adelphos_stub
 
-    social_stub = SimpleSocial(('demo1', 'demo2'))
-    kernel = EchoKernel()
+    #social_stub = SimpleSocial(('demo1', 'demo2'))
+    #kernel = EchoKernel()
     #cli_stub = CliHandlerStub(kernel)
     configuration['sdc'] = tconf.cli_stub_dep_conf
 
-    aroutable = AdelphosRouter("test", configuration, 
-                               social = social_stub, kernel = kernel)
+    aroutable = AdelphosRouter("test", configuration)
+                                #, social = social_stub)
+                                #, kernel = kernel)
                                #cli_handler = cli_stub)
     return aroutable 
 

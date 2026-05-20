@@ -83,10 +83,10 @@ class StandardCliProvider(CliProvider):
 
 
     async def serve_forever(self, websocket):
-        gCon.log(f"StandardCliProvider ================ serve! {self.vhost}")
 
         await websocket.accept()
         kernel = self.vhost.get_dep(Dependencies.KERNEL)
+        gCon.log(f"StandardCliProvider ================ serve! {self.vhost} kern {kernel}")
         client = StandardCliClient(kernel, websocket)
         self.clients.append(client)
         await client.serve_forever()

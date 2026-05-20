@@ -80,17 +80,18 @@ from app.sdc.Dependencies import Dependencies
 
 class AdelphosRouter(Routable):
 
-    def __init__(self, instance_name, config, *,
-                 social = None, 
-                 kernel = None):
+    def __init__(self, instance_name, config):
+                 #, *, social = None):
+                 #kernel = None):
 
     #, cli_handler= None):
 
         self.instance_name = instance_name
         self.config = config
 
-        self.sdc = sdc.build_from(self, social = social,
-            kernel = kernel)
+        self.sdc = sdc.build_from(self)
+                                  #, social = social)
+                                  #kernel = kernel)
         #, cli_handler = cli_handler)
         
         #self.social = social
@@ -126,11 +127,13 @@ class AdelphosRouter(Routable):
 
 
     async def init_up(self):
-        await self.get_dep(Dependencies.KERNEL).start_async()
+        kern = self.get_dep(Dependencies.KERNEL)
+        await kern.start_async()
 
 
     async def tear_down(self):
-        await self.get_dep(Dependencies.KERNEL).stop_async()
+        kern = self.get_dep(Dependencies.KERNEL)
+        await kern.stop_async()
 
 
 # I initialize the router with the app.

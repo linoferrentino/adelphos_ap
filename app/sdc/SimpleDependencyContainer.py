@@ -13,19 +13,21 @@
 
 from app.federation.ap.ActivityPubNetwork import ActivityPubNetwork
 from tests.testers.fixtures import CliHandlerStub
+from tests.testers.fixtures import EchoKernel
 from app.cli.StandardCliProvider import StandardCliProvider
 from app.cli.AdelphosCliRouter import AdelphosCliRouter
 from app.sdc.Dependencies import Dependencies
+from app.federation.SimpleSocial import SimpleSocial
 from app.config import Config
 
 
 
 class SimpleDependencyContainer:
 
-    def __init__(self, vhost, *,
-            social = None, 
-            kernel = None,
-                 ):
+    def __init__(self, vhost):
+                 #, social = None):
+                 #kernel = None,
+                 #):
                  #cli_handler= None):
 
         instance = vhost.instance_name
@@ -33,12 +35,21 @@ class SimpleDependencyContainer:
 
         self.vhost = vhost
         self.config = Config(instance, config)
-        self.social = social
-        self.kernel = kernel
-        #self.cli_handler = cli_handler
+        self.social = self._make_social()
+        self.kernel = self._make_kernel()
         self.cli_handler = self._make_cli_handler()
         self.social_net = ActivityPubNetwork(vhost)
         self.cli_net = AdelphosCliRouter(vhost)
+
+
+    def _make_social(self):
+        social = SimpleSocial(('demo1', 'demo2'))
+        return social
+
+
+    def _make_kernel(self):
+        kernel = EchoKernel()
+        return kernel
 
 
     def _make_cli_handler(self):
@@ -56,20 +67,22 @@ class SimpleDependencyContainer:
 
 
     def get_dep(self, dep):
-
         match dep:
             case Dependencies.SOCIAL:
-                return self.social
+                dep_ob = self.social
             case Dependencies.SOCIAL_NET:
-                return self.social_net
+                dep_ob = self.social_net
             case Dependencies.CLI_NET:
-                return self.cli_net
+                dep_ob = self.cli_net
             case Dependencies.KERNEL:
-                return self.kernel
+                dep_ob = self.kernel
             case Dependencies.CONFIG:
-                return self.config
+                dep_ob = self.config
             case Dependencies.CLI_HANDLER:
-                return self.cli_handler
+                dep_ob = self.cli_handler
             case _:
                 raise Exception(f"Invalid dep {dep}")
+        #if dep_ob is None:
+        #    raise Exception("No dependencies")
+        return dep_ob
 

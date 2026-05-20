@@ -21,10 +21,10 @@ from app.sdc.SimpleDependencyContainer import SimpleDependencyContainer
 #from app.sdc.Dependencies import _active_cont
 import app.sdc.Dependencies as dep
 
-def build_from(vhost, *,
-                social = None, 
-                kernel = None,
-                cli_handler= None):
+def build_from(vhost):
+               # , *, social = None):
+               #kernel = None,
+               # cli_handler= None):
     #global _active_cont
     #global _conts
 
@@ -46,8 +46,9 @@ def build_from(vhost, *,
         dep._active_cont = cont
         return cont
 
-    cont = SimpleDependencyContainer(vhost, social = social,
-                                     kernel = kernel)
+    cont = SimpleDependencyContainer(vhost)
+                                     #, social = social)
+                                     #kernel = kernel)
                                      #, cli_handler = cli_handler)
     dep._active_cont = cont
     dep._conts[hash_conf] = cont
