@@ -1,0 +1,66 @@
+######################################################
+#
+# Adelphos AP: the fractal trust network
+#
+# Activity Pub implementation
+#
+# © 2025-26 Lino Ferrentino
+# lino.ferrentino@gmail.com
+#
+# This is free software. Licensed with GPL version 3
+#
+######################################################
+
+import pytest
+import app.consts as CNST
+from app.AdelphosRouter import AdelphosRouter
+from app.sdc.Dependencies import Dependencies
+import tests.adelphoi_test_config as tconf
+from tests.testers.SyncApp import SyncApp
+from tests.testers.SyncTester import SyncTester
+from app.logging import gCon
+from app.transport.async_mode.StarletteWrap import StarletteWrap
+from starlette.testclient import TestClient
+
+@pytest.fixture(scope = "session", params = ['sync', 'async'])
+def get_routable_app(request):
+
+    def _build_routable_from_config(configuration, build_structure):
+
+        #social_stub = SimpleSocial(('demo1', 'demo2'))
+        #kernel = EchoKernel()
+        #cli_stub = StandardCliProvider(kernel)
+        
+        configuration['sdc'] = build_structure
+
+        aroutable = AdelphosRouter("test", configuration)
+                                    #, social = social_stub)
+                                    #, kernel = kernel)
+        #, cli_handler = cli_stub)
+
+        if request.param == 'sync':
+            config = aroutable.get_dep(Dependencies.CONFIG)
+            host = config.get_host()
+            app = SyncApp(host, aroutable)
+            wrappedapp = SyncTester(app)
+        else:
+            app = StarletteWrap(routable = aroutable)
+            wrappedapp = TestClient(app)
+
+        return wrappedapp
+
+    return _build_routable_from_config
+
+
+
+def test_simple_router(get_routable_app):
+
+    app = get_routable_app(tconf.adelphos_stub, tconf.simple_tester_config)
+    gCon.log(f"test simple router with {app}")
+    with app.websocket_connect(CNST.WS_ROUTE) as websocket:
+        gCon.log("AAAAAA ws1")
+        websocket.send_text("lino")
+        data = websocket.receive_text()
+        assert data == 'DONE!'
+
+

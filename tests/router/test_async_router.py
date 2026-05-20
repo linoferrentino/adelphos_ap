@@ -66,6 +66,8 @@ def get_routable():
 
 
 
+
+
 @pytest.fixture(scope = "module")
 def aroutable(request):
 
@@ -89,7 +91,6 @@ def app(aroutable, request):
 
     if request.param == 'sync':
         config = aroutable.get_dep(Dependencies.CONFIG)
-        #host = aroutable.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
         host = config.get_host()
         app = SyncApp(host, aroutable)
         wrappedapp = SyncTester(app)
@@ -98,6 +99,11 @@ def app(aroutable, request):
         wrappedapp = TestClient(app)
 
     return wrappedapp
+
+
+#@pytest.fixture(scope = "session", params = ['sync', 'async'])
+#def wrapped_app(get_routable):
+
 
 
 @pytest.fixture(scope = "module", params = [ tconf.adelphos_stub, ])
@@ -128,6 +134,10 @@ def test_post_inbox_KO(app, aroutable):
             }
     response = app.post(url_post, json = jsonmsg)
     tu.assert_error_code_in_response(response, AdErrno.USER_DOES_NOT_EXIST)
+
+
+#def test_ws_sync_async(get_routable):
+#    pass
 
 
 def test_post_from_kernel(get_routable):

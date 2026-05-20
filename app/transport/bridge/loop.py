@@ -82,6 +82,12 @@ def run_coro_in_loop(endpoint, pars, *, wait = True):
     return res_task
 
 
+def is_in_loop():
+    if threading.current_thread() == run_loop_th:
+        return True
+    return False
+
+
 def run_coro_in_loop_generator(endpoint, pars, wait):
 
     if threading.current_thread() == run_loop_th:

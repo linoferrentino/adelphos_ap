@@ -18,9 +18,10 @@ from starlette.websockets import WebSocketDisconnect
 from app.logging import gCon
 from app.cli.CliParser import CliParser
 from app.sdc.Dependencies import Dependencies
-
+from app.exc.AdelphosException import AdelphosException
 import app.sdc.s_utils as sdc
 import app.consts as CNST
+import traceback
 
 class StandardCliClient:
 
@@ -38,7 +39,9 @@ class StandardCliClient:
             data = await self.websocket.receive_text()
             gCon.log(f">>>>>>>>>got: {data} <<<<<<<<<<<<<<<<<<<<<< {self.kernel}")
             response = await self.kernel.proc_msg(data)
+            #self.websocket.send_text(response)
             await self.websocket.send_text(response)
+            #await self.websocket.sending_text_async(response)
 
 
     async def serve_forever(self):
@@ -53,7 +56,6 @@ class StandardCliClient:
                 pass
 
             except Exception as ex:
-                traceback.print_exc()
                 await self.websocket.send_text(f"Server error, we apologize.")
 
             break
@@ -73,6 +75,8 @@ class StandardCliClient:
             await self.websocket.send_text(f"Error: {err}")
         except Exception as ex:
             gCon.log("trace?")
+            traceback.print_exc()
+            raise
 
 
 class StandardCliProvider(CliProvider):

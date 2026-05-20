@@ -18,7 +18,7 @@ from urllib.parse import urlsplit
 from contextlib import ContextDecorator
 from contextlib import ExitStack 
 
-from app.transport.bridge.loop import run_coro_in_loop, get_loop
+from app.transport.bridge.loop import run_coro_in_loop, get_loop, is_in_loop
 from app.logging import gCon
 from starlette.websockets import WebSocketDisconnect
 
@@ -80,9 +80,12 @@ class WebSocketSync(ContextDecorator):
 
 
     def send_text(self, text: str) -> None:
-        gCon.log(f"send_ {text}")
+        is_loop = is_in_loop()
+        gCon.log(f"send_ {text} in loop {is_loop}")
 
-        run_coro_in_loop(self.sending_text_async, (text,), wait = True)
+        if is_loop == True:
+            return self.sending_text_async(text)
+        return run_coro_in_loop(self.sending_text_async, (text,), wait = True)
 
 
     def receive_text(self) -> str:
