@@ -73,10 +73,13 @@ class StandardCliClient:
 
             # this is a "benign" error, we eat the exception and continue
             await self.websocket.send_text(f"Error: {err}")
-        except Exception as ex:
-            gCon.log("trace?")
-            traceback.print_exc()
-            raise
+        #except WebSocketDisconnect as wds:
+        #        pass
+
+        #except Exception as ex:
+        #    gCon.log("trace?")
+        #    traceback.print_exc()
+        #    raise
 
 
 class StandardCliProvider(CliProvider):
