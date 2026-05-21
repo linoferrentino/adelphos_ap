@@ -25,11 +25,7 @@ from app.config import Config
 class SimpleDependencyContainer:
 
     def __init__(self, vhost):
-                 #, social = None):
-                 #kernel = None,
-                 #):
-                 #cli_handler= None):
-
+                 
         instance = vhost.instance_name
         config = vhost.config
 
@@ -82,7 +78,5 @@ class SimpleDependencyContainer:
                 dep_ob = self.cli_handler
             case _:
                 raise Exception(f"Invalid dep {dep}")
-        #if dep_ob is None:
-        #    raise Exception("No dependencies")
         return dep_ob
 
