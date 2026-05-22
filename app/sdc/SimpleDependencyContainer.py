@@ -36,10 +36,11 @@ class SimpleDependencyContainer:
         self.cli_handler = self._make_cli_handler()
         self.social_net = ActivityPubNetwork(vhost)
         self.cli_net = AdelphosCliRouter(vhost)
+        self.transport = None
 
 
     def _make_social(self):
-        social = SimpleSocial(('demo1', 'demo2'))
+        social = SimpleSocial(('demo1', 'demo2'), self.vhost)
         return social
 
 
@@ -84,6 +85,8 @@ class SimpleDependencyContainer:
                 dep_ob = self.config
             case Dependencies.CLI_HANDLER:
                 dep_ob = self.cli_handler
+            case Dependencies.TRANSPORT:
+                dep_ob = self.transport
             case _:
                 raise Exception(f"Invalid dep {dep}")
         return dep_ob

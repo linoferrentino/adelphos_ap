@@ -27,8 +27,6 @@ import traceback
 class AsyncRequestBase(ABC):
 
 
-    # I can create an async request using a url and this will create a
-    # condition.
     def __init__(self, url = None):
         if url is None:
             return

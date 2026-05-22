@@ -14,6 +14,7 @@
 
 from app.transport.AbstractGateway import AbstractGateway
 from app.ap_api.AsyncRequest import AsyncGetReq
+from app.ap_api.AsyncRequest import AsyncPostReq
 import aiohttp
 import asyncio
 from app.logging import gCon
@@ -84,6 +85,7 @@ class AsyncGateway(AbstractGateway):
             return await self.async_req_wait(ar)
 
         elif method == "POST":
+            post_res  = AsyncPostReq(inbox_uri, headers, json)
             assert False
         else:
             raise Exception(f"Invalid method {method}")

@@ -10,7 +10,7 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
 # The class that manages the connections.
 
 # the cli provider is a module which gives Adelphos the possibility
@@ -21,7 +21,6 @@
 
 from abc import ABC, abstractmethod
 
-#from app.transport.RouterProvider import RouterProvider
 
 class CliProvider(ABC):
 

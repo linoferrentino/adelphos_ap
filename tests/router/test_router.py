@@ -27,16 +27,9 @@ def get_routable_app(request):
 
     def _build_routable_from_config(configuration, build_structure):
 
-        #social_stub = SimpleSocial(('demo1', 'demo2'))
-        #kernel = EchoKernel()
-        #cli_stub = StandardCliProvider(kernel)
-        
         configuration['sdc'] = build_structure
 
         aroutable = AdelphosRouter("test", configuration)
-                                    #, social = social_stub)
-                                    #, kernel = kernel)
-        #, cli_handler = cli_stub)
 
         if request.param == 'sync':
             config = aroutable.get_dep(Dependencies.CONFIG)
@@ -47,7 +40,8 @@ def get_routable_app(request):
             app = StarletteWrap(routable = aroutable)
             wrappedapp = TestClient(app)
 
-        return wrappedapp
+        with wrappedapp as app1:
+            return app1
 
     return _build_routable_from_config
 

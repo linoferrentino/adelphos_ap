@@ -56,6 +56,7 @@ class StandardCliClient:
                 pass
 
             except Exception as ex:
+                traceback.print_exc()
                 await self.websocket.send_text(f"Server error, we apologize.")
 
             break

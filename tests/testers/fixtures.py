@@ -47,7 +47,7 @@ class EchoKernel(Kernel):
         host_dest = msg
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         gCon.log(f"[red]send message to {host_dest} social {social}[/red]")
-        #await self.social.outgoing_message(f"@EchoKernel@{host_dest}", "ping")
+        await social.outgoing_message(f"@EchoKernel@{host_dest}", "ping")
         return "DONE!"
 
 

@@ -10,8 +10,9 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
 
+
+from app.sdc.Dependencies import Dependencies
 from app.federation.SocialProvider import SocialProvider
 from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
@@ -47,7 +48,8 @@ class UserStub:
 
 class SimpleSocial(SocialProvider):
 
-    def __init__(self, user_list):
+    def __init__(self, user_list, vhost):
+        super().__init__(vhost)
         self.users = { user: UserStub(user) for user in user_list }
 
 
@@ -72,8 +74,8 @@ class SimpleSocial(SocialProvider):
 
 
     async def outgoing_message(self, user, message):
-        gCon.log(f"OOOO {user} {message} {self.transport}")
-        await self.transport.post_json(user, {
+        transport = self.vhost.get_dep(Dependencies.TRANSPORT)
+        await transport.post_json(user, {
             'msg' : message
             })
 

@@ -24,9 +24,14 @@
 from abc import ABC, abstractmethod
 
 from app.transport.RouterProvider import RouterProvider
+from app.sdc.Dependency import Dependency
 
 
-class SocialProvider(ABC):
+class SocialProvider(Dependency):
+
+
+    def __init__(self, vhost):
+        super().__init__(vhost)
 
 
     @abstractmethod
@@ -49,13 +54,3 @@ class SocialProvider(ABC):
         pass
 
     
-    #def set_transport(self, transport):
-    #    self.transport = transport
-
-
-    #@abstractmethod
-    #def login_user(self, user, password):
-    #    pass
-
-
-
