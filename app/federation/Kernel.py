@@ -13,8 +13,13 @@
 #
 
 from abc import ABC, abstractmethod
+from app.logging import gCon
+
 
 class Kernel(ABC):
+
+    def __init__(self, vhost):
+        self.vhost = vhost
 
 
     @abstractmethod

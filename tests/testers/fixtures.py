@@ -26,9 +26,14 @@ from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
 
 from app.cli.CliProvider import CliProvider
+from app.sdc.Dependencies import Dependencies
 
 
 class EchoKernel(Kernel):
+
+    def __init__(self, vhost):
+        super().__init__(vhost)
+
 
     async def start_async(self):
         pass
@@ -40,16 +45,13 @@ class EchoKernel(Kernel):
 
     async def proc_msg(self, msg):
         host_dest = msg
-        gCon.log(f"I want to send message to {host_dest} social")
+        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        gCon.log(f"[red]send message to {host_dest} social {social}[/red]")
         #await self.social.outgoing_message(f"@EchoKernel@{host_dest}", "ping")
         return "DONE!"
 
 
 class CliBypassStub(CliProvider):
-
-    #def __init__(self, kernel):
-    #    super().__init__(kernel)
-
 
     async def serve_forever(self, websocket):
         gCon.log("serve_forever ///////// STUB")
@@ -61,10 +63,6 @@ class CliBypassStub(CliProvider):
 
 
 class CliHandlerStub(CliProvider):
-
-    #def __init__(self, kernel):
-    #    super().__init__(kernel)
-
 
     async def serve_forever(self, websocket):
         gCon.log("serve_forever AAAAAA")

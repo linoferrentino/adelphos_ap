@@ -29,10 +29,6 @@ from app.transport.RouterProvider import RouterProvider
 class SocialProvider(ABC):
 
 
-    def __init__(self):
-        self.transport = None
-
-
     @abstractmethod
     def local_user_exists(self, user: str) -> bool:
         pass
@@ -53,8 +49,8 @@ class SocialProvider(ABC):
         pass
 
     
-    def set_transport(self, transport):
-        self.transport = transport
+    #def set_transport(self, transport):
+    #    self.transport = transport
 
 
     #@abstractmethod

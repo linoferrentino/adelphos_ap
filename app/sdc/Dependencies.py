@@ -23,14 +23,7 @@ class Dependencies(StrEnum):
     KERNEL = auto()
     CONFIG = auto()
     CLI_HANDLER = auto()
+    TRANSPORT = auto()
 
 
-_conts = dict()
-_active_cont = None
 
-
-#def get_dep(dep):
-#    if _active_cont is None:
-#        raise Exception("No active container.")
-#
-#    return _active_cont.get_dep(dep)

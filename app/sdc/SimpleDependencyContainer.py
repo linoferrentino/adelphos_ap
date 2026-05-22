@@ -44,7 +44,7 @@ class SimpleDependencyContainer:
 
 
     def _make_kernel(self):
-        kernel = EchoKernel()
+        kernel = EchoKernel(self.vhost)
         return kernel
 
 
@@ -60,6 +60,14 @@ class SimpleDependencyContainer:
                 raise Exception(f"Invalid cli handler {cli_handler_type}")
 
         return cli_handler
+
+
+    def set_dep(self, dep_type, dep):
+        match dep_type:
+            case Dependencies.TRANSPORT:
+                self.transport = dep
+            case _:
+                raise Exception(f"Cannot set the dep {dep_type}")
 
 
     def get_dep(self, dep):

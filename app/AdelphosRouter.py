@@ -61,7 +61,6 @@ from starlette.responses import Response
 from starlette.responses import HTMLResponse
 from starlette.websockets import WebSocket
 
-#import app.consts as CNST
 from app.logging import gCon
 
 from app.transport.Routable import Routable
@@ -74,25 +73,15 @@ from app.cli.AdelphosCliRouter import AdelphosCliRouter
 
 import app.sdc.s_utils as sdc
 from app.sdc.Dependencies import Dependencies
-#from app.sdc.Dependencies import get_dep, Dependencies
-#from app.sdc.SimpleDependencyContainer import Dependencies
 
 
 class AdelphosRouter(Routable):
 
     def __init__(self, instance_name, config):
-                 #, *, social = None):
-                 #kernel = None):
-
-    #, cli_handler= None):
 
         self.instance_name = instance_name
         self.config = config
-
         self.sdc = sdc.build_from(self)
-                                  #, social = social)
-                                  #kernel = kernel)
-        #, cli_handler = cli_handler)
         
         #self.social = social
         #self.kernel = kernel
@@ -109,9 +98,10 @@ class AdelphosRouter(Routable):
     #    return self.social
 
 
-    #def set_transport(self, transport):
-    #    super().set_transport(transport)
-    #    self.social.set_transport(transport)
+    def set_transport(self, transport):
+        #super().set_transport(transport)
+        #self.social.set_transport(transport)
+        self.sdc.set_dep(Dependencies.TRANSPORT, transport)
 
 
     #def get_host(self):
