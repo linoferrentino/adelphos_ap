@@ -28,20 +28,14 @@ class StandardCliClient:
     def __init__(self, kernel, websocket):
         self.kernel = kernel
         self.websocket = websocket
-        #self.cli_api = sdc.get_dep(CNST.CLI_API)
-        #gCon.log(f"HELLO kernel {self.kernel} webs {self.websocket}")
 
 
     async def _internal_serve(self):
 
         while True:
-            #gCon.log(f"{self.websocket} here I internal serve")
             data = await self.websocket.receive_text()
-            #gCon.log(f">>>>>>>>>got: {data} <<<<<<<<<<<<<<<<<<<<<< {self.kernel}")
             response = await self.kernel.proc_msg(data)
-            #self.websocket.send_text(response)
             await self.websocket.send_text(response)
-            #await self.websocket.sending_text_async(response)
 
 
     async def serve_forever(self):
@@ -57,30 +51,20 @@ class StandardCliClient:
 
             except Exception as ex:
                 traceback.print_exc()
-                await self.websocket.send_text(f"Server error, we apologize.")
+                await self.websocket.send_text(f"Server error {ex} we apologize.")
 
             break
         self.running = False
 
 
     async def serve_a_cycle(self):
-        #gCon.log("serve_a_cycle")
 
         try:
 
             await self._internal_serve()
 
         except AdelphosException as err:
-
-            # this is a "benign" error, we eat the exception and continue
             await self.websocket.send_text(f"Error: {err}")
-        #except WebSocketDisconnect as wds:
-        #        pass
-
-        #except Exception as ex:
-        #    gCon.log("trace?")
-        #    traceback.print_exc()
-        #    raise
 
 
 class StandardCliProvider(CliProvider):
@@ -94,7 +78,6 @@ class StandardCliProvider(CliProvider):
 
         await websocket.accept()
         kernel = self.vhost.get_dep(Dependencies.KERNEL)
-        #gCon.log(f"StandardCliProvider ================ serve! {self.vhost} kern {kernel}")
         client = StandardCliClient(kernel, websocket)
         self.clients.append(client)
         await client.serve_forever()

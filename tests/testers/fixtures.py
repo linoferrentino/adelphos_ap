@@ -46,7 +46,7 @@ class EchoKernel(Kernel):
     async def proc_msg(self, msg):
         host_dest = msg
         social = self.vhost.get_dep(Dependencies.SOCIAL)
-        #gCon.log(f"[red]send message to {host_dest} social {social}[/red]")
+        gCon.log(f"[red]send message to {host_dest} social {social}[/red]")
         await social.outgoing_message(f"@EchoKernel@{host_dest}", "ping")
         return "DONE!"
 
@@ -54,7 +54,6 @@ class EchoKernel(Kernel):
 class CliBypassStub(CliProvider):
 
     async def serve_forever(self, websocket):
-        #gCon.log("serve_forever ///////// STUB")
         await websocket.accept()
         text = await websocket.receive_text()
         response = await self.kernel.proc_msg(text)
@@ -65,7 +64,6 @@ class CliBypassStub(CliProvider):
 class CliHandlerStub(CliProvider):
 
     async def serve_forever(self, websocket):
-        #gCon.log("serve_forever AAAAAA")
         await websocket.accept()
         text = await websocket.receive_text()
         await websocket.send_text(f"Hello world, {text}!")

@@ -150,16 +150,15 @@ def test_post_from_kernel(get_routable):
         with test1.websocket_connect(CNST.WS_ROUTE) as websocket:
             websocket.send_text(f"sndpost @{user_in}@{host2} echo_test_x918")
             data = websocket.receive_text()
-            #gCon.log(f"++++++++ got data {data}")
             assert data == 'DONE!'
             websocket.close()
             
-            #user_ob = routable2.get_social().login_user(user_in)
-            #count_msg = user_ob.count_msg()
-            #assert count_msg == 1
+            user_ob = routable2.get_social().login_user(user_in)
+            count_msg = user_ob.count_msg()
+            assert count_msg == 1
 
-            #msg = user_ob.pop_lst_msg()
-            #assert msg == 'echo_test_x918'
+            msg = user_ob.pop_lst_msg()
+            assert msg == 'echo_test_x918'
 
 
 

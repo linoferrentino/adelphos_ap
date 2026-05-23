@@ -39,7 +39,7 @@ class SyncGateway(AbstractGateway):
 
         transport = self.hosts.get(urlp.netloc)
         if transport is None:
-            raise Exception(f"No route to host {urlp.netloc}")
+            raise Exception(f"No route to host {urlp}")
 
         match method:
             case 'GET':
