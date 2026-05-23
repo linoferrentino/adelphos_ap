@@ -63,14 +63,19 @@ class AsyncGateway(AbstractGateway):
         async with self.app.cond:
             self.requests.append(ar)
             self.app.cond.notify_all()
+        while (ar.status_code is None):
+            async with ar._cond:
+                await ar._cond.wait()
+
+
+    async def async_req_post(self, ar):
+        await self.async_req_push(ar)
+        return ar.status_code
 
 
     async def async_req_wait(self, ar):
         # I have to put it into the list and wait
         await self.async_req_push(ar)
-        while (ar.status_code is None):
-            async with ar._cond:
-                await ar._cond.wait()
         if ar.status_code != 200:
             raise Exception(f"Got {ar.status_code} from {ar._url}")
         return ar.text
@@ -85,8 +90,11 @@ class AsyncGateway(AbstractGateway):
             return await self.async_req_wait(ar)
 
         elif method == "POST":
-            post_res  = AsyncPostReq(inbox_uri, headers, json)
-            assert False
+            post_res  = AsyncPostReq(None, None, json)
+            post_res.init_split(urlp)
+            gCon.log(f"Sending to {urlp} ------")
+            #return await self.async_req_post(post_res)
+            return 200
         else:
             raise Exception(f"Invalid method {method}")
 

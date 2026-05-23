@@ -37,13 +37,13 @@ def build_from(vhost):
 
     cont = _conts.get(hash_conf)
     if cont is not None:
-        gCon.log(f"Found a stored container!instance {instance} {hash_conf}")
+        #gCon.log(f"Found a stored container!instance {instance} {hash_conf}")
         return cont
 
     cont = SimpleDependencyContainer(vhost)
 
     _conts[hash_conf] = cont
-    gCon.log(f"config is {sdc} type {type(config)} {hash_conf}")
+    #gCon.log(f"config is {sdc} type {type(config)} {hash_conf}")
     return cont
 
 

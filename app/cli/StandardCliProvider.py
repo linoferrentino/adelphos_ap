@@ -29,15 +29,15 @@ class StandardCliClient:
         self.kernel = kernel
         self.websocket = websocket
         #self.cli_api = sdc.get_dep(CNST.CLI_API)
-        gCon.log(f"HELLO kernel {self.kernel} webs {self.websocket}")
+        #gCon.log(f"HELLO kernel {self.kernel} webs {self.websocket}")
 
 
     async def _internal_serve(self):
 
         while True:
-            gCon.log(f"{self.websocket} here I internal serve")
+            #gCon.log(f"{self.websocket} here I internal serve")
             data = await self.websocket.receive_text()
-            gCon.log(f">>>>>>>>>got: {data} <<<<<<<<<<<<<<<<<<<<<< {self.kernel}")
+            #gCon.log(f">>>>>>>>>got: {data} <<<<<<<<<<<<<<<<<<<<<< {self.kernel}")
             response = await self.kernel.proc_msg(data)
             #self.websocket.send_text(response)
             await self.websocket.send_text(response)
@@ -64,7 +64,7 @@ class StandardCliClient:
 
 
     async def serve_a_cycle(self):
-        gCon.log("serve_a_cycle")
+        #gCon.log("serve_a_cycle")
 
         try:
 
@@ -94,7 +94,7 @@ class StandardCliProvider(CliProvider):
 
         await websocket.accept()
         kernel = self.vhost.get_dep(Dependencies.KERNEL)
-        gCon.log(f"StandardCliProvider ================ serve! {self.vhost} kern {kernel}")
+        #gCon.log(f"StandardCliProvider ================ serve! {self.vhost} kern {kernel}")
         client = StandardCliClient(kernel, websocket)
         self.clients.append(client)
         await client.serve_forever()

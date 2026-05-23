@@ -24,10 +24,19 @@ class SyncTransport(AbstractTransport):
         self.host = host
         self.in_app = in_gw 
         self.gateway = None
-    
+
+
+    def _check_gateway_local(self, url):
+        urls = urlsplit(url)
+        if urls.netloc == self.host:
+            return (True, urls)
+        if self.gateway is None:
+            raise Exception(f"{id(self)} Network unavailable {self.host}")   
+        return (False, urls)
+
 
     async def post_json(self, url, json):
-        gCon.log(f"posting json {url} {json}")
+        pass
 
 
     def set_out_gateway(self, gateway):
@@ -36,12 +45,11 @@ class SyncTransport(AbstractTransport):
 
 
     async def get_json(self, url):
-        urls = urlsplit(url)
-        if urls.netloc == self.host:
-            return self.host.in_get_json(urls)
-        if self.gateway is None:
-            raise Exception(f"{id(self)} Network unavailable {self.host}")
-        val = await self.gateway.route_message("GET", urls)
+        (is_local, urls) = self._check_gateway_local(url)
+        if is_local == True:
+            val = self.in_get_json(self, urls)
+        else:
+            val = await self.gateway.route_message("GET", urls)
         return val.body
 
 

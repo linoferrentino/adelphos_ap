@@ -226,9 +226,9 @@ class AdelphosCliRouter(CliRouter):
 
 
     async def in_websocket(self, websocket: WebSocket):
-        gCon.log(f"A+SSSSSSSS {self}")
+        #gCon.log(f"A+SSSSSSSS {self}")
         cli_handler = self.vhost.get_dep(Dependencies.CLI_HANDLER)
-        gCon.log(f"A+SSSSSSSS {cli_handler}")
+        #gCon.log(f"A+SSSSSSSS {cli_handler}")
 
         if cli_handler is not None:
             await cli_handler.serve_forever(websocket)

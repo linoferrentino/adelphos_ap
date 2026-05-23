@@ -51,14 +51,14 @@ class SyncApp:
     gateway = None
 
     def on_startup(self):
-        gCon.log("SyncApp on_startup")
+        #gCon.log("SyncApp on_startup")
         if SyncApp.gateway is None:
             SyncApp.gateway = SyncGateway()
             SyncApp.gateway.start(self)
         self.set_out_gateway(SyncApp.gateway)
-        gCon.log(f"Hello! start init in loop {self.routable}")
+        #gCon.log(f"Hello! start init in loop {self.routable}")
         run_coro_in_loop(self.routable.init_up, ())
-        gCon.log("Hello! start init in loop done")
+        #gCon.log("Hello! start init in loop done")
 
 
     def on_teardown(self):
@@ -104,10 +104,10 @@ class SyncApp:
             if route.path != path:
                 continue
             websock_dup = WebSocketSync(websock)
-            gCon.log(f"incoming sock {id(websock)} produced {id(websock_dup)}")
+            #gCon.log(f"incoming sock {id(websock)} produced {id(websock_dup)}")
             websock.pair_sock = websock_dup
             run_coro_in_loop(route.endpoint, (websock_dup,), wait = False)
-            gCon.log(f"returned {id(websock)}")
+            #gCon.log(f"returned {id(websock)}")
             return
         return Response(None, 404)
 

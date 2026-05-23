@@ -28,12 +28,14 @@ class AsyncRequestBase(ABC):
 
 
     def __init__(self, url = None):
+        self.status_code = None
+        self._cond = asyncio.Condition()
         if url is None:
             return
         u = urlsplit(url)
         self._url = url
         self._init_split(u, False)
-
+        
 
     def init_split(self, u):
         self._init_split(u, True)
@@ -48,22 +50,6 @@ class AsyncRequestBase(ABC):
             self._url = new_u.geturl()
         elif force == True:
             self._url = u.geturl()
-
-
-    @abstractmethod
-    async def async_req(self, session):
-        pass
-    
-
-class AsyncGetReq(AsyncRequestBase):
-
-
-    def __init__(self, url):
-        super().__init__(url)
-        self._cond = asyncio.Condition()
-        # I do not have (yet) a status code and a response
-        self.status_code = None
-        self.text = None
 
 
     async def async_req(self, session):
@@ -81,6 +67,19 @@ class AsyncGetReq(AsyncRequestBase):
                 self._cond.notify()
 
 
+    @abstractmethod
+    async def async_req_try(self, session):
+        pass
+   
+
+class AsyncGetReq(AsyncRequestBase):
+
+
+    def __init__(self, url):
+        super().__init__(url)
+        self.text = None
+
+
     async def async_req_try(self, session):
         async with session.get(self._url) as resp:
             self.status_code = resp.status
@@ -93,15 +92,13 @@ class AsyncPostReq(AsyncRequestBase):
 
     def __init__(self, url, headers, json):
         super().__init__(url)
-        # the post response has a json payload 
         self._headers = headers
         self._json = json
 
 
-    async def async_req(self, session):
-        #gCon.log(f"will post to url {self._url}")
+    async def async_req_try(self, session):
         async with session.post(self._url, headers = self._headers,
-                                json = self._json):
-            pass
+                                json = self._json) as resp:
+            self.status_code = resp.status
 
 
