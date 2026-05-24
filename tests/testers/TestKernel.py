@@ -30,10 +30,21 @@ class TestKernel(Kernel):
         pass
 
 
-    async def proc_msg(self, msg):
-        host_dest = msg
+    async def proc_msg(self, cp, session):
+
+        cmd = cp.cmd
+
+        if cmd == 'echo':
+            val = cp.get_param_safe('msg')
+            res = f"hello {val}!"
+            return res
+        elif cmd == 'sndpost':
+            return 'DONE!'
+
+        host_dest = f'@ll {cmd}'
+        msg = 'llla'
         social = self.vhost.get_dep(Dependencies.SOCIAL)
-        gCon.log(f"[red]send message to {host_dest} : {msg}[/red]")
+        gCon.log(f"[red]send message to {host_dest} : {msg} {cp}[/red]")
         await social.outgoing_message(f"@EchoKernel@{host_dest}", "ping")
         return "DONE!"
 

@@ -36,6 +36,7 @@ class SimpleDependencyContainer:
         self.cli_handler = self._make_cli_handler()
         self.social_net = ActivityPubNetwork(vhost)
         self.cli_net = AdelphosCliRouter(vhost)
+        self.gateway = self._make_gateway(vhost)
         self.transport = None
 
 
@@ -47,6 +48,11 @@ class SimpleDependencyContainer:
     def _make_kernel(self):
         kernel = TestKernel(self.vhost)
         return kernel
+
+
+    def _make_gateway(self, vhost):
+        gateway = None
+        return gateway
 
 
     def _make_cli_handler(self):

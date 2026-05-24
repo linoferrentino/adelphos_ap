@@ -22,8 +22,8 @@ from datetime import datetime
 from enum import IntEnum
 from enum import auto
 from app.logging import gCon
-from app.api.AdelphosException import AdelphosException
-from app.api.AdelphosException import EAdelhposErrno
+#from app.api.AdelphosException import AdelphosException
+#from app.api.AdelphosException import EAdelhposErrno
 
 # these are the states for the user.
 class EUserState(IntEnum):
@@ -37,16 +37,21 @@ def active_login(func):
 
     async def check_logged(self):
         if not self.gateway.session.is_login_valid():
-            raise AdelphosException("Login not valid or expired session",
-                                    EAdelhposErrno.ENOLOGIN)
+            #raise AdelphosException("Login not valid or expired session",
+            #                        EAdelhposErrno.ENOLOGIN)
+            raise Exception("No valid login")
         return await func(self)
 
     return check_logged
 
 
+class UserSession:
+    pass
+
+
 # the user session stores all the data that is accumulating during the
 # conversation with the user.
-class UserSession:
+class UserSession_OLD:
 
 
     def __init__(self, gateway):

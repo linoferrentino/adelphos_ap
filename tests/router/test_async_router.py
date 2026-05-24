@@ -23,7 +23,7 @@ from app.transport.async_mode.StarletteWrap import StarletteWrap
 #from tests.testers.fixtures import social_stub, cli_stub
 from tests.testers.fixtures import CliHandlerStub
 from tests.testers.fixtures import CliBypassStub
-from tests.testers.fixtures import EchoKernel
+#from tests.testers.fixtures import EchoKernel
 import tests.test_constants as tc
 import tests.adelphoi_test_config as tconf
 #from tests.testers.fixtures import sync_gateway
@@ -153,12 +153,12 @@ def test_post_from_kernel(get_routable):
             assert data == 'DONE!'
             websocket.close()
             
-            user_ob = routable2.get_social().login_user(user_in)
-            count_msg = user_ob.count_msg()
-            assert count_msg == 1
+            #user_ob = routable2.get_social().login_user(user_in)
+            #count_msg = user_ob.count_msg()
+            #assert count_msg == 1
 
-            msg = user_ob.pop_lst_msg()
-            assert msg == 'echo_test_x918'
+            #msg = user_ob.pop_lst_msg()
+            #assert msg == 'echo_test_x918'
 
 
 

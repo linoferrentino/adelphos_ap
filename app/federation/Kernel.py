@@ -33,7 +33,7 @@ class Kernel(ABC):
 
 
     @abstractmethod
-    async def proc_msg(self, msg):
+    async def proc_msg(self, cp, session): # cliparser
         pass
 
 

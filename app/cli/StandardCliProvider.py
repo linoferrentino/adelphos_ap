@@ -19,6 +19,8 @@ from app.logging import gCon
 from app.cli.CliParser import CliParser
 from app.sdc.Dependencies import Dependencies
 from app.exc.AdelphosException import AdelphosException
+from app.api.UserSession import UserSession
+
 import app.sdc.s_utils as sdc
 import app.consts as CNST
 import traceback
@@ -28,13 +30,15 @@ class StandardCliClient:
     def __init__(self, kernel, websocket):
         self.kernel = kernel
         self.websocket = websocket
+        self.session = UserSession()
 
 
     async def _internal_serve(self):
 
         while True:
             data = await self.websocket.receive_text()
-            response = await self.kernel.proc_msg(data)
+            cp = CliParser(data)
+            response = await self.kernel.proc_msg(cp, self.session)
             await self.websocket.send_text(response)
 
 
