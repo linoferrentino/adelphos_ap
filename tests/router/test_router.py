@@ -50,9 +50,7 @@ def get_routable_app(request):
 def test_simple_router(get_routable_app):
 
     app = get_routable_app(tconf.adelphos_stub, tconf.simple_tester_config)
-    #gCon.log(f"test simple router with {app}")
     with app.websocket_connect(CNST.WS_ROUTE) as websocket:
-        #gCon.log("AAAAAA ws1")
         websocket.send_text("lino")
         data = websocket.receive_text()
         assert data == 'DONE!'

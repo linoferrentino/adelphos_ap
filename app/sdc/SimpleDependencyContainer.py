@@ -13,7 +13,7 @@
 
 from app.federation.ap.ActivityPubNetwork import ActivityPubNetwork
 from tests.testers.fixtures import CliHandlerStub
-from tests.testers.fixtures import EchoKernel
+from tests.testers.TestKernel import TestKernel
 from app.cli.StandardCliProvider import StandardCliProvider
 from app.cli.AdelphosCliRouter import AdelphosCliRouter
 from app.sdc.Dependencies import Dependencies
@@ -45,7 +45,7 @@ class SimpleDependencyContainer:
 
 
     def _make_kernel(self):
-        kernel = EchoKernel(self.vhost)
+        kernel = TestKernel(self.vhost)
         return kernel
 
 

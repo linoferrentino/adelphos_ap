@@ -11,9 +11,18 @@
 #
 ######################################################
 
+from app.federation.Kernel import Kernel
+from app.sdc.Dependencies import Dependencies
+from app.logging import gCon
+
+
 class TestKernel(Kernel):
 
-    async def start_async(self, social):
+    def __init__(self, vhost):
+        super().__init__(vhost)
+
+
+    async def start_async(self):
         pass
 
 
@@ -22,5 +31,10 @@ class TestKernel(Kernel):
 
 
     async def proc_msg(self, msg):
-        pass
- 
+        host_dest = msg
+        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        gCon.log(f"[red]send message to {host_dest} : {msg}[/red]")
+        await social.outgoing_message(f"@EchoKernel@{host_dest}", "ping")
+        return "DONE!"
+
+

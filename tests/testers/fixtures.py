@@ -29,7 +29,7 @@ from app.cli.CliProvider import CliProvider
 from app.sdc.Dependencies import Dependencies
 
 
-class EchoKernel(Kernel):
+class EchoKernel_deprecated(Kernel):
 
     def __init__(self, vhost):
         super().__init__(vhost)
@@ -46,7 +46,7 @@ class EchoKernel(Kernel):
     async def proc_msg(self, msg):
         host_dest = msg
         social = self.vhost.get_dep(Dependencies.SOCIAL)
-        gCon.log(f"[red]send message to {host_dest} social {social}[/red]")
+        gCon.log(f"[red]send message to {host_dest} : {msg}[/red]")
         await social.outgoing_message(f"@EchoKernel@{host_dest}", "ping")
         return "DONE!"
 

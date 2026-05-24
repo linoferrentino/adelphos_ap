@@ -82,31 +82,14 @@ class AdelphosRouter(Routable):
         self.instance_name = instance_name
         self.config = config
         self.sdc = sdc.build_from(self)
+
         
-        #self.social = social
-        #self.kernel = kernel
-        #self.cli_handler = cli_handler
-        #self.social_net = ActivityPubNetwork(self)
-        #self.cli_net = AdelphosCliRouter(self)
-
-
     def get_dep(self, dep):
         return self.sdc.get_dep(dep)
 
 
-    #def get_social(self):
-    #    return self.social
-
-
     def set_transport(self, transport):
-        #super().set_transport(transport)
-        #self.social.set_transport(transport)
         self.sdc.set_dep(Dependencies.TRANSPORT, transport)
-
-
-    #def get_host(self):
-    #    host = self.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
-    #    return host
 
 
     def get_routes(self):
