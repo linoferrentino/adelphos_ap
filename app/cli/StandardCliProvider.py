@@ -71,6 +71,18 @@ class StandardCliProvider(CliProvider):
     def __init__(self, vhost):
         self.vhost = vhost
         self.clients = []
+        #self._add_syscalls()
+
+
+    def _add_syscalls(self):
+        self.syscalls = dict()
+        kernel = self.vhost.get_dep(Dependencies.KERNEL)
+        if kernel is None:
+            raise Exception("No kernel to run.")
+
+        syscalls = kernel.get_syscalls()
+        for syscall in syscalls:
+            self.syscalls[command_str] = (other_self, handler)
 
 
     async def serve_forever(self, websocket):

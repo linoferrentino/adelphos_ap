@@ -30,20 +30,17 @@ def build_from(vhost):
     hash_conf = base64.b64encode(hashlib.sha256(
         (instance + str(config)).encode('utf-8')).digest())
 
-
     sdc = config.get('sdc')
     if sdc is None:
         raise Exception("Not found a dependency configuration")
 
     cont = _conts.get(hash_conf)
     if cont is not None:
-        #gCon.log(f"Found a stored container!instance {instance} {hash_conf}")
         return cont
 
     cont = SimpleDependencyContainer(vhost)
 
     _conts[hash_conf] = cont
-    #gCon.log(f"config is {sdc} type {type(config)} {hash_conf}")
     return cont
 
 
