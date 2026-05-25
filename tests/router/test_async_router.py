@@ -36,7 +36,6 @@ from app.exc.AdelphosException import parse_exc
 from app.exc.AdelphosException import AdErrno
 from app.logging import gCon
 from app.federation.SimpleSocial import SimpleSocial
-from app.cli.StandardCliProvider import StandardCliProvider
 
 import tests.t_utils as tu
 #import app.sdc.s_utils as sdc

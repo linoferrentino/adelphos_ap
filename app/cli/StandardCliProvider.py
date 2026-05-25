@@ -46,17 +46,13 @@ class StandardCliClient:
         self.running = True
         while True:
             try:
-
                 await self.serve_a_cycle()
                 continue
-
             except WebSocketDisconnect as wds:
                 pass
-
             except Exception as ex:
                 traceback.print_exc()
                 await self.websocket.send_text(f"Server error {ex} we apologize.")
-
             break
         self.running = False
 
@@ -64,13 +60,12 @@ class StandardCliClient:
     async def serve_a_cycle(self):
 
         try:
-
             await self._internal_serve()
-
         except AdelphosException as err:
             await self.websocket.send_text(f"Error: {err}")
 
 
+# gateway
 class StandardCliProvider(CliProvider):
 
     def __init__(self, vhost):

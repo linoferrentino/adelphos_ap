@@ -28,7 +28,7 @@ class AdelphosUri(FederatedUri):
         if self.family is not None:
             base_name += f".{self.family}"
         if self.fragment is not None:
-            base_name += f"_#f{self.fragment}"
+            base_name += f"#f{self.fragment}"
         if self.host is not None:
             base_name += f"@f{self.host}"
 

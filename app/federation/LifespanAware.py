@@ -10,20 +10,25 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
 
 from abc import ABC, abstractmethod
-from app.federation.LifespanAware import LifespanAware
 
 
-class Kernel(LifespanAware):
+class LifespanAware(ABC):
+
 
     def __init__(self, vhost):
-        super().__init__(vhost)
+        self.vhost = vhost
 
 
     @abstractmethod
-    async def proc_msg(self, cp, session): # cliparser
+    async def start_async(self):
+        pass
+
+    
+    @abstractmethod
+    async def stop_async(self):
         pass
 
 

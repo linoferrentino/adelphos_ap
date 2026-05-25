@@ -54,6 +54,13 @@ ADELPHOS_VERSION_KEY = '__adelphos_v'
 # just a small number, it will be incremented at each iteration.
 ADELPHOS_CURRENT_VERSION = '0.1'
 
+
+class Adelphos(Kernel):
+
+    pass
+
+
+
 # Adelphos is the main object which orchestrates all the messages.
 class Adelphos_OLD(SocialListener):
 
