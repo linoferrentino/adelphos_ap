@@ -28,27 +28,47 @@ from app.exc.AdelphosException import AdErrno
 from app.cli.CliProvider import CliProvider
 from app.sdc.Dependencies import Dependencies
 
-
-class EchoKernel_deprecated(Kernel):
-
-    def __init__(self, vhost):
-        super().__init__(vhost)
-
-
-    async def start_async(self):
-        pass
-
-    
-    async def stop_async(self):
-        pass
+from app.AdelphosRouter import AdelphosRouter
+from tests.testers.SyncApp import SyncApp
+from tests.testers.SyncTester import SyncTester
+from tests.testers.ProcessWrapper import ProcessWrapper
 
 
-    async def proc_msg(self, msg):
-        host_dest = msg
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
-        gCon.log(f"[red]send message to {host_dest} : {msg}[/red]")
-        await social.outgoing_message(f"@EchoKernel@{host_dest}", "ping")
-        return "DONE!"
+@pytest.fixture(scope = "session")
+def get_routable_app():
+
+    def _build_routable_from_config(instance_name, configuration, 
+                                    build_structure, mode = 'sync'):
+        configuration['sdc'] = build_structure
+        aroutable = AdelphosRouter(instance_name, configuration)
+
+        if mode == 'sync':
+            config = aroutable.get_dep(Dependencies.CONFIG)
+            host = config.get_host()
+            app = SyncApp(host, aroutable)
+            wrappedapp = SyncTester(app)
+        else:
+            app = StarletteWrap(routable = aroutable)
+            wrappedapp = TestClient(app)
+
+        return wrappedapp
+
+    return _build_routable_from_config
+
+
+@pytest.fixture(scope = "session")
+def get_standalone_app(get_routable_app):
+
+    def _get_standalone_app(instance_name, configuration, build_structure):
+
+        configuration['sdc'] = build_structure
+        server = ProcessWrapper()
+        port = configuration['General']['port']
+        return server.run_in_subprocess(AdelphosRouter, 
+                                      (instance_name, configuration), 
+                                      port) 
+
+    return _get_standalone_app
 
 
 class CliBypassStub(CliProvider):
@@ -61,18 +81,4 @@ class CliBypassStub(CliProvider):
         await websocket.close()
 
 
-class CliHandlerStub(CliProvider):
 
-    async def serve_forever(self, websocket):
-        await websocket.accept()
-        text = await websocket.receive_text()
-        await websocket.send_text(f"Hello world, {text}!")
-        await websocket.close()
-
-
-    def start_sync(self):
-        pass
-
-
-    def stop_sync(self):
-        pass

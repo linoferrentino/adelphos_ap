@@ -23,7 +23,7 @@ class Kernel(LifespanAware):
 
 
     @abstractmethod
-    def get_syscalls():
+    def get_syscalls(self):
         pass
 
 

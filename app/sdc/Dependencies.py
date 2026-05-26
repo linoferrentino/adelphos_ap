@@ -24,7 +24,5 @@ class Dependencies(StrEnum):
     CONFIG = auto()
     CLI_HANDLER = auto()
     TRANSPORT = auto()
-    GATEWAY = auto()
-
 
 

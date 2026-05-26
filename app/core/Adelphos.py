@@ -29,36 +29,63 @@
 # each action is part of a transaction.
 
 # from argon2 import PasswordHasher
-import re
+#import re
 
-from app.dao.AdelphosUri import uriparse_type, EAdelphosType
-from app.core.algo.AdelphosAlgo import AdelphosAlgo 
-#from app.core.InstancesModel import InstancesModel
+#from app.dao.AdelphosUri import uriparse_type, EAdelphosType
+#from app.core.algo.AdelphosAlgo import AdelphosAlgo 
+##from app.core.InstancesModel import InstancesModel
+#
+#from app.logging import gCon
+#
+#from app.federation.SocialListener import SocialListener
+#from app.consts import DAEMON_ID
+#from app.logging import exit_err
+#from app.federation.FederatedStore import FederatedStore
+#from app.ap_api.ActivityPubMockup import ActivityPubMockup
+#from app.cli.ConnHandler import ConnHandler
 
-from app.logging import gCon
-
-from app.federation.SocialListener import SocialListener
-from app.consts import DAEMON_ID
-from app.logging import exit_err
-from app.federation.FederatedStore import FederatedStore
-from app.ap_api.ActivityPubMockup import ActivityPubMockup
-from app.cli.ConnHandler import ConnHandler
-
-import asyncio
+#import asyncio
 
 
 # this key is present in the db only if the initialization is done.
 
-ADELPHOS_VERSION_KEY = '__adelphos_v'
+#ADELPHOS_VERSION_KEY = '__adelphos_v'
+#
+## just a small number, it will be incremented at each iteration.
+#ADELPHOS_CURRENT_VERSION = '0.1'
 
-# just a small number, it will be incremented at each iteration.
-ADELPHOS_CURRENT_VERSION = '0.1'
+
+from app.federation.Kernel import Kernel
+from app.federation.SocialListener import SocialListener
+from app.sdc.Dependencies import Dependencies
+from app.logging import gCon
 
 
-class Adelphos(Kernel):
+SOCIAL_USER = 'adelphos'
 
-    pass
 
+class Adelphos(Kernel, SocialListener):
+
+    def __init__(self, vhost):
+        super().__init__(vhost)
+
+
+    async def start_async(self):
+        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        social.create_or_register_user(SOCIAL_USER, listener = self)
+        gCon.log(f"Registered user {SOCIAL_USER}")
+
+
+    async def stop_async(self):
+        pass
+
+
+    def get_syscalls(self):
+        return [ ]
+
+
+    async def new_post(self, msg):
+        pass
 
 
 # Adelphos is the main object which orchestrates all the messages.

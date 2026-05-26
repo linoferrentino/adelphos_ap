@@ -27,8 +27,8 @@ import traceback
 
 class StandardCliClient:
 
-    def __init__(self, kernel, websocket):
-        self.kernel = kernel
+    def __init__(self, gateway, websocket):
+        self.gateway = gateway
         self.websocket = websocket
         self.session = UserSession()
 
@@ -38,7 +38,8 @@ class StandardCliClient:
         while True:
             data = await self.websocket.receive_text()
             cp = CliParser(data)
-            response = await self.kernel.proc_msg(cp, self.session)
+            #response = await self.kernel.proc_msg(cp, self.session)
+            response = await self.gateway.sys_call_gateway(self.session, cp)
             await self.websocket.send_text(response)
 
 
@@ -80,15 +81,26 @@ class StandardCliProvider(CliProvider):
             raise Exception("No kernel to run.")
 
         syscalls = kernel.get_syscalls()
-        for syscall in syscalls:
-            self.syscalls[command_str] = (other_self, handler)
+        for sc in syscalls:
+            if sc.name in self.syscalls:
+                raise Exception(f"Duplicated syscall {sc.name}")
+            self.syscalls[sc.name] = sc
+
+
+    async def sys_call_gateway(self, session, pars):
+        cmd = pars.cmd
+        syscall = self.syscalls.get(cmd)
+        if syscall is None:
+            return f"{cmd}: no such command"
+        msg_out = await syscall.method(syscall.self_instance, session, pars)
+        return msg_out
 
 
     async def serve_forever(self, websocket):
 
         await websocket.accept()
-        kernel = self.vhost.get_dep(Dependencies.KERNEL)
-        client = StandardCliClient(kernel, websocket)
+        #kernel = self.vhost.get_dep(Dependencies.KERNEL)
+        client = StandardCliClient(self, websocket)
         self.clients.append(client)
         await client.serve_forever()
 

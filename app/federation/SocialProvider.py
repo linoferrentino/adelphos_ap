@@ -50,7 +50,7 @@ class SocialProvider(Dependency):
 
 
     @abstractmethod
-    def create_or_register_user(self, user, *, a_listener = None):
+    def create_or_register_user(self, user, *, listener = None):
         pass
 
     

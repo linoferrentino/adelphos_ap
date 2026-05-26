@@ -12,20 +12,33 @@
 ######################################################
 
 
-simple_tester_config = {
-            'cli_api' : {
-                'type' : 'social_test_api',
-                },
-            'cli_handler' : {
+adelphos_simple_conf = {
+       'cli_handler' : {
                 'type' : 'standard_cli',
                 },
+       'kernel': {
+                'type' : 'adelphos',
             }
+        }
+
+
+simple_tester_config = {
+       'cli_handler' : {
+                'type' : 'standard_cli',
+                },
+       'kernel': {
+                'type' : 'test_kernel',
+            }
+        }
 
 
 cli_stub_dep_conf = {
         'cli_handler' : {
                 'type' : 'cli_stub',
                 },
+        'kernel': {
+                'type' : 'test_kernel',
+            }
         }
 
 
@@ -47,13 +60,9 @@ adelphos_stub =  {
 }
 
 
+
 adelphos_t2_test =  {
-        "sdc" : {
-            'cli_api' : {
-                'type' : 'social_test_api'
-                },
-            },
-        "General": {
+    "General": {
     "debug": True, 
     "port": 9911, 
     "db_name": ":memory:", 

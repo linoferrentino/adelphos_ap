@@ -31,14 +31,14 @@ class TestKernel(Kernel):
         pass
 
 
-    def get_syscalls():
+    def get_syscalls(self):
         return [
                 SysCall('echo', TestKernel._sys_call_echo, self),
                 SysCall('sndpost', TestKernel._sys_call_sndpost, self),
                 ]
 
 
-    async def proc_msg(self, cp, session):
+    async def proc_msg_XXX(self, cp, session):
 
         cmd = cp.cmd
 
@@ -58,7 +58,7 @@ class TestKernel(Kernel):
 
 
     async def _sys_call_echo(self, session, pars):
-        val = cp.get_param_safe('msg')
+        val = pars.get_param_safe('msg')
         res = f"hello {val}!"
         return res
 
@@ -67,9 +67,9 @@ class TestKernel(Kernel):
         return 'DONE!'
 
 
-SYSCALLS = {
-     'echo' : TestKernel._sys_call_echo,
-     'sndpost' : TestKernel._sys_call_sndpost,
-}
+#SYSCALLS = {
+#     'echo' : TestKernel._sys_call_echo,
+#     'sndpost' : TestKernel._sys_call_sndpost,
+#}
 
 

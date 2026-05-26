@@ -10,7 +10,7 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
 
 
 from abc import ABC
@@ -19,7 +19,6 @@ from abc import abstractmethod
 
 class SocialListener(ABC):
 
-
     @abstractmethod
-    def new_post(self, msg):
+    async def new_post(self, sender_id, msg):
         pass

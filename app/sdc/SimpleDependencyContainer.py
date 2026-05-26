@@ -12,12 +12,13 @@
 ######################################################
 
 from app.federation.ap.ActivityPubNetwork import ActivityPubNetwork
-from tests.testers.fixtures import CliHandlerStub
+from tests.testers.CliHandlerStub import CliHandlerStub
 from tests.testers.TestKernel import TestKernel
 from app.cli.StandardCliProvider import StandardCliProvider
 from app.cli.AdelphosCliRouter import AdelphosCliRouter
 from app.sdc.Dependencies import Dependencies
 from app.federation.SimpleSocial import SimpleSocial
+from app.core.Adelphos import Adelphos
 from app.config import Config
 
 
@@ -36,7 +37,6 @@ class SimpleDependencyContainer:
         self.cli_handler = self._make_cli_handler()
         self.social_net = ActivityPubNetwork(vhost)
         self.cli_net = AdelphosCliRouter(vhost)
-        self.gateway = self._make_gateway(vhost)
         self.transport = None
 
 
@@ -46,14 +46,17 @@ class SimpleDependencyContainer:
 
 
     def _make_kernel(self):
-        kernel = TestKernel(self.vhost)
+        kernel_type = self.config.config['sdc']['kernel']['type']
+        match kernel_type:
+            case 'test_kernel':
+                kernel = TestKernel(self.vhost)
+            case 'adelphos':
+                kernel = Adelphos(self.vhost)
+            case _:
+                raise Exception(f"Invalid kernel {kernel_type}")
+
         return kernel
-
-
-    def _make_gateway(self, vhost):
-        gateway = None
-        return gateway
-
+    
 
     def _make_cli_handler(self):
 
@@ -99,9 +102,9 @@ class SimpleDependencyContainer:
 
 
     def start_sync(self):
-        pass
+        self.cli_handler.start_sync()
 
 
     def stop_sync(self):
-        pass
+        self.cli_handler.stop_sync()
 

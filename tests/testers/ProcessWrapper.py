@@ -21,6 +21,7 @@ import uvicorn
 from app.transport.async_mode.StarletteHelper import starlette_app_creator
 import time
 from app.consts import API_POINT, LOCALHOST
+from app.logging import gCon
 
 
 class ProcessWrapper:
@@ -41,6 +42,7 @@ def start_starlette_app(aroutable, parms, port):
 
     routable = aroutable(*parms)
     app = starlette_app_creator(routable)
+    gCon.log("AAAAAA START")
     uvicorn.run(app, host=LOCALHOST, port=port, log_level="debug")
 
 
