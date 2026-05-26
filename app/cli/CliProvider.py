@@ -11,19 +11,11 @@
 #
 ######################################################
 
-# The class that manages the connections.
-
-# the cli provider is a module which gives Adelphos the possibility
-# to have bidirectional channels of messages, a.k.a. sockets.
-
-# However we abstract the interface in order to have the possibility
-# to transform sockets into simple function calls.
-
 from abc import ABC, abstractmethod
+from app.federation.SyncLifespanAware import SyncLifespanAware
 
 
-class CliProvider(ABC):
-
+class CliProvider(SyncLifespanAware):
 
     def __init__(self, kernel):
         self.kernel = kernel

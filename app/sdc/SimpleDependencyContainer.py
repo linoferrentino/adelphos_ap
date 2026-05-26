@@ -97,3 +97,11 @@ class SimpleDependencyContainer:
                 raise Exception(f"Invalid dep {dep}")
         return dep_ob
 
+
+    def start_sync(self):
+        pass
+
+
+    def stop_sync(self):
+        pass
+

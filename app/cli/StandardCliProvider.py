@@ -71,7 +71,6 @@ class StandardCliProvider(CliProvider):
     def __init__(self, vhost):
         self.vhost = vhost
         self.clients = []
-        #self._add_syscalls()
 
 
     def _add_syscalls(self):
@@ -94,3 +93,9 @@ class StandardCliProvider(CliProvider):
         await client.serve_forever()
 
 
+    def start_sync(self):
+        self._add_syscalls()
+
+
+    def stop_sync(self):
+        pass

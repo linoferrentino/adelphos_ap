@@ -100,6 +100,7 @@ class AdelphosRouter(Routable):
 
 
     async def init_up(self):
+        self.sdc.start_sync()
         kern = self.get_dep(Dependencies.KERNEL)
         await kern.start_async()
 
@@ -107,6 +108,7 @@ class AdelphosRouter(Routable):
     async def tear_down(self):
         kern = self.get_dep(Dependencies.KERNEL)
         await kern.stop_async()
+        self.sdc.stop_sync()
 
 
 # I initialize the router with the app.

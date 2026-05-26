@@ -70,5 +70,9 @@ class CliHandlerStub(CliProvider):
         await websocket.close()
 
 
+    def start_sync(self):
+        pass
 
 
+    def stop_sync(self):
+        pass

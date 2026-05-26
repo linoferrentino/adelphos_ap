@@ -11,19 +11,15 @@
 #
 ######################################################
 
-
 from abc import ABC, abstractmethod
-from app.federation.LifespanAware import LifespanAware
 
-
-class Kernel(LifespanAware):
-
-    def __init__(self, vhost):
-        super().__init__(vhost)
-
+class SyncLifespanAware(ABC):
 
     @abstractmethod
-    def get_syscalls():
+    def start_sync(self):
         pass
 
 
+    @abstractmethod
+    def stop_sync(self):
+        pass
