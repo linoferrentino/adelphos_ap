@@ -93,13 +93,13 @@ class SimpleSocial(SocialProvider):
         self.users[user] = UserStub(user, listener)
 
 
-    async def start_async(self):
+    def start_sync(self):
         config = self.vhost.get_dep(Dependencies.CONFIG)
         demo_users = config.get_social_config()['demo_users']
         self.users = { user: UserStub(user) for user in demo_users}
 
 
-    async def stop_async(self):
+    def stop_sync(self):
         pass
 
 

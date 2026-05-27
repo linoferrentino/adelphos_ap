@@ -12,10 +12,11 @@
 ######################################################
 
 
+from app.sdc.Dependency import Dependency
 from abc import ABC, abstractmethod
 
 
-class SocialEncoder(ABC):
+class SocialEncoder_NO(ABC):
 
     
     @abstractmethod
@@ -28,11 +29,10 @@ class SocialEncoder(ABC):
         pass
 
 
-class SocialNetwork(ABC):
-
+class SocialNetwork(Dependency):
 
     def __init__(self, vhost):
-        self.vhost = vhost
+        super().__init__(vhost)
 
 
     @abstractmethod
@@ -40,27 +40,13 @@ class SocialNetwork(ABC):
         pass
 
 
-    @abstractmethod
-    async def post_to_user(self, user, message):
-        pass
-
-
-    @abstractmethod
-    async def discover_user(self, user):
-        pass
-
-
-    #def discover_user(self, user):
+    #@abstractmethod
+    #async def post_to_user(self, user, message):
     #    pass
 
 
-    #def verify_message(self, user, message):
+    #@abstractmethod
+    #async def discover_user(self, user):
     #    pass
-
-
-    #def decode_message(self, user, message):
-    #    pass
-
-
 
 

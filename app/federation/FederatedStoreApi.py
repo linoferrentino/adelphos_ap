@@ -10,9 +10,9 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
 
-from app.federation.SocialGateway import SocialGateway
+
+#from app.federation.SocialGateway import SocialGateway
 import json
 
 DBSOCIAL_NAME = "AD_DB_D"
@@ -41,6 +41,7 @@ class FederatedStoreApi:
 
     @ensure_gw
     async def read_remote_uri(self, ctx):
+        assert False
 
         req = {
                 'uri' : ctx.uri_str,

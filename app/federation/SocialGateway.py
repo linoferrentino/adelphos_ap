@@ -10,15 +10,22 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
 
 from app.federation.SocialListener import SocialListener
 from app.misc.WrapInt import WrapInt
 from app.logging import gCon
 
+from abc import abstractmethod, ABC
+
+class SocialGateway(ABC):
+
+    @abstractmethod
+    async def in_inbox(self, user, request):
+        pass
 
 
-class SocialGateway(SocialListener):
+class SocialGateway_NO(SocialListener):
 
 
     def __init__(self, social, social_tenant):

@@ -51,7 +51,7 @@ from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
 from app.federation.FederatedUri import FederatedUri
 from app.federation.FederatedFactory import FederatedFactory
-from app.federation.SocialGateway import SocialGateway
+#from app.federation.SocialGateway import SocialGateway
 from app.federation.FederatedStoreApi import FederatedStoreApi
 from app.federation.Kernel import Kernel
 

@@ -105,20 +105,20 @@ class SimpleDependencyContainer(LifespanAware):
 
     def start_sync(self):
         self.cli_handler.start_sync()
+        self.social.start_sync()
 
 
     def stop_sync(self):
+        self.social.stop_sync()
         self.cli_handler.stop_sync()
 
 
     async def start_async(self):
-        await self.social.start_async()
         await self.kernel.start_async()
 
     
     async def stop_async(self):
         await self.kernel.stop_async()
-        await self.social.stop_async()
 
 
 

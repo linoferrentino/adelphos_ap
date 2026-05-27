@@ -42,14 +42,14 @@ class ActivityPubNetwork(SocialNetwork):
         super().__init__(vhost)
 
 
-    async def post_to_user(self, user, message):
-        gCon.log("XX")
-        pass
+    #async def post_to_user(self, user, message):
+    #    gCon.log("XX")
+    #    pass
 
 
-    async def discover_user(self, user):
-        gCon.log("XX")
-        pass
+    #async def discover_user(self, user):
+    #    gCon.log("XX")
+    #    pass
 
 
     async def in_webfinger(self, request):

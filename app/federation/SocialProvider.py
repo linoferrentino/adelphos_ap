@@ -26,9 +26,10 @@ from abc import ABC, abstractmethod
 from app.transport.RouterProvider import RouterProvider
 from app.sdc.Dependency import Dependency
 from app.federation.LifespanAware import LifespanAware
+from app.federation.SyncLifespanAware import SyncLifespanAware
 
 
-class SocialProvider(Dependency, LifespanAware):
+class SocialProvider(Dependency, SyncLifespanAware):
 
 
     def __init__(self, vhost):
@@ -41,12 +42,12 @@ class SocialProvider(Dependency, LifespanAware):
 
 
     @abstractmethod
-    async def incoming_message(self, user, message):
+    async def incoming_message(self, message):
         pass
 
 
     @abstractmethod
-    async def outgoing_message(self, user, message):
+    async def outgoing_message(self, sender_hndl, recipient_str, message):
         pass
 
 
