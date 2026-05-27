@@ -101,13 +101,11 @@ class AdelphosRouter(Routable):
 
     async def init_up(self):
         self.sdc.start_sync()
-        kern = self.get_dep(Dependencies.KERNEL)
-        await kern.start_async()
+        await self.sdc.start_async()
 
 
     async def tear_down(self):
-        kern = self.get_dep(Dependencies.KERNEL)
-        await kern.stop_async()
+        await self.sdc.stop_async()
         self.sdc.stop_sync()
 
 

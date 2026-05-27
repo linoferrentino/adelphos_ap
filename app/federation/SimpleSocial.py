@@ -31,9 +31,9 @@ class UserStub:
             self.is_daemon = True
 
 
-    async def new_msg(self, msg):
+    async def new_msg(self, sender_id, msg):
         if self.is_daemon:
-            await self.listener.new_post(msg)
+            await self.listener.new_post(sender_id, msg)
         else:
             self.messages.append(msg)
 
@@ -48,9 +48,10 @@ class UserStub:
 
 class SimpleSocial(SocialProvider):
 
-    def __init__(self, user_list, vhost):
+    #def __init__(self, user_list, vhost):
+    def __init__(self, vhost):
         super().__init__(vhost)
-        self.users = { user: UserStub(user) for user in user_list }
+        #self.users = { user: UserStub(user) for user in user_list }
 
 
     def local_user_exists(self, user: str) -> bool:
@@ -70,7 +71,8 @@ class SimpleSocial(SocialProvider):
     async def incoming_message(self, user, message):
         user_stub = self._pri_get_user_stub(user)
         msg = message['msg']
-        await user_stub.new_msg(msg)
+        sender_id = 999
+        await user_stub.new_msg(sender_id, msg)
 
 
     async def outgoing_message(self, user, message):
@@ -89,5 +91,16 @@ class SimpleSocial(SocialProvider):
         if user in self.users:
             raise AdelphosException(AdErrno.USER_ALREADY_EXISTING)
         self.users[user] = UserStub(user, listener)
+
+
+    async def start_async(self):
+        config = self.vhost.get_dep(Dependencies.CONFIG)
+        demo_users = config.get_social_config()['demo_users']
+        self.users = { user: UserStub(user) for user in demo_users}
+
+
+    async def stop_async(self):
+        pass
+
 
 

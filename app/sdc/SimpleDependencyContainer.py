@@ -18,12 +18,13 @@ from app.cli.StandardCliProvider import StandardCliProvider
 from app.cli.AdelphosCliRouter import AdelphosCliRouter
 from app.sdc.Dependencies import Dependencies
 from app.federation.SimpleSocial import SimpleSocial
+from app.federation.LifespanAware import LifespanAware
 from app.core.Adelphos import Adelphos
 from app.config import Config
 
 
 
-class SimpleDependencyContainer:
+class SimpleDependencyContainer(LifespanAware):
 
     def __init__(self, vhost):
                  
@@ -41,7 +42,8 @@ class SimpleDependencyContainer:
 
 
     def _make_social(self):
-        social = SimpleSocial(('demo1', 'demo2'), self.vhost)
+        #social = SimpleSocial(('demo1', 'demo2'), self.vhost)
+        social = SimpleSocial(self.vhost)
         return social
 
 
@@ -107,4 +109,16 @@ class SimpleDependencyContainer:
 
     def stop_sync(self):
         self.cli_handler.stop_sync()
+
+
+    async def start_async(self):
+        await self.social.start_async()
+        await self.kernel.start_async()
+
+    
+    async def stop_async(self):
+        await self.kernel.stop_async()
+        await self.social.stop_async()
+
+
 

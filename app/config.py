@@ -29,6 +29,10 @@ class Config:
     def get_instance(self):
         return self.instance
 
+    
+    def get_social_config(self):
+        return self.config['sdc']['social']
+
 
 def load_conf(instance_name, toml_file):
 

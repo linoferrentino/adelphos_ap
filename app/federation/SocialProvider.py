@@ -25,9 +25,10 @@ from abc import ABC, abstractmethod
 
 from app.transport.RouterProvider import RouterProvider
 from app.sdc.Dependency import Dependency
+from app.federation.LifespanAware import LifespanAware
 
 
-class SocialProvider(Dependency):
+class SocialProvider(Dependency, LifespanAware):
 
 
     def __init__(self, vhost):
@@ -53,4 +54,4 @@ class SocialProvider(Dependency):
     def create_or_register_user(self, user, *, listener = None):
         pass
 
-    
+

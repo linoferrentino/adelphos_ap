@@ -84,7 +84,7 @@ class Adelphos(Kernel, SocialListener):
         return [ ]
 
 
-    async def new_post(self, msg):
+    async def new_post(self, sender_id, msg):
         pass
 
 
