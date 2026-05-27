@@ -14,6 +14,8 @@
 from app.federation.ap.ActivityPubNetwork import ActivityPubNetwork
 from tests.testers.CliHandlerStub import CliHandlerStub
 from tests.testers.TestKernel import TestKernel
+from tests.testers.SimpleSocialGateway import SimpleSocialGateway
+from tests.testers.SimpleSocialDao import SimpleSocialDao
 from app.cli.StandardCliProvider import StandardCliProvider
 from app.cli.AdelphosCliRouter import AdelphosCliRouter
 from app.sdc.Dependencies import Dependencies
@@ -38,7 +40,20 @@ class SimpleDependencyContainer(LifespanAware):
         self.cli_handler = self._make_cli_handler()
         self.social_net = ActivityPubNetwork(vhost)
         self.cli_net = AdelphosCliRouter(vhost)
+        self.social_dao = SimpleSocialDao(vhost)
+        self.social_gateway = self._make_social_gateway()
         self.transport = None
+
+
+    def _make_social_gateway(self):
+        social_conf = self.config.get_social_gw_config()
+        social_type = social_conf['type']
+        match social_type:
+            case 'simple':
+                social_gw = SimpleSocialGateway(self.vhost)
+            case _:
+                raise Exception(f"invalid type {social_type}")
+        return social_gw
 
 
     def _make_social(self):
@@ -98,6 +113,10 @@ class SimpleDependencyContainer(LifespanAware):
                 dep_ob = self.cli_handler
             case Dependencies.TRANSPORT:
                 dep_ob = self.transport
+            case Dependencies.SOCIAL_GATEWAY:
+                dep_ob = self.social_gateway
+            case Dependencies.SOCIAL_DAO:
+                dep_ob = self.social_dao
             case _:
                 raise Exception(f"Invalid dep {dep}")
         return dep_ob

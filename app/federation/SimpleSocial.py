@@ -48,10 +48,8 @@ class UserStub:
 
 class SimpleSocial(SocialProvider):
 
-    #def __init__(self, user_list, vhost):
     def __init__(self, vhost):
         super().__init__(vhost)
-        #self.users = { user: UserStub(user) for user in user_list }
 
 
     def local_user_exists(self, user: str) -> bool:

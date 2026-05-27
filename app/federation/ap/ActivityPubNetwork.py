@@ -99,6 +99,13 @@ class ActivityPubNetwork(SocialNetwork):
 
 
     async def in_inbox(self, request):
+        social_gw = self.vhost.get_dep(Dependencies.SOCIAL_GATEWAY)
+        user = request.path_params['username']
+        response = await social_gw.in_inbox(user, request)
+        return response
+
+
+    async def in_inbox_OLD(self, request):
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         user = request.path_params['username']
         body = await request.json()

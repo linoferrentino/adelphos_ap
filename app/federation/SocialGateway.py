@@ -17,8 +17,14 @@ from app.misc.WrapInt import WrapInt
 from app.logging import gCon
 
 from abc import abstractmethod, ABC
+from app.sdc.Dependency import Dependency
 
-class SocialGateway(ABC):
+class SocialGateway(Dependency):
+
+
+    def __init__(self, vhost):
+        super().__init__(vhost)
+
 
     @abstractmethod
     async def in_inbox(self, user, request):

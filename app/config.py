@@ -34,6 +34,11 @@ class Config:
         return self.config['sdc']['social']
 
 
+    def get_social_gw_config(self):
+        return self.config['sdc']['social_gateway']
+
+
+
 def load_conf(instance_name, toml_file):
 
     if (toml_file is None):

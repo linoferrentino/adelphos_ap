@@ -10,17 +10,18 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
 
 class SyncRequest:
 
 
-    def __init__(self, query_params, path_params, json):
+    def __init__(self, query_params, path_params, json, headers = None):
 
         self.query_params = { k: v[0] for k, v in query_params.items() }
         self.path_params = path_params 
         self._inner_json = json
         self.json = self.get_json 
+        self.headers = headers if headers is not None else {}
 
 
     async def get_json(self):

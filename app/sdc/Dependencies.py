@@ -17,12 +17,13 @@ from enum import auto
 
 
 class Dependencies(StrEnum):
-    SOCIAL = auto()
-    SOCIAL_NET = auto()
     CLI_NET = auto()
     KERNEL = auto()
     CONFIG = auto()
     CLI_HANDLER = auto()
     TRANSPORT = auto()
-
+    SOCIAL = auto()
+    SOCIAL_GATEWAY = auto()
+    SOCIAL_NET = auto()
+    SOCIAL_DAO = auto()
 
