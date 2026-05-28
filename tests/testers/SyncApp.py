@@ -155,7 +155,7 @@ class SyncApp:
             path_params[k] = v
 
         endpoint = route.endpoint
-        request = SyncRequest(dict_params, path_params, in_json)
+        request = SyncRequest(dict_params, path_params, in_json, urlp)
 
         res = run_coro_in_loop(endpoint, (request,))
         return res

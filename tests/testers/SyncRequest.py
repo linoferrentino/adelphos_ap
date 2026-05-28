@@ -15,13 +15,14 @@
 class SyncRequest:
 
 
-    def __init__(self, query_params, path_params, json, headers = None):
+    def __init__(self, query_params, path_params, json, urlp, headers = None):
 
         self.query_params = { k: v[0] for k, v in query_params.items() }
         self.path_params = path_params 
         self._inner_json = json
         self.json = self.get_json 
         self.headers = headers if headers is not None else {}
+        self.url = urlp.geturl()
 
 
     async def get_json(self):

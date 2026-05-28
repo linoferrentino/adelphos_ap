@@ -57,7 +57,6 @@ class SimpleDependencyContainer(LifespanAware):
 
 
     def _make_social(self):
-        #social = SimpleSocial(('demo1', 'demo2'), self.vhost)
         social = SimpleSocial(self.vhost)
         return social
 
@@ -124,11 +123,13 @@ class SimpleDependencyContainer(LifespanAware):
 
     def start_sync(self):
         self.cli_handler.start_sync()
+        self.social_dao.start_sync()
         self.social.start_sync()
 
 
     def stop_sync(self):
         self.social.stop_sync()
+        self.social_dao.stop_sync()
         self.cli_handler.stop_sync()
 
 

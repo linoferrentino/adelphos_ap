@@ -13,13 +13,11 @@
 
 
 from app.federation.SocialGateway import SocialGateway
-from app.exc.AdelphosException import AdelphosException
-from app.sdc.Dependencies import Dependencies
 from starlette.responses import Response
-from app.logging import gCon
+from app.sdc.Dependencies import Dependencies
 
 
-class SimpleSocialGateway(SocialGateway):
+class ActivityPubGateway(SocialGateway):
 
 
     def __init__(self, vhost):
