@@ -30,7 +30,8 @@ class SimpleSocialGateway(SocialGateway):
 
         headers = request.headers
         gCon.log(f"here are the headers {headers}")
-        gCon.log(f"here is the url {request.url}")
+        gCon.log(f"here is the url {request.url} type {type(request.url)}")
+        gCon.log(f"here is the client {request.client} type {type(request.client)}")
 
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         body = await request.json()

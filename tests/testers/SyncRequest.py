@@ -23,6 +23,7 @@ class SyncRequest:
         self.json = self.get_json 
         self.headers = headers if headers is not None else {}
         self.url = urlp.geturl()
+        self.client = ""
 
 
     async def get_json(self):

@@ -21,18 +21,38 @@ import app.sdc.Dependencies as dep
 
 _conts = dict()
 
+
+adelphos_standard_configuration = {
+       'cli_handler' : {
+                'type' : 'standard_cli',
+                },
+       'kernel': {
+                'type' : 'adelphos',
+            },
+       'social': {
+                'demo_users' : [ 'demo1', 'demo2' ]
+            },
+        'social_gateway' : {
+           'type' : 'simple',
+           },
+        }
+
+
+
 def build_from(vhost):
 
     global _conts
 
     instance = vhost.instance_name
     config = vhost.config
+    sdc = config.get('sdc')
+
+    if sdc is None:
+        gCon.log("Using standard configuration.")
+        config['sdc'] = adelphos_standard_configuration
+
     hash_conf = base64.b64encode(hashlib.sha256(
         (instance + str(config)).encode('utf-8')).digest())
-
-    sdc = config.get('sdc')
-    if sdc is None:
-        raise Exception("Not found a dependency configuration")
 
     cont = _conts.get(hash_conf)
     if cont is not None:
