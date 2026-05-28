@@ -92,7 +92,8 @@ def test_post_inbox_KO(app, aroutable):
     user_in = 'demo_WHAT'
     url_post=CNST.USER_INBOX_ROUTE.format(username = user_in)
     jsonmsg = {
-            'msg' : f'hello1 {user_in} secret X8a9'
+            'msg' : f'hello1 {user_in} secret X8a9',
+            'actor' : 'test1',
             }
     response = app.post(url_post, json = jsonmsg)
     tu.assert_error_code_in_response(response, AdErrno.USER_DOES_NOT_EXIST)
@@ -128,7 +129,8 @@ def test_post_inbox_ok(app, aroutable):
     user_in = 'demo1'
     url_post=CNST.USER_INBOX_ROUTE.format(username = user_in)
     jsonmsg = {
-            'msg' : 'hello1 demo1 secret X8a9'
+            'msg' : 'hello1 demo1 secret X8a9',
+            'actor' : 'demo2'
             }
     response = app.post(url_post, json = jsonmsg)
     assert response.status_code == 202

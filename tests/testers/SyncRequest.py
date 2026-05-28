@@ -24,10 +24,16 @@ class SyncRequest:
         self.headers = headers if headers is not None else {}
         self.url = urlp.geturl()
         self.client = ""
+        self._inner_body = b"strange body"
+        self.body = self.get_body
 
 
     async def get_json(self):
         return self._inner_json
+
+
+    async def get_body(self):
+        return self._inner_body
 
 
 

@@ -68,9 +68,8 @@ class SimpleSocial(SocialProvider):
 
     async def incoming_message(self, user, message):
         user_stub = self._pri_get_user_stub(user)
-        msg = message['msg']
         sender_id = 999
-        await user_stub.new_msg(sender_id, msg)
+        await user_stub.new_msg(sender_id, message)
 
 
     async def outgoing_message(self, user, message):

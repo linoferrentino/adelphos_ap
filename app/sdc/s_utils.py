@@ -33,7 +33,7 @@ adelphos_standard_configuration = {
                 'demo_users' : [ 'demo1', 'demo2' ]
             },
         'social_gateway' : {
-           'type' : 'simple',
+           'type' : 'activity_pub',
            },
         }
 

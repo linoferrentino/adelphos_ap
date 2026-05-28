@@ -12,27 +12,48 @@
 ######################################################
 
 
-from app.federation.SocialGateway import SocialGateway
+from app.federation.BaseSocialGateway import BaseSocialGateway
 from starlette.responses import Response
 from app.sdc.Dependencies import Dependencies
+from starlette.exceptions import HTTPException
+from app.logging import gCon
+import re
 
 
-class ActivityPubGateway(SocialGateway):
+class ActivityPubGateway(BaseSocialGateway):
 
 
     def __init__(self, vhost):
         super().__init__(vhost)
 
 
-    async def in_inbox(self, user, request):
+    async def _parse_message(self, user, request, actor_str, body_str, body_ob):
+        gCon.log(f"Message from actor {actor_str}")
 
-        headers = request.headers
-        gCon.log(f"here are the headers {headers}")
-        gCon.log(f"here is the url {request.url}")
+        object_body = body_ob.get('object')
+        if object_body is None:
+            raise HTTPException(401, "Malformed json, no body")
 
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
-        body = await request.json()
-        await social.incoming_message(user, body)
-        return Response(status_code=202)
+        content = object_body.get('content')
+        if (content is None):
+            raise HTTPException(401, "No content in object {object_body}")
+
+        clean_content = re.sub('<[^<]+?>', '', content) 
+        gCon.log(f"message is {clean_content}")
+
+        (mention, rest_of_line) = clean_content.split(" ", 1)
+        if mention[0] != '@':
+            raise HTTPException(400, f"Malformed mention {mention}")
+
+        mention = mention[1:]
+
+        local_actor = social_dao.actor_get_local(mention)
+
+        if local_actor is None:
+            raise HTTPException(404, f"User not found {mention}")
+
+
+
+        return (None, None, clean_content)
 
 

@@ -33,5 +33,11 @@ class SimpleSocialDao(SocialDao):
         pass
 
 
-    async def actor_get_or_discover(self, server_dto, key_parsed):
+    def actor_get_local(self, user_name):
         pass
+
+
+    def actor_store(self, actor_dto):
+        pass
+
+

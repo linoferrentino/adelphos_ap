@@ -13,20 +13,27 @@
 
 
 from app.federation.SocialGateway import SocialGateway
+from app.federation.BaseSocialGateway import BaseSocialGateway
 from app.exc.AdelphosException import AdelphosException
 from app.sdc.Dependencies import Dependencies
 from starlette.responses import Response
 from app.logging import gCon
 
 
-class SimpleSocialGateway(SocialGateway):
+class SimpleSocialGateway(BaseSocialGateway):
 
 
     def __init__(self, vhost):
         super().__init__(vhost)
 
 
-    async def in_inbox(self, user, request):
+    async def _parse_message(self, user, request, actor_str, body_str, body_ob):
+        gCon.log(f"Message from actor {actor_str}")
+        msg = body_ob['msg']
+        return (None, None, msg)
+
+
+    async def in_inbox__OLD(self, user, request):
 
         headers = request.headers
         gCon.log(f"here are the headers {headers}")
@@ -34,8 +41,12 @@ class SimpleSocialGateway(SocialGateway):
         gCon.log(f"here is the client {request.client} type {type(request.client)}")
 
         social = self.vhost.get_dep(Dependencies.SOCIAL)
-        body = await request.json()
-        await social.incoming_message(user, body)
+
+        body = await request.body()
+        gCon.log(f"the body is {body}")
+
+        json = await request.json()
+        await social.incoming_message(user, json)
         return Response(status_code=202)
 
 

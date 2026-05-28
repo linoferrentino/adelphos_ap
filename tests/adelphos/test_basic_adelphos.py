@@ -37,7 +37,7 @@ def test_basic2(get_standalone_app):
         port = tconf.adelphos_stub['General']['port']
         response = httpx.post(f'http://127.0.0.1:{port}/api/users/adelphos/inbox', 
                               json = {'msg' : 'do_all'})
-        assert response.status_code == 202
+        assert response.status_code == 401
 
 
 

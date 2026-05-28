@@ -33,7 +33,6 @@ from starlette.middleware import Middleware
 
 class AdelphosExcMiddleware:
 
-
     def __init__(self, app):
         self.app = app
 

@@ -12,6 +12,7 @@
 ######################################################
 
 from app.federation.ap.ActivityPubNetwork import ActivityPubNetwork
+from app.federation.ap.ActivityPubGateway import ActivityPubGateway
 from tests.testers.CliHandlerStub import CliHandlerStub
 from tests.testers.TestKernel import TestKernel
 from tests.testers.SimpleSocialGateway import SimpleSocialGateway
@@ -51,6 +52,8 @@ class SimpleDependencyContainer(LifespanAware):
         match social_type:
             case 'simple':
                 social_gw = SimpleSocialGateway(self.vhost)
+            case 'activity_pub':
+                social_gw = ActivityPubGateway(self.vhost)
             case _:
                 raise Exception(f"invalid type {social_type}")
         return social_gw
