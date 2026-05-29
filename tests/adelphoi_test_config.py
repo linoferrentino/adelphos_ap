@@ -12,6 +12,12 @@
 ######################################################
 
 
+test_social_cnf = {"users" : [
+                { "preferredusername" : "demo1" },
+                { "preferredusername" : "demo2" },
+                ]}
+
+
 adelphos_simple_conf = {
        'cli_handler' : {
                 'type' : 'standard_cli',
@@ -20,7 +26,7 @@ adelphos_simple_conf = {
                 'type' : 'adelphos',
             },
        'social': {
-                'demo_users' : [ 'demo1', 'demo2']
+           #'demo_users' : [ 'demo1', 'demo2']
             },
         'social_gateway' : {
            'type' : 'simple',
@@ -40,7 +46,7 @@ simple_tester_config = {
                 'type' : 'test_kernel',
             },
        'social': {
-                'demo_users' : [ 'demo1', 'demo2']
+           #     'demo_users' : [ 'demo1', 'demo2']
             },
         'social_gateway' : {
            'type' : 'simple',
@@ -59,7 +65,7 @@ cli_stub_dep_conf = {
                 'type' : 'test_kernel',
             },
        'social': {
-                'demo_users' : [ 'demo1', 'demo2']
+           #     'demo_users' : [ 'demo1', 'demo2']
             },
        'social_gateway' : {
            'type' : 'simple',
@@ -71,6 +77,9 @@ cli_stub_dep_conf = {
 
 
 adelphos_stub =  {
+        "conf" : {
+            "social" : test_social_cnf
+            },
         "General": {
     "debug": True, 
     "port": 7777, 
@@ -90,6 +99,9 @@ adelphos_stub =  {
 
 
 adelphos_t2_test =  {
+        "conf" : {
+            "social" : test_social_cnf
+            },
     "General": {
     "debug": True, 
     "port": 9911, 
@@ -107,7 +119,11 @@ adelphos_t2_test =  {
 }
 
 
-adelphos_remote2_conf  =  {"General": {
+adelphos_remote2_conf  =  {
+        "conf" : {
+            "social" : test_social_cnf
+            },
+        "General": {
     "debug": True, 
     "port": 5011, 
     "db_name": ":memory:", 

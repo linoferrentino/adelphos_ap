@@ -48,7 +48,7 @@ class SimpleDependencyContainer(LifespanAware):
 
 
     def _make_social_dao(self):
-        social_dao_cnf = self.config.get_social_dao_cnf()
+        social_dao_cnf = self.config.get_social_dao_build()
         social_dao_type = social_dao_cnf['type']
         match social_dao_type:
             case 'sqlite':

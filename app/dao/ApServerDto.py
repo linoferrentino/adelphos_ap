@@ -36,9 +36,9 @@ class ApServerDto(BaseDto):
         return self.server_id
 
 
-class ApServerPack(NamedTuple):
-
-    ob: ApServerDto
+#class ApServerPack(NamedTuple):
+#
+#    ob: ApServerDto
 
 
 # this function will create an Activity Pub Server objecct.

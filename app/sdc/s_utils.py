@@ -30,14 +30,13 @@ adelphos_standard_configuration = {
                 'type' : 'adelphos',
             },
        'social': {
-                'demo_users' : [ 'demo1', 'demo2' ]
+           'type' : 'simple',
             },
         'social_gateway' : {
            'type' : 'activity_pub',
            },
         'social_dao' : {
            'type' : 'sqlite',
-           'dbname': ':memory:',
             },
         }
 

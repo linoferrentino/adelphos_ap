@@ -12,13 +12,20 @@
 ######################################################
 
 
-from app.federation.SocialDao import SocialDao
+from app.federation.BaseSocialDao import BaseSocialDao
+from app.dao.ApServerDto import ApServerDto
+from app.dao.ApServerDto import create_ap_server
+from dataclasses import asdict
+import json
 
 
-class SimpleSocialDao(SocialDao):
+class SimpleSocialDao(BaseSocialDao):
 
     def __init__(self, vhost):
         super().__init__(vhost)
+
+        self.servers = {}
+        self.users = {}
 
 
     def start_sync(self):
@@ -30,7 +37,13 @@ class SimpleSocialDao(SocialDao):
 
 
     def srv_get_or_create(self, host_name):
-        pass
+        server_dto_dict = self.servers.get(host_name)
+        if server_dto_dict is None:
+            server_dto = create_ap_server(host_name)
+            self.servers[host_name] = json.dumps(asdict(server_dto))
+            return server_dto 
+        server_dto_ob = json.loads(server_dto_dict)
+        return ApServerDto(**server_dto_ob)
 
 
     def actor_get_local(self, user_name):

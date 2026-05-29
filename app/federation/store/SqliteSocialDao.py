@@ -16,6 +16,8 @@ import sqlite3
 from app.federation.SocialDao import SocialDao
 from app.logging import gCon
 from app.sdc.Dependencies import Dependencies
+from app.dao.ApServerDao import ApServerDao
+from app.dao.ApActorDao import ApActorDao
 
 
 create_schema_sql = \
@@ -72,7 +74,7 @@ class SqliteSocialDao(SocialDao):
 
         config = self.vhost.get_dep(Dependencies.CONFIG)
         my_conf = config.get_social_dao_cnf()
-        db_name = my_conf['dbname']
+        db_name = my_conf['db_name']
 
         gCon.log(f"start sync sqlite store with dbname {db_name}")
 

@@ -13,7 +13,7 @@
 
 
 from app.sdc.Dependencies import Dependencies
-from app.federation.SocialProvider import SocialProvider
+from app.federation.BaseSocial import BaseSocial
 from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
 from app.logging import gCon
@@ -46,7 +46,7 @@ class UserStub:
         return msg
 
 
-class SimpleSocial(SocialProvider):
+class SimpleSocial(BaseSocial):
 
     def __init__(self, vhost):
         super().__init__(vhost)
@@ -90,10 +90,9 @@ class SimpleSocial(SocialProvider):
         self.users[user] = UserStub(user, listener)
 
 
-    def start_sync(self):
-        config = self.vhost.get_dep(Dependencies.CONFIG)
-        demo_users = config.get_social_config()['demo_users']
-        self.users = { user: UserStub(user) for user in demo_users}
+    def create_users(self, server, users):
+        self.users = { user['preferredusername']: 
+                      UserStub(user['preferredusername']) for user in users}
 
 
     def stop_sync(self):

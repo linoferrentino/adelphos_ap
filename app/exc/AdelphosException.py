@@ -20,6 +20,7 @@ from app.logging import gCon
 class AdErrno(IntEnum):
 
     USER_DOES_NOT_EXIST = 1
+    USER_ALREADY_EXISTING = 2
     #EDUPLICATED_FAMILY = 2
     #EINVALID_USER_OR_PASSWORD = 3
 

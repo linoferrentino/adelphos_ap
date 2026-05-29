@@ -31,7 +31,7 @@ class Config:
 
     
     def get_social_config(self):
-        return self.config['sdc']['social']
+        return self.config['conf']['social']
 
 
     def get_social_gw_config(self):
@@ -39,6 +39,10 @@ class Config:
 
 
     def get_social_dao_cnf(self):
+        return self.config['conf']['social_dao']
+
+
+    def get_social_dao_build(self):
         return self.config['sdc']['social_dao']
 
 
