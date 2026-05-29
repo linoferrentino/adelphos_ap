@@ -42,7 +42,7 @@ class ApActorDto(BaseDto):
         return self.actor_id
 
 
-class ApActorPack(NamedTuple):
+class ApActorPack_remove(NamedTuple):
 
     server: ApServerPack
 

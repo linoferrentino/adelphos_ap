@@ -35,6 +35,10 @@ adelphos_standard_configuration = {
         'social_gateway' : {
            'type' : 'activity_pub',
            },
+        'social_dao' : {
+           'type' : 'sqlite',
+           'dbname': ':memory:',
+            },
         }
 
 

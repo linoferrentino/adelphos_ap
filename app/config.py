@@ -38,6 +38,9 @@ class Config:
         return self.config['sdc']['social_gateway']
 
 
+    def get_social_dao_cnf(self):
+        return self.config['sdc']['social_dao']
+
 
 def load_conf(instance_name, toml_file):
 

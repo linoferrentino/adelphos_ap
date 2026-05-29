@@ -25,6 +25,10 @@ adelphos_simple_conf = {
         'social_gateway' : {
            'type' : 'simple',
            },
+        'social_dao' : {
+           'type' : 'simple',
+            },
+
         }
 
 
@@ -41,7 +45,9 @@ simple_tester_config = {
         'social_gateway' : {
            'type' : 'simple',
            },
-
+        'social_dao' : {
+           'type' : 'simple',
+            },
         }
 
 
@@ -58,6 +64,9 @@ cli_stub_dep_conf = {
        'social_gateway' : {
            'type' : 'simple',
            },
+        'social_dao' : {
+           'type' : 'simple',
+            },
         }
 
 

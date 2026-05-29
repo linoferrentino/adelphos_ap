@@ -33,6 +33,11 @@ class SocialDao(Dependency, SyncLifespanAware):
         pass
 
 
+    #@abstractmethod
+    #def actor_get_or_create(self, user_name):
+    #    pass
+
+
     @abstractmethod
     def actor_store(self, actor_dto):
         pass

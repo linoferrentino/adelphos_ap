@@ -22,6 +22,7 @@ from app.cli.AdelphosCliRouter import AdelphosCliRouter
 from app.sdc.Dependencies import Dependencies
 from app.federation.SimpleSocial import SimpleSocial
 from app.federation.LifespanAware import LifespanAware
+from app.federation.store.SqliteSocialDao import SqliteSocialDao
 from app.core.Adelphos import Adelphos
 from app.config import Config
 
@@ -41,9 +42,22 @@ class SimpleDependencyContainer(LifespanAware):
         self.cli_handler = self._make_cli_handler()
         self.social_net = ActivityPubNetwork(vhost)
         self.cli_net = AdelphosCliRouter(vhost)
-        self.social_dao = SimpleSocialDao(vhost)
+        self.social_dao = self._make_social_dao()
         self.social_gateway = self._make_social_gateway()
         self.transport = None
+
+
+    def _make_social_dao(self):
+        social_dao_cnf = self.config.get_social_dao_cnf()
+        social_dao_type = social_dao_cnf['type']
+        match social_dao_type:
+            case 'sqlite':
+                social_dao = SqliteSocialDao(self.vhost)
+            case 'simple':
+                social_dao = SimpleSocialDao(self.vhost)
+            case _:
+                raise Exception(f"invalid social dao {social_type}")
+        return social_dao
 
 
     def _make_social_gateway(self):
