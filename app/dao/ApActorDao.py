@@ -21,7 +21,7 @@ from app.dao.ApActorDto import create_ap_actor
 from app.ap_api.AsyncRequest import AsyncGetReq
 from dataclasses import asdict
 import json
-from app.api.AdelphosException import AdelphosException
+#from app.api.AdelphosException import AdelphosException
 
 # this is the class that holds the logic to query and to
 # instantiate actor DTOs

@@ -18,11 +18,11 @@ import json
 from dataclasses import dataclass
 from app.logging import gCon
 from app.ap_api.AsyncRequest import AsyncGetReq
-from app.api.AdelphosException import AdelphosException
+#from app.api.AdelphosException import AdelphosException
 from urllib.parse import urlparse
 from app.dao.BaseDto import BaseDto
 from typing import NamedTuple
-from app.dao.ApServerDto import ApServerPack
+#from app.dao.ApServerDto import ApServerPack
 
 
 # this is the base class for the activity pub actors.
@@ -42,12 +42,12 @@ class ApActorDto(BaseDto):
         return self.actor_id
 
 
-class ApActorPack_remove(NamedTuple):
-
-    server: ApServerPack
-
-    ob: ApActorDto
-
+#class ApActorPack_remove(NamedTuple):
+#
+#    server: ApServerPack
+#
+#    ob: ApActorDto
+#
 
 def create_ap_actor(server_fk, user_path, 
                     inbox_path, preferred_username, public_key):
