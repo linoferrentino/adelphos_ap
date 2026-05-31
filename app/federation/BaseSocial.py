@@ -29,6 +29,10 @@ class BaseSocial(SocialProvider):
         pass
 
 
+    def create_if_not_exists(self, user, *, listener = None):
+        pass
+
+
     def start_sync(self):
         config = self.vhost.get_dep(Dependencies.CONFIG)
         social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
@@ -41,8 +45,5 @@ class BaseSocial(SocialProvider):
 
         users = soc_cnf['users']
         self.create_users(server_dto, users)
-
-        #self.users = { user['preferredusername']: 
-        #              UserStub(user['preferredusername']) for user in users}
 
 

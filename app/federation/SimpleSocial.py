@@ -12,6 +12,7 @@
 ######################################################
 
 
+from abc import ABC, abstractmethod
 from app.sdc.Dependencies import Dependencies
 from app.federation.BaseSocial import BaseSocial
 from app.exc.AdelphosException import AdelphosException
@@ -50,6 +51,7 @@ class SimpleSocial(BaseSocial):
 
     def __init__(self, vhost):
         super().__init__(vhost)
+        self.users = {}
 
 
     def local_user_exists(self, user: str) -> bool:
@@ -90,9 +92,20 @@ class SimpleSocial(BaseSocial):
         self.users[user] = UserStub(user, listener)
 
 
+    @abstractmethod
+    def _create_user(self, server, user):
+        pass
+
+
     def create_users(self, server, users):
-        self.users = { user['preferredusername']: 
-                      UserStub(user['preferredusername']) for user in users}
+
+        for user in users:
+
+            if user['login_shell'] == False:
+                gCon.log(f"skipping non/login user: {user['preferredusername']}")
+                continue
+            self.users[user['preferredusername']] = \
+                    UserStub(user['preferredusername'])
 
 
     def stop_sync(self):

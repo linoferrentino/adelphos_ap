@@ -13,7 +13,7 @@
 
 import sqlite3
 
-from app.federation.SocialDao import SocialDao
+from app.federation.BaseSocialDao import BaseSocialDao
 from app.logging import gCon
 from app.sdc.Dependencies import Dependencies
 from app.dao.ApServerDao import ApServerDao
@@ -52,14 +52,14 @@ create table ap_actor (
 
 
 
-class SqliteSocialDao(SocialDao):
+class SqliteSocialDao(BaseSocialDao):
 
     def __init__(self, vhost):
         super().__init__(vhost)
 
 
     def srv_get_or_create(self, host_name):
-        pass
+        return self.server_dao.get_or_create_from_host_name(host_name)
 
 
     def actor_get_local(self, user_name):
@@ -96,6 +96,9 @@ class SqliteSocialDao(SocialDao):
         if (self.create_schema == True):
             self._create_schema()
 
+        self.server_dao = ApServerDao(self)
+        self.actor_dao = ApActorDao(self)
+
 
     def _create_schema(self):
 
@@ -121,6 +124,47 @@ class SqliteSocialDao(SocialDao):
     def dump_database(self):
         for line in self._conn.iterdump():
             gCon.log(f"{line}")
+
+
+    def get_full_dto(self, table_name, field_to_seek, 
+                value_to_seek, constructor_dto):
+
+        sql_get = f"""
+select * from {table_name} where {field_to_seek} = ?
+
+"""
+        cur = self._conn.cursor()
+        cur.execute(sql_get, (value_to_seek,))
+        row = cur.fetchone()
+        cur.close()
+
+        if (row is None):
+            #gCon.log(f"No row in {table_name} for {field_to_seek} = {value_to_seek}")
+            return None
+
+        # I simply get the dto 
+        return constructor_dto(*row)
+
+
+    # this method will insert only the advertised fields in the db.
+    def insert_dto_fields(self, table_name, fields, dto_as_dict):
+
+        fields_colon = [ f":{field}" for field in fields ]
+
+        fields_list = ", ".join(fields)
+        place_holders_list = ", ".join(fields_colon)
+
+        sql_insert = f"""
+insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
+
+        """
+        #gCon.log(f"Insert sql {sql_insert} with dict {dto_as_dict}")
+        cur = self._conn.cursor()
+        cur.execute(sql_insert, dto_as_dict)
+        newid = cur.lastrowid
+        cur.close()
+
+        return newid
 
 
 

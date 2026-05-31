@@ -56,3 +56,9 @@ class SocialProvider(Dependency, SyncLifespanAware):
         pass
 
 
+    @abstractmethod
+    def create_if_not_exists(self, user, *, listener = None):
+        pass
+
+
+

@@ -13,8 +13,8 @@
 
 
 test_social_cnf = {"users" : [
-                { "preferredusername" : "demo1" },
-                { "preferredusername" : "demo2" },
+    { "preferredusername" : "demo1", 'login_shell' : True },
+    { "preferredusername" : "demo2" , 'login_shell' : True},
                 ]}
 
 
