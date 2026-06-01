@@ -46,6 +46,10 @@ class Config:
         return self.config['sdc']['social_dao']
 
 
+    def get_social_type(self):
+        return self.config['sdc']['social']['type']
+
+
 def load_conf(instance_name, toml_file):
 
     if (toml_file is None):

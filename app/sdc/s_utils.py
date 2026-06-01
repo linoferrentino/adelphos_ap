@@ -30,7 +30,7 @@ adelphos_standard_configuration = {
                 'type' : 'adelphos',
             },
        'social': {
-           'type' : 'simple',
+           'type' : 'activity_pub',
             },
         'social_gateway' : {
            'type' : 'activity_pub',

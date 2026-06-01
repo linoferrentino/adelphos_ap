@@ -101,6 +101,8 @@ class SimpleSocial(BaseSocial):
 
         for user in users:
 
+            self._create_user(server, user)
+
             if user['login_shell'] == False:
                 gCon.log(f"skipping non/login user: {user['preferredusername']}")
                 continue

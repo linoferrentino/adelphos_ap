@@ -26,7 +26,7 @@ adelphos_simple_conf = {
                 'type' : 'adelphos',
             },
        'social': {
-           #'demo_users' : [ 'demo1', 'demo2']
+           'type' : 'simple',
             },
         'social_gateway' : {
            'type' : 'simple',
@@ -46,7 +46,7 @@ simple_tester_config = {
                 'type' : 'test_kernel',
             },
        'social': {
-           #     'demo_users' : [ 'demo1', 'demo2']
+           'type' : 'simple',
             },
         'social_gateway' : {
            'type' : 'simple',
@@ -65,7 +65,7 @@ cli_stub_dep_conf = {
                 'type' : 'test_kernel',
             },
        'social': {
-           #     'demo_users' : [ 'demo1', 'demo2']
+           'type' : 'simple',
             },
        'social_gateway' : {
            'type' : 'simple',

@@ -14,10 +14,10 @@
 import sqlite3
 
 from app.federation.BaseSocialDao import BaseSocialDao
-from app.logging import gCon
 from app.sdc.Dependencies import Dependencies
 from app.dao.ApServerDao import ApServerDao
 from app.dao.ApActorDao import ApActorDao
+from app.logging import gCon
 
 
 create_schema_sql = \
@@ -66,10 +66,6 @@ class SqliteSocialDao(BaseSocialDao):
         pass
 
 
-    def actor_store(self, actor_dto):
-        pass
-
-
     def start_sync(self):
 
         config = self.vhost.get_dep(Dependencies.CONFIG)
@@ -98,6 +94,11 @@ class SqliteSocialDao(BaseSocialDao):
 
         self.server_dao = ApServerDao(self)
         self.actor_dao = ApActorDao(self)
+
+
+    def actor_store(self, actor_dto):
+        gCon.log(f"storing {actor_dto}")
+        return self.actor_dao.store(actor_dto)
 
 
     def _create_schema(self):
@@ -158,7 +159,7 @@ select * from {table_name} where {field_to_seek} = ?
 insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
 
         """
-        #gCon.log(f"Insert sql {sql_insert} with dict {dto_as_dict}")
+        gCon.log(f"Insert sql {sql_insert} with dict {dto_as_dict}")
         cur = self._conn.cursor()
         cur.execute(sql_insert, dto_as_dict)
         newid = cur.lastrowid

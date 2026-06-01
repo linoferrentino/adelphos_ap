@@ -12,8 +12,10 @@
 ######################################################
 
 
+from app.federation.SimpleSocial import SimpleSocial
 
-class MemorySocial(SimpleSocial):
+
+class SocialStub(SimpleSocial):
 
     def __init__(self, vhost):
         super().__init__(vhost)
@@ -21,5 +23,4 @@ class MemorySocial(SimpleSocial):
 
     def _create_user(self, server, user):
         pass
-
 
