@@ -41,36 +41,32 @@ import tests.t_utils as tu
 #from app.sdc.Dependencies import Dependencies, get_dep
 from app.sdc.Dependencies import Dependencies
 from tests.testers.fixtures import get_routable_app
+from tests.testers.fixtures import app, aroutable
 
 
-@pytest.fixture(scope = "module")
-def aroutable(request):
-
-    configuration = request.param if hasattr(request, 'param') \
-            else tconf.adelphos_stub
-    configuration['sdc'] = tconf.cli_stub_dep_conf
-    aroutable = AdelphosRouter("test", configuration)
-    return aroutable 
-
-
-@pytest.fixture(scope = "module", params = ['sync', 'async'])
-def app(aroutable, request):
-
-    if request.param == 'sync':
-        config = aroutable.get_dep(Dependencies.CONFIG)
-        host = config.get_host()
-        app = SyncApp(host, aroutable)
-        wrappedapp = SyncTester(app)
-    else:
-        app = StarletteWrap(routable = aroutable)
-        wrappedapp = TestClient(app)
-
-    return wrappedapp
-
-
-#@pytest.fixture(scope = "module", params = [ tconf.adelphos_stub, ])
-#def routable_stub(aroutable, request):
-#    return aroutable
+#@pytest.fixture(scope = "module")
+#def aroutable(request):
+#
+#    configuration = request.param if hasattr(request, 'param') \
+#            else tconf.adelphos_stub
+#    configuration['sdc'] = tconf.cli_stub_dep_conf
+#    aroutable = AdelphosRouter("test", configuration)
+#    return aroutable 
+#
+#
+#@pytest.fixture(scope = "module", params = ['sync', 'async'])
+#def app(aroutable, request):
+#
+#    if request.param == 'sync':
+#        config = aroutable.get_dep(Dependencies.CONFIG)
+#        host = config.get_host()
+#        app = SyncApp(host, aroutable)
+#        wrappedapp = SyncTester(app)
+#    else:
+#        app = StarletteWrap(routable = aroutable)
+#        wrappedapp = TestClient(app)
+#
+#    return wrappedapp
 
 
 @pytest.mark.parametrize('aroutable', ( tconf.adelphos_stub, ), indirect = True)
@@ -80,7 +76,6 @@ def test_context(app, aroutable):
         app.post("", json = None)
 
 
-#def test_ws_1(app, aroutable):
 def test_ws_1(app):
     with app.websocket_connect(CNST.WS_ROUTE) as websocket:
         websocket.send_text("lino")
@@ -167,7 +162,6 @@ def test_webfinger(app, aroutable):
     assert response.status_code == 404
 
     config = aroutable.get_dep(Dependencies.CONFIG)
-    #host = app.app.routable.config[CNST.CNF_GENERAL_SECTION][CNST.CNF_HOST_KEY]
     host = config.get_host()
 
     url_query = f"{CNST.WEBFINGER_ROUTE}?resource=acct:demo1@{host}"

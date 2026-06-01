@@ -28,22 +28,30 @@ class BaseSocial(SocialProvider):
     def create_users(self, server, users):
         pass
 
-
-    def create_if_not_exists(self, user, *, listener = None):
+ 
+    @abstractmethod
+    def _create_user(self, server, user):
         pass
+
+
+    def create_if_not_exists(self, user):
+        actor_dto = self.social_dao.actor_get(self.server_dto, 
+                                              user['preferredusername'])
+        if actor_dto is None:
+            self._create_user(self.server_dto, user)
 
 
     def start_sync(self):
         config = self.vhost.get_dep(Dependencies.CONFIG)
-        social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
+        self.social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
         soc_cnf  = config.get_social_config()
         host = config.get_host()
         gCon.log(f"This is the conf {soc_cnf} for host {host}")
 
-        server_dto = social_dao.srv_get_or_create(host)
-        gCon.log(f"This is the host {server_dto}")
+        self.server_dto = self.social_dao.srv_get_or_create(host)
+        gCon.log(f"This is the host {self.server_dto}")
 
         users = soc_cnf['users']
-        self.create_users(server_dto, users)
+        self.create_users(self.server_dto, users)
 
 

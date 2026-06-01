@@ -86,7 +86,7 @@ class SimpleSocial(BaseSocial):
         return user_stub
 
 
-    def create_or_register_user(self, user, *, listener = None):
+    def create_or_register_user_XX(self, user, *, listener = None):
         if user in self.users:
             raise AdelphosException(AdErrno.USER_ALREADY_EXISTING)
         self.users[user] = UserStub(user, listener)
@@ -95,13 +95,18 @@ class SimpleSocial(BaseSocial):
     @abstractmethod
     def _create_user(self, server, user):
         pass
+    
+
+    def add_listener(self, user, listener):
+        if user in self.users:
+            raise AdelphosException(AdErrno.USER_ALREADY_EXISTING)
+        self.users[user] = UserStub(user, listener)
 
 
     def create_users(self, server, users):
 
         for user in users:
-
-            self._create_user(server, user)
+            self.create_if_not_exists(user)
 
             if user['login_shell'] == False:
                 gCon.log(f"skipping non/login user: {user['preferredusername']}")

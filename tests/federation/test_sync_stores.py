@@ -23,9 +23,6 @@ from tests.federation.schema_simple import my_test_schema_init
 
 from app.store.MemoryStore import MemoryStore
 
-#from tests.testers.FdbSyncTester import FdbSyncTester
-#from tests.FederationTester import FederationTester
-
 
 @pytest.fixture
 def fdbt1():

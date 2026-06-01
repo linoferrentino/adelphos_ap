@@ -43,7 +43,7 @@ create table ap_actor (
         user_path text,
         inbox_path text,
         preferred_username text,
-        public_key text,
+        key text,
         timestamp text default current_timestamp,
         unique (server_fk, user_path) on conflict abort
 );"""),
@@ -62,10 +62,14 @@ class SqliteSocialDao(BaseSocialDao):
         return self.server_dao.get_or_create_from_host_name(host_name)
 
 
-    def actor_get_local(self, user_name):
-        pass
+    def actor_get(self, server, user_name):
+        actor_dto = self.actor_dao.get_from_preferred_username(server.server_id,
+                                                               user_name)
+        gCon.log(f"actor_get returns {actor_dto}")
+        return actor_dto
 
 
+    
     def start_sync(self):
 
         config = self.vhost.get_dep(Dependencies.CONFIG)
@@ -103,7 +107,6 @@ class SqliteSocialDao(BaseSocialDao):
 
     def _create_schema(self):
 
-        # I can add the foreign key constraints only without a transaction.
         self._conn.execute("pragma foreign_keys = ON;")
 
         self._conn.autocommit = False
@@ -127,6 +130,36 @@ class SqliteSocialDao(BaseSocialDao):
             gCon.log(f"{line}")
 
 
+    def build_condition_str(self, fields_to_seek):
+        condition = []
+        for field_to_seek in fields_to_seek:
+            condition.append(f" {field_to_seek} = ? ")
+
+        condition_str = " and ". join(condition)
+        #gCon.log(f"the condition is {condition_str}")
+        return condition_str
+
+
+    def get_full_dto_ex(self, table_name, fields_to_seek, 
+                values_to_seek, constructor_dto):
+        condition_str = self.build_condition_str(fields_to_seek)
+        sql_get = f"""
+select * from {table_name} where {condition_str}
+
+"""
+        cur = self._conn.cursor()
+        cur.execute(sql_get, values_to_seek)
+        row = cur.fetchone()
+        cur.close()
+
+        if (row is None):
+            #gCon.log(f"No row in {table_name} for |{condition_str}| {values_to_seek}")
+            return None
+
+        return constructor_dto(*row)
+
+
+
     def get_full_dto(self, table_name, field_to_seek, 
                 value_to_seek, constructor_dto):
 
@@ -143,7 +176,6 @@ select * from {table_name} where {field_to_seek} = ?
             #gCon.log(f"No row in {table_name} for {field_to_seek} = {value_to_seek}")
             return None
 
-        # I simply get the dto 
         return constructor_dto(*row)
 
 

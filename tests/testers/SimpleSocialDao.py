@@ -46,7 +46,7 @@ class SimpleSocialDao(BaseSocialDao):
         return ApServerDto(**server_dto_ob)
 
 
-    def actor_get_local(self, user_name):
+    def actor_get(self, server, user_name):
         pass
 
 

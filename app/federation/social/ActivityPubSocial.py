@@ -27,6 +27,12 @@ class ActivityPubSocial(SimpleSocial):
         super().__init__(vhost)
 
 
+
+    #def actor_local_get(self, user_name):
+    #    social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
+    #    return actor
+ 
+
     def _create_user(self, server, user):
         
         preferredusername = user['preferredusername']
@@ -41,14 +47,16 @@ class ActivityPubSocial(SimpleSocial):
             private_key_bytes = generate_key()
         else:
             with open(private_key, "rb") as f:
+                content = f.read()
+                gCon.log(f"private key {content}")
                 private_key_bytes = crypto_serialization.load_pem_private_key(
-                        f.read(), password=None)
+                        content, password=None)
 
         gCon.log(f"private key {private_key_bytes}")
 
         actor = create_ap_actor(server.server_id,
                          user_path, user_inbox, preferredusername,
-                                "privateKEY")
+                                content.decode('utf-8'))
 
         social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
         actor_dto = social_dao.actor_store(actor)

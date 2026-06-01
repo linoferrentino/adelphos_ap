@@ -36,7 +36,7 @@ class ApActorDao(BaseDao):
         # the list is coherent with ApActorDto
         self.ftbl_col_list = ( "server_fk", 
                               "user_path", "preferred_username",
-                              "inbox_path", "public_key", "actor_id",
+                              "inbox_path", "key", "actor_id",
                               "local_fk", "timestamp"
                               )
         self.table_name = "ap_actor"
@@ -170,7 +170,7 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
                          'user_path': actor.user_path,
                          'preferred_username': actor.preferred_username,
                          'inbox_path': actor.inbox_path,
-                         'public_key': actor.public_key,
+                         'key': actor.key,
                          }
 
         newid = self.db.insert_dto_fields(table_name, fields_stored, actor_as_dict)

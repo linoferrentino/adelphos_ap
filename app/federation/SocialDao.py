@@ -29,9 +29,14 @@ class SocialDao(Dependency, SyncLifespanAware):
 
 
     @abstractmethod
-    def actor_get_local(self, user_name):
+    def actor_get(self, server, user_name):
         pass
 
+
+    @abstractmethod
+    def actor_local_get(self, user_name):
+        pass
+       
 
     #@abstractmethod
     #def actor_get_or_create(self, user_name):

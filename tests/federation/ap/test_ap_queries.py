@@ -11,16 +11,17 @@
 #
 ######################################################
 
+import pytest
 
-from app.federation.SocialDao import SocialDao
+from tests.testers.fixtures import app, aroutable
+import tests.adelphoi_test_config as tconf
 
+import app.consts as CNST
 
-class BaseSocialDao(SocialDao):
+def test_query_info(app, aroutable):
 
-    def __init__(self, vhost):
-        super().__init__(vhost)
+    url_query = f"{CNST.WEBFINGER_ROUTE}?val=wrong"
+    response = app.get(url_query)
+    assert response.status_code == 401
 
-
-    def actor_local_get(self, user_name):
-        return self.actor_get(self.server_dto, user_name)
 

@@ -32,6 +32,10 @@ from app.AdelphosRouter import AdelphosRouter
 from tests.testers.SyncApp import SyncApp
 from tests.testers.SyncTester import SyncTester
 from tests.testers.ProcessWrapper import ProcessWrapper
+import tests.adelphoi_test_config as tconf
+import app.consts as CNST
+from app.transport.async_mode.StarletteWrap import StarletteWrap
+from starlette.testclient import TestClient
 
 
 @pytest.fixture(scope = "session")
@@ -69,6 +73,31 @@ def get_standalone_app(get_routable_app):
                                       port) 
 
     return _get_standalone_app
+
+
+@pytest.fixture(scope = "session")
+def aroutable(request):
+
+    configuration = request.param if hasattr(request, 'param') \
+            else tconf.adelphos_stub
+    configuration['sdc'] = tconf.cli_stub_dep_conf
+    aroutable = AdelphosRouter("test", configuration)
+    return aroutable 
+
+
+@pytest.fixture(scope = "session", params = ['sync', 'async'])
+def app(aroutable, request):
+
+    if request.param == 'sync':
+        config = aroutable.get_dep(Dependencies.CONFIG)
+        host = config.get_host()
+        app = SyncApp(host, aroutable)
+        wrappedapp = SyncTester(app)
+    else:
+        app = StarletteWrap(routable = aroutable)
+        wrappedapp = TestClient(app)
+
+    return wrappedapp
 
 
 class CliBypassStub(CliProvider):

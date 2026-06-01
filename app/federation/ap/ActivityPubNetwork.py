@@ -74,7 +74,7 @@ class ActivityPubNetwork(SocialNetwork):
         if (social.local_user_exists(ap_user_rex) == False):
             return Response(status_code=404)
 
-        host_api = f"{host}/{CNST.API_POINT}"
+        host_api = f"{host}{CNST.API_POINT}"
 
         response = Response(
             content=json.dumps({
@@ -94,8 +94,11 @@ class ActivityPubNetwork(SocialNetwork):
 
 
     async def in_infouser(self, request):
-        gCon.log("XX")
-        pass
+        user = request.path_params['username']
+        social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
+        actor_dto = social_dao.actor_local_get(user)
+        gCon.log(f"info user {user} got {actor_dto}")
+        return Response(status_code=404)
 
 
     async def in_inbox(self, request):

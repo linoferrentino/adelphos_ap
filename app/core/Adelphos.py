@@ -72,8 +72,7 @@ class Adelphos(Kernel, SocialListener):
 
     async def start_async(self):
         social = self.vhost.get_dep(Dependencies.SOCIAL)
-        social.create_if_not_exists(SOCIAL_USER, listener = self)
-        #social.create_or_register_user(SOCIAL_USER, listener = self)
+        social.add_listener(SOCIAL_USER, self)
         gCon.log(f"Registered user {SOCIAL_USER}")
 
 
