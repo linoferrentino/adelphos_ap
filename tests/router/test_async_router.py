@@ -72,8 +72,8 @@ from tests.testers.fixtures import app, aroutable
 @pytest.mark.parametrize('aroutable', ( tconf.adelphos_stub, ), indirect = True)
 def test_context(app, aroutable):
 
-    with app:
-        app.post("", json = None)
+    #with app:
+    app.post("", json = None)
 
 
 def test_ws_1(app):

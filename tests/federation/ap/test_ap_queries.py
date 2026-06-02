@@ -19,13 +19,19 @@ import tests.adelphoi_test_config as tconf
 import app.consts as CNST
 from app.logging import gCon
 
+
 def test_query_info(app, aroutable):
 
-    with app:
+    url_query = f"/users/demo1"
+    response = app.get(url_query)
+    assert response.status_code == 200 
 
-        url_query = f"/users/demo1"
-        gCon.log("query {url_query}")
-        response = app.get(url_query)
-        assert response.status_code == 200 
+
+def test_query_info_ko(app, aroutable):
+
+    url_query = f"/users/demo99"
+    response = app.get(url_query)
+    assert response.status_code == 404
+
 
 

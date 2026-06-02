@@ -22,6 +22,7 @@ from app.dao.ApActorDto import create_ap_actor
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
+from io import StringIO
 
 
 class UserStub:
@@ -158,8 +159,18 @@ class BaseSocial(SocialProvider):
 
 
     def actor_local_get(self, user_name):
-        gCon.log(f"XXXX {user_name}")
         actor_dto = self.social_dao.actor_get(self.server_dto, user_name)
+
+        if actor_dto is None:
+            return None
+
+        private_key = crypto_serialization.load_pem_private_key(actor_dto.key.encode('utf-8'), 
+                                                                password=None)
+        public_key = private_key.public_key().public_bytes(
+                encoding=crypto_serialization.Encoding.PEM,
+                format=crypto_serialization.PublicFormat.SubjectPublicKeyInfo).decode('utf-8')
+
+        actor_dto.public_key = public_key
         return actor_dto
 
 

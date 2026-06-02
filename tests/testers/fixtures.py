@@ -97,7 +97,8 @@ def app(aroutable, request):
         app = StarletteWrap(routable = aroutable)
         wrappedapp = TestClient(app)
 
-    return wrappedapp
+    with wrappedapp:
+        yield wrappedapp
 
 
 class CliBypassStub(CliProvider):
