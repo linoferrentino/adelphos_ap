@@ -47,6 +47,11 @@ class SocialProvider(Dependency, SyncLifespanAware):
  
 
     @abstractmethod
+    def actor_local_get(self, user_name):
+        pass
+
+ 
+    @abstractmethod
     async def incoming_message(self, actor_from, actor_to, message):
         pass
 

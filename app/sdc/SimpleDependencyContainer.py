@@ -20,8 +20,9 @@ from tests.testers.SimpleSocialDao import SimpleSocialDao
 from app.cli.StandardCliProvider import StandardCliProvider
 from app.cli.AdelphosCliRouter import AdelphosCliRouter
 from app.sdc.Dependencies import Dependencies
-from app.federation.social.SocialStub import SocialStub
-from app.federation.social.ActivityPubSocial import ActivityPubSocial
+#from app.federation.social.SocialStub import SocialStub
+#from app.federation.social.ActivityPubSocial import ActivityPubSocial
+from app.federation.BaseSocial import BaseSocial
 from app.federation.LifespanAware import LifespanAware
 from app.federation.store.SqliteSocialDao import SqliteSocialDao
 from app.core.Adelphos import Adelphos
@@ -75,12 +76,14 @@ class SimpleDependencyContainer(LifespanAware):
 
 
     def _make_social(self):
-        social_type = self.config.get_social_type()
-        match social_type:
-            case 'simple':
-                social = SocialStub(self.vhost)
-            case 'activity_pub':
-                social = ActivityPubSocial(self.vhost)
+        #social_type = self.config.get_social_type()
+        #match social_type:
+        #    case 'simple':
+        #        social = SocialStub(self.vhost)
+        #    case 'activity_pub':
+        #        social = ActivityPubSocial(self.vhost)
+        #return social
+        social = BaseSocial(self.vhost)
         return social
 
 

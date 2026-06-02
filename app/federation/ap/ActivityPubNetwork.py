@@ -95,11 +95,20 @@ class ActivityPubNetwork(SocialNetwork):
 
     async def in_infouser(self, request):
         user = request.path_params['username']
-        social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
-        actor_dto = social_dao.actor_local_get(user)
-        gCon.log(f"info user {user} got {actor_dto}")
-        return Response(status_code=404)
+        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        actor_dto = social.actor_local_get(user)
+        gCon.log(f"Ask user {user} got {actor_dto}")
+        if actor_dto is None:
+            return Response(status_code=404)
 
+        info_user = {
+                'aaa' : 'ooo'
+                }
+
+        response = Response(content = json.dumps(info_user))
+        response.headers['Content-Type'] = 'application/jrd+json'
+        return response
+    
 
     async def in_inbox(self, request):
         social_gw = self.vhost.get_dep(Dependencies.SOCIAL_GATEWAY)

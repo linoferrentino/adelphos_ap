@@ -68,7 +68,6 @@ class SqliteSocialDao(BaseSocialDao):
         gCon.log(f"actor_get returns {actor_dto}")
         return actor_dto
 
-
     
     def start_sync(self):
 
