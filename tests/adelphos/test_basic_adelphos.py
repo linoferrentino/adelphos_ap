@@ -25,9 +25,6 @@ def test_basic1(get_routable_app):
     ad1 = get_routable_app('adelphos1', tconf.adelphos_stub,
                            tconf.adelphos_simple_conf)
 
-    with ad1:
-        pass
-
 
 def test_basic2(get_standalone_app):
     ad1 = get_standalone_app('adelphos1', tconf.adelphos_stub,

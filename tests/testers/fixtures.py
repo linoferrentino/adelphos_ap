@@ -55,7 +55,8 @@ def get_routable_app():
             app = StarletteWrap(routable = aroutable)
             wrappedapp = TestClient(app)
 
-        return wrappedapp
+        with wrappedapp:
+            return wrappedapp
 
     return _build_routable_from_config
 

@@ -62,7 +62,7 @@ class BaseSocial(SocialProvider):
     def create_users(self, server, users):
 
         for user in users:
-            self.create_if_not_exists(user)
+            actor_dto = self.create_if_not_exists(user)
 
             if user['login_shell'] == False:
                 gCon.log(f"skipping non/login user: {user['preferredusername']}")
@@ -103,10 +103,13 @@ class BaseSocial(SocialProvider):
         social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
         actor_dto = social_dao.actor_store(actor)
         gCon.log(f"this is the actor {actor_dto}")
-
+        return actor_dto
 
 
     def add_listener(self, user, listener):
+        actor_dto = self.actor_local_get(user)
+        if actor_dto is None:
+            raise AdelphosException(AdErrno.USER_DOES_NOT_EXIST)
         if user in self.users:
             raise AdelphosException(AdErrno.USER_ALREADY_EXISTING)
         self.users[user] = UserStub(user, listener)
@@ -136,7 +139,6 @@ class BaseSocial(SocialProvider):
         await user_stub.new_msg(sender_id, message)
 
 
-
     def _pri_get_user_stub(self, user):
         user_stub = self.users.get(user)
         if user_stub is None:
@@ -155,7 +157,8 @@ class BaseSocial(SocialProvider):
         actor_dto = self.social_dao.actor_get(self.server_dto, 
                                               user['preferredusername'])
         if actor_dto is None:
-            self._create_user(self.server_dto, user)
+            actor_dto = self._create_user(self.server_dto, user)
+        return actor_dto
 
 
     def actor_local_get(self, user_name):
@@ -164,11 +167,12 @@ class BaseSocial(SocialProvider):
         if actor_dto is None:
             return None
 
-        private_key = crypto_serialization.load_pem_private_key(actor_dto.key.encode('utf-8'), 
-                                                                password=None)
+        private_key = crypto_serialization.load_pem_private_key(
+                actor_dto.key.encode('utf-8'), password=None)
         public_key = private_key.public_key().public_bytes(
                 encoding=crypto_serialization.Encoding.PEM,
-                format=crypto_serialization.PublicFormat.SubjectPublicKeyInfo).decode('utf-8')
+                format=crypto_serialization.PublicFormat.SubjectPublicKeyInfo)\
+                        .decode('utf-8')
 
         actor_dto.public_key = public_key
         return actor_dto

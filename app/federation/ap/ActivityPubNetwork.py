@@ -94,16 +94,34 @@ class ActivityPubNetwork(SocialNetwork):
 
 
     async def in_infouser(self, request):
-        user = request.path_params['username']
+        username = request.path_params['username']
         social = self.vhost.get_dep(Dependencies.SOCIAL)
-        actor_dto = social.actor_local_get(user)
-        gCon.log(f"Ask user {user} got {actor_dto}")
+        actor_dto = social.actor_local_get(username)
+        gCon.log(f"Ask user {username} got {actor_dto}")
         if actor_dto is None:
             return Response(status_code=404)
 
+        config = self.vhost.get_dep(Dependencies.CONFIG)
+        host = config.get_host()
+        host_api = f"{host}{CNST.API_POINT}"
+
         info_user = {
-                'aaa' : 'ooo'
-                }
+            "@context": [
+                "https://www.w3.org/ns/activitystreams",
+                "https://w3id.org/security/v1",
+            ],
+            "id": f"https://{host_api}/users/{username}",
+            "inbox": f"https://{host_api}/users/{username}/inbox",
+            "outbox": f"https://{host_api}/users/{username}/outbox",
+            "type": 'actor',
+            "name": 'adelphos social user',
+            "preferredUsername": actor_dto.preferred_username,
+            "publicKey": {
+                "id": f"https://{host_api}/users/{username}#main-key",
+                "owner": f"https://{host_api}/users/{username}",
+                "publicKeyPem": actor_dto.public_key
+            }
+        }
 
         response = Response(content = json.dumps(info_user))
         response.headers['Content-Type'] = 'application/jrd+json'
