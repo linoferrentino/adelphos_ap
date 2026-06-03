@@ -17,6 +17,7 @@ import json
 from starlette.routing import Route
 from starlette.routing import WebSocketRoute
 from starlette.responses import Response
+from starlette.responses import JSONResponse
 from starlette.responses import HTMLResponse
 from starlette.websockets import WebSocket
 
@@ -71,13 +72,15 @@ class ActivityPubNetwork(SocialNetwork):
             return Response(status_code=404)
 
         social = self.vhost.get_dep(Dependencies.SOCIAL)
-        if (social.local_user_exists(ap_user_rex) == False):
+        user = social.local_user_get(ap_user_rex)
+
+        if user is None:
             return Response(status_code=404)
 
         host_api = f"{host}{CNST.API_POINT}"
 
-        response = Response(
-            content=json.dumps({
+        response = JSONResponse(
+            content={
                 "subject": resource,
                 "links": [
                     {
@@ -86,7 +89,7 @@ class ActivityPubNetwork(SocialNetwork):
                         "href": f"https://{host_api}/users/{ap_user_rex}"
                     }
                 ]
-            })
+            }
         )
         
         response.headers['Content-Type'] = 'application/jrd+json'
@@ -96,9 +99,9 @@ class ActivityPubNetwork(SocialNetwork):
     async def in_infouser(self, request):
         username = request.path_params['username']
         social = self.vhost.get_dep(Dependencies.SOCIAL)
-        actor_dto = social.actor_local_get(username)
-        gCon.log(f"Ask user {username} got {actor_dto}")
-        if actor_dto is None:
+        userob = social.local_user_get(username)
+        gCon.log(f"Ask user {username} got {userob}")
+        if userob is None:
             return Response(status_code=404)
 
         config = self.vhost.get_dep(Dependencies.CONFIG)
@@ -113,18 +116,21 @@ class ActivityPubNetwork(SocialNetwork):
             "id": f"https://{host_api}/users/{username}",
             "inbox": f"https://{host_api}/users/{username}/inbox",
             "outbox": f"https://{host_api}/users/{username}/outbox",
-            "type": 'actor',
-            "name": 'adelphos social user',
-            "preferredUsername": actor_dto.preferred_username,
+            "type": 'bot' if userob.is_daemon else 'actor',
+            "name": 'Adelphos daemon' if userob.is_daemon else \
+                    f"Adelphos demo user {username}",
+            "preferredUsername": userob.actor_dto.preferred_username,
             "publicKey": {
                 "id": f"https://{host_api}/users/{username}#main-key",
                 "owner": f"https://{host_api}/users/{username}",
-                "publicKeyPem": actor_dto.public_key
+                "publicKeyPem": userob.actor_dto.public_key
             }
         }
 
-        response = Response(content = json.dumps(info_user))
+        assert userob.actor_dto.public_key is not None
+        response = JSONResponse(content = info_user)
         response.headers['Content-Type'] = 'application/jrd+json'
+        gCon.log(f"info {info_user}")
         return response
     
 

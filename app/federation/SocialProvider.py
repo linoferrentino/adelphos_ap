@@ -37,7 +37,7 @@ class SocialProvider(Dependency, SyncLifespanAware):
 
 
     @abstractmethod
-    def local_user_exists(self, user: str) -> bool:
+    def local_user_get(self, user_name):
         pass
 
 
@@ -46,9 +46,9 @@ class SocialProvider(Dependency, SyncLifespanAware):
     #    pass
  
 
-    @abstractmethod
-    def actor_local_get(self, user_name):
-        pass
+    #@abstractmethod
+    #def actor_local_get(self, user_name):
+    #    pass
 
  
     @abstractmethod

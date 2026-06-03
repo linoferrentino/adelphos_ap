@@ -23,12 +23,13 @@ from cryptography.hazmat.primitives import serialization as crypto_serialization
 from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
 from io import StringIO
+from app.federation.SocialUser import SocialUser
 
 
-class UserStub:
+class UserStub(SocialUser):
 
-    def __init__(self, user, aListener = None):
-        self.user = user
+    def __init__(self, actor_dto, aListener = None):
+        self.actor_dto = actor_dto
         if aListener is None:
             self.messages = []
             self.is_daemon = False
@@ -51,7 +52,7 @@ class UserStub:
         (self.messages, msg) = (self.messages[:-1], self.messages[-1])
         return msg
 
-
+    
 class BaseSocial(SocialProvider):
 
     def __init__(self, vhost):
@@ -68,7 +69,7 @@ class BaseSocial(SocialProvider):
                 gCon.log(f"skipping non/login user: {user['preferredusername']}")
                 continue
             self.users[user['preferredusername']] = \
-                    UserStub(user['preferredusername'])
+                    UserStub(actor_dto)
 
 
     def _create_user(self, server, user):
@@ -90,35 +91,37 @@ class BaseSocial(SocialProvider):
         else:
             with open(private_key, "rb") as f:
                 content = f.read()
-                gCon.log(f"private key {content}")
-                private_key_bytes = crypto_serialization.load_pem_private_key(
+                #gCon.log(f"private key {content}")
+                private_key = crypto_serialization.load_pem_private_key(
                         content, password=None)
 
-        gCon.log(f"private key {content}")
+        public_key = BaseSocial._get_public_key(private_key)
+        #gCon.log(f"private key {content}")
 
         actor = create_ap_actor(server.server_id,
                          user_path, user_inbox, preferredusername,
-                                content.decode('utf-8'))
+                                content.decode('utf-8'), public_key)
 
         social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
-        actor_dto = social_dao.actor_store(actor)
-        gCon.log(f"this is the actor {actor_dto}")
-        return actor_dto
+        social_dao.actor_store(actor)
+        #gCon.log(f"this is the actor {actor}")
+        return actor
 
 
     def add_listener(self, user, listener):
-        actor_dto = self.actor_local_get(user)
+        actor_dto = self.local_actor_get(user)
+
         if actor_dto is None:
             raise AdelphosException(AdErrno.USER_DOES_NOT_EXIST)
         if user in self.users:
             raise AdelphosException(AdErrno.USER_ALREADY_EXISTING)
-        self.users[user] = UserStub(user, listener)
+        self.users[user] = UserStub(actor_dto, listener)
 
 
-    def create_or_register_user_XX(self, user, *, listener = None):
-        if user in self.users:
-            raise AdelphosException(AdErrno.USER_ALREADY_EXISTING)
-        self.users[user] = UserStub(user, listener)
+    #def create_or_register_user_XX(self, user, *, listener = None):
+    #    if user in self.users:
+    #        raise AdelphosException(AdErrno.USER_ALREADY_EXISTING)
+    #    self.users[user] = UserStub(user, listener)
 
 
     def login_user(self, user):
@@ -146,11 +149,10 @@ class BaseSocial(SocialProvider):
         return user_stub
 
  
-    def local_user_exists(self, user: str) -> bool:
-        user_local = self.users.get(user)
-        if user_local is None:
-            return False
-        return True
+    #def local_user_exists(self, user: str) -> bool:
+    def local_user_get(self, user_name):
+        user_local = self.users.get(user_name)
+        return user_local
 
 
     def create_if_not_exists(self, user):
@@ -161,7 +163,16 @@ class BaseSocial(SocialProvider):
         return actor_dto
 
 
-    def actor_local_get(self, user_name):
+    @staticmethod
+    def _get_public_key(private_key):
+        public_key = private_key.public_key().public_bytes(
+                encoding=crypto_serialization.Encoding.PEM,
+                format=crypto_serialization.PublicFormat.SubjectPublicKeyInfo)\
+                        .decode('utf-8')
+        return public_key
+
+
+    def local_actor_get(self, user_name):
         actor_dto = self.social_dao.actor_get(self.server_dto, user_name)
 
         if actor_dto is None:
@@ -169,12 +180,9 @@ class BaseSocial(SocialProvider):
 
         private_key = crypto_serialization.load_pem_private_key(
                 actor_dto.key.encode('utf-8'), password=None)
-        public_key = private_key.public_key().public_bytes(
-                encoding=crypto_serialization.Encoding.PEM,
-                format=crypto_serialization.PublicFormat.SubjectPublicKeyInfo)\
-                        .decode('utf-8')
-
+        public_key = BaseSocial._get_public_key(private_key)
         actor_dto.public_key = public_key
+        gCon.log(f"PUBLIC KEY {public_key}")
         return actor_dto
 
 
