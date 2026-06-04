@@ -41,11 +41,11 @@ class BaseSocialGateway(SocialGateway):
         if actor_str is None:
             raise HTTPException(401, "Malformed request, no actor")
         
-        (actor_from, actor_to, content) = await self._parse_message(user,
+        (actor_from, local_recipient, content) = await self._parse_message(user,
                           request, actor_str, body_str, body_ob)
 
         social = self.vhost.get_dep(Dependencies.SOCIAL)
-        await social.incoming_message(user, content)
+        await social.incoming_message(actor_from, recipient,  content)
         return Response(status_code=202)
 
 

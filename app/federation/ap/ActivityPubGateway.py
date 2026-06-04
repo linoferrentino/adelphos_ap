@@ -47,14 +47,14 @@ class ActivityPubGateway(BaseSocialGateway):
 
         mention = mention[1:]
 
-        social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
-        local_actor = social_dao.actor_get_local(mention)
+        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        local_user= social.local_user_get(mention)
 
-        if local_actor is None:
+        if local_user is None:
             msg = f"User not found {mention}"
             gCon.log(msg)
             raise HTTPException(404, msg)
 
-        return (None, None, clean_content)
+        return (None, local_user, clean_content)
 
 
