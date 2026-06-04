@@ -116,7 +116,7 @@ class ActivityPubNetwork(SocialNetwork):
             "id": f"https://{host_api}/users/{username}",
             "inbox": f"https://{host_api}/users/{username}/inbox",
             "outbox": f"https://{host_api}/users/{username}/outbox",
-            "type": 'bot' if userob.is_daemon else 'actor',
+            "type": 'Service' if userob.is_daemon else 'Person',
             "name": 'Adelphos daemon' if userob.is_daemon else \
                     f"Adelphos demo user {username}",
             "preferredUsername": userob.actor_dto.preferred_username,
@@ -129,7 +129,7 @@ class ActivityPubNetwork(SocialNetwork):
 
         assert userob.actor_dto.public_key is not None
         response = JSONResponse(content = info_user)
-        response.headers['Content-Type'] = 'application/jrd+json'
+        response.headers['Content-Type'] = 'application/activity+json'
         gCon.log(f"info {info_user}")
         return response
     
@@ -149,6 +149,10 @@ class ActivityPubNetwork(SocialNetwork):
         return Response(status_code=202)
 
 
+    def in_outbox(self, request):
+        return Response(status_code=200)
+
+
     def get_social_routes(self):
         routes = [
                 Route(CNST.WEBFINGER_ROUTE,
@@ -157,5 +161,7 @@ class ActivityPubNetwork(SocialNetwork):
                       endpoint = self.in_infouser, methods=['GET']),
                 Route(CNST.USER_INBOX_ROUTE,
                       endpoint = self.in_inbox, methods=['POST']),
+                Route(CNST.USER_OUTBOX_ROUTE,
+                      endpoint = self.in_outbox, methods=['GET']),
                 ]
         return routes

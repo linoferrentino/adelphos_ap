@@ -38,9 +38,9 @@ class UserStub(SocialUser):
             self.is_daemon = True
 
 
-    async def new_msg(self, sender_id, msg):
+    async def new_msg(self, actor_from, msg):
         if self.is_daemon:
-            await self.listener.new_post(sender_id, msg)
+            await self.listener.new_post(actor_from, msg)
         else:
             self.messages.append(msg)
 
@@ -136,10 +136,10 @@ class BaseSocial(SocialProvider):
             })
 
 
-    async def incoming_message(self, user, message):
-        user_stub = self._pri_get_user_stub(user)
-        sender_id = 999
-        await user_stub.new_msg(sender_id, message)
+    async def incoming_message(self, actor_from, recipient, message):
+        #user_stub = self._pri_get_user_stub(user)
+        #sender_id = 999
+        await recipient.new_msg(actor_from, message)
 
 
     def _pri_get_user_stub(self, user):

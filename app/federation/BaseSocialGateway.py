@@ -45,7 +45,7 @@ class BaseSocialGateway(SocialGateway):
                           request, actor_str, body_str, body_ob)
 
         social = self.vhost.get_dep(Dependencies.SOCIAL)
-        await social.incoming_message(actor_from, recipient,  content)
+        await social.incoming_message(actor_from, local_recipient,  content)
         return Response(status_code=202)
 
 

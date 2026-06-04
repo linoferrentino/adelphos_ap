@@ -84,8 +84,8 @@ class Adelphos(Kernel, SocialListener):
         return [ ]
 
 
-    async def new_post(self, sender_id, msg):
-        pass
+    async def new_post(self, actor_from, msg):
+        gCon.log(f"got msg from {actor_from} {msg}")
 
 
 # Adelphos is the main object which orchestrates all the messages.

@@ -20,5 +20,5 @@ from abc import abstractmethod
 class SocialListener(ABC):
 
     @abstractmethod
-    async def new_post(self, sender_id, msg):
+    async def new_post(self, actor_from, msg):
         pass
