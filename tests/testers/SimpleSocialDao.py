@@ -72,9 +72,9 @@ class SimpleSocialDao(BaseSocialDao):
     def actor_store(self, actor_dto):
 
         found = False
-        gCon.log(f"storing actor {actor_dto}")
+        #gCon.log(f"storing actor {actor_dto}")
         for k, server_inf in self.servers.items():
-            gCon.log(f"searching info {server_inf}")
+            #gCon.log(f"searching info {server_inf}")
             srv_dto_dict = json.loads(server_inf['srv'])
             server_dto = ApServerDto(**srv_dto_dict)
             if server_dto.server_id  == actor_dto.server_fk:
