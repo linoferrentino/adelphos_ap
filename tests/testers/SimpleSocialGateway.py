@@ -33,6 +33,14 @@ class SimpleSocialGateway(BaseSocialGateway):
         return (None, None, msg)
 
 
+    async def _check_signature_message(self, actor_str, request, body_str):
+        return True
+
+
+    async def _actor_get_or_discover(self, uri):
+        pass
+
+
     async def in_inbox__OLD(self, user, request):
 
         headers = request.headers

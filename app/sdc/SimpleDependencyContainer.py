@@ -46,7 +46,15 @@ class SimpleDependencyContainer(LifespanAware):
         self.cli_net = AdelphosCliRouter(vhost)
         self.social_dao = self._make_social_dao()
         self.social_gateway = self._make_social_gateway()
+        self.backdoor_net = self._make_backdoor_net()
         self.transport = None
+
+
+    def _make_backdoor_net(self):
+        if self.config.is_test_instance():
+            self.backdoor_net = BackdoorNet(self.vhost)
+        else:
+            self.backdoor_net = NullNet(self.vhost)
 
 
     def _make_social_dao(self):
@@ -142,6 +150,8 @@ class SimpleDependencyContainer(LifespanAware):
                 dep_ob = self.social_gateway
             case Dependencies.SOCIAL_DAO:
                 dep_ob = self.social_dao
+            case Dependencies.BACKDOOR_NET:
+                dep_ob = self.backdoor_net
             case _:
                 raise Exception(f"Invalid dep {dep}")
         return dep_ob

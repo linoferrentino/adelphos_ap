@@ -13,31 +13,15 @@
 
 
 from app.sdc.Dependency import Dependency
-from abc import ABC, abstractmethod
 
 
-#class SocialEncoder_NO(ABC):
-#
-#    
-#    @abstractmethod
-#    async def encode_message(self, message):
-#        pass
-#
-#
-#    @abstractmethod
-#    async def decode_message(self, message):
-#        pass
-
-
-class SocialNetwork(Dependency):
+class BackdoorRouter(Dependency):
 
     def __init__(self, vhost):
         super().__init__(vhost)
 
 
     @abstractmethod
-    def get_social_routes(self):
+    def get_backdoor_routes(self):
         pass
-
-
 

@@ -27,28 +27,12 @@ def test_basic1(get_routable_app):
                            tconf.adelphos_simple_conf)
 
 
-def Xtest_basic2(get_standalone_app):
-    ad1 = get_standalone_app('adelphos1', tconf.adelphos_stub,
-                           tconf.adelphos_simple_conf)
-
-    with ad1:
-        port = tconf.adelphos_stub['General']['port']
-        gCon.log(f"I want to connect to port {port}")
-        response = httpx.post(f'http://127.0.0.1:{port}/api/users/adelphos/inbox', 
-                              json = {'msg' : 'do_all'})
-        assert response.status_code == 401
-
-
 def test_basic2(get_standalone_app):
     ad1 = get_standalone_app('adelphos1', tconf.adelphos_stub,
                            tconf.adelphos_simple_conf)
 
-    gCon.log(f"osi {ad1}")
-
     with ad1:
-        gCon.log(f"osi 999 {ad1}")
-        time.sleep(5)
-        gCon.log("osi 2")
+        #time.sleep(5)
         port = tconf.adelphos_stub['General']['port']
         gCon.log(f"I want to connect to port {port}")
         response = httpx.post(f'http://127.0.0.1:{port}/api/users/adelphos/inbox', 
@@ -56,35 +40,20 @@ def test_basic2(get_standalone_app):
         assert response.status_code == 401
 
 
-def Xtest_basic21(get_standalone_app):
+def test_comm(get_standalone_app):
+
     ad1 = get_standalone_app('adelphos1', tconf.adelphos_stub,
                            tconf.adelphos_simple_conf)
 
-    with ad1:
-        time.sleep(5)
-        gCon.log("osi 2")
-        port = tconf.adelphos_stub['General']['port']
-        gCon.log(f"I want to connect to port {port}")
-        response = httpx.post(f'http://127.0.0.1:{port}/api/users/adelphos/inbox', 
-                              json = {'msg' : 'do_all'})
-        assert response.status_code == 401
+    ad2 = get_standalone_app('adelphos2', tconf.adelphos_t2_test,
+                           tconf.adelphos_simple_conf)
 
+    port = tconf.adelphos_stub['General']['port']
+    host2 = tconf.adelphos_t2_test['General']['host']
 
-
-#def test_basic2(get_standalone_app):
-#    ad1 = get_standalone_app('adelphos1', tconf.adelphos_stub,
-#                           tconf.adelphos_simple_conf)
-#
-#    gCon.log("osi")
-#
-#    gCon.log(f"osi 1zz {ad1}")
-#    time.sleep(5)
-#    gCon.log("osi 2")
-#    port = tconf.adelphos_stub['General']['port']
-#    gCon.log(f"I want to connect to port {port}")
-#    response = httpx.post(f'http://127.0.0.1:{port}/api/users/adelphos/inbox', 
-#                          json = {'msg' : 'do_all'})
-#    #assert response.status_code == 401
-
+    with ad1, ad2:
+        response = httpx.post(f'http://127.0.0.1:{port}/api/_backdoor_api_', 
+                              json = {'msg' : f'discover @adelphos@{host2}'})
+        assert response.status_code == 202
 
 

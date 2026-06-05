@@ -75,25 +75,6 @@ def get_standalone_app():
 
     return _get_standalone_app
 
-#def get_standalone_app():
-#
-#    def _get_standalone_app(instance_name, configuration, build_structure):
-#
-#        configuration['sdc'] = build_structure
-#        server = ProcessWrapper()
-#        port = configuration['General']['port']
-#
-#        ad1 = server.run_in_subprocess(AdelphosRouter, 
-#                                      (instance_name, configuration), 
-#                                      port)
-#        gCon.log(f"run_is {ad1}")
-#        with ad1:
-#            return ad1
-#            
-#
-#    return _get_standalone_app
-
-
 
 @pytest.fixture(scope = "session")
 def aroutable(request):

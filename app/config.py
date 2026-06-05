@@ -50,6 +50,10 @@ class Config:
         return self.config['sdc']['social']['type']
 
 
+    def is_test_instance(self):
+        return self.config[CNF_GENERAL_SECTION]['debug']
+
+
 def load_conf(instance_name, toml_file):
 
     if (toml_file is None):

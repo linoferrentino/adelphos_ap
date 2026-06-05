@@ -40,16 +40,6 @@ class SocialProvider(Dependency, SyncLifespanAware):
     def local_user_get(self, user_name):
         pass
 
-
-    #@abstractmethod
-    #def actor_local_get(self, user_name):
-    #    pass
- 
-
-    #@abstractmethod
-    #def actor_local_get(self, user_name):
-    #    pass
-
  
     @abstractmethod
     async def incoming_message(self, actor_from, recipient, message):
@@ -64,16 +54,5 @@ class SocialProvider(Dependency, SyncLifespanAware):
     @abstractmethod
     def add_listener(self, user, listener):
         pass
-
-
-    #@abstractmethod
-    #def create_or_register_user(self, user, *, listener = None):
-    #    pass
-
-
-    #@abstractmethod
-    #def create_if_not_exists(self, user):
-    #    pass
-
 
 

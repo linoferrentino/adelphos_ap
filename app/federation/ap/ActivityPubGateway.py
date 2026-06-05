@@ -27,14 +27,35 @@ class ActivityPubGateway(BaseSocialGateway):
         super().__init__(vhost)
 
 
-    async def return_follow_request():
-        pass
+    async def _check_signature_message(self, actor_str, request, body_str):
+        
+        headers = request.headers
+
+        signature = headers['signature']
+
+        (keyId, algorithm, signed_headers, signature_val) = signature.split(",")
+
+        signed_headers_list = signed_headers.split("=")[1][1:-1].split(" ")
+        signature_field_list = signature_val.split("=", 1)
+        signature_field_raw = signature_field_list[1]
+        signature_field = signature_field_raw[1:-1]
+
+        algo_id_val = algorithm.split("=")[1][1:-1]
+        if (algo_id_val != "rsa-sha256"):
+            gCon.log(f"unsupported algo {algo_id_val}")
+            return False
+
+        key_id_val = keyId.split("=")[1][1:-1]
+        key_parsed = urlparse(key_id_val)
+
+        gCon.log(f"fetching the actor {key_id_val}")
+        actor_dto = await social.get_or_discover_from_uri(key_parsed)
+
 
 
     async def _parse_message(self, user, request, actor_str, body_str, body_ob):
         gCon.log(f"Message from actor {actor_str}")
-        gCon.log(f"Message from actor {body_str}")
-        gCon.log(f"headers {request.headers}")
+        gCon.log(f"Message is {body_str}")
 
         req_type = body_ob.get('type')
         if req_type == 'Follow':

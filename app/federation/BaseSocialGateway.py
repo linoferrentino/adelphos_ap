@@ -40,6 +40,9 @@ class BaseSocialGateway(SocialGateway):
         actor_str = body_ob.get('actor')
         if actor_str is None:
             raise HTTPException(401, "Malformed request, no actor")
+
+        if await self._check_signature_message(actor_str, request, body_str) == False:
+            raise HTTPException(401, "Invalid signature")
         
         (actor_from, local_recipient, content) = await self._parse_message(user,
                           request, actor_str, body_str, body_ob)
@@ -54,3 +57,11 @@ class BaseSocialGateway(SocialGateway):
         pass
 
 
+    @abstractmethod
+    async def _check_signature_message(self, actor_str, request, body_str):
+        pass
+
+
+    @abstractmethod
+    async def _actor_get_or_discover(self, uri):
+        pass
