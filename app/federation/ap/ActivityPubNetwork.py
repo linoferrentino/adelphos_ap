@@ -122,11 +122,13 @@ class ActivityPubNetwork(SocialNetwork):
             "preferredUsername": userob.actor_dto.preferred_username,
             "publicKey": {
                 "id": f"https://{host_api}/users/{username}#main-key",
+                "type": "Key",
                 "owner": f"https://{host_api}/users/{username}",
                 "publicKeyPem": userob.actor_dto.public_key
             }
         }
 
+        #"type": 'Service',
         assert userob.actor_dto.public_key is not None
         response = JSONResponse(content = info_user)
         response.headers['Content-Type'] = 'application/activity+json'
@@ -150,7 +152,8 @@ class ActivityPubNetwork(SocialNetwork):
 
 
     def in_outbox(self, request):
-        return Response(status_code=200)
+
+        return Response(status_code=405)
 
 
     def get_social_routes(self):

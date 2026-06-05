@@ -27,11 +27,26 @@ class ActivityPubGateway(BaseSocialGateway):
         super().__init__(vhost)
 
 
+    async def return_follow_request():
+        pass
+
+
     async def _parse_message(self, user, request, actor_str, body_str, body_ob):
         gCon.log(f"Message from actor {actor_str}")
+        gCon.log(f"Message from actor {body_str}")
+        gCon.log(f"headers {request.headers}")
+
+        req_type = body_ob.get('type')
+        if req_type == 'Follow':
+            gCon.log("Following request, Not implemented.")
+            raise HTTPException(405, "Not supported.")
 
         object_body = body_ob.get('object')
         if object_body is None:
+            raise HTTPException(401, "Malformed json, no body")
+
+        if (isinstance(object_body, str)):
+            gCon.log(f"Received str {object_body}")
             raise HTTPException(401, "Malformed json, no body")
 
         content = object_body.get('content')
