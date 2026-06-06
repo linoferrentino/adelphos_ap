@@ -30,27 +30,13 @@ from app.endpoints.AdelphosWebSocket import AdelphosWebSocket
 from app.federation.SocialProvider import SocialProvider
 
 from app.federation.SocialNetwork import SocialNetwork
-
-#import app.sdc.s_utils as sdc
-#from app.sdc.SimpleDependencyContainer import Dependencies
 from app.sdc.Dependencies import Dependencies
-#from app.sdc.Dependencies import Dependencies, get_dep
 
 
 class ActivityPubNetwork(SocialNetwork):
 
     def __init__(self, vhost):
         super().__init__(vhost)
-
-
-    #async def post_to_user(self, user, message):
-    #    gCon.log("XX")
-    #    pass
-
-
-    #async def discover_user(self, user):
-    #    gCon.log("XX")
-    #    pass
 
 
     async def in_webfinger(self, request):

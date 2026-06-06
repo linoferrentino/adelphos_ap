@@ -22,7 +22,7 @@ USER_DISCOVER_ROUTE = "/users/{username}"
 USER_INBOX_ROUTE = "/users/{username}/inbox"
 USER_OUTBOX_ROUTE = "/users/{username}/outbox"
 DAEMON_CLI_ROUTE = "/daemon_cli"
+BACKDOOR_ROUTE = "/_backdoor"
 WS_ROUTE = "/ws"
 
 
-#CLI_API = "cli_api"

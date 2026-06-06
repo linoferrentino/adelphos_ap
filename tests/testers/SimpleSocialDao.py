@@ -55,6 +55,10 @@ class SimpleSocialDao(BaseSocialDao):
         return ApServerDto(**server_dto_ob)
 
 
+    def actor_get_from_parsed_url(self, parsed_url):
+        raise NotImplemented("TODO")
+
+
     def actor_get(self, server, user_name):
 
         srv_info = self.servers.get(server.host_name)

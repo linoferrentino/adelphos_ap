@@ -12,17 +12,13 @@
 ######################################################
 
 
-from app.sdc.Dependency import Dependency
-from abc import ABC, abstractmethod
+from app.federation.BackdoorRouter import BackdoorRouter
 
 
-class BackdoorRouter(Dependency):
+class NullNet(BackdoorRouter):
+    
 
     def __init__(self, vhost):
         super().__init__(vhost)
 
 
-    @abstractmethod
-    def get_backdoor_routes(self):
-        pass
-        

@@ -38,9 +38,9 @@ class SocialDao(Dependency, SyncLifespanAware):
         pass
        
 
-    #@abstractmethod
-    #def actor_get_or_create(self, user_name):
-    #    pass
+    @abstractmethod
+    def actor_get_from_parsed_url(self, parsed_url):
+        pass
 
 
     @abstractmethod
@@ -48,6 +48,4 @@ class SocialDao(Dependency, SyncLifespanAware):
         pass
 
 
-    #@abstractmethod
-    #async def actor_get_or_discover(self, server_dto, key_parsed):
-    #    pass
+    

@@ -27,6 +27,8 @@ from app.federation.LifespanAware import LifespanAware
 from app.federation.store.SqliteSocialDao import SqliteSocialDao
 from app.core.Adelphos import Adelphos
 from app.config import Config
+from app.federation.BackdoorNet import BackdoorNet
+from app.federation.NullNet import NullNet
 
 
 
@@ -52,9 +54,10 @@ class SimpleDependencyContainer(LifespanAware):
 
     def _make_backdoor_net(self):
         if self.config.is_test_instance():
-            self.backdoor_net = BackdoorNet(self.vhost)
+            backdoor_net = BackdoorNet(self.vhost)
         else:
-            self.backdoor_net = NullNet(self.vhost)
+            backdoor_net = NullNet(self.vhost)
+        return backdoor_net
 
 
     def _make_social_dao(self):

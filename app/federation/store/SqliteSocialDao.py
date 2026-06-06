@@ -61,7 +61,15 @@ class SqliteSocialDao(BaseSocialDao):
     def srv_get_or_create(self, host_name):
         return self.server_dao.get_or_create_from_host_name(host_name)
 
-
+   
+    def actor_get_from_parsed_url(self, parsed_url):
+        gCon.log(f"asking server {parsed_ur.netloc}")
+        server_dto = self.server_dao.get_from_hostname(parsed_url.netloc)
+        if server_dto is None:
+            return None
+        raise NotImplemented("todo")
+        
+ 
     def actor_get(self, server, user_name):
         actor_dto = self.actor_dao.get_from_preferred_username(server.server_id,
                                                                user_name)

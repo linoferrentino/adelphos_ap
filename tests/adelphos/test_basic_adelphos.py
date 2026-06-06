@@ -52,7 +52,7 @@ def test_comm(get_standalone_app):
     host2 = tconf.adelphos_t2_test['General']['host']
 
     with ad1, ad2:
-        response = httpx.post(f'http://127.0.0.1:{port}/api/_backdoor_api_', 
+        response = httpx.post(f'http://127.0.0.1:{port}/api/_backdoor', 
                               json = {'msg' : f'discover @adelphos@{host2}'})
         assert response.status_code == 202
 

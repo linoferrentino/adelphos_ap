@@ -16,6 +16,7 @@ from app.federation.BaseSocialGateway import BaseSocialGateway
 from starlette.responses import Response
 from app.sdc.Dependencies import Dependencies
 from starlette.exceptions import HTTPException
+from urllib.parse import urlsplit
 from app.logging import gCon
 import re
 
@@ -46,21 +47,36 @@ class ActivityPubGateway(BaseSocialGateway):
             return False
 
         key_id_val = keyId.split("=")[1][1:-1]
-        key_parsed = urlparse(key_id_val)
-
         gCon.log(f"fetching the actor {key_id_val}")
-        actor_dto = await social.get_or_discover_from_uri(key_parsed)
+
+        actor_dto = await self._actor_get_or_discover(key_id_val) 
+
+        return True
 
 
+    async def _actor_get_or_discover(self, uri):
+        key_parsed = urlsplit(uri)
+        gCon.log(f"the key parsed is {key_parsed}")
+        social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
+        actor_dto = social_dao.actor_get_from_parsed_url(key_parsed)
+        if actor_dto is not None:
+            return actor_dto
 
+    
     async def _parse_message(self, user, request, actor_str, body_str, body_ob):
         gCon.log(f"Message from actor {actor_str}")
         gCon.log(f"Message is {body_str}")
 
         req_type = body_ob.get('type')
         if req_type == 'Follow':
-            gCon.log("Following request, Not implemented.")
-            raise HTTPException(405, "Not supported.")
+            gCon.log("Following request.")
+            raise HTTPException(202, "No op.")
+        elif req_type == 'Delete':
+            gCon.log("Delete request.")
+            raise HTTPException(202, "No op.")
+        elif req_type != 'Create':
+            gCon.log(f"unkown activity {req_type}")
+            raise HTTPException(405, "No op.")
 
         object_body = body_ob.get('object')
         if object_body is None:
