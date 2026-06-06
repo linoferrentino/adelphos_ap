@@ -50,10 +50,26 @@ def test_comm(get_standalone_app):
 
     port = tconf.adelphos_stub['General']['port']
     host2 = tconf.adelphos_t2_test['General']['host']
+    port2 = tconf.adelphos_t2_test['General']['port']
 
     with ad1, ad2:
         response = httpx.post(f'http://127.0.0.1:{port}/api/_backdoor', 
-                              json = {'msg' : f'discover @adelphos@{host2}'})
+                              json = {'msg' : f'discover_uri uri http://{host2}/users/demo1'})
         assert response.status_code == 202
+
+
+def test_sync_comm(get_routable_app):
+
+    test1 = get_routable_app('test1', tconf.adelphos_stub, 
+                                 tconf.adelphos_simple_conf)
+    test2 = get_routable_app('test2', tconf.adelphos_t2_test,
+                             tconf.adelphos_simple_conf)
+
+    with test1, test2:
+        response = test1.post(f'http://127.0.0.1:{port}/api/_backdoor', 
+                              json = {'msg' : f'discover_uri uri http://{host2}/users/demo1'})
+        assert response.status_code == 202
+
+
 
 

@@ -62,6 +62,17 @@ class ActivityPubGateway(BaseSocialGateway):
         if actor_dto is not None:
             return actor_dto
 
+        actor_uri_p = key_parsed._replace(fragment = "")
+        actor_uri = actor_uri_p.geturl()
+        gCon.log(f"actor_uri {actor_uri}")
+
+        transport = self.vhost.get_dep(Dependencies.TRANSPORT)
+        actor_ob = await transport.get_json(actor_uri)
+        gCon.log(f"actor is {actor_ob}, type {type(actor_ob)}")
+
+        server_dto = social_dao.srv_get_or_create(key_parsed.netloc)
+        gCon.log(f"Server is {server_dto}")
+
     
     async def _parse_message(self, user, request, actor_str, body_str, body_ob):
         gCon.log(f"Message from actor {actor_str}")

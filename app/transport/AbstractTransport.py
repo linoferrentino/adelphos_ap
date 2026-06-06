@@ -12,15 +12,12 @@
 ######################################################
 
 
-# this is the low level interface used to post and get messages to an external world
-
 from abc import ABC, abstractmethod
 
 
 class AbstractTransport(ABC):
 
 
-    # these are routed -----> Outbound
     @abstractmethod
     async def post_json(self, url, json):
         pass

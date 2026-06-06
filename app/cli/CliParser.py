@@ -21,7 +21,6 @@ class CliParser:
         self.cmd = None
         self.cmd_dict = {}
         
-        # pair
         cur_key = None
         for tk in parsed_line:
             if (self.cmd is None):
@@ -30,7 +29,6 @@ class CliParser:
             if (cur_key is None):
                 cur_key = tk
                 continue
-            # I put the value
             self.cmd_dict[cur_key] = tk
             cur_key = None
 

@@ -18,6 +18,9 @@ from starlette.routing import Route
 import app.consts as CNST
 from app.logging import gCon
 from starlette.responses import Response
+import json
+from app.cli.CliParser import CliParser
+from app.sdc.Dependencies import Dependencies
 
 
 class BackdoorNet(BackdoorRouter):
@@ -28,8 +31,21 @@ class BackdoorNet(BackdoorRouter):
 
 
     async def _backdoor_post(self, request):
-        gCon.log(f"backdoor!")
-        return Response(status_code=202)
+        body = await request.body()
+        body_ob = json.loads(body)
+        cliparser = CliParser(body_ob['msg'])
+        gCon.log(f"backdoor! cmd {cliparser.cmd}")
+
+        match cliparser.cmd:
+            case 'discover_uri':
+                uri = cliparser.get_param_safe('uri')
+                gCon.log(f"get uri {uri}")
+                transport = self.vhost.get_dep(Dependencies.TRANSPORT)
+                answer = await transport.get_json(uri)
+                gCon.log(f"answer {answer}")
+                return Response(status_code=202)
+            case _:
+                return Response(status_code=405)
 
 
     def get_backdoor_routes(self):
