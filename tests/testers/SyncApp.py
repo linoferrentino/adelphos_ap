@@ -114,6 +114,7 @@ class SyncApp:
     @staticmethod
     def _translate_sync_route(route):
         path = route.path
+        #gCon.log(f"Matching {path} for {route}")
         match_path_param = re.search(r"\{(.*)\}", path)
         if match_path_param is None:
             return route
@@ -146,6 +147,7 @@ class SyncApp:
         (route, match_route) = self._get_matched_route(urlp, routes)
 
         if route is None:
+            gCon.log(f"No route for {urlp}")
             return Response(None, 404)
 
         dict_params = parse_qs(urlp.query)

@@ -114,7 +114,9 @@ class BaseSocial(SocialProvider):
         if actor_dto is None:
             raise AdelphosException(AdErrno.USER_DOES_NOT_EXIST)
         if user in self.users:
+            gCon.log(f"Instance {id(self)} user {user} exists")
             raise AdelphosException(AdErrno.USER_ALREADY_EXISTING)
+        gCon.log(f"Instance {id(self)} user {user} does not exist, will add it")
         self.users[user] = UserStub(actor_dto, listener)
 
 
@@ -182,7 +184,7 @@ class BaseSocial(SocialProvider):
                 actor_dto.key.encode('utf-8'), password=None)
         public_key = BaseSocial._get_public_key(private_key)
         actor_dto.public_key = public_key
-        gCon.log(f"PUBLIC KEY {public_key}")
+        #gCon.log(f"PUBLIC KEY {public_key}")
         return actor_dto
 
 

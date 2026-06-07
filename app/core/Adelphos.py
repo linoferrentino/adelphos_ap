@@ -68,6 +68,7 @@ class Adelphos(Kernel, SocialListener):
 
     def __init__(self, vhost):
         super().__init__(vhost)
+        gCon.log(f"[yellow]Creating Adelphos instance {id(self)}[/yellow]")
 
 
     async def start_async(self):

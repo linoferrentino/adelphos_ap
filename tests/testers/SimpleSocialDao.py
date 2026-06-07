@@ -69,7 +69,7 @@ class SimpleSocialDao(BaseSocialDao):
         if actor_dto_dict is None:
             return None
         actor_dto = ApActorDto(**json.loads(actor_dto_dict))
-        gCon.log("FOUND THE ACTOR!")
+        gCon.log(f"FOUND THE ACTOR! {user_name}")
         return actor_dto
 
 

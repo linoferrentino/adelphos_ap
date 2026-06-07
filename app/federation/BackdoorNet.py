@@ -32,6 +32,7 @@ class BackdoorNet(BackdoorRouter):
 
     async def _backdoor_post(self, request):
         body = await request.body()
+        gCon.log(f"I will parse {body}")
         body_ob = json.loads(body)
         cliparser = CliParser(body_ob['msg'])
         gCon.log(f"backdoor! cmd {cliparser.cmd}")

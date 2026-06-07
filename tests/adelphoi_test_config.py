@@ -19,6 +19,14 @@ test_social_cnf = {"users" : [
                 ]}
 
 
+test_social2_cnf = {"users" : [
+    {"preferredusername" : "adelphos", 'name': 'Adelphos daemon', 'login_shell' : False},
+    {"preferredusername" : "demo77", 'name' : "demo77 alt", 'login_shell' : True},
+    {"preferredusername" : "demo88", 'name' : "demo88 alt", 'login_shell' : True},
+                ]}
+
+
+
 adelphos_simple_conf = {
        'cli_handler' : {
                 'type' : 'standard_cli',
@@ -101,7 +109,7 @@ adelphos_stub =  {
 
 adelphos_t2_test =  {
         "conf" : {
-            "social" : test_social_cnf
+            "social" : test_social2_cnf
             },
     "General": {
     "debug": True, 

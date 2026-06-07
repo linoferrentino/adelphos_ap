@@ -59,9 +59,11 @@ def build_from(vhost):
 
     cont = _conts.get(hash_conf)
     if cont is not None:
+        gCon.log(f"[red]Returning container {id(cont)}[/red]")
         return cont
 
     cont = SimpleDependencyContainer(vhost)
+    gCon.log(f"[red]Creating container {id(cont)}[/red]")
 
     _conts[hash_conf] = cont
     return cont

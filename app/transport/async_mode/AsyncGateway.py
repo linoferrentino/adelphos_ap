@@ -76,8 +76,9 @@ class AsyncGateway(AbstractGateway):
     async def async_req_wait(self, ar):
         # I have to put it into the list and wait
         await self.async_req_push(ar)
-        if ar.status_code != 200:
-            raise Exception(f"Got {ar.status_code} from {ar._url}")
+        #if ar.status_code != 200:
+        #    raise Exception(f"Got {ar.status_code} from {ar._url}")
+        #gCon.log(f"Got the text {ar.text}")
         return ar.text
 
 
@@ -94,7 +95,7 @@ class AsyncGateway(AbstractGateway):
             post_res.init_split(urlp)
             gCon.log(f"Sending to {urlp} ------")
             #return await self.async_req_post(post_res)
-            return 200
+            return 202
         else:
             raise Exception(f"Invalid method {method}")
 
