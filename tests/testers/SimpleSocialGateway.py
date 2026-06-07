@@ -15,9 +15,11 @@
 from app.federation.SocialGateway import SocialGateway
 from app.federation.BaseSocialGateway import BaseSocialGateway
 from app.exc.AdelphosException import AdelphosException
+from app.exc.AdelphosException import AdErrno
 from app.sdc.Dependencies import Dependencies
 from starlette.responses import Response
 from app.logging import gCon
+from starlette.exceptions import HTTPException
 
 
 class SimpleSocialGateway(BaseSocialGateway):
@@ -28,9 +30,13 @@ class SimpleSocialGateway(BaseSocialGateway):
 
 
     async def _parse_message(self, user, request, actor_str, body_str, body_ob):
-        gCon.log(f"Message from actor {actor_str}")
+        gCon.log(f"Message from actor {actor_str} to {user}")
+        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        local_recipient = social.local_user_get(user)
+        if local_recipient is None:
+            raise AdelphosException(AdErrno.USER_DOES_NOT_EXIST)
         msg = body_ob['msg']
-        return (None, None, msg)
+        return (None, local_recipient, msg)
 
 
     async def _check_signature_message(self, actor_str, request, body_str):

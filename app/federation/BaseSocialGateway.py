@@ -34,6 +34,7 @@ class BaseSocialGateway(SocialGateway):
         gCon.log(f"here is the client {request.client} type {type(request.client)}")
 
         body = await request.body()
+        gCon.log(f"body {body}")
         body_str = body.decode()
         body_ob = await request.json()
 

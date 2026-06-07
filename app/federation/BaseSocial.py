@@ -139,8 +139,6 @@ class BaseSocial(SocialProvider):
 
 
     async def incoming_message(self, actor_from, recipient, message):
-        #user_stub = self._pri_get_user_stub(user)
-        #sender_id = 999
         await recipient.new_msg(actor_from, message)
 
 

@@ -32,7 +32,7 @@ def test_basic2(get_standalone_app):
                            tconf.adelphos_simple_conf)
 
     with ad1:
-        #time.sleep(5)
+        time.sleep(1)
         port = tconf.adelphos_stub['General']['port']
         gCon.log(f"I want to connect to port {port}")
         response = httpx.post(f'http://127.0.0.1:{port}/api/users/adelphos/inbox', 
