@@ -47,7 +47,7 @@ class SocialProvider(Dependency, SyncLifespanAware):
 
 
     @abstractmethod
-    async def outgoing_message(self, sender_hndl, recipient_str, message):
+    async def outgoing_message(self, local_user, recipient_str, message):
         pass
 
 

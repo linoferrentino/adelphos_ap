@@ -25,7 +25,7 @@ from cryptography.hazmat.backends import default_backend as crypto_default_backe
 
 def test_query_info(app, aroutable):
 
-    url_query = f"/users/demo1"
+    url_query = f"/api/users/demo1"
     response = app.get(url_query)
     assert response.status_code == 200 
     if hasattr(response, 'body'):

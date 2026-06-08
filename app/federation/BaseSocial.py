@@ -91,12 +91,10 @@ class BaseSocial(SocialProvider):
         else:
             with open(private_key, "rb") as f:
                 content = f.read()
-                #gCon.log(f"private key {content}")
                 private_key = crypto_serialization.load_pem_private_key(
                         content, password=None)
 
         public_key = BaseSocial._get_public_key(private_key)
-        #gCon.log(f"private key {content}")
 
         actor = create_local_actor(server.server_id,
                          user_path, user_inbox, preferredusername,
@@ -182,7 +180,6 @@ class BaseSocial(SocialProvider):
                 actor_dto.key.encode('utf-8'), password=None)
         public_key = BaseSocial._get_public_key(private_key)
         actor_dto.public_key = public_key
-        #gCon.log(f"PUBLIC KEY {public_key}")
         return actor_dto
 
 

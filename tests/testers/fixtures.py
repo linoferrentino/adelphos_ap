@@ -36,20 +36,23 @@ import tests.adelphoi_test_config as tconf
 import app.consts as CNST
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 from starlette.testclient import TestClient
+from app.consts import API_POINT
 
 
-@pytest.fixture(scope = "session")
-def get_routable_app():
+@pytest.fixture(scope = "session", params = ['sync', 'async'])
+def get_routable_app(request):
 
     def _build_routable_from_config(instance_name, configuration, 
-                                    build_structure, mode = 'sync'):
+                                    build_structure):
+        #build_structure, mode = 'sync'):
         configuration['sdc'] = build_structure
         aroutable = AdelphosRouter(instance_name, configuration)
 
-        if mode == 'sync':
+        #if mode == 'sync':
+        if request.param  == 'sync':
             config = aroutable.get_dep(Dependencies.CONFIG)
             host = config.get_host()
-            app = SyncApp(host, aroutable)
+            app = SyncApp(host, aroutable, API_POINT)
             wrappedapp = SyncTester(app)
         else:
             app = StarletteWrap(routable = aroutable)
@@ -92,7 +95,7 @@ def app(aroutable, request):
     if request.param == 'sync':
         config = aroutable.get_dep(Dependencies.CONFIG)
         host = config.get_host()
-        app = SyncApp(host, aroutable)
+        app = SyncApp(host, aroutable, API_POINT)
         wrappedapp = SyncTester(app)
     else:
         app = StarletteWrap(routable = aroutable)

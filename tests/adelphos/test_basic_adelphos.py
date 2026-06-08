@@ -19,6 +19,7 @@ from tests.testers.fixtures import get_standalone_app
 import tests.adelphoi_test_config as tconf
 from app.logging import gCon
 import time
+import json
 
 
 def test_basic1(get_routable_app):
@@ -68,8 +69,11 @@ def test_sync_comm(get_routable_app):
     port = tconf.adelphos_stub['General']['port']
     host2 = tconf.adelphos_t2_test['General']['host']
     response = test1.post(f'/_backdoor', 
-        json = {'msg' : f'discover_uri uri http://{host2}/users/demo77'})
+        json = {'msg' : f'discover_uri uri https://{host2}/api/users/demo77'})
     assert response.status_code == 202
+    body_str = response.body
+    body_ob = json.loads(body_str)
+    assert body_ob['id'] == f"https://{host2}/api/users/demo77"
     
 
 

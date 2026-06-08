@@ -41,6 +41,8 @@ class SyncGateway(AbstractGateway):
         if transport is None:
             raise Exception(f"No route to host {urlp}")
 
+        gCon.log(f"========= {urlp}")
+
         match method:
             case 'GET':
                 return transport.in_get_json(urlp)

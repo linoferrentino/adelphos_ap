@@ -63,11 +63,16 @@ class SqliteSocialDao(BaseSocialDao):
 
    
     def actor_get_from_parsed_url(self, parsed_url):
-        gCon.log(f"asking server {parsed_url.netloc}")
+        gCon.log(f"asking user server {parsed_url.netloc} path {parsed_url.path}")
         server_dto = self.server_dao.get_from_hostname(parsed_url.netloc)
         if server_dto is None:
             return None
-        raise NotImplemented("todo")
+        actor_dto = self.actor_get_from_path(server_dto, parsed_url.path)
+        return actor_dto
+
+
+    def actor_get_from_path(self, path):
+        pass
         
  
     def actor_get(self, server, user_name):

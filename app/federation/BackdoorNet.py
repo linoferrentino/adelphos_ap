@@ -18,6 +18,7 @@ from starlette.routing import Route
 import app.consts as CNST
 from app.logging import gCon
 from starlette.responses import Response
+from starlette.responses import JSONResponse
 import json
 from app.cli.CliParser import CliParser
 from app.sdc.Dependencies import Dependencies
@@ -40,11 +41,11 @@ class BackdoorNet(BackdoorRouter):
         match cliparser.cmd:
             case 'discover_uri':
                 uri = cliparser.get_param_safe('uri')
-                gCon.log(f"get uri {uri}")
+                #gCon.log(f"get uri {uri}")
                 transport = self.vhost.get_dep(Dependencies.TRANSPORT)
                 answer = await transport.get_json(uri)
-                gCon.log(f"answer {answer}")
-                return Response(status_code=202)
+                gCon.log(f"answer {answer} type {type(answer)}")
+                return Response(status_code=202, content = answer)
             case _:
                 return Response(status_code=405)
 

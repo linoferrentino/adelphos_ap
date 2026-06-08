@@ -31,6 +31,7 @@ from app.exc.AdelphosException import AdelphosException
 
 from contextlib import contextmanager
 from app.transport.Routable import Routable
+from app.consts import API_POINT
 
 
 def exception_sync_middleware(func):
@@ -67,7 +68,7 @@ class SyncApp:
         return self.routable
 
 
-    def __init__(self, host, routable):
+    def __init__(self, host, routable, root_path = ""):
 
         transport = SyncTransport(host, self)
         self.transport = transport
@@ -79,14 +80,16 @@ class SyncApp:
         self.post_routes = []
         self.ws_routes = []
 
+        self.root_path = root_path
+
         routes = routable.get_routes()
         for route in routes:
             if isinstance(route, WebSocketRoute) == True:
                 self.add_web_socket_route(route)
             elif 'GET' in route.methods:
-                self.get_routes.append(SyncApp._translate_sync_route(route))
+                self.get_routes.append(self._translate_sync_route(route))
             elif 'POST' in route.methods:
-                self.post_routes.append(SyncApp._translate_sync_route(route))
+                self.post_routes.append(self._translate_sync_route(route))
             else:
                 raise Exception(f"invalid method in route {route.methods}")
 
@@ -111,8 +114,7 @@ class SyncApp:
         return Response(None, 404)
 
 
-    @staticmethod
-    def _translate_sync_route(route):
+    def _translate_sync_route(self, route):
         path = route.path
         #gCon.log(f"Matching {path} for {route}")
         match_path_param = re.search(r"\{(.*)\}", path)
@@ -120,7 +122,7 @@ class SyncApp:
             return route
         path_trans = re.sub("{" + match_path_param.group(1) + "}", 
             f"(?P<{match_path_param.group(1)}>[^/]*)", path)
-        route.path = path_trans
+        route.path = self.root_path + path_trans
         return route
 
 
