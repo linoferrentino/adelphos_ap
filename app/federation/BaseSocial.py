@@ -18,7 +18,7 @@ from app.federation.SocialProvider import SocialProvider
 from app.logging import gCon
 from app.consts import API_POINT
 from app.keys import generate_key
-from app.dao.ApActorDto import create_ap_actor
+from app.dao.ApActorDto import create_local_actor
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
@@ -98,7 +98,7 @@ class BaseSocial(SocialProvider):
         public_key = BaseSocial._get_public_key(private_key)
         #gCon.log(f"private key {content}")
 
-        actor = create_ap_actor(server.server_id,
+        actor = create_local_actor(server.server_id,
                          user_path, user_inbox, preferredusername,
                                 content.decode('utf-8'), public_key)
 

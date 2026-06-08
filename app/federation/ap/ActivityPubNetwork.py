@@ -114,7 +114,6 @@ class ActivityPubNetwork(SocialNetwork):
             }
         }
 
-        #"type": 'Service',
         assert userob.actor_dto.public_key is not None
         response = JSONResponse(content = info_user)
         response.headers['Content-Type'] = 'application/activity+json'

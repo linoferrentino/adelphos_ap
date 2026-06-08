@@ -29,6 +29,10 @@ class SimpleSocialGateway(BaseSocialGateway):
         super().__init__(vhost)
 
 
+    def _filter_message_type(self, body_ob):
+        pass
+
+
     async def _parse_message(self, user, request, actor_str, body_str, body_ob):
         gCon.log(f"Message from actor {actor_str} to {user}")
         social = self.vhost.get_dep(Dependencies.SOCIAL)

@@ -38,6 +38,8 @@ class BaseSocialGateway(SocialGateway):
         body_str = body.decode()
         body_ob = await request.json()
 
+        self._filter_message_type(body_ob)
+
         actor_str = body_ob.get('actor')
         if actor_str is None:
             raise HTTPException(401, "Malformed request, no actor")
@@ -51,6 +53,11 @@ class BaseSocialGateway(SocialGateway):
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         await social.incoming_message(actor_from, local_recipient,  content)
         return Response(status_code=202)
+
+
+    @abstractmethod
+    def _filter_message_type(self, body_ob):
+        pass
 
 
     @abstractmethod

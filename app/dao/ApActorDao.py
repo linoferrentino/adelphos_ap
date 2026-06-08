@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 from app.logging import gCon
 from app.dao.BaseDao import BaseDao
 from app.dao.ApActorDto import ApActorDto
-from app.dao.ApActorDto import create_ap_actor
+from app.dao.ApActorDto import create_remote_actor
 from app.ap_api.AsyncRequest import AsyncGetReq
 from dataclasses import asdict
 import json
@@ -93,7 +93,7 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
             actor = self.get_from_server_path(0, key_parsed.path)
         else:
             # OK, now I can create the actor
-            actor = create_ap_actor(server_dto.server_id,
+            actor = create_remote_actor(server_dto.server_id,
                              key_parsed.path,
                              inbox_parsed.path,
                              preferred_username,

@@ -50,11 +50,21 @@ class ApActorDto(BaseDto):
 #    ob: ApActorDto
 #
 
-def create_ap_actor(server_fk, user_path, 
-                    inbox_path, preferred_username, key, public_key = None):
+def create_local_actor(server_fk, user_path, 
+                    inbox_path, preferred_username, private_key, public_key):
+
     ap_actor_dto = ApActorDto(None, server_fk, user_path,
                               inbox_path, preferred_username,
-                              key, None, public_key)
+                              private_key, None, public_key)
+    return ap_actor_dto
+
+
+def create_remote_actor(server_fk, user_path, 
+                    inbox_path, preferred_username, public_key):
+
+    ap_actor_dto = ApActorDto(None, server_fk, user_path,
+                              inbox_path, preferred_username,
+                              public_key, None, public_key)
     return ap_actor_dto
 
 
