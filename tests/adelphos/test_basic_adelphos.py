@@ -13,8 +13,10 @@
 
 
 import httpx
+import pytest
 
 from tests.testers.fixtures import get_routable_app
+from tests.testers.fixtures import get_routable_app_param
 from tests.testers.fixtures import get_standalone_app
 import tests.adelphoi_test_config as tconf
 from app.logging import gCon
@@ -22,9 +24,9 @@ import time
 import json
 
 
-def test_basic1(get_routable_app):
+def test_basic1(get_routable_app_param):
 
-    ad1 = get_routable_app('adelphos1', tconf.adelphos_stub,
+    ad1 = get_routable_app_param('adelphos1', tconf.adelphos_stub,
                            tconf.adelphos_simple_conf)
 
 
@@ -59,6 +61,7 @@ def test_comm(get_standalone_app):
         assert response.status_code == 202
 
 
+#@pytest.mark.parametrize("get_routable_app", "sync", indirect=True)
 def test_sync_comm(get_routable_app):
 
     test1 = get_routable_app('test1', tconf.adelphos_stub, 

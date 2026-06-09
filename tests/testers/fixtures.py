@@ -39,27 +39,51 @@ from starlette.testclient import TestClient
 from app.consts import API_POINT
 
 
+#def get_routable_app(request):
+
+
+def _build_routable_config_impl(instance_name, configuration,
+                                build_structure, mode):
+
+    configuration['sdc'] = build_structure
+
+    prefix = mode
+    aroutable = AdelphosRouter(f"{prefix}-{instance_name}", configuration)
+
+    if mode == 'sync':
+        gCon.log("====================== SYNC")
+        config = aroutable.get_dep(Dependencies.CONFIG)
+        host = config.get_host()
+        app = SyncApp(host, aroutable, API_POINT)
+        wrappedapp = SyncTester(app)
+    else:
+        gCon.log("====================== ASYNC")
+        app = StarletteWrap(routable = aroutable)
+        wrappedapp = TestClient(app)
+
+    with wrappedapp:
+        return wrappedapp
+
+
 @pytest.fixture(scope = "session", params = ['sync', 'async'])
-def get_routable_app(request):
+def get_routable_app_param(request):
 
     def _build_routable_from_config(instance_name, configuration, 
                                     build_structure):
-        #build_structure, mode = 'sync'):
-        configuration['sdc'] = build_structure
-        aroutable = AdelphosRouter(instance_name, configuration)
+        return _build_routable_config_impl(instance_name, configuration,
+                                           build_structure, request.param)
 
-        #if mode == 'sync':
-        if request.param  == 'sync':
-            config = aroutable.get_dep(Dependencies.CONFIG)
-            host = config.get_host()
-            app = SyncApp(host, aroutable, API_POINT)
-            wrappedapp = SyncTester(app)
-        else:
-            app = StarletteWrap(routable = aroutable)
-            wrappedapp = TestClient(app)
+    return _build_routable_from_config
+ 
 
-        with wrappedapp:
-            return wrappedapp
+@pytest.fixture(scope = "session")
+def get_routable_app():
+
+    def _build_routable_from_config(instance_name, configuration, 
+                                    build_structure, mode = "sync"):
+        return _build_routable_config_impl(instance_name, configuration,
+                                           build_structure, mode)
+
 
     return _build_routable_from_config
 
