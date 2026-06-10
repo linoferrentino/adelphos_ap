@@ -57,19 +57,24 @@ class SimpleSocialDao(BaseSocialDao):
 
 
     def actor_get_from_parsed_url(self, parsed_url):
-        if len(parsed_url.netloc) != 0:
+        if len(parsed_url.netloc) == 0:
             host = self.vhost.get_dep(Dependencies.CONFIG).get_host()
         else:
             host = parsed_url.netloc
     
         gCon.log(f"Searching actor @{parsed_url.path}@{host}")
-        actor = self.actor_get(host, parsed_url.path)
+        actor = self._actor_get_host(host, parsed_url.path)
         return actor
 
 
     def actor_get(self, server, user_name):
 
-        srv_info = self.servers.get(server.host_name)
+        return self._actor_get_host(server.host_name, user_name)
+
+
+    def _actor_get_host(self, host, user_name):
+
+        srv_info = self.servers.get(host)
         if srv_info is None:
             return None
         users = srv_info['users']

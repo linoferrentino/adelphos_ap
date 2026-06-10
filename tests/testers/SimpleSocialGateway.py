@@ -48,6 +48,9 @@ class SimpleSocialGateway(BaseSocialGateway):
         gCon.log(f"checking signature for {actor_str}")
         actor_split = urlsplit(actor_str)
         actor_dto = await self._actor_get_or_discover(actor_split)
+        if actor_dto is None:
+            gCon.log(f"No actor! {actor_split}")
+            return (None, False)
         return (actor_dto, True)
 
 
@@ -56,7 +59,9 @@ class SimpleSocialGateway(BaseSocialGateway):
         actor_dto = social_dao.actor_get_from_parsed_url(uri)
         if actor_dto is not None:
             return actor_dto
-        assert False
+        if len(uri.netloc) == 0:
+            return None
+        gCon.log(f"to do the netloc {uri.netloc}")
 
 
     async def in_inbox__OLD(self, user, request):

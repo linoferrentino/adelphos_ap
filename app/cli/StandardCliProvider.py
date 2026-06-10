@@ -30,7 +30,7 @@ class StandardCliClient:
     def __init__(self, gateway, websocket):
         self.gateway = gateway
         self.websocket = websocket
-        self.session = UserSession()
+        self.session = UserSession(gateway)
 
 
     async def _internal_serve(self):
@@ -38,7 +38,6 @@ class StandardCliClient:
         while True:
             data = await self.websocket.receive_text()
             cp = CliParser(data)
-            #response = await self.kernel.proc_msg(cp, self.session)
             response = await self.gateway.sys_call_gateway(self.session, cp)
             await self.websocket.send_text(response)
 
@@ -63,7 +62,7 @@ class StandardCliClient:
         try:
             await self._internal_serve()
         except AdelphosException as err:
-            await self.websocket.send_text(f"Error: {err}")
+            await self.websocket.send_text(f"User Error: {err.out_str}")
 
 
 # gateway
@@ -99,7 +98,6 @@ class StandardCliProvider(CliProvider):
     async def serve_forever(self, websocket):
 
         await websocket.accept()
-        #kernel = self.vhost.get_dep(Dependencies.KERNEL)
         client = StandardCliClient(self, websocket)
         self.clients.append(client)
         await client.serve_forever()

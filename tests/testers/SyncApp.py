@@ -26,6 +26,7 @@ from urllib.parse import parse_qs
 
 from starlette.routing import WebSocketRoute
 from starlette.responses import Response, PlainTextResponse 
+from starlette.exceptions import HTTPException
 from app.logging import gCon
 from app.exc.AdelphosException import AdelphosException 
 
@@ -42,6 +43,9 @@ def exception_sync_middleware(func):
         except AdelphosException as exc:
             response = PlainTextResponse(f"{exc.out_str}: {exc}",
                                 status_code = 401)
+            return response
+        except HTTPException as exc:
+            response = Response(status_code = exc.status_code)
             return response
 
     return inner_handler

@@ -25,6 +25,9 @@ from app.logging import gCon
 #from app.api.AdelphosException import AdelphosException
 #from app.api.AdelphosException import EAdelhposErrno
 
+from app.exc.AdelphosException import AdelphosException
+from app.exc.AdelphosException import AdErrno
+
 # these are the states for the user.
 class EUserState(IntEnum):
     NOT_LOGGED = auto()
@@ -33,20 +36,31 @@ class EUserState(IntEnum):
 
 
 # ensures that an alias is logged and has an active session
-def active_login(func):
+def active_login(inner_syscall):
 
-    async def check_logged(self):
-        if not self.gateway.session.is_login_valid():
-            #raise AdelphosException("Login not valid or expired session",
-            #                        EAdelhposErrno.ENOLOGIN)
-            raise Exception("No valid login")
-        return await func(self)
+    async def check_logged(self, session, pars):
+        if not session.is_login_valid():
+            gCon.log("NO LOGIN")
+            raise AdelphosException(AdErrno.ENOLOGIN)
+        return await inner_syscall(self, session, pars)
 
     return check_logged
 
 
 class UserSession:
-    pass
+
+    def __init__(self, gateway):
+        self.gateway = gateway
+        self.user = None
+
+
+    def get_user(self):
+        return self.user
+
+
+    def is_login_valid(self):
+        return False
+
 
 
 # the user session stores all the data that is accumulating during the

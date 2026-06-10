@@ -44,35 +44,9 @@ from tests.testers.fixtures import get_routable_app
 from tests.testers.fixtures import app, aroutable
 
 
-#@pytest.fixture(scope = "module")
-#def aroutable(request):
-#
-#    configuration = request.param if hasattr(request, 'param') \
-#            else tconf.adelphos_stub
-#    configuration['sdc'] = tconf.cli_stub_dep_conf
-#    aroutable = AdelphosRouter("test", configuration)
-#    return aroutable 
-#
-#
-#@pytest.fixture(scope = "module", params = ['sync', 'async'])
-#def app(aroutable, request):
-#
-#    if request.param == 'sync':
-#        config = aroutable.get_dep(Dependencies.CONFIG)
-#        host = config.get_host()
-#        app = SyncApp(host, aroutable)
-#        wrappedapp = SyncTester(app)
-#    else:
-#        app = StarletteWrap(routable = aroutable)
-#        wrappedapp = TestClient(app)
-#
-#    return wrappedapp
-
-
 @pytest.mark.parametrize('aroutable', ( tconf.adelphos_stub, ), indirect = True)
 def test_context(app, aroutable):
 
-    #with app:
     app.post("", json = None)
 
 
@@ -89,12 +63,22 @@ def test_post_inbox_KO(app, aroutable):
     url_post=CNST.API_POINT + url_post
     jsonmsg = {
             'msg' : f'hello1 {user_in} secret X8a9',
-            'actor' : 'test1',
+            'actor' : 'demo2',
             }
     response = app.post(url_post, json = jsonmsg)
     tu.assert_error_code_in_response(response, AdErrno.USER_DOES_NOT_EXIST)
 
+    user_in = 'demo1'
+    url_post=CNST.USER_INBOX_ROUTE.format(username = user_in)
+    url_post=CNST.API_POINT + url_post
+    jsonmsg = {
+            'msg' : f'hello1 {user_in} secret X8a9',
+            'actor' : 'demo99',
+            }
+    response = app.post(url_post, json = jsonmsg)
+    assert response.status_code == 401
 
+ 
 def test_post_from_kernel(get_routable_app):
     user_in = 'demo1'
     test1= get_routable_app('test1', tconf.adelphos_stub, 
@@ -107,7 +91,8 @@ def test_post_from_kernel(get_routable_app):
 
     with test1, test2:
         with test1.websocket_connect(CNST.WS_ROUTE) as websocket:
-            websocket.send_text(f"sndpost @{user_in}@{host2} echo_test_x918")
+            websocket.send_text(
+    f"sndpost to @{user_in}@{host2} msg echo_test_x918 from demo1")
             data = websocket.receive_text()
             assert data == 'DONE!'
             websocket.close()
