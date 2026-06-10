@@ -36,8 +36,8 @@ class ApActorDao(BaseDao):
         # the list is coherent with ApActorDto
         self.ftbl_col_list = ( "server_fk", 
                               "user_path", "preferred_username",
-                              "inbox_path", "key", "actor_id",
-                              "local_fk", "timestamp"
+                              "inbox_path", "private_key", "public_key",
+                              "actor_id", "local_fk", "timestamp"
                               )
         self.table_name = "ap_actor"
 
@@ -110,19 +110,19 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
 
     # this method returns the actor from a local id
-    def get_from_local_id(self, local_id):
+    def get_from_local_id_XX(self, local_id):
         return self.dao.db.get_full_dto("ap_actor", "actor_id", local_id,
                                         ApActorDto)
 
 
     # more than one user can have the same preferred_username in different servers.
-    def get_from_preferred_username(self, server_fk, preferred_username):
+    def get_from_preferred_username_XX(self, server_fk, preferred_username):
         return self.db.get_full_dto_ex(self.table_name,
             ('server_fk', 'preferred_username'),
             (server_fk, preferred_username), ApActorDto)
 
 
-    def get_from_server_path(self, server_fk, user_path):
+    def get_from_server_path_XX(self, server_fk, user_path):
         return self.db.get_full_dto_ex(self.table_name,
             ('server_fk', 'user_path'),
             (server_fk, user_path), ApActorDto)
@@ -130,7 +130,7 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
     # this function tries to get an actor from
     # the local db using the hostname and 
-    def get_local_from_parsed_uri(self, server_dto, key_parsed):
+    def get_local_from_parsed_uri_XX(self, server_dto, key_parsed):
         # I have to query the view.
         #gCon.log(f"this actor's Activity Pub host is {key_parsed.netloc}")
         #gCon.log(f"his path is  is {key_parsed.path}")
@@ -142,13 +142,12 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
         dto = self.dao.db.get_full_dto_ex(table_name,  fields_to_seek, 
                             values_to_seek, ApActorDto)
-        #gCon.log(f"I have grabbed {dto} from db")
  
         return dto
 
     
     # this function will get from uri, the actor has been already taken.
-    async def get_or_discover_from_uri(self, server_dto, key_parsed):
+    async def get_or_discover_from_uri_XX(self, server_dto, key_parsed):
 
         parsed = key_parsed._replace(fragment = "")
         actor_uri = parsed.geturl()
@@ -165,13 +164,22 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
         table_name = "ap_actor"
 
+        if actor.private_key is not None:
+            assert actor.public_key is None
+        else:
+            assert actor.public_key is not None
+
         fields_stored = {
                          'server_fk': actor.server_fk,
                          'user_path': actor.user_path,
                          'preferred_username': actor.preferred_username,
                          'inbox_path': actor.inbox_path,
-                         'key': actor.key,
+                         'private_key': actor.private_key,
+                         'public_key': actor.public_key,
                          }
+
+        assert False
+        ApActorDao._fill_public_key(actor)
 
         newid = self.db.insert_dto_fields(table_name, fields_stored, actor_as_dict)
         actor.actor_id = newid

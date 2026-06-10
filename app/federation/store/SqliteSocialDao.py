@@ -43,7 +43,8 @@ create table ap_actor (
         user_path text,
         inbox_path text,
         preferred_username text,
-        key text,
+        private_key text,
+        public_key text,
         timestamp text default current_timestamp,
         unique (server_fk, user_path) on conflict abort
 );"""),
@@ -67,13 +68,10 @@ class SqliteSocialDao(BaseSocialDao):
         server_dto = self.server_dao.get_from_hostname(parsed_url.netloc)
         if server_dto is None:
             return None
-        actor_dto = self.actor_get_from_path(server_dto, parsed_url.path)
+        actor_dto = self.actor_dao.get_from_server_path(server_dto.server_id,
+                                                        parsed_url.path)
         return actor_dto
 
-
-    def actor_get_from_path(self, path):
-        pass
-        
  
     def actor_get(self, server, user_name):
         actor_dto = self.actor_dao.get_from_preferred_username(server.server_id,
@@ -114,6 +112,7 @@ class SqliteSocialDao(BaseSocialDao):
 
     def actor_store(self, actor_dto):
         gCon.log(f"storing {actor_dto}")
+        BaseSocialDao._fill_public_key(actor_dto)
         return self.actor_dao.store(actor_dto)
 
 

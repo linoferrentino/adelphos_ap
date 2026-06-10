@@ -94,14 +94,13 @@ class BaseSocial(SocialProvider):
                 private_key = crypto_serialization.load_pem_private_key(
                         content, password=None)
 
-        public_key = BaseSocial._get_public_key(private_key)
-
         actor = create_local_actor(server.server_id,
                          user_path, user_inbox, preferredusername,
-                                content.decode('utf-8'), public_key)
+                                content.decode('utf-8'))
 
         social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
         social_dao.actor_store(actor)
+        assert actor.public_key is not None
         #gCon.log(f"this is the actor {actor}")
         return actor
 
@@ -161,26 +160,8 @@ class BaseSocial(SocialProvider):
         return actor_dto
 
 
-    @staticmethod
-    def _get_public_key(private_key):
-        public_key = private_key.public_key().public_bytes(
-                encoding=crypto_serialization.Encoding.PEM,
-                format=crypto_serialization.PublicFormat.SubjectPublicKeyInfo)\
-                        .decode('utf-8')
-        return public_key
-
-
     def local_actor_get(self, user_name):
-        actor_dto = self.social_dao.actor_get(self.server_dto, user_name)
-
-        if actor_dto is None:
-            return None
-
-        private_key = crypto_serialization.load_pem_private_key(
-                actor_dto.key.encode('utf-8'), password=None)
-        public_key = BaseSocial._get_public_key(private_key)
-        actor_dto.public_key = public_key
-        return actor_dto
+        return self.social_dao.actor_get(self.server_dto, user_name)
 
 
     def start_sync(self):

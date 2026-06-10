@@ -35,9 +35,9 @@ class ApActorDto(BaseDto):
     user_path: str
     inbox_path: str
     preferred_username: str
-    key: str
+    private_key: str
+    public_key: str
     timestamp: str
-    public_key: str = None
 
     def get_pk(self):
         return self.actor_id
@@ -51,11 +51,11 @@ class ApActorDto(BaseDto):
 #
 
 def create_local_actor(server_fk, user_path, 
-                    inbox_path, preferred_username, private_key, public_key):
+                    inbox_path, preferred_username, private_key):
 
     ap_actor_dto = ApActorDto(None, server_fk, user_path,
                               inbox_path, preferred_username,
-                              private_key, None, public_key)
+                              private_key, None, None)
     return ap_actor_dto
 
 
@@ -64,7 +64,7 @@ def create_remote_actor(server_fk, user_path,
 
     ap_actor_dto = ApActorDto(None, server_fk, user_path,
                               inbox_path, preferred_username,
-                              public_key, None, public_key)
+                              None, public_key, None)
     return ap_actor_dto
 
 
