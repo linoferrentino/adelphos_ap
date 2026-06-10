@@ -128,11 +128,15 @@ class BaseSocial(SocialProvider):
         return user_stub
 
 
-    async def outgoing_message(self, user, message):
-        transport = self.vhost.get_dep(Dependencies.TRANSPORT)
-        await transport.post_json(user, {
-            'msg' : message
-            })
+    async def outgoing_message(self, from_user, recipient, message):
+        user = self.local_user_get(from_user)
+        if user is None:
+            raise Exception(f"No user {from_user}")
+
+        #transport = self.vhost.get_dep(Dependencies.TRANSPORT)
+        #await transport.post_json(user, {
+        #    'msg' : message
+        #    })
 
 
     async def incoming_message(self, actor_from, recipient, message):
@@ -146,7 +150,6 @@ class BaseSocial(SocialProvider):
         return user_stub
 
  
-    #def local_user_exists(self, user: str) -> bool:
     def local_user_get(self, user_name):
         user_local = self.users.get(user_name)
         return user_local

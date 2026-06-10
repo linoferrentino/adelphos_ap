@@ -72,8 +72,8 @@ class TestKernel(Kernel):
         from_user = pars.get_param_safe('from')
         #local_user = session.get_user()
         gCon.log(f"sending message {msg} to {recipient} from {from_user}")
-        #social = self.vhost.get_dep(Dependencies.SOCIAL)
-        #await social.outgoing_message(f"{recipient} {msg}")
+        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        await social.outgoing_message(from_user, recipient, msg)
         return 'DONE!'
 
 
