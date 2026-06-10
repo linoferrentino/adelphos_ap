@@ -20,6 +20,7 @@ from app.sdc.Dependencies import Dependencies
 from starlette.responses import Response
 from app.logging import gCon
 from starlette.exceptions import HTTPException
+from urllib.parse import urlsplit
 
 
 class SimpleSocialGateway(BaseSocialGateway):
@@ -40,15 +41,22 @@ class SimpleSocialGateway(BaseSocialGateway):
         if local_recipient is None:
             raise AdelphosException(AdErrno.USER_DOES_NOT_EXIST)
         msg = body_ob['msg']
-        return (None, local_recipient, msg)
+        return (local_recipient, msg)
 
 
     async def _check_signature_message(self, actor_str, request, body_str):
-        return True
+        gCon.log(f"checking signature for {actor_str}")
+        actor_split = urlsplit(actor_str)
+        actor_dto = await self._actor_get_or_discover(actor_split)
+        return (actor_dto, True)
 
 
     async def _actor_get_or_discover(self, uri):
-        pass
+        social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
+        actor_dto = social_dao.actor_get_from_parsed_url(uri)
+        if actor_dto is not None:
+            return actor_dto
+        assert False
 
 
     async def in_inbox__OLD(self, user, request):

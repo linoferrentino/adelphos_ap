@@ -116,13 +116,13 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
 
     # more than one user can have the same preferred_username in different servers.
-    def get_from_preferred_username_XX(self, server_fk, preferred_username):
+    def get_from_preferred_username(self, server_fk, preferred_username):
         return self.db.get_full_dto_ex(self.table_name,
             ('server_fk', 'preferred_username'),
             (server_fk, preferred_username), ApActorDto)
 
 
-    def get_from_server_path_XX(self, server_fk, user_path):
+    def get_from_server_path(self, server_fk, user_path):
         return self.db.get_full_dto_ex(self.table_name,
             ('server_fk', 'user_path'),
             (server_fk, user_path), ApActorDto)
@@ -178,8 +178,8 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
                          'public_key': actor.public_key,
                          }
 
-        assert False
-        ApActorDao._fill_public_key(actor)
+        #assert False
+        #ApActorDao._fill_public_key(actor)
 
         newid = self.db.insert_dto_fields(table_name, fields_stored, actor_as_dict)
         actor.actor_id = newid

@@ -70,6 +70,7 @@ class SqliteSocialDao(BaseSocialDao):
             return None
         actor_dto = self.actor_dao.get_from_server_path(server_dto.server_id,
                                                         parsed_url.path)
+        BaseSocialDao._fill_public_key(actor_dto)
         return actor_dto
 
  
@@ -77,6 +78,7 @@ class SqliteSocialDao(BaseSocialDao):
         actor_dto = self.actor_dao.get_from_preferred_username(server.server_id,
                                                                user_name)
         gCon.log(f"actor_get returns {actor_dto}")
+        BaseSocialDao._fill_public_key(actor_dto)
         return actor_dto
 
     
@@ -112,8 +114,9 @@ class SqliteSocialDao(BaseSocialDao):
 
     def actor_store(self, actor_dto):
         gCon.log(f"storing {actor_dto}")
+        new_id = self.actor_dao.store(actor_dto)
         BaseSocialDao._fill_public_key(actor_dto)
-        return self.actor_dao.store(actor_dto)
+        return new_id
 
 
     def _create_schema(self):

@@ -18,6 +18,7 @@ from app.dao.ApActorDto import ApActorDto
 from app.dao.ApServerDto import create_ap_server
 from dataclasses import asdict
 from app.logging import gCon
+from app.sdc.Dependencies import Dependencies
 import json
 
 
@@ -56,7 +57,14 @@ class SimpleSocialDao(BaseSocialDao):
 
 
     def actor_get_from_parsed_url(self, parsed_url):
-        raise NotImplemented("TODO")
+        if len(parsed_url.netloc) != 0:
+            host = self.vhost.get_dep(Dependencies.CONFIG).get_host()
+        else:
+            host = parsed_url.netloc
+    
+        gCon.log(f"Searching actor @{parsed_url.path}@{host}")
+        actor = self.actor_get(host, parsed_url.path)
+        return actor
 
 
     def actor_get(self, server, user_name):

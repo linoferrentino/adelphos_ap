@@ -66,7 +66,7 @@ class ActivityPubGateway(BaseSocialGateway):
         algo_id_val = algorithm.split("=")[1][1:-1]
         if (algo_id_val != "rsa-sha256"):
             gCon.log(f"unsupported algo {algo_id_val}")
-            return False
+            return (None, False)
 
         key_id_val = keyId.split("=")[1][1:-1]
         gCon.log(f"fetching the actor {key_id_val}")
@@ -81,7 +81,7 @@ class ActivityPubGateway(BaseSocialGateway):
 
         if (digest_body_total != digest_sign):
             gCon.log("digest mismatch, go away")
-            return False
+            return (None, False)
 
         date_str = headers['date']
         date_val = datetime.strptime(date_str, '%a, %d %b %Y %H:%M:%S GMT')
@@ -91,7 +91,7 @@ class ActivityPubGateway(BaseSocialGateway):
 
         if (total_secs > 30):
             gCon.log(f"Too much drift in time! {total_secs}")
-            return False
+            return (None, False)
 
         host_hdr = headers['host']
         try:
@@ -136,10 +136,9 @@ class ActivityPubGateway(BaseSocialGateway):
 
         except Exception as err:
             gCon.log(f"[red]The signature is invalid.[/red]\n{err}")
-            return False
+            return (None, False)
 
-        gCon.log("================================================ signature OK!")
-        return True
+        return (actor_dto, True)
 
 
 
@@ -224,6 +223,6 @@ exp {actor_uri}")
             gCon.log(msg)
             raise HTTPException(404, msg)
 
-        return (None, local_user, clean_content)
+        return (local_user, clean_content)
 
 

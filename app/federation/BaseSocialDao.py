@@ -38,6 +38,9 @@ class BaseSocialDao(SocialDao):
     @staticmethod
     def _fill_public_key(actor_dto):
 
+        if actor_dto is None:
+            return
+
         if actor_dto.public_key is not None:
             return
 

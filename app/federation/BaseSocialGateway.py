@@ -44,14 +44,17 @@ class BaseSocialGateway(SocialGateway):
         if actor_str is None:
             raise HTTPException(401, "Malformed request, no actor")
 
-        if await self._check_signature_message(actor_str, request, body_str) == False:
+        (actor_dto, valid) = await self._check_signature_message(
+                actor_str, request, body_str)
+
+        if valid == False:
             raise HTTPException(401, "Invalid signature")
         
-        (actor_from, local_recipient, content) = await self._parse_message(user,
+        (local_recipient, content) = await self._parse_message(user,
                           request, actor_str, body_str, body_ob)
 
         social = self.vhost.get_dep(Dependencies.SOCIAL)
-        await social.incoming_message(actor_from, local_recipient,  content)
+        await social.incoming_message(actor_dto, local_recipient,  content)
         return Response(status_code=202)
 
 
