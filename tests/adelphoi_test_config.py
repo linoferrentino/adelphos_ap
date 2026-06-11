@@ -11,6 +11,11 @@
 #
 ######################################################
 
+social_dao_test_conf = {
+        "db_name" : ":memory:"
+        }
+
+
 
 test_social_cnf = {"users" : [
     {"preferredusername" : "adelphos", 'name': 'Adelphos daemon', 'login_shell' : False},
@@ -87,6 +92,7 @@ cli_stub_dep_conf = {
 
 adelphos_stub =  {
         "conf" : {
+            "social_dao" : social_dao_test_conf,
             "social" : test_social_cnf
             },
         "General": {
@@ -109,6 +115,7 @@ adelphos_stub =  {
 
 adelphos_t2_test =  {
         "conf" : {
+            "social_dao" : social_dao_test_conf,
             "social" : test_social2_cnf
             },
     "General": {
@@ -130,6 +137,7 @@ adelphos_t2_test =  {
 
 adelphos_remote2_conf  =  {
         "conf" : {
+            "social_dao" : social_dao_test_conf,
             "social" : test_social_cnf
             },
         "General": {

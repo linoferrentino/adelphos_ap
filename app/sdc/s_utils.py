@@ -18,28 +18,10 @@ from app.logging import gCon
 
 from app.sdc.SimpleDependencyContainer import SimpleDependencyContainer
 import app.sdc.Dependencies as dep
+from app.sdc.standard_conf import adelphos_standard_configuration
+
 
 _conts = dict()
-
-
-adelphos_standard_configuration = {
-       'cli_handler' : {
-                'type' : 'standard_cli',
-                },
-       'kernel': {
-                'type' : 'adelphos',
-            },
-       'social': {
-           'type' : 'activity_pub',
-            },
-        'social_gateway' : {
-           'type' : 'activity_pub',
-           },
-        'social_dao' : {
-           'type' : 'sqlite',
-            },
-        }
-
 
 
 def build_from(vhost):

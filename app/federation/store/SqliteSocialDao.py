@@ -17,6 +17,8 @@ from app.federation.BaseSocialDao import BaseSocialDao
 from app.sdc.Dependencies import Dependencies
 from app.dao.ApServerDao import ApServerDao
 from app.dao.ApActorDao import ApActorDao
+from app.dao.ApActorDto import ApActorDto
+from app.dao.ApActorDto import ApActorImpl
 from app.logging import gCon
 
 
@@ -59,7 +61,7 @@ class SqliteSocialDao(BaseSocialDao):
         super().__init__(vhost)
 
 
-    def srv_get_or_create(self, host_name):
+    def _srv_get_or_create(self, host_name):
         return self.server_dao.get_or_create_from_host_name(host_name)
 
    
@@ -75,8 +77,14 @@ class SqliteSocialDao(BaseSocialDao):
 
  
     def actor_get(self, server, user_name):
-        actor_dto = self.actor_dao.get_from_preferred_username(server.server_id,
+        server_dto = self.server_dao.get_from_hostname(server)
+        if server_dto is None:
+            return None
+        actor_impl = self.actor_dao.get_from_preferred_username(server_dto.server_id,
                                                                user_name)
+        if actor_impl is None:
+            return None
+        actor_dto = ApActorDto(server_dto, actor_impl)
         gCon.log(f"actor_get returns {actor_dto}")
         BaseSocialDao._fill_public_key(actor_dto)
         return actor_dto
@@ -112,10 +120,10 @@ class SqliteSocialDao(BaseSocialDao):
         self.actor_dao = ApActorDao(self)
 
 
-    def actor_store(self, actor_dto):
+    def _store_actor_impl(self, actor_dto):
         gCon.log(f"storing {actor_dto}")
-        new_id = self.actor_dao.store(actor_dto)
-        BaseSocialDao._fill_public_key(actor_dto)
+        new_id = self.actor_dao.store(actor_dto.act)
+        #BaseSocialDao._fill_public_key(actor_dto)
         return new_id
 
 

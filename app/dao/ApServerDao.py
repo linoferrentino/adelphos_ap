@@ -38,7 +38,7 @@ class ApServerDao(BaseDao):
         server_dto = self.get_from_hostname(host_name)
 
         if (server_dto is not None):
-            return server_dto
+            return server_dto.server_id
 
         return self.create_from_hostname(host_name)
 
@@ -49,7 +49,7 @@ class ApServerDao(BaseDao):
         server_dto = create_ap_server(host_name)
         self.store(server_dto)
         #gCon.log(f"I return {server_dto}")
-        return server_dto
+        return server_dto.server_id
 
 
     def get_or_create_from_uri(self, uri):

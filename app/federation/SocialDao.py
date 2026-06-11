@@ -23,19 +23,15 @@ class SocialDao(Dependency, SyncLifespanAware):
         super().__init__(vhost)
 
 
+
     @abstractmethod
-    def srv_get_or_create(self, host_name):
+    def actor_get(self, server_name, user_name):
         pass
 
 
-    @abstractmethod
-    def actor_get(self, server, user_name):
-        pass
-
-
-    @abstractmethod
-    def actor_local_get(self, user_name):
-        pass
+    #@abstractmethod
+    #def actor_local_get(self, user_name):
+    #    pass
        
 
     @abstractmethod
@@ -44,7 +40,7 @@ class SocialDao(Dependency, SyncLifespanAware):
 
 
     @abstractmethod
-    def actor_store(self, actor_dto):
+    def actor_store(self, actor):
         pass
 
 

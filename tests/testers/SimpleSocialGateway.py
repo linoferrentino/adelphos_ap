@@ -64,20 +64,13 @@ class SimpleSocialGateway(BaseSocialGateway):
         gCon.log(f"to do the netloc {uri.netloc}")
 
 
-    async def in_inbox__OLD(self, user, request):
-
-        headers = request.headers
-        gCon.log(f"here are the headers {headers}")
-        gCon.log(f"here is the url {request.url} type {type(request.url)}")
-        gCon.log(f"here is the client {request.client} type {type(request.client)}")
-
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
-
-        body = await request.body()
-        gCon.log(f"the body is {body}")
-
-        json = await request.json()
-        await social.incoming_message(user, json)
-        return Response(status_code=202)
+    async def _actor_get_uri(self, preferred_name):
+        raise Exception("todo")
 
 
+    async def _actor_get_or_discover_from_handle(self, preferred_name):
+        raise Exception("todo")
+
+
+    def _do_envelope(self, actor_from_dto, message):
+        raise Exception("todo")

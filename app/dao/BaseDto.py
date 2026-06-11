@@ -18,7 +18,7 @@ from abc import abstractmethod
 # this base class has only an abstract interface which gives to us
 # the primary key value and name, useful to update the data.
 # this is the ``sister'' class of BaseDao
-class BaseDto(ABC):
+class BaseDto__XX(ABC):
 
 
     @abstractmethod

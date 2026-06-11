@@ -18,13 +18,14 @@
 
 from ..logging import gCon
 from dataclasses import dataclass
-from app.dao.BaseDto import BaseDto
+#from app.dao.BaseDto import BaseDto
 from typing import NamedTuple
 
 
 # the fields are in the same order as the database
 @dataclass
-class ApServerDto(BaseDto):
+class ApServerDto:
+    #class ApServerDto(BaseDto):
 
     server_id: int
 

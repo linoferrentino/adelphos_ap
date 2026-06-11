@@ -226,3 +226,9 @@ exp {actor_uri}")
         return (local_user, clean_content)
 
 
+    def _do_envelope(self, actor_from_dto, message):
+        pass
+
+
+    async def _actor_get_or_discover_from_handle(self, preferred_name):
+        pass

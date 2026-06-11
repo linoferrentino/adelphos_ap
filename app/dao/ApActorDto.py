@@ -20,15 +20,17 @@ from app.logging import gCon
 from app.ap_api.AsyncRequest import AsyncGetReq
 #from app.api.AdelphosException import AdelphosException
 from urllib.parse import urlparse
-from app.dao.BaseDto import BaseDto
+#from app.dao.BaseDto import BaseDto
 from typing import NamedTuple
-#from app.dao.ApServerDto import ApServerPack
+from app.dao.ApServerDto import ApServerDto
+from app.dao.ApServerDto import create_ap_server
 
 
 # this is the base class for the activity pub actors.
 # the fields are in the same order as the columns in the db table
 @dataclass
-class ApActorDto(BaseDto):
+class ApActorImpl:
+    #class ApActorDto(BaseDto):
 
     actor_id: int
     server_fk: int
@@ -39,32 +41,52 @@ class ApActorDto(BaseDto):
     public_key: str
     timestamp: str
 
-    def get_pk(self):
-        return self.actor_id
+    #def get_pk(self):
+    #    return self.actor_id
 
 
-#class ApActorPack_remove(NamedTuple):
+#@dataclass
+#class ApActorDto_ex:
 #
-#    server: ApServerPack
-#
-#    ob: ApActorDto
-#
+#    #actor_id: int
+#    #server_fk: int
+#    server_name: str
+#    user_path: str
+#    inbox_path: str
+#    preferred_username: str
+#    private_key: str
+#    public_key: str
 
-def create_local_actor(server_fk, user_path, 
+
+@dataclass
+class ApActorDto:
+
+    srv: ApServerDto
+
+    act: ApActorImpl
+
+
+def create_local_actor(server_host, user_path, 
                     inbox_path, preferred_username, private_key):
 
-    ap_actor_dto = ApActorDto(None, server_fk, user_path,
+    server_dto = create_ap_server(server_host)
+
+    actor_impl = ApActorImpl(None, None, user_path,
                               inbox_path, preferred_username,
                               private_key, None, None)
-    return ap_actor_dto
+
+    actor = ApActorDto(server_dto, actor_impl)
+    return actor
 
 
-def create_remote_actor(server_fk, user_path, 
+def create_remote_actor(server_host, user_path, 
                     inbox_path, preferred_username, public_key):
 
-    ap_actor_dto = ApActorDto(None, server_fk, user_path,
+    server_dto = create_ap_server(server_host)
+    actor_impl = ApActorImpl(None, None, user_path,
                               inbox_path, preferred_username,
                               None, public_key, None)
-    return ap_actor_dto
+    actor = ApActorDto(server_dto, actor_impl)
+    return actor 
 
 

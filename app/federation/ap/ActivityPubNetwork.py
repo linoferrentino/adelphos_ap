@@ -94,6 +94,9 @@ class ActivityPubNetwork(SocialNetwork):
         host = config.get_host()
         host_api = f"{host}{CNST.API_POINT}"
 
+
+        gCon.log(f"user is {userob.actor_dto}")
+
         info_user = {
             "@context": [
                 "https://www.w3.org/ns/activitystreams",
@@ -105,16 +108,16 @@ class ActivityPubNetwork(SocialNetwork):
             "type": 'Service' if userob.is_daemon else 'Person',
             "name": 'Adelphos daemon' if userob.is_daemon else \
                     f"Adelphos demo user {username}",
-            "preferredUsername": userob.actor_dto.preferred_username,
+            "preferredUsername": userob.actor_dto.act.preferred_username,
             "publicKey": {
                 "id": f"https://{host_api}/users/{username}#main-key",
                 "type": "Key",
                 "owner": f"https://{host_api}/users/{username}",
-                "publicKeyPem": userob.actor_dto.public_key
+                "publicKeyPem": userob.actor_dto.act.public_key
             }
         }
 
-        assert userob.actor_dto.public_key is not None
+        assert userob.actor_dto.act.public_key is not None
         response = JSONResponse(content = info_user)
         response.headers['Content-Type'] = 'application/activity+json'
         gCon.log(f"info {info_user}")

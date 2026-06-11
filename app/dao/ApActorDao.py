@@ -17,6 +17,7 @@ from urllib.parse import urlparse
 from app.logging import gCon
 from app.dao.BaseDao import BaseDao
 from app.dao.ApActorDto import ApActorDto
+from app.dao.ApActorDto import ApActorImpl
 from app.dao.ApActorDto import create_remote_actor
 from app.ap_api.AsyncRequest import AsyncGetReq
 from dataclasses import asdict
@@ -119,13 +120,13 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
     def get_from_preferred_username(self, server_fk, preferred_username):
         return self.db.get_full_dto_ex(self.table_name,
             ('server_fk', 'preferred_username'),
-            (server_fk, preferred_username), ApActorDto)
+            (server_fk, preferred_username), ApActorImpl)
 
 
     def get_from_server_path(self, server_fk, user_path):
         return self.db.get_full_dto_ex(self.table_name,
             ('server_fk', 'user_path'),
-            (server_fk, user_path), ApActorDto)
+            (server_fk, user_path), ApActorImpl)
 
 
     # this function tries to get an actor from
@@ -164,9 +165,9 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
         table_name = "ap_actor"
 
-        if actor.private_key is not None:
-            assert actor.public_key is None
-        else:
+        public_key_save = actor.public_key
+
+        if actor.private_key is None:
             assert actor.public_key is not None
 
         fields_stored = {
@@ -180,8 +181,9 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
         #assert False
         #ApActorDao._fill_public_key(actor)
-
         newid = self.db.insert_dto_fields(table_name, fields_stored, actor_as_dict)
+
+        actor.public_key = public_key_save
         actor.actor_id = newid
         return newid
 

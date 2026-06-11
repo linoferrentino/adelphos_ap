@@ -19,6 +19,7 @@ from app.logging import gCon
 from app.consts import API_POINT
 from app.keys import generate_key
 from app.dao.ApActorDto import create_local_actor
+from app.dao.ApServerDto import create_ap_server
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
@@ -60,7 +61,7 @@ class BaseSocial(SocialProvider):
         self.users = {}
 
 
-    def create_users(self, server, users):
+    def create_users(self, users):
 
         for user in users:
             actor_dto = self.create_if_not_exists(user)
@@ -72,7 +73,7 @@ class BaseSocial(SocialProvider):
                     UserStub(actor_dto)
 
 
-    def _create_user(self, server, user):
+    def _create_user(self, user):
         
         preferredusername = user['preferredusername']
         #gCon.log(f"creating user {user}")
@@ -94,13 +95,13 @@ class BaseSocial(SocialProvider):
                 private_key = crypto_serialization.load_pem_private_key(
                         content, password=None)
 
-        actor = create_local_actor(server.server_id,
-                         user_path, user_inbox, preferredusername,
+        actor = create_local_actor(self.host, user_path, 
+                                   user_inbox, preferredusername,
                                 content.decode('utf-8'))
 
         social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
         social_dao.actor_store(actor)
-        assert actor.public_key is not None
+        assert actor.act.public_key is not None
         #gCon.log(f"this is the actor {actor}")
         return actor
 
@@ -132,6 +133,7 @@ class BaseSocial(SocialProvider):
         user = self.local_user_get(from_user)
         if user is None:
             raise Exception(f"No user {from_user}")
+        gCon.log(f"the user is {user} actor {user.actor_dto}")
 
         #transport = self.vhost.get_dep(Dependencies.TRANSPORT)
         #await transport.post_json(user, {
@@ -156,15 +158,14 @@ class BaseSocial(SocialProvider):
 
 
     def create_if_not_exists(self, user):
-        actor_dto = self.social_dao.actor_get(self.server_dto, 
-                                              user['preferredusername'])
+        actor_dto = self.social_dao.actor_get(self.host, user['preferredusername'])
         if actor_dto is None:
-            actor_dto = self._create_user(self.server_dto, user)
+            actor_dto = self._create_user(user)
         return actor_dto
 
 
     def local_actor_get(self, user_name):
-        return self.social_dao.actor_get(self.server_dto, user_name)
+        return self.social_dao.actor_get(self.host, user_name)
 
 
     def start_sync(self):
@@ -174,11 +175,12 @@ class BaseSocial(SocialProvider):
         host = config.get_host()
         gCon.log(f"This is the conf {soc_cnf} for host {host}")
 
-        self.server_dto = self.social_dao.srv_get_or_create(host)
-        gCon.log(f"This is the host {self.server_dto}")
+        #self.server_dto = self.social_dao.srv_get_or_create(host)
+        #gCon.log(f"This is the host {self.server_dto}")
+        self.host = host
 
         users = soc_cnf['users']
-        self.create_users(self.server_dto, users)
+        self.create_users(users)
 
 
     def stop_sync(self):

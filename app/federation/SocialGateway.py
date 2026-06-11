@@ -31,6 +31,11 @@ class SocialGateway(Dependency):
         pass
 
 
+    @abstractmethod
+    async def out_outbox(self, actor_dto, handle, message):
+        pass
+
+
 class SocialGateway_NO(SocialListener):
 
 
