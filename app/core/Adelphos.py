@@ -60,6 +60,8 @@ from app.federation.SocialListener import SocialListener
 from app.sdc.Dependencies import Dependencies
 from app.logging import gCon
 
+from app.core.sys.DebugModule import DebugModule
+
 
 SOCIAL_USER = 'adelphos'
 
@@ -82,7 +84,10 @@ class Adelphos(Kernel, SocialListener):
 
 
     def get_syscalls(self):
-        return [ ]
+        syscalls = []
+        if (self.vhost.get_dep(Dependencies.CONFIG)).is_test_instance():
+            syscalls.extend(DebugModule.get_syscalls(self))
+        return syscalls
 
 
     async def new_post(self, actor_from, msg):

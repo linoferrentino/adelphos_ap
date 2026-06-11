@@ -102,8 +102,6 @@ adelphos_stub =  {
     "private_key": ":memory:", 
     "host":  "localhost:7777", 
     "root_user": ":local:", 
-    # the password for alice is dual, one is for her being a normal alias in adelphos,
-    # the other as a super user, the super user does not participate in the transactions
     "root_password": "$argon2id$v=19$m=65536,t=3,p=4$o/oGlKYis246QARUaT/0cw$7zu3oQuS1wz4Ddk/pc6NjLfTcac6YGmEX2VRGymtXrI"
     }, 
             "demo_users": [
@@ -111,6 +109,22 @@ adelphos_stub =  {
     {"name": "bobzz", "alias": "##bob2.bf", "password": "bob22"}]
 }
 
+
+adelphos_t1_test =  {
+        "conf" : {
+            "social_dao" : social_dao_test_conf,
+            "social" : test_social2_cnf
+            },
+    "General": {
+    "debug": True, 
+    "port": 9919, 
+    "db_name": ":memory:", 
+    "private_key": ":memory:", 
+    "host":  "localhost:9911", 
+    "root_user": ":local:", 
+    "root_password": "$argon2id$v=19$m=65536,t=3,p=4$o/oGlKYis246QARUaT/0cw$7zu3oQuS1wz4Ddk/pc6NjLfTcac6YGmEX2VRGymtXrI"
+    }
+}
 
 
 adelphos_t2_test =  {
@@ -120,18 +134,13 @@ adelphos_t2_test =  {
             },
     "General": {
     "debug": True, 
-    "port": 9911, 
+    "port": 9921, 
     "db_name": ":memory:", 
     "private_key": ":memory:", 
-    "host":  "localhost:9911", 
+    "host":  "localhost:9913", 
     "root_user": ":local:", 
-    # the password for alice is dual, one is for her being a normal alias in adelphos,
-    # the other as a super user, the super user does not participate in the transactions
     "root_password": "$argon2id$v=19$m=65536,t=3,p=4$o/oGlKYis246QARUaT/0cw$7zu3oQuS1wz4Ddk/pc6NjLfTcac6YGmEX2VRGymtXrI"
-    }, 
-            "demo_users": [
-    {"name": "alice99", "alias": "##alice.af", "password": "alice11", "root" : True}, 
-    {"name": "bobzz", "alias": "##bob2.bf", "password": "bob22"}]
+    }
 }
 
 

@@ -16,6 +16,7 @@ from app.sdc.Dependencies import Dependencies
 from app.logging import gCon
 from app.cli.SysCall import SysCall
 from app.api.UserSession import active_login
+from app.core.sys.DebugModule import DebugModule
 
 
 class TestKernel(Kernel):
@@ -33,10 +34,13 @@ class TestKernel(Kernel):
 
 
     def get_syscalls(self):
-        return [
-                SysCall('echo', TestKernel._sys_call_echo, self),
-                SysCall('sndpost', TestKernel._sys_call_sndpost, self),
-                ]
+        #return [
+        #        SysCall('echo', TestKernel._sys_call_echo, self),
+        #        SysCall('sndpost', TestKernel._sys_call_sndpost, self),
+        #        ]
+        syscalls = []
+        syscalls.extend(DebugModule.get_syscalls(self))
+        return syscalls
 
 
     async def proc_msg_XXX(self, cp, session):
@@ -59,22 +63,22 @@ class TestKernel(Kernel):
 
 
     #@active_login
-    async def _sys_call_echo(self, session, pars):
-        val = pars.get_param_safe('msg')
-        res = f"hello {val}!"
-        return res
+    #async def _sys_call_echo(self, session, pars):
+    #    val = pars.get_param_safe('msg')
+    #    res = f"hello {val}!"
+    #    return res
 
 
-    #@active_login
-    async def _sys_call_sndpost(self, session, pars):
-        recipient = pars.get_param_safe('to')
-        msg = pars.get_param_safe('msg')
-        from_user = pars.get_param_safe('from')
-        #local_user = session.get_user()
-        gCon.log(f"sending message {msg} to {recipient} from {from_user}")
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
-        await social.outgoing_message(from_user, recipient, msg)
-        return 'DONE!'
+    ##@active_login
+    #async def _sys_call_sndpost(self, session, pars):
+    #    recipient = pars.get_param_safe('to')
+    #    msg = pars.get_param_safe('msg')
+    #    from_user = pars.get_param_safe('from')
+    #    #local_user = session.get_user()
+    #    gCon.log(f"sending message {msg} to {recipient} from {from_user}")
+    #    social = self.vhost.get_dep(Dependencies.SOCIAL)
+    #    await social.outgoing_message(from_user, recipient, msg)
+    #    return 'DONE!'
 
 
 #SYSCALLS = {

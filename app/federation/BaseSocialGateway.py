@@ -58,12 +58,11 @@ class BaseSocialGateway(SocialGateway):
         return Response(status_code=202)
 
 
-    async def out_outbox(self, actor_from_dto, recipient, message):
-        actor_to_dto = await self._actor_get_or_discover_from_handle(recipient)
+    async def out_outbox(self, actor_from_dto, handle, message):
+        actor_to_dto = await self._actor_get_or_discover_from_handle(handle)
         payload = self._do_envelope(actor_from_dto, message)
 
 
-    
     @abstractmethod
     def _do_envelope(self, actor_from_dto, message):
         pass
@@ -85,7 +84,7 @@ class BaseSocialGateway(SocialGateway):
 
 
     @abstractmethod
-    async def _actor_get_or_discover_from_handle(self, preferred_name):
+    async def _actor_get_or_discover_from_handle(self, handle):
         pass
 
 

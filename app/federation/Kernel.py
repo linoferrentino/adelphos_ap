@@ -14,9 +14,10 @@
 
 from abc import ABC, abstractmethod
 from app.federation.LifespanAware import LifespanAware
+from app.sdc.Dependency import Dependency
 
 
-class Kernel(LifespanAware):
+class Kernel(Dependency, LifespanAware):
 
     def __init__(self, vhost):
         super().__init__(vhost)

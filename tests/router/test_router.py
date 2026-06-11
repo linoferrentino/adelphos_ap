@@ -52,7 +52,7 @@ def test_simple_router(get_routable_app):
 
     app = get_routable_app('test1', tconf.adelphos_stub, tconf.simple_tester_config)
     with app.websocket_connect(CNST.WS_ROUTE) as websocket:
-        websocket.send_text("echo msg lino99")
+        websocket.send_text("dbg.echo msg lino99")
         data = websocket.receive_text()
         assert data == 'hello lino99!'
 

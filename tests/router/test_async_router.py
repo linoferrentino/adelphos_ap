@@ -92,7 +92,7 @@ def test_post_from_kernel(get_routable_app):
     with test1, test2:
         with test1.websocket_connect(CNST.WS_ROUTE) as websocket:
             websocket.send_text(
-    f"sndpost to @{user_in}@{host2} msg echo_test_x918 from demo1")
+    f"dbg.sndpost to @{user_in}@{host2} msg echo_test_x918 from demo1")
             data = websocket.receive_text()
             assert data == 'DONE!'
             websocket.close()

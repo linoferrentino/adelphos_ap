@@ -15,16 +15,15 @@
 from abc import ABC, abstractmethod
 
 
-class LifespanAware(ABC):
+class SysCallModule(ABC):
+
+    def __init__(self, kernel, sys_prefix):
+        self.kernel = kernel
+        self.sys_prefix = sys_prefix
 
 
     @abstractmethod
-    async def start_async(self):
-        pass
-
-    
-    @abstractmethod
-    async def stop_async(self):
+    def get_syscalls(self):
         pass
 
 
