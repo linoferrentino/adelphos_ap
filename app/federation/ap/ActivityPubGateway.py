@@ -141,53 +141,54 @@ class ActivityPubGateway(BaseSocialGateway):
         return (actor_dto, True)
 
 
+    #async def _actor_get_or_discover(self, uri):
+    #    key_parsed = urlsplit(uri)
+    #    #gCon.log(f"the key parsed is {key_parsed}")
+    #    social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
+    #    actor_dto = social_dao.actor_get_from_parsed_url(key_parsed)
+    #    if actor_dto is not None:
+    #        return actor_dto
 
-    async def _actor_get_or_discover(self, uri):
-        key_parsed = urlsplit(uri)
-        #gCon.log(f"the key parsed is {key_parsed}")
-        social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
-        actor_dto = social_dao.actor_get_from_parsed_url(key_parsed)
-        if actor_dto is not None:
-            return actor_dto
 
+    #async def _actor_discover_from_key(self, key_parsed):
 
-        actor_uri_p = key_parsed._replace(fragment = "")
-        actor_uri = actor_uri_p.geturl()
-        #gCon.log(f"actor_uri {actor_uri}")
+    #    actor_uri_p = key_parsed._replace(fragment = "")
+    #    actor_uri = actor_uri_p.geturl()
+    #    #gCon.log(f"actor_uri {actor_uri}")
 
-        transport = self.vhost.get_dep(Dependencies.TRANSPORT)
-        actor_ob = await transport.get_json(actor_uri)
-        #gCon.log(f"actor is {actor_ob}, type {type(actor_ob)}")
+    #    transport = self.vhost.get_dep(Dependencies.TRANSPORT)
+    #    actor_ob = await transport.get_json(actor_uri)
+    #    #gCon.log(f"actor is {actor_ob}, type {type(actor_ob)}")
 
-        key_ob = json.loads(actor_ob)
+    #    key_ob = json.loads(actor_ob)
 
-        gCon.log(f"The object requested is {key_ob}")
+    #    gCon.log(f"The object requested is {key_ob}")
 
-        pub_key_ob = key_ob['publicKey']
-        pub_key_ob_id = pub_key_ob['id']
+    #    pub_key_ob = key_ob['publicKey']
+    #    pub_key_ob_id = pub_key_ob['id']
 
-        if (pub_key_ob_id != key_parsed.geturl()):
-            raise Exception(f"Error, got {pub_key_ob_id} key \
-exp {actor_uri}")
+    #    if (pub_key_ob_id != key_parsed.geturl()):
+    #        raise Exception(f"Error, got {pub_key_ob_id} key \
+            #exp #{actor_uri}")
 
-        owner = pub_key_ob['owner'] 
-        if (owner != actor_uri):
-            raise Exception(f"Bad key {owner} different from {actor_uri}")
+    #    owner = pub_key_ob['owner'] 
+    #    if (owner != actor_uri):
+    #        raise Exception(f"Bad key {owner} different from {actor_uri}")
 
-        inbox_uri = key_ob['inbox']
-        preferred_username = key_ob['preferredUsername']
-        inbox_parsed = urlsplit(inbox_uri)
+    #    inbox_uri = key_ob['inbox']
+    #    preferred_username = key_ob['preferredUsername']
+    #    inbox_parsed = urlsplit(inbox_uri)
 
-        server_dto = social_dao.srv_get_or_create(key_parsed.netloc)
+    #    server_dto = social_dao.srv_get_or_create(key_parsed.netloc)
 
-        actor_dto = create_remote_actor(server_dto.server_id,
-                         key_parsed.path,
-                         inbox_parsed.path,
-                         preferred_username,
-                         pub_key_ob['publicKeyPem'])
-        social_dao.actor_store(actor_dto)
-        gCon.log(f"New actor {actor_dto}")
-        return actor_dto
+    #    actor_dto = create_remote_actor(server_dto.server_id,
+    #                     key_parsed.path,
+    #                     inbox_parsed.path,
+    #                     preferred_username,
+    #                     pub_key_ob['publicKeyPem'])
+    #    social_dao.actor_store(actor_dto)
+    #    gCon.log(f"New actor {actor_dto}")
+    #    return actor_dto
 
     
     async def _parse_message(self, user, request, actor_str, body_str, body_ob):
@@ -230,5 +231,5 @@ exp {actor_uri}")
         pass
 
 
-    async def _actor_get_or_discover_from_handle(self, preferred_name):
-        pass
+    #async def _actor_get_or_discover_from_handle(self, preferred_name):
+    #    pass

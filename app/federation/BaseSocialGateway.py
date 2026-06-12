@@ -12,12 +12,19 @@
 ######################################################
 
 
+import json
+
+from urllib.parse import urlsplit
+
 from app.federation.SocialGateway import SocialGateway
 from abc import abstractmethod, ABC
 from app.logging import gCon
 from starlette.responses import Response
 from starlette.exceptions import HTTPException
 from app.sdc.Dependencies import Dependencies
+from app.exc.AdelphosException import AdelphosException
+from app.exc.AdelphosException import AdErrno
+from app.dao.ApActorDto import create_remote_actor
 
 
 class BaseSocialGateway(SocialGateway):
@@ -34,7 +41,7 @@ class BaseSocialGateway(SocialGateway):
         gCon.log(f"here is the client {request.client} type {type(request.client)}")
 
         body = await request.body()
-        gCon.log(f"body {body}")
+        gCon.log(f"body {body} request type {type(request)}")
         body_str = body.decode()
         body_ob = await request.json()
 
@@ -61,7 +68,13 @@ class BaseSocialGateway(SocialGateway):
     async def out_outbox(self, actor_from_dto, handle, message):
         actor_to_dto = await self._actor_get_or_discover_from_handle(handle)
         payload = self._do_envelope(actor_from_dto, message)
-
+        gCon.log(f"will send the envelope {payload}")
+        actor_uri = f"https://{actor_to_dto.srv.host_name}\
+{actor_to_dto.act.inbox_path}"
+        gCon.log(f"sending to {actor_uri}")
+        transport = self.vhost.get_dep(Dependencies.TRANSPORT)
+        await transport.post_json(actor_uri, payload)
+        
 
     @abstractmethod
     def _do_envelope(self, actor_from_dto, message):
@@ -83,11 +96,108 @@ class BaseSocialGateway(SocialGateway):
         pass
 
 
-    @abstractmethod
     async def _actor_get_or_discover_from_handle(self, handle):
-        pass
+        gCon.log(f"asking the user {handle}")
+        (first_char, actor_instance) = (handle[0], handle[1:])
+
+        if (first_char != '@'):
+            raise AdelphosException(AdErrno.EINVALID_HANDLE)
+
+        user_host = actor_instance.split('@')
+        if (len(user_host) != 2):
+            raise AdelphosException(AdErrno.EINVALID_HANDLE)
+        (preferred_username, rem_instance) = user_host
+
+        social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
+        actor = social_dao.actor_get(rem_instance, preferred_username)
+        if actor is not None:
+            return actor
+
+        actor_query = f"https://{rem_instance}/.well-known/webfinger?\
+resource=acct:{actor_instance}"
+        gCon.log(f"actor query {actor_query}")
+
+        transport = self.vhost.get_dep(Dependencies.TRANSPORT)
+        actor_def_str = await transport.get_json_safe(actor_query, 
+                    AdErrno.USER_DOES_NOT_EXIST)
+        #gCon.log(f"the actor string is {actor_def_str}")
+        actor_def_ob = json.loads(actor_def_str)
+        #gCon.log(f"the actor is {actor_def_ob}")
+
+        subject = actor_def_ob['subject']
+        if ( subject != f"acct:{actor_instance}"):
+            raise Exception(f"Got {subject} instead!")
+
+        href_user = None
+        # I have to get the URI corresponding to activitypub stream
+        # this is from W3C reccomentations. 
+        # https://www.w3.org/community/reports/socialcg/CG-FINAL-apwf-20240608/
+        for link in actor_def_ob['links']:
+            if link['rel'] != 'self':
+                continue
+            type_rel = link['type']
+            if  ((type_rel == 'application/activity+json') or
+                 (type_rel == 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"')):
+                href_user = link['href']
+                break
+
+        if (href_user is None):
+            raise Exception(f"Misconfigured actor {subject}")
+
+        key_parsed = urlsplit(href_user)
+        key_parsed = key_parsed._replace(fragment = "main-key")
+        gCon.log(f"This is the key for this actor {key_parsed}")
+
+        gCon.log(f"Discovering actor {handle} got me {href_user}")
+        actor = await self._actor_discover_from_key(key_parsed)
+        return actor
 
 
-    @abstractmethod
     async def _actor_get_or_discover(self, uri):
-        pass
+        key_parsed = urlsplit(uri)
+        social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
+        actor_dto = social_dao.actor_get_from_parsed_url(key_parsed)
+        if actor_dto is not None:
+            return actor_dto
+        return await self._actor_discover_from_key(key_parsed)
+
+
+    async def _actor_discover_from_key(self, key_parsed):
+
+        actor_uri_p = key_parsed._replace(fragment = "")
+        actor_uri = actor_uri_p.geturl()
+        #gCon.log(f"actor_uri {actor_uri}")
+
+        transport = self.vhost.get_dep(Dependencies.TRANSPORT)
+        actor_ob = await transport.get_json(actor_uri)
+        #gCon.log(f"actor is {actor_ob}, type {type(actor_ob)}")
+
+        key_ob = json.loads(actor_ob)
+
+        gCon.log(f"The object requested is {key_ob}")
+
+        pub_key_ob = key_ob['publicKey']
+        pub_key_ob_id = pub_key_ob['id']
+
+        if (pub_key_ob_id != key_parsed.geturl()):
+            raise Exception(f"Error, got {pub_key_ob_id} key \
+exp {actor_uri}")
+
+        owner = pub_key_ob['owner'] 
+        if (owner != actor_uri):
+            raise Exception(f"Bad key {owner} different from {actor_uri}")
+
+        inbox_uri = key_ob['inbox']
+        preferred_username = key_ob['preferredUsername']
+        inbox_parsed = urlsplit(inbox_uri)
+
+        social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
+
+        actor_dto = create_remote_actor(key_parsed.netloc,
+                        key_parsed.path, inbox_parsed.path, preferred_username,
+                        pub_key_ob['publicKeyPem'])
+        social_dao.actor_store(actor_dto)
+        gCon.log(f"New actor {actor_dto}")
+        return actor_dto
+
+

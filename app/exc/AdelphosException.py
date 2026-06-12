@@ -22,12 +22,18 @@ class AdErrno(IntEnum):
     USER_DOES_NOT_EXIST = 1
     USER_ALREADY_EXISTING = 2
     ENOLOGIN = 3
-    #EDUPLICATED_FAMILY = 2
-    #EINVALID_USER_OR_PASSWORD = 3
+    EINVALID_HANDLE = 4
 
 
 def parse_exc(err_str):
     re_match = re.match(br"Adelphos error: #(\d*)#", err_str)
+    if re_match is None:
+        return -1
+    return int(re_match.group(1))
+
+
+def parse_exc_str(err_str):
+    re_match = re.match(r"User Error: Adelphos error: #(\d*)#", err_str)
     if re_match is None:
         return -1
     return int(re_match.group(1))

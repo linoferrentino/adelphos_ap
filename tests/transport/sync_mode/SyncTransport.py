@@ -15,7 +15,7 @@
 from app.transport.AbstractTransport import AbstractTransport
 from urllib.parse import urlsplit
 from app.logging import gCon
-
+from starlette.exceptions import HTTPException
 
 class SyncTransport(AbstractTransport):
 
@@ -40,7 +40,11 @@ class SyncTransport(AbstractTransport):
         if is_local == True:
             res = self.in_post_json(self, urls, json)
         else:
-            res = await self.gateway.route_message("POST", urls)
+            res = await self.gateway.route_message("POST", urls, json, headers)
+
+        if res.status_code != 202:
+            raise HTTPException(res.status_code)
+
         return res
 
 
@@ -55,6 +59,10 @@ class SyncTransport(AbstractTransport):
             val = self.in_get_json(self, urls)
         else:
             val = await self.gateway.route_message("GET", urls)
+
+        if val.status_code != 200:
+            raise HTTPException(val.status_code)
+
         return val.body
 
 
@@ -67,6 +75,7 @@ class SyncTransport(AbstractTransport):
             raise Exception("Invalid host")
         if self.in_app is None:
             return Response(500, None)
+        gCon.log(f">>>> {urlp} in app {self.in_app}")
         return self.in_app.in_get_json(urlp)
 
 

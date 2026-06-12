@@ -35,19 +35,21 @@ class SyncGateway(AbstractGateway):
         pass
 
  
-    def route_message(self, method, urlp, json = None):
+    def route_message(self, method, urlp, json = None, headers = None):
+
+        #gCon.log(f"route message ========= {urlp}")
 
         transport = self.hosts.get(urlp.netloc)
         if transport is None:
             raise Exception(f"No route to host {urlp}")
 
-        gCon.log(f"========= {urlp}")
+        gCon.log(f"method {method} and {urlp} json {json}")
 
         match method:
             case 'GET':
                 return transport.in_get_json(urlp)
             case 'POST':
-                transport.in_post_json(urlp, json)
+                return transport.in_post_json(urlp, json)
             case _:
                 raise Exception(f"Undefined method {method}")
 

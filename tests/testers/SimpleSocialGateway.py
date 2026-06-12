@@ -46,31 +46,40 @@ class SimpleSocialGateway(BaseSocialGateway):
 
     async def _check_signature_message(self, actor_str, request, body_str):
         gCon.log(f"checking signature for {actor_str}")
-        actor_split = urlsplit(actor_str)
-        actor_dto = await self._actor_get_or_discover(actor_split)
+        #actor_split = urlsplit(actor_str)
+        actor_dto = await self._actor_get_or_discover(actor_str)
         if actor_dto is None:
-            gCon.log(f"No actor! {actor_split}")
+            gCon.log(f"No actor! {actor_str}")
             return (None, False)
         return (actor_dto, True)
 
 
-    async def _actor_get_or_discover(self, uri):
-        social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
-        actor_dto = social_dao.actor_get_from_parsed_url(uri)
-        if actor_dto is not None:
-            return actor_dto
-        if len(uri.netloc) == 0:
-            return None
-        gCon.log(f"to do the netloc {uri.netloc}")
+    #async def _actor_get_or_discover(self, uri):
+    #    social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
+    #    actor_dto = social_dao.actor_get_from_parsed_url(uri)
+    #    if actor_dto is not None:
+    #        return actor_dto
+    #    if len(uri.netloc) == 0:
+    #        return None
+    #    gCon.log(f"to do the netloc {uri.netloc}")
 
 
-    async def _actor_get_uri(self, preferred_name):
-        raise Exception("todo")
+    #async def _actor_get_uri(self, preferred_name):
+    #    raise Exception("todo")
 
 
-    async def _actor_get_or_discover_from_handle(self, preferred_name):
-        raise Exception("todo")
+    #async def _actor_discover_from_key(self, key_parsed):
+    #    return None
+
+
+    #async def _actor_get_or_discover_from_handle(self, preferred_name):
+    #    gCon.log(f"asking the user {preferred_name}")
+    #    raise Exception("todo")
 
 
     def _do_envelope(self, actor_from_dto, message):
-        raise Exception("todo")
+        actor_uri = actor_from_dto.get_uri()
+        return { 
+                'actor' : actor_uri,
+                'msg' : message,
+                }

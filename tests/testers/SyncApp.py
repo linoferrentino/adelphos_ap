@@ -45,6 +45,7 @@ def exception_sync_middleware(func):
                                 status_code = 401)
             return response
         except HTTPException as exc:
+            gCon.log(f"================  {exc.status_code}  ========================")
             response = Response(status_code = exc.status_code)
             return response
 
@@ -145,6 +146,7 @@ class SyncApp:
 
     @exception_sync_middleware
     def in_post_json(self, parsed_url, in_json):
+        gCon.log(f"in_post_json {in_json}")
         return self._do_sync_req(self.post_routes, parsed_url, in_json)
 
 
@@ -153,8 +155,7 @@ class SyncApp:
         (route, match_route) = self._get_matched_route(urlp, routes)
 
         if route is None:
-            gCon.log(f"No route for {urlp}")
-            return Response(None, 404)
+            raise HTTPException(404)
 
         dict_params = parse_qs(urlp.query)
 
@@ -165,6 +166,10 @@ class SyncApp:
         endpoint = route.endpoint
         request = SyncRequest(dict_params, path_params, in_json, urlp)
 
+        gCon.log(f"request {request}")
+
         res = run_coro_in_loop(endpoint, (request,))
+
+        gCon.log(f"res {res}")
         return res
 

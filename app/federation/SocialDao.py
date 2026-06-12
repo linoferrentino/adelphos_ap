@@ -23,16 +23,10 @@ class SocialDao(Dependency, SyncLifespanAware):
         super().__init__(vhost)
 
 
-
     @abstractmethod
     def actor_get(self, server_name, user_name):
         pass
 
-
-    #@abstractmethod
-    #def actor_local_get(self, user_name):
-    #    pass
-       
 
     @abstractmethod
     def actor_get_from_parsed_url(self, parsed_url):

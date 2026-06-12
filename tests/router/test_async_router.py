@@ -31,7 +31,7 @@ from tests.testers.SyncApp import SyncApp
 import app.consts as CNST
 from tests.testers.SyncTester import SyncTester
 from app.exc.AdelphosException import AdelphosException
-from app.exc.AdelphosException import parse_exc
+from app.exc.AdelphosException import parse_exc_str
 from app.exc.AdelphosException import AdErrno
 from app.logging import gCon
 from app.federation.SimpleSocial import SimpleSocial
@@ -94,15 +94,24 @@ def test_post_from_kernel(get_routable_app):
             websocket.send_text(
     f"dbg.sndpost to @{user_in}@{host2} msg echo_test_x918 from demo1")
             data = websocket.receive_text()
-            assert data == 'DONE!'
+            assert parse_exc_str(data) == AdErrno.USER_DOES_NOT_EXIST
+
+            user_in = 'demo77'
+
+            websocket.send_text(
+    f"dbg.sndpost to @{user_in}@{host2} msg echo_test_x918 from demo1")
+            data = websocket.receive_text()
+            assert data == "DONE!"
+
             websocket.close()
             
-            #user_ob = routable2.get_social().login_user(user_in)
-            #count_msg = user_ob.count_msg()
-            #assert count_msg == 1
+            user_ob = test2.app.routable.get_dep(
+                    Dependencies.SOCIAL).login_user(user_in)
+            count_msg = user_ob.count_msg()
+            assert count_msg == 1
 
-            #msg = user_ob.pop_lst_msg()
-            #assert msg == 'echo_test_x918'
+            msg = user_ob.pop_lst_msg()
+            assert msg == 'echo_test_x918'
 
 
 

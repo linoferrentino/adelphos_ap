@@ -21,7 +21,11 @@ class SyncRequest:
 
     def __init__(self, query_params, path_params, json_ob, urlp, headers = None):
 
-        gCon.log(f"create req json {json_ob} urlp {urlp}")
+
+        if (json_ob is not None) and (isinstance(json_ob, dict) == False):
+            raise Exception(f"I am expeting an object here got {json_ob}")
+
+        gCon.log(f"create req json /{json_ob}/ urlp {urlp}")
 
         self.query_params = { k: v[0] for k, v in query_params.items() }
         self.path_params = path_params 
