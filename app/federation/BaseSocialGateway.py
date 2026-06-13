@@ -144,33 +144,41 @@ resource=acct:{actor_instance}"
         if (href_user is None):
             raise Exception(f"Misconfigured actor {subject}")
 
-        key_parsed = urlsplit(href_user)
-        key_parsed = key_parsed._replace(fragment = "main-key")
-        gCon.log(f"This is the key for this actor {key_parsed}")
+        actor_uri = urlsplit(href_user)
+        #key_parsed = key_parsed._replace(fragment = "main-key")
+        #gCon.log(f"This is the key for this actor {key_parsed}")
 
         gCon.log(f"Discovering actor {handle} got me {href_user}")
-        actor = await self._actor_discover_from_key(key_parsed)
+        actor = await self._actor_discover_from_actor_uri(actor_uri)
         return actor
 
 
+    @staticmethod
+    def get_key_uri_from_actor(actor_uri):
+        return actor_uri._replace(fragment = "main-key")
+
+
     async def _actor_get_or_discover(self, uri):
-        key_parsed = urlsplit(uri)
+        actor_uri = urlsplit(uri)
         social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
-        actor_dto = social_dao.actor_get_from_parsed_url(key_parsed)
+        actor_dto = social_dao.actor_get_from_parsed_url(actor_uri)
         if actor_dto is not None:
             return actor_dto
-        return await self._actor_discover_from_key(key_parsed)
+        #key_parsed = BaseSocialGateway.get_key_uri_from_actor(actor_uri)
+        return await self._actor_discover_from_actor_uri(actor_uri)
 
 
-    async def _actor_discover_from_key(self, key_parsed):
+    async def _actor_discover_from_actor_uri(self, actor_uri_p):
 
-        actor_uri_p = key_parsed._replace(fragment = "")
+        #actor_uri_p = key_parsed._replace(fragment = "")
+        key_parsed = actor_uri_p._replace(fragment = "main-key")
         actor_uri = actor_uri_p.geturl()
         #gCon.log(f"actor_uri {actor_uri}")
 
         transport = self.vhost.get_dep(Dependencies.TRANSPORT)
-        actor_ob = await transport.get_json(actor_uri)
-        #gCon.log(f"actor is {actor_ob}, type {type(actor_ob)}")
+        actor_ob = await transport.get_json_safe(actor_uri,
+                AdErrno.USER_DOES_NOT_EXIST)
+        gCon.log(f"actor is {actor_ob}, type {type(actor_ob)}")
 
         key_ob = json.loads(actor_ob)
 

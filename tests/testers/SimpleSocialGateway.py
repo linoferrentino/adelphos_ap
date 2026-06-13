@@ -83,3 +83,4 @@ class SimpleSocialGateway(BaseSocialGateway):
                 'actor' : actor_uri,
                 'msg' : message,
                 }
+

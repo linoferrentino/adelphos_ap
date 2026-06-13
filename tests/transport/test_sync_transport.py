@@ -70,8 +70,9 @@ def test_get_flag_no(sync1, sync2):
     test1 = SyncTester(sync1)
     test2 = SyncTester(sync2)
 
-    with test1, test2, pytest.raises(Exception):
-        response = test1.post("/get_remote_flag", json = { 
+    #with test1, test2, pytest.raises(Exception):
+    response = test1.post("/get_remote_flag", json = { 
                                           'dest' : "www.nohost.com",
                                           'msg' : 'flag1' })
+    assert (response.status_code == 401)
 

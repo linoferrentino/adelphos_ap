@@ -120,7 +120,7 @@ adelphos_t1_test =  {
     "port": 9919, 
     "db_name": ":memory:", 
     "private_key": ":memory:", 
-    "host":  "localhost:9911", 
+    "host":  "localhost:9919", 
     "root_user": ":local:", 
     "root_password": "$argon2id$v=19$m=65536,t=3,p=4$o/oGlKYis246QARUaT/0cw$7zu3oQuS1wz4Ddk/pc6NjLfTcac6YGmEX2VRGymtXrI"
     }
@@ -137,7 +137,7 @@ adelphos_t2_test =  {
     "port": 9921, 
     "db_name": ":memory:", 
     "private_key": ":memory:", 
-    "host":  "localhost:9913", 
+    "host":  "localhost:9921", 
     "root_user": ":local:", 
     "root_password": "$argon2id$v=19$m=65536,t=3,p=4$o/oGlKYis246QARUaT/0cw$7zu3oQuS1wz4Ddk/pc6NjLfTcac6YGmEX2VRGymtXrI"
     }

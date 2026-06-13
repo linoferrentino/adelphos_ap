@@ -18,6 +18,7 @@ from app.ap_api.AsyncRequest import AsyncPostReq
 import aiohttp
 import asyncio
 from app.logging import gCon
+from starlette.exceptions import HTTPException
 
 
 class AsyncGateway(AbstractGateway):
@@ -76,8 +77,9 @@ class AsyncGateway(AbstractGateway):
     async def async_req_wait(self, ar):
         # I have to put it into the list and wait
         await self.async_req_push(ar)
-        #if ar.status_code != 200:
-        #    raise Exception(f"Got {ar.status_code} from {ar._url}")
+        if ar.status_code != 200:
+            gCon.log(f"Got {ar.status_code} from {ar._url}")
+            raise HTTPException(ar.status_code)
         #gCon.log(f"Got the text {ar.text}")
         return ar.text
 

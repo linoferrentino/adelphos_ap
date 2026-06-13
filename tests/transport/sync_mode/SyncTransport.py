@@ -54,6 +54,14 @@ class SyncTransport(AbstractTransport):
 
 
     async def get_json(self, url):
+        try:
+            return await self._get_json_try(url)
+        except Exception as exc:
+            gCon.log(f"exception in get {exc}")
+            raise HTTPException(401)
+        
+
+    async def _get_json_try(self, url):
         (is_local, urls) = self._check_gateway_local(url)
         if is_local == True:
             val = self.in_get_json(self, urls)

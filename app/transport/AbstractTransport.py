@@ -33,6 +33,10 @@ class AbstractTransport(ABC):
     async def get_json_safe(self, url, errno):
         try:
             val = await self.get_json(url)
+            #if (val.status_code == 200):
+            #    return val
+            #gCon.log(f"FAILED get! with status {val.status_code}")
+            #raise AdelphosException(errno)
             return val
         except HTTPException as exc:
             raise AdelphosException(errno)

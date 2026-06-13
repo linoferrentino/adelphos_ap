@@ -65,6 +65,12 @@ class ApActorDto:
 
     act: ApActorImpl
 
+    def get_inbox(self):
+        return f"https://{self.srv.host_name}{self.act.inbox_path}"
+
+    def get_uri(self):
+        return f"https://{self.srv.host_name}{self.act.user_path}"
+
 
 def create_local_actor(server_host, user_path, 
                     inbox_path, preferred_username, private_key):
