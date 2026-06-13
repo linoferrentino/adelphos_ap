@@ -45,9 +45,18 @@ class SimpleSocialGateway(BaseSocialGateway):
 
 
     async def _check_signature_message(self, actor_str, request, body_str):
-        gCon.log(f"checking signature for {actor_str}")
         #actor_split = urlsplit(actor_str)
         actor_dto = await self._actor_get_or_discover(actor_str)
+
+        headers = request.headers
+        
+        signature = headers.get('x-simple-signature')
+        if signature is None:
+            gCon.log("NO signature")
+            raise AdelphosException(AdErrno.EINVALID_SIGNATURE)
+
+        gCon.log(f"checking signature for {actor_str}, signature {signature}")
+
         if actor_dto is None:
             gCon.log(f"No actor! {actor_str}")
             return (None, False)
@@ -79,8 +88,11 @@ class SimpleSocialGateway(BaseSocialGateway):
 
     def _do_envelope(self, actor_from_dto, message):
         actor_uri = actor_from_dto.get_uri()
-        return { 
+        headers = {
+                'x-simple-signature' : f"{message[:3]}-{message[-3:]}"
+                }
+        return ( headers, { 
                 'actor' : actor_uri,
                 'msg' : message,
-                }
+                })
 

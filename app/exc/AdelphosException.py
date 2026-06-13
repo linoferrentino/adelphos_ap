@@ -23,6 +23,7 @@ class AdErrno(IntEnum):
     USER_ALREADY_EXISTING = 2
     ENOLOGIN = 3
     EINVALID_HANDLE = 4
+    EINVALID_SIGNATURE = 5
 
 
 def parse_exc(err_str):

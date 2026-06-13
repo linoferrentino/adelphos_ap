@@ -162,9 +162,9 @@ class SyncTester(ContextDecorator):
         return sock
 
 
-    def post(self, path, json):
+    def post(self, path, json, headers = {}):
         urlparse = self._check_path(path)
-        return self.app.in_post_json(urlparse, json)
+        return self.app.in_post_json(urlparse, json, headers)
         
 
     def get(self, path):

@@ -66,7 +66,7 @@ def test_post_inbox_KO(app, aroutable):
             'actor' : 'demo2',
             }
     response = app.post(url_post, json = jsonmsg)
-    tu.assert_error_code_in_response(response, AdErrno.USER_DOES_NOT_EXIST)
+    tu.assert_error_code_in_response(response, AdErrno.EINVALID_SIGNATURE)
 
     user_in = 'demo1'
     url_post=CNST.USER_INBOX_ROUTE.format(username = user_in)
@@ -123,7 +123,10 @@ def test_post_inbox_ok(app, aroutable):
             'msg' : 'hello1 demo1 secret X8a9',
             'actor' : 'demo2'
             }
-    response = app.post(url_post, json = jsonmsg)
+    headers = {
+            'x-simple-signature' : "BACKDOOR_GO"
+            }
+    response = app.post(url_post, json = jsonmsg, headers = headers)
     assert response.status_code == 202
 
     social = aroutable.get_dep(Dependencies.SOCIAL)
