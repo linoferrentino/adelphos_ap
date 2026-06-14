@@ -20,12 +20,9 @@ from starlette.websockets import WebSocket
 from app.AdelphosRouter import AdelphosRouter
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 
-#from tests.testers.fixtures import social_stub, cli_stub
 from tests.testers.fixtures import CliBypassStub
-#from tests.testers.fixtures import EchoKernel
 import tests.test_constants as tc
 import tests.adelphoi_test_config as tconf
-#from tests.testers.fixtures import sync_gateway
 from app.transport.bridge.loop import stop_loop, get_loop
 from tests.testers.SyncApp import SyncApp
 import app.consts as CNST
@@ -37,11 +34,10 @@ from app.logging import gCon
 from app.federation.SimpleSocial import SimpleSocial
 
 import tests.t_utils as tu
-#import app.sdc.s_utils as sdc
-#from app.sdc.Dependencies import Dependencies, get_dep
 from app.sdc.Dependencies import Dependencies
 from tests.testers.fixtures import get_routable_app
 from tests.testers.fixtures import app, aroutable
+import tests.social.social_tests as stests
 
 
 @pytest.mark.parametrize('aroutable', ( tconf.adelphos_stub, ), indirect = True)
@@ -78,8 +74,18 @@ def test_post_inbox_KO(app, aroutable):
     response = app.post(url_post, json = jsonmsg)
     assert response.status_code == 401
 
- 
+
 def test_post_from_kernel(get_routable_app):
+    test1 = get_routable_app('test1', tconf.adelphos_stub, 
+                                 tconf.simple_tester_config)
+    test2 = get_routable_app('test2', tconf.adelphos_t2_test,
+                             tconf.simple_tester_config)
+
+    host2 = tconf.adelphos_t2_test['General']['host']
+    stests._test_sndpost_to_host(test1, test2, host2, 'demo1', 'demo77')
+
+
+def OLD_test_post_from_kernel(get_routable_app):
     user_in = 'demo1'
     test1= get_routable_app('test1', tconf.adelphos_stub, 
                                  tconf.simple_tester_config)
@@ -112,7 +118,6 @@ def test_post_from_kernel(get_routable_app):
 
             msg = user_ob.pop_lst_msg()
             assert msg == 'echo_test_x918'
-
 
 
 def test_post_inbox_ok(app, aroutable):

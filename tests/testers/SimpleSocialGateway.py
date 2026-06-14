@@ -45,7 +45,6 @@ class SimpleSocialGateway(BaseSocialGateway):
 
 
     async def _check_signature_message(self, actor_str, request, body_str):
-        #actor_split = urlsplit(actor_str)
         actor_dto = await self._actor_get_or_discover(actor_str)
 
         headers = request.headers

@@ -73,7 +73,7 @@ class BaseSocialGateway(SocialGateway):
 {actor_to_dto.act.inbox_path}"
         gCon.log(f"sending to {actor_uri}")
         transport = self.vhost.get_dep(Dependencies.TRANSPORT)
-        await transport.post_json(actor_uri, payload)
+        await transport.post_json(actor_uri, payload, headers)
         
 
     @abstractmethod

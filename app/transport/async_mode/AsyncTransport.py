@@ -46,5 +46,10 @@ class AsyncTransport(AbstractTransport):
         assert False
 
 
+    def in_post_json(self, urlp, json, headers):
+        gCon.log(f"in post json")
+        assert False
+
+
     def register_reverse_path(self, routable):
         assert False

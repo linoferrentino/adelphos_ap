@@ -21,7 +21,7 @@ class AbstractTransport(ABC):
 
 
     @abstractmethod
-    async def post_json(self, url, json):
+    async def post_json(self, url, json, headers):
         pass
 
 
@@ -44,6 +44,11 @@ class AbstractTransport(ABC):
 
     @abstractmethod
     def in_get_json(self, urlp):
+        pass
+
+
+    @abstractmethod
+    def in_post_json(self, urlp, json, headers):
         pass
 
 

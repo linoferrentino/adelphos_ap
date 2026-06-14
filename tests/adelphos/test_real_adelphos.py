@@ -14,17 +14,18 @@
 
 import httpx
 import pytest
-
+import httpx
+import time
 
 import tests.adelphoi_test_config as tconf
 from app.sdc.standard_conf import adelphos_standard_configuration
 from app.logging import gCon
 from tests.testers.fixtures import get_standalone_app
-import time
+from tests.testers.fixtures import get_routable_app
 
-import httpx
 from httpx_ws import aconnect_ws
 from httpx_ws.transport import ASGIWebSocketTransport
+import tests.social.social_tests as stests
 
 
 def test_real1(get_standalone_app):
@@ -60,5 +61,16 @@ async def test_real_sndmsg(get_standalone_app):
                 await ws.send_text("dbg.echo msg lino")
                 datas = await ws.receive_text()
                 assert datas == "hello lino!"
+
+
+def test_post_real_kernel(get_routable_app):
+    test1 = get_routable_app('test100', tconf.adelphos_stub, 
+                                 adelphos_standard_configuration)
+    test2 = get_routable_app('test201', tconf.adelphos_t2_test,
+                             adelphos_standard_configuration)
+
+    host2 = tconf.adelphos_t2_test['General']['host']
+    stests._test_sndpost_to_host(test1, test2, host2, 'demo1', 'demo77')
+
 
 

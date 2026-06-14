@@ -49,7 +49,7 @@ class SyncGateway(AbstractGateway):
             case 'GET':
                 return transport.in_get_json(urlp)
             case 'POST':
-                return transport.in_post_json(urlp, json)
+                return transport.in_post_json(urlp, json, headers)
             case _:
                 raise Exception(f"Undefined method {method}")
 

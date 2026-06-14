@@ -25,7 +25,7 @@ class SyncRequest:
         if (json_ob is not None) and (isinstance(json_ob, dict) == False):
             raise Exception(f"I am expeting an object here got {json_ob}")
 
-        gCon.log(f"create req json /{json_ob}/ urlp {urlp}")
+        gCon.log(f"create req json /{json_ob}/ urlp {urlp} headers {headers}")
 
         self.query_params = { k: v[0] for k, v in query_params.items() }
         self.path_params = path_params 
