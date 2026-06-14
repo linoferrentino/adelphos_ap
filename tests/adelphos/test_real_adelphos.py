@@ -22,6 +22,7 @@ from app.sdc.standard_conf import adelphos_standard_configuration
 from app.logging import gCon
 from tests.testers.fixtures import get_standalone_app
 from tests.testers.fixtures import get_routable_app
+from tests.testers.fixtures import get_routable_app_TEST
 
 from httpx_ws import aconnect_ws
 from httpx_ws.transport import ASGIWebSocketTransport
@@ -63,14 +64,15 @@ async def test_real_sndmsg(get_standalone_app):
                 assert datas == "hello lino!"
 
 
-def test_post_real_kernel(get_routable_app):
-    test1 = get_routable_app('test100', tconf.adelphos_stub, 
+def test_post_real_kernel(get_routable_app_TEST):
+    test1 = get_routable_app_TEST('test100', tconf.adelphos_stub, 
                                  adelphos_standard_configuration)
-    test2 = get_routable_app('test201', tconf.adelphos_t2_test,
+    test2 = get_routable_app_TEST('test201', tconf.adelphos_t2_test,
                              adelphos_standard_configuration)
 
-    host2 = tconf.adelphos_t2_test['General']['host']
-    stests._test_sndpost_to_host(test1, test2, host2, 'demo1', 'demo77')
+    with test1, test2:
+        host2 = tconf.adelphos_t2_test['General']['host']
+        stests._test_sndpost_to_host(test1, test2, host2, 'demo1', 'demo77')
 
 
 

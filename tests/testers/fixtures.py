@@ -42,6 +42,28 @@ from app.consts import API_POINT
 #def get_routable_app(request):
 
 
+def _build_routable_config_impl_TEST(instance_name, configuration,
+                                build_structure, mode):
+
+    configuration['sdc'] = build_structure
+
+    prefix = mode
+    aroutable = AdelphosRouter(f"{prefix}-{instance_name}", configuration)
+
+    if mode == 'sync':
+        gCon.log("====================== SYNC")
+        config = aroutable.get_dep(Dependencies.CONFIG)
+        host = config.get_host()
+        app = SyncApp(host, aroutable, API_POINT)
+        wrappedapp = SyncTester(app)
+    else:
+        gCon.log("====================== ASYNC")
+        app = StarletteWrap(routable = aroutable)
+        wrappedapp = TestClient(app)
+
+    return wrappedapp
+
+
 def _build_routable_config_impl(instance_name, configuration,
                                 build_structure, mode):
 
@@ -75,6 +97,18 @@ def get_routable_app_param(request):
 
     return _build_routable_from_config
  
+
+@pytest.fixture(scope = "session")
+def get_routable_app_TEST():
+
+    def _build_routable_from_config(instance_name, configuration, 
+                                    build_structure, mode = "sync"):
+        return _build_routable_config_impl_TEST(instance_name, configuration,
+                                           build_structure, mode)
+
+
+    return _build_routable_from_config
+
 
 @pytest.fixture(scope = "session")
 def get_routable_app():

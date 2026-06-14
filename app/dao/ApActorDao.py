@@ -34,7 +34,6 @@ class ApActorDao(BaseDao):
     def __init__(self, dao):
         super().__init__(dao)
 
-        # the list is coherent with ApActorDto
         self.ftbl_col_list = ( "server_fk", 
                               "user_path", "preferred_username",
                               "inbox_path", "private_key", "public_key",
@@ -165,25 +164,29 @@ f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
 
         table_name = "ap_actor"
 
-        public_key_save = actor.public_key
+        #public_key_save = actor.public_key
 
-        if actor.private_key is None:
+        if actor.private_key is not None:
             assert actor.public_key is not None
+            #actor.public_key = None
+            actor_as_dict['public_key'] = None
 
-        fields_stored = {
-                         'server_fk': actor.server_fk,
-                         'user_path': actor.user_path,
-                         'preferred_username': actor.preferred_username,
-                         'inbox_path': actor.inbox_path,
-                         'private_key': actor.private_key,
-                         'public_key': actor.public_key,
-                         }
+        #fields_stored = {
+        #                 'server_fk': actor.server_fk,
+        #                 'user_path': actor.user_path,
+        #                 'preferred_username': actor.preferred_username,
+        #                 'inbox_path': actor.inbox_path,
+        #                 'private_key': actor.private_key,
+        #                 'public_key': actor.public_key,
+        #                 }
+        fields_stored = ('server_fk', 'user_path', 'inbox_path',
+                         'preferred_username', 'private_key', 'public_key')
 
-        #assert False
-        #ApActorDao._fill_public_key(actor)
+        gCon.log(f"These are the fields {fields_stored}")
+
         newid = self.db.insert_dto_fields(table_name, fields_stored, actor_as_dict)
 
-        actor.public_key = public_key_save
+        #actor.public_key = public_key_save
         actor.actor_id = newid
         return newid
 
