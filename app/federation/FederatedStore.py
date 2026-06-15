@@ -284,15 +284,6 @@ class FederatedStore:
         pass
 
 
-    #async def new_post(self, post):
-    #    pass
-
-
-    ## the store has its own async loop which is run forever.
-    #async def forever_db_main():
-    #    pass
-
-
     def is_local_uri(self, uri):
         if uri.host is None:
             return True

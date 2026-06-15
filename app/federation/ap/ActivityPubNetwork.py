@@ -136,14 +136,6 @@ class ActivityPubNetwork(SocialNetwork):
         return response
 
 
-    async def in_inbox_OLD(self, request):
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
-        user = request.path_params['username']
-        body = await request.json()
-        await social.incoming_message(user, body)
-        return Response(status_code=202)
-
-
     def in_outbox(self, request):
 
         return Response(status_code=405)

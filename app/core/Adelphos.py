@@ -66,21 +66,21 @@ from app.core.sys.DebugModule import DebugModule
 SOCIAL_USER = 'adelphos'
 
 
-class Adelphos(Kernel, SocialListener):
+class Adelphos(Kernel):
 
     def __init__(self, vhost):
-        super().__init__(vhost)
+        super().__init__(vhost, SOCIAL_USER)
         gCon.log(f"[yellow]Creating Adelphos instance {id(self)}[/yellow]")
 
 
-    async def start_async(self):
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
-        social.add_listener(SOCIAL_USER, self)
-        gCon.log(f"Registered user {SOCIAL_USER}")
+    #async def start_async(self):
+    #    social = self.vhost.get_dep(Dependencies.SOCIAL)
+    #    social.add_listener(SOCIAL_USER, self)
+    #    gCon.log(f"Registered user {SOCIAL_USER}")
 
 
-    async def stop_async(self):
-        pass
+    #async def stop_async(self):
+    #    pass
 
 
     def get_syscalls(self):

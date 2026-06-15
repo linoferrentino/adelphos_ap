@@ -45,6 +45,7 @@ class UserStub(SocialUser):
         else:
             self.messages.append(msg)
 
+
     def count_msg(self):
         return len(self.messages)
 
@@ -117,6 +118,19 @@ class BaseSocial(SocialProvider):
         gCon.log(f"Instance {id(self)} user {user} does not exist, will add it")
         self.users[user] = UserStub(actor_dto, listener)
 
+
+    def remove_listener(self, user):
+        actor_dto = self.local_actor_get(user)
+
+        if actor_dto is None:
+            raise AdelphosException(AdErrno.USER_DOES_NOT_EXIST)
+
+        if user not in self.users:
+            raise AdelphosException(AdErrno.USER_DOES_NOT_EXIST)
+
+        gCon.log(f"instance {id(self)} user {user} delisted")
+        del self.users[user]
+ 
 
     #def create_or_register_user_XX(self, user, *, listener = None):
     #    if user in self.users:

@@ -56,3 +56,8 @@ class SocialProvider(Dependency, SyncLifespanAware):
         pass
 
 
+    @abstractmethod
+    def remove_listener(self, user):
+        pass
+
+

@@ -25,23 +25,26 @@ from cryptography.hazmat.backends import default_backend as crypto_default_backe
 
 def test_query_info(app, aroutable):
 
-    url_query = f"/api/users/demo1"
-    response = app.get(url_query)
-    assert response.status_code == 200 
-    if hasattr(response, 'body'):
-        content = response.body
-    else:
-        content = response.content
-    content_str = content.decode()
-    cont_ob = json.loads(content_str)
-    assert cont_ob['publicKey']['publicKeyPem'] is not None
-    public_key = cont_ob['publicKey']['publicKeyPem']
-    gCon.log(f"public_key {public_key}")
+    with app:
+        url_query = f"/api/users/demo1"
+        gCon.log("---------------------------------- test_query_info start")
+        response = app.get(url_query)
+        gCon.log("---------------------------------- test_query_info end")
+        assert response.status_code == 200 
+        if hasattr(response, 'body'):
+            content = response.body
+        else:
+            content = response.content
+        content_str = content.decode()
+        cont_ob = json.loads(content_str)
+        assert cont_ob['publicKey']['publicKeyPem'] is not None
+        public_key = cont_ob['publicKey']['publicKeyPem']
+        gCon.log(f"public_key {public_key}")
 
-    remote_public_key = crypto_serialization.load_pem_public_key(
-            public_key.encode(), backend=crypto_default_backend())
+        remote_public_key = crypto_serialization.load_pem_public_key(
+                public_key.encode(), backend=crypto_default_backend())
 
-    gCon.log(f"public_key {remote_public_key}")
+        gCon.log(f"public_key {remote_public_key}")
 
 
 def test_query_info_ko(app, aroutable):
