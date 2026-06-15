@@ -19,26 +19,27 @@ from app.sdc.Dependencies import Dependencies
 
 def _test_sndpost_to_host(test1, test2, host2, userKO, userOK):
 
-    with test1.websocket_connect(CNST.WS_ROUTE) as websocket:
-        websocket.send_text(
-f"dbg.sndpost to @{userKO}@{host2} msg echo_test_x918 from demo1")
-        data = websocket.receive_text()
-        assert parse_exc_str(data) == AdErrno.USER_DOES_NOT_EXIST
+    with test1, test2:
+        with test1.websocket_connect(CNST.WS_ROUTE) as websocket:
+            websocket.send_text(
+    f"dbg.sndpost to @{userKO}@{host2} msg echo_test_x918 from demo1")
+            data = websocket.receive_text()
+            assert parse_exc_str(data) == AdErrno.USER_DOES_NOT_EXIST
 
-        websocket.send_text(
-f"dbg.sndpost to @{userOK}@{host2} msg echo_test_x918 from demo1")
-        data = websocket.receive_text()
-        assert data == "DONE!"
+            websocket.send_text(
+    f"dbg.sndpost to @{userOK}@{host2} msg echo_test_x918 from demo1")
+            data = websocket.receive_text()
+            assert data == "DONE!"
 
-        websocket.close()
-        
-        user_ob = test2.app.routable.get_dep(
-                Dependencies.SOCIAL).login_user(userOK)
-        count_msg = user_ob.count_msg()
-        assert count_msg == 1
+            websocket.close()
+            
+            user_ob = test2.app.routable.get_dep(
+                    Dependencies.SOCIAL).login_user(userOK)
+            count_msg = user_ob.count_msg()
+            assert count_msg == 1
 
-        msg = user_ob.pop_lst_msg()
-        assert msg == 'echo_test_x918'
+            msg = user_ob.pop_lst_msg()
+            assert msg == 'echo_test_x918'
 
 
 def _test_sndpost_to_host_old(test1, test2, host2, userKO, userOK):

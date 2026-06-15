@@ -12,6 +12,13 @@
 ######################################################
 
 
+import json
+import base64
+import hashlib
+import re
+import uuid
+
+
 from app.federation.BaseSocialGateway import BaseSocialGateway
 from starlette.responses import Response
 from app.sdc.Dependencies import Dependencies
@@ -19,10 +26,6 @@ from starlette.exceptions import HTTPException
 from urllib.parse import urlsplit
 from app.logging import gCon
 from app.dao.ApActorDto import create_remote_actor
-import json
-import base64
-import hashlib
-import re
 from datetime import datetime
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.backends import default_backend as crypto_default_backend
@@ -227,9 +230,66 @@ class ActivityPubGateway(BaseSocialGateway):
         return (local_user, clean_content)
 
 
-    def _do_envelope(self, actor_from_dto, message):
-        pass
+    def _do_envelope(self, actor_from_dto, actor_to_dto, msg):
+        gCon.log(f"sign the message {msg}")
+
+        msg = re.sub("\n", "<p>", msg)
+
+        id_message = uuid.uuid4()
+
+        sender_url = actor_from_dto.get_uri()
+        actor_uri = actor_to_dto.get_uri()
+
+        current_date = datetime.now().strftime(
+            '%a, %d %b %Y %H:%M:%S GMT')
+
+        payload = {
+            "@context": "https://www.w3.org/ns/activitystreams",
+            "id": f"{sender_url}/posts/{id_message}/activities",
+            "type": "Create",
+            "actor": sender_url,
+            "object": {
+                "id": f"{sender_url}/posts/{id_message}",
+                "type": "Note",
+                "attributedTo": sender_url,
+                "to": [actor_uri],
+                "content": f"{msg}",
+                }
+
+            }
+
+        payload_str = json.dumps(payload)
+
+        digest = base64.b64encode(hashlib.sha256(
+            payload_str.encode('utf-8')).digest())
+
+        signature_text = b'(request-target): post %s\ndigest: SHA-256=%s\nhost: %s\ndate: %s' % (
+             actor_to_dto.act.inbox_path.encode('utf-8'), digest,
+             actor_to_dto.srv.host_name.encode('utf-8'),
+             current_date.encode('utf-8'))
+
+        sign_utf8 = signature_text.decode('utf-8')
+
+        raw_signature = actor_from_dto.get_private_key().sign(
+                signature_text,
+                padding.PKCS1v15(),
+                hashes.SHA256()
+                )
+
+        signature_str = base64.b64encode(raw_signature).decode('utf-8') 
+
+        sender_key = actor_from_dto.get_key_uri()
+
+        signature_header = f'keyId="{sender_key}",algorithm="rsa-sha256",headers="(request-target) digest host date",signature="{signature_str}"' 
+
+        headers = {
+            'date': current_date,
+            'content-type': 'application/activity+json',
+            'host': actor_to_dto.srv.host_name,
+            'digest': "SHA-256="+digest.decode('utf-8'),
+            'signature': signature_header
+            }
+
+        return (headers, payload) 
 
 
-    #async def _actor_get_or_discover_from_handle(self, preferred_name):
-    #    pass

@@ -67,7 +67,7 @@ class BaseSocialGateway(SocialGateway):
 
     async def out_outbox(self, actor_from_dto, handle, message):
         actor_to_dto = await self._actor_get_or_discover_from_handle(handle)
-        (headers, payload) = self._do_envelope(actor_from_dto, message)
+        (headers, payload) = self._do_envelope(actor_from_dto, actor_to_dto, message)
         gCon.log(f"[red]will send the envelope {payload} with headers {headers}[/red]")
         actor_uri = f"https://{actor_to_dto.srv.host_name}\
 {actor_to_dto.act.inbox_path}"
@@ -77,7 +77,7 @@ class BaseSocialGateway(SocialGateway):
         
 
     @abstractmethod
-    def _do_envelope(self, actor_from_dto, message):
+    def _do_envelope(self, actor_from_dto, actor_to_dto, message):
         pass
 
 

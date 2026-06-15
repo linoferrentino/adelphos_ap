@@ -133,7 +133,7 @@ class BaseSocial(SocialProvider):
         user = self.local_user_get(from_user)
         if user is None:
             raise Exception(f"No user {from_user}")
-        gCon.log(f"the user is {user} actor {user.actor_dto} from {self.host}")
+        #gCon.log(f"the user is {user} actor {user.actor_dto} from {self.host}")
         social_gw = self.vhost.get_dep(Dependencies.SOCIAL_GATEWAY)
         await social_gw.out_outbox(user.actor_dto, recipient, message)
 

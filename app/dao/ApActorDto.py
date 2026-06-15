@@ -24,6 +24,7 @@ from urllib.parse import urlparse
 from typing import NamedTuple
 from app.dao.ApServerDto import ApServerDto
 from app.dao.ApServerDto import create_ap_server
+from cryptography.hazmat.primitives import serialization as crypto_serialization
 
 
 # this is the base class for the activity pub actors.
@@ -65,11 +66,32 @@ class ApActorDto:
 
     act: ApActorImpl
 
+    cached_private_key: object = None
+
+    cached_public_key: object = None
+
     def get_inbox(self):
         return f"https://{self.srv.host_name}{self.act.inbox_path}"
 
+
     def get_uri(self):
         return f"https://{self.srv.host_name}{self.act.user_path}"
+
+
+    def get_key_uri(self):
+        uri = self.get_uri()
+        return f"{uri}#main-key"
+
+
+    def get_private_key(self):
+        if self.cached_private_key is not None:
+            return self.cached_private_key
+        if self.act.private_key is None:
+            raise Exception("No private key!")
+        self.cached_private_key = crypto_serialization.load_pem_private_key(
+                        self.act.private_key.encode('utf-8'), password=None)
+        return self.cached_private_key
+
 
 
 def create_local_actor(server_host, user_path, 

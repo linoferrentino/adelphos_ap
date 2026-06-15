@@ -42,7 +42,7 @@ from app.consts import API_POINT
 #def get_routable_app(request):
 
 
-def _build_routable_config_impl_TEST(instance_name, configuration,
+def _build_routable_config_impl(instance_name, configuration,
                                 build_structure, mode):
 
     configuration['sdc'] = build_structure
@@ -64,7 +64,7 @@ def _build_routable_config_impl_TEST(instance_name, configuration,
     return wrappedapp
 
 
-def _build_routable_config_impl(instance_name, configuration,
+def _build_routable_config_impl_OLD(instance_name, configuration,
                                 build_structure, mode):
 
     configuration['sdc'] = build_structure
@@ -99,11 +99,11 @@ def get_routable_app_param(request):
  
 
 @pytest.fixture(scope = "session")
-def get_routable_app_TEST():
+def get_routable_app():
 
     def _build_routable_from_config(instance_name, configuration, 
                                     build_structure, mode = "sync"):
-        return _build_routable_config_impl_TEST(instance_name, configuration,
+        return _build_routable_config_impl(instance_name, configuration,
                                            build_structure, mode)
 
 
@@ -111,7 +111,7 @@ def get_routable_app_TEST():
 
 
 @pytest.fixture(scope = "session")
-def get_routable_app():
+def get_routable_app__OLD():
 
     def _build_routable_from_config(instance_name, configuration, 
                                     build_structure, mode = "sync"):
