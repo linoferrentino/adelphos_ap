@@ -25,6 +25,7 @@ from typing import NamedTuple
 from app.dao.ApServerDto import ApServerDto
 from app.dao.ApServerDto import create_ap_server
 from cryptography.hazmat.primitives import serialization as crypto_serialization
+from cryptography.hazmat.backends import default_backend as crypto_default_backend
 
 
 # this is the base class for the activity pub actors.
@@ -83,7 +84,7 @@ class ApActorDto:
         return f"{uri}#main-key"
 
 
-    def get_private_key(self):
+    def get_private_key_bytes(self):
         if self.cached_private_key is not None:
             return self.cached_private_key
         if self.act.private_key is None:
@@ -92,6 +93,26 @@ class ApActorDto:
                         self.act.private_key.encode('utf-8'), password=None)
         return self.cached_private_key
 
+
+    def _fill_public_key_armored(self):
+        private_key = self.get_private_key()
+        self.cached_public_key = private_key.public_key()
+        self.act.public_key = self.cached_public_key.public_bytes(
+            encoding=crypto_serialization.Encoding.PEM,
+            format=crypto_serialization.PublicFormat.SubjectPublicKeyInfo)\
+                .decode('utf-8')
+
+
+    def get_public_key_bytes(self):
+        if self.cached_public_key is not None:
+            return self.cached_public_key
+        if self.act.public_key is None:
+            self._fill_public_key_armored()
+        else:
+            self.cached_public_key = crypto_serialization.load_pem_public_key(
+                self.act.public_key.encode(),
+                backend=crypto_default_backend())
+        return self.cached_public_key
 
 
 def create_local_actor(server_host, user_path, 

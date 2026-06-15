@@ -133,7 +133,7 @@ class SyncApp:
 
     @exception_sync_middleware
     def in_get_json(self, urlp):
-        return self._do_sync_req(self.get_routes, urlp)
+        return self._do_sync_req("GET", self.get_routes, urlp)
 
 
     def _get_matched_route(self, parsed_url, routes):
@@ -147,10 +147,10 @@ class SyncApp:
     @exception_sync_middleware
     def in_post_json(self, parsed_url, in_json, headers = {}):
         gCon.log(f"in_post_json {in_json}")
-        return self._do_sync_req(self.post_routes, parsed_url, in_json, headers)
+        return self._do_sync_req("POST", self.post_routes, parsed_url, in_json, headers)
 
 
-    def _do_sync_req(self, routes, urlp, in_json = None, headers = None):
+    def _do_sync_req(self, method, routes, urlp, in_json = None, headers = None):
 
         (route, match_route) = self._get_matched_route(urlp, routes)
 
@@ -164,7 +164,7 @@ class SyncApp:
             path_params[k] = v
 
         endpoint = route.endpoint
-        request = SyncRequest(dict_params, path_params, in_json, urlp, headers)
+        request = SyncRequest(method, dict_params, path_params, in_json, urlp, headers)
 
         gCon.log(f"request {request}")
 

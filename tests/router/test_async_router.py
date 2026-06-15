@@ -125,7 +125,7 @@ def test_post_inbox_ok(app, aroutable):
     url_post=CNST.USER_INBOX_ROUTE.format(username = user_in)
     url_post=CNST.API_POINT + url_post
     jsonmsg = {
-            'msg' : 'hello1 demo1 secret X8a9',
+            'msg' : '@demo1 hello1 demo1 secret X8a9',
             'actor' : 'demo2'
             }
     headers = {

@@ -19,7 +19,8 @@ import json
 class SyncRequest:
 
 
-    def __init__(self, query_params, path_params, json_ob, urlp, headers = None):
+    def __init__(self, method, query_params, path_params,
+                 json_ob, urlp, headers = None):
 
 
         if (json_ob is not None) and (isinstance(json_ob, dict) == False):
@@ -27,12 +28,14 @@ class SyncRequest:
 
         gCon.log(f"create req json /{json_ob}/ urlp {urlp} headers {headers}")
 
+        self.method = method
         self.query_params = { k: v[0] for k, v in query_params.items() }
         self.path_params = path_params 
         self._inner_json = json_ob
         self.json = self.get_json 
         self.headers = headers if headers is not None else {}
-        self.url = urlp.geturl()
+        #self.url = urlp.geturl()
+        self.url = urlp
         self.client = ""
         self._inner_body = json.dumps(json_ob).encode('utf-8')
         self.body = self.get_body

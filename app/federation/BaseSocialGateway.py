@@ -57,16 +57,38 @@ class BaseSocialGateway(SocialGateway):
         if valid == False:
             raise HTTPException(401, "Invalid signature")
         
-        (local_recipient, content) = await self._parse_message(user,
-                          request, actor_str, body_str, body_ob)
+        clean_content = await self._parse_message(user, request, actor_str,
+                                            body_str, body_ob)
+
+        content_split = clean_content.split(" ", 1)
+        if len(content_split) == 1:
+            msg = f"Expecting a message with a mention, got {content_split}"
+            gCon.log(f"[red]{msg}[/msg]")
+            raise HTTPException(400, msg)
+
+        (mention, rest_of_line) = content_split
+        if mention[0] != '@':
+            msg = f"Malformed mention {mention}"
+            gCon.log(msg)
+            raise HTTPException(400, msg)
+
+        mention = mention[1:]
 
         social = self.vhost.get_dep(Dependencies.SOCIAL)
-        await social.incoming_message(actor_dto, local_recipient,  content)
+        local_user= social.local_user_get(mention)
+
+        if local_user is None:
+            msg = f"User not found {mention}"
+            gCon.log(msg)
+            raise HTTPException(404, msg)
+
+        await social.incoming_message(actor_dto, local_user,  rest_of_line)
         return Response(status_code=202)
 
 
     async def out_outbox(self, actor_from_dto, handle, message):
         actor_to_dto = await self._actor_get_or_discover_from_handle(handle)
+        message = f"@{actor_to_dto.act.preferred_username} {message}"
         (headers, payload) = self._do_envelope(actor_from_dto, actor_to_dto, message)
         gCon.log(f"[red]will send the envelope {payload} with headers {headers}[/red]")
         actor_uri = f"https://{actor_to_dto.srv.host_name}\
@@ -160,6 +182,7 @@ resource=acct:{actor_instance}"
 
     async def _actor_get_or_discover(self, uri):
         actor_uri = urlsplit(uri)
+        actor_uri = actor_uri._replace(fragment = "")
         social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
         actor_dto = social_dao.actor_get_from_parsed_url(actor_uri)
         if actor_dto is not None:
@@ -171,8 +194,9 @@ resource=acct:{actor_instance}"
     async def _actor_discover_from_actor_uri(self, actor_uri_p):
 
         #actor_uri_p = key_parsed._replace(fragment = "")
-        key_parsed = actor_uri_p._replace(fragment = "main-key")
+        gCon.log(f"[blue]discovering actor {actor_uri_p}[/blue]")
         actor_uri = actor_uri_p.geturl()
+        key_parsed = actor_uri_p._replace(fragment = "main-key")
         #gCon.log(f"actor_uri {actor_uri}")
 
         transport = self.vhost.get_dep(Dependencies.TRANSPORT)
