@@ -16,6 +16,20 @@ social_dao_test_conf = {
         }
 
 
+social_test_kernel = {"users" : [
+    {"preferredusername" : "test_kernel", 'name': 'test daemon', 'login_shell' : False},
+    {"preferredusername" : "t1", 'name' : "demo user 1", 'login_shell' : True},
+    {"preferredusername" : "t2", 'name' : "demo user 2", 'login_shell' : True},
+                ]}
+
+
+social_test_kernel2 = {"users" : [
+    {"preferredusername" : "test_kernel", 'name': 'test daemon', 'login_shell' : False},
+    {"preferredusername" : "t99", 'name' : "demo user 1", 'login_shell' : True},
+    {"preferredusername" : "t100", 'name' : "demo user 2", 'login_shell' : True},
+                ]}
+
+
 
 test_social_cnf = {"users" : [
     {"preferredusername" : "adelphos", 'name': 'Adelphos daemon', 'login_shell' : False},
@@ -110,6 +124,25 @@ adelphos_stub =  {
 }
 
 
+routable_test_kernel =  {
+        "conf" : {
+            "social_dao" : social_dao_test_conf,
+            "social" :  social_test_kernel,
+            },
+        "General": {
+    "debug": True, 
+    "port": 7777, 
+    "db_name": ":memory:", 
+    "private_key": ":memory:", 
+    "host":  "localhost:7777", 
+    "root_user": ":local:", 
+    "root_password": "$argon2id$v=19$m=65536,t=3,p=4$o/oGlKYis246QARUaT/0cw$7zu3oQuS1wz4Ddk/pc6NjLfTcac6YGmEX2VRGymtXrI"
+    }, 
+            "demo_users": [
+    {"name": "alice99", "alias": "##alice.af", "password": "alice11", "root" : True}, 
+    {"name": "bobzz", "alias": "##bob2.bf", "password": "bob22"}]
+}
+
 adelphos_t1_test =  {
         "conf" : {
             "social_dao" : social_dao_test_conf,
@@ -131,6 +164,23 @@ adelphos_t2_test =  {
         "conf" : {
             "social_dao" : social_dao_test_conf,
             "social" : test_social2_cnf
+            },
+    "General": {
+    "debug": True, 
+    "port": 9921, 
+    "db_name": ":memory:", 
+    "private_key": ":memory:", 
+    "host":  "localhost:9921", 
+    "root_user": ":local:", 
+    "root_password": "$argon2id$v=19$m=65536,t=3,p=4$o/oGlKYis246QARUaT/0cw$7zu3oQuS1wz4Ddk/pc6NjLfTcac6YGmEX2VRGymtXrI"
+    }
+}
+
+
+routable_test2_kernel =  {
+        "conf" : {
+            "social_dao" : social_dao_test_conf,
+            "social" : social_test_kernel2
             },
     "General": {
     "debug": True, 

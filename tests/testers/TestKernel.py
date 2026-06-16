@@ -22,7 +22,7 @@ from app.core.sys.DebugModule import DebugModule
 class TestKernel(Kernel):
 
     def __init__(self, vhost):
-        super().__init__(vhost, 'adelphos')
+        super().__init__(vhost, 'test_kernel')
 
 
     def get_syscalls(self):

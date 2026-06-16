@@ -29,6 +29,7 @@ from app.core.Adelphos import Adelphos
 from app.config import Config
 from app.federation.BackdoorNet import BackdoorNet
 from app.federation.NullNet import NullNet
+from app.ad_api.SocialApiProvider import SocialApiProvider
 
 
 
@@ -49,6 +50,7 @@ class SimpleDependencyContainer(LifespanAware):
         self.social_dao = self._make_social_dao()
         self.social_gateway = self._make_social_gateway()
         self.backdoor_net = self._make_backdoor_net()
+        #self.social_api_provider = self.SocialApiProvider(vhost)
         self.transport = None
 
 

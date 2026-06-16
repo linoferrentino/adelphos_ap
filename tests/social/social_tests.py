@@ -17,17 +17,17 @@ from app.exc.AdelphosException import parse_exc_str
 from app.exc.AdelphosException import AdErrno
 from app.sdc.Dependencies import Dependencies
 
-def _test_sndpost_to_host(test1, test2, host2, userKO, userOK):
+def _test_sndpost_to_host(test1, test2, host2, userKO, userOK, user_from):
 
     with test1, test2:
         with test1.websocket_connect(CNST.WS_ROUTE) as websocket:
             websocket.send_text(
-    f"dbg.sndpost to @{userKO}@{host2} msg echo_test_x918 from demo1")
+    f"dbg.sndpost to @{userKO}@{host2} msg echo_test_x918 from {user_from}")
             data = websocket.receive_text()
             assert parse_exc_str(data) == AdErrno.USER_DOES_NOT_EXIST
 
             websocket.send_text(
-    f"dbg.sndpost to @{userOK}@{host2} msg echo_test_x918 from demo1")
+    f"dbg.sndpost to @{userOK}@{host2} msg echo_test_x918 from {user_from}")
             data = websocket.receive_text()
             assert data == "DONE!"
 

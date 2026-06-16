@@ -103,7 +103,8 @@ def get_standalone_app():
 def aroutable(request):
 
     configuration = request.param if hasattr(request, 'param') \
-            else tconf.adelphos_stub
+            else tconf.routable_test_kernel
+    gCon.log(f"conf {configuration}")
     configuration['sdc'] = tconf.cli_stub_dep_conf
     aroutable = AdelphosRouter("test", configuration)
     return aroutable 

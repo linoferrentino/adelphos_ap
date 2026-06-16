@@ -71,7 +71,7 @@ def test_post_real_kernel(get_routable_app):
                              adelphos_standard_configuration)
 
     host2 = tconf.adelphos_t2_test['General']['host']
-    stests._test_sndpost_to_host(test1, test2, host2, 'demo1', 'demo77')
+    stests._test_sndpost_to_host(test1, test2, host2, 'demo1', 'demo77', 'demo1')
 
 
 

@@ -61,7 +61,7 @@ def test_post_inbox_KO(app, aroutable):
         url_post=CNST.API_POINT + url_post
         jsonmsg = {
                 'msg' : f'hello1 {user_in} secret X8a9',
-                'actor' : 'demo2',
+                'actor' : 't1',
                 }
         response = app.post(url_post, json = jsonmsg)
         tu.assert_error_code_in_response(response, AdErrno.EINVALID_SIGNATURE)
@@ -78,32 +78,32 @@ def test_post_inbox_KO(app, aroutable):
 
 
 def test_post_from_kernel(get_routable_app):
-    test1 = get_routable_app('test1', tconf.adelphos_stub, 
+    test1 = get_routable_app('test1', tconf.routable_test_kernel, 
                                  tconf.simple_tester_config)
-    test2 = get_routable_app('test2', tconf.adelphos_t2_test,
+    test2 = get_routable_app('test2', tconf.routable_test2_kernel,
                              tconf.simple_tester_config)
 
-    host2 = tconf.adelphos_t2_test['General']['host']
-    stests._test_sndpost_to_host(test1, test2, host2, 'demo1', 'demo77')
+    host2 = tconf.routable_test2_kernel['General']['host']
+    stests._test_sndpost_to_host(test1, test2, host2, 'x1', 't99', 't1')
 
 
 def test_remote_add(get_routable_app):
-    test1 = get_routable_app('test1', tconf.adelphos_stub, 
+    test1 = get_routable_app('test1', tconf.routable_test_kernel, 
                                  tconf.simple_tester_config)
-    test2 = get_routable_app('test2', tconf.adelphos_t2_test,
+    test2 = get_routable_app('test2', tconf.routable_test2_kernel,
                              tconf.simple_tester_config)
 
-    host2 = tconf.adelphos_t2_test['General']['host']
+    host2 = tconf.routable_test2_kernel['General']['host']
     dtests._test_remote_add(test1, test2, host2)
 
 
 def test_post_inbox_ok(app, aroutable):
-    user_in = 'demo1'
+    user_in = 't1'
     url_post=CNST.USER_INBOX_ROUTE.format(username = user_in)
     url_post=CNST.API_POINT + url_post
     jsonmsg = {
-            'msg' : '@demo1 hello1 demo1 secret X8a9',
-            'actor' : 'demo2'
+            'msg' : '@t1 hello1 demo1 secret X8a9',
+            'actor' : 't2'
             }
     headers = {
             'x-simple-signature' : "BACKDOOR_GO"
@@ -145,7 +145,7 @@ def test_webfinger(app, aroutable):
     config = aroutable.get_dep(Dependencies.CONFIG)
     host = config.get_host()
 
-    url_query = f"{CNST.WEBFINGER_ROUTE}?resource=acct:demo1@{host}"
+    url_query = f"{CNST.WEBFINGER_ROUTE}?resource=acct:t1@{host}"
     response = test1.get(url_query)
     assert response.status_code == 200
 

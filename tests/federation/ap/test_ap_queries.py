@@ -26,7 +26,7 @@ from cryptography.hazmat.backends import default_backend as crypto_default_backe
 def test_query_info(app, aroutable):
 
     with app:
-        url_query = f"/api/users/demo1"
+        url_query = f"/api/users/t1"
         gCon.log("---------------------------------- test_query_info start")
         response = app.get(url_query)
         gCon.log("---------------------------------- test_query_info end")
