@@ -18,6 +18,7 @@ from app.sdc.Dependency import Dependency
 from app.federation.SocialListener import SocialListener
 from app.sdc.Dependencies import Dependencies
 from app.logging import gCon
+from app.cli.CliParser import CliParser
 
 
 class Kernel(Dependency, LifespanAware, SocialListener):
@@ -32,6 +33,11 @@ class Kernel(Dependency, LifespanAware, SocialListener):
         pass
 
 
+    @abstractmethod
+    def get_social_syscalls():
+        pass
+
+
     async def start_async(self):
         gCon.log(f"{id(self)} ============================= START ASYNC")
         social = self.vhost.get_dep(Dependencies.SOCIAL)
@@ -43,5 +49,14 @@ class Kernel(Dependency, LifespanAware, SocialListener):
         gCon.log(f"{id(self)} ============================= STOP ASYNC")
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         social.remove_listener(self.social_name)
+
+
+    async def new_post(self, actor_from, msg):
+        gCon.log(f"got msg from {actor_from} {msg}")
+        cp = CliParser(msg)
+        gCon.log(f"These are the params {cp}")
+        #social_api = self.vhost.get_dep(Dependencies.SOCIAL_API)
+        #await social_api.new_post()
+
 
 

@@ -25,20 +25,13 @@ class TestKernel(Kernel):
         super().__init__(vhost, 'adelphos')
 
 
-    #async def start_async(self):
-    #    pass
-
-    #async def stop_async(self):
-    #    pass
-
-
     def get_syscalls(self):
         syscalls = []
         syscalls.extend(DebugModule.get_syscalls(self))
         return syscalls
 
 
-    async def new_post(self, actor_from, msg):
-        gCon.log(f"got msg from {actor_from} {msg}")
+    def get_social_syscalls():
+        return []
 
 

@@ -21,7 +21,7 @@ def _test_remote_add(test1, test2, host2):
     with test1, test2:
         with test1.websocket_connect(CNST.WS_ROUTE) as websocket:
             websocket.send_text(
-    f"dbg.radd host @{host2} n1 11 n2 22")
+    f"dbg.radd host {host2} n1 11 n2 22")
             data = websocket.receive_text()
             assert data == "33"
 

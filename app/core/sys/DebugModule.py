@@ -37,10 +37,22 @@ class DebugModule:
         return 'DONE!'
 
 
+    async def _sys_call_radd(kernel, session, pars):
+        host = pars.get_param_safe('host')
+        n1 = pars.get_param_safe('n1')
+        n2 = pars.get_param_safe('n2')
+        recipient = f"@adelphos@{host}"
+        from_user = f"adelphos"
+        social = kernel.vhost.get_dep(Dependencies.SOCIAL)
+        await social.outgoing_message(from_user, recipient, "radd")
+        return "33"
+
+
     @staticmethod
     def get_syscalls(kernel):
           return [
                 SysCall('dbg.echo', DebugModule._sys_call_echo, kernel),
                 SysCall('dbg.sndpost', DebugModule._sys_call_sndpost, kernel),
+                SysCall('dbg.radd', DebugModule._sys_call_radd, kernel),
           ]
 

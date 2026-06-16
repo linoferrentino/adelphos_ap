@@ -27,4 +27,5 @@ class Dependencies(StrEnum):
     SOCIAL_NET = auto()
     SOCIAL_DAO = auto()
     BACKDOOR_NET = auto()
+    SOCIAL_API = auto()
 

@@ -73,16 +73,6 @@ class Adelphos(Kernel):
         gCon.log(f"[yellow]Creating Adelphos instance {id(self)}[/yellow]")
 
 
-    #async def start_async(self):
-    #    social = self.vhost.get_dep(Dependencies.SOCIAL)
-    #    social.add_listener(SOCIAL_USER, self)
-    #    gCon.log(f"Registered user {SOCIAL_USER}")
-
-
-    #async def stop_async(self):
-    #    pass
-
-
     def get_syscalls(self):
         syscalls = []
         if (self.vhost.get_dep(Dependencies.CONFIG)).is_test_instance():
@@ -90,10 +80,10 @@ class Adelphos(Kernel):
         return syscalls
 
 
-    async def new_post(self, actor_from, msg):
-        gCon.log(f"got msg from {actor_from} {msg}")
+    def get_social_syscalls():
+        pass
 
-
+   
 # Adelphos is the main object which orchestrates all the messages.
 class Adelphos_OLD(SocialListener):
 
