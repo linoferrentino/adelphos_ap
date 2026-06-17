@@ -12,21 +12,15 @@
 ######################################################
 
 
-from app.ad_api.BaseSocialApiProvider import BaseSocialApiProvider
+from dataclasses import dataclass
+from dataclasses import field
 
+@dataclass
+class SocialRPC:
 
-class AdelphosApiProvider(BaseSocialApiProvider):
-
-    def __init__(self, vhost):
-        super().__init__(vhost)
-
-
-    def get_social_user(self):
-        return "adelphos"
-
-
-    def _register_rpc_calls(self):
-        pass
-
+    name: str
+    class_instance: object
+    self_instance: object
+    required_pars: list = field(default_factory = list)
 
 

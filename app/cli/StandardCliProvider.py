@@ -105,7 +105,7 @@ class StandardCliProvider(CliProvider, SysCallGateway):
 
 
     def start_sync(self):
-        self._add_syscalls('cli')
+        self.init_syscalls('cli')
 
 
     def stop_sync(self):

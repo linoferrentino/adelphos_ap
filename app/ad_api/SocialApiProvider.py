@@ -24,8 +24,9 @@ class SocialApiProvider(Dependency, LifespanAware, SocialListener):
         super().__init__(vhost)
 
 
-    def add_context_listener(self, context, listener):
-        pass
+    #@abstractmethod
+    #def add_context_listener(self, context, listener):
+    #    pass
 
 
     @abstractmethod

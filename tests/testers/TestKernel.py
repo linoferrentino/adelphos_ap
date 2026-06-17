@@ -17,6 +17,7 @@ from app.logging import gCon
 from app.cli.SysCall import SysCall
 from app.api.UserSession import active_login
 from app.core.sys.DebugModule import DebugModule
+from tests.testers.MathRPCs import MathRPCs
 
 
 class TestKernel(Kernel):
@@ -35,3 +36,7 @@ class TestKernel(Kernel):
         return []
 
 
+    def get_social_api_calls(self):
+        syscalls = []
+        syscalls.extend(MathRPCs.get_rpcs(self))
+        return syscalls

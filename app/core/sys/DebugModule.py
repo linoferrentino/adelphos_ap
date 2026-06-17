@@ -41,10 +41,12 @@ class DebugModule:
         host = pars.get_param_safe('host')
         n1 = pars.get_param_safe('n1')
         n2 = pars.get_param_safe('n2')
-        recipient = f"@test_kernel@{host}"
-        from_user = f"test_kernel"
-        social = kernel.vhost.get_dep(Dependencies.SOCIAL)
-        await social.outgoing_message(from_user, recipient, "radd")
+        #recipient = f"@test_kernel@{host}"
+        #from_user = f"test_kernel"
+        #social = kernel.vhost.get_dep(Dependencies.SOCIAL)
+        #await social.outgoing_message(from_user, recipient, "radd")
+        social_api = kernel.vhost.get_dep(Dependencies.SOCIAL_API)
+        res = await social_api.remote_req('math', 'radd', host, n1 = n1, n2 = n2)
         return "33"
 
 

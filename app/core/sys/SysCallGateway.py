@@ -20,13 +20,16 @@ from app.exc.AdelphosException import AdErrno
 class SysCallGateway:
 
 
-    def _add_syscalls(self, syscall_type):
+    def init_syscalls(self, syscall_type):
         self.syscalls = dict()
         kernel = self.vhost.get_dep(Dependencies.KERNEL)
         if kernel is None:
             raise Exception("No kernel to run.")
-
         syscalls = kernel.get_syscalls(syscall_type)
+        self._add_syscalls(syscalls)
+
+
+    def _add_syscalls(self, syscalls):
         for sc in syscalls:
             if sc.name in self.syscalls:
                 raise Exception(f"Duplicated syscall {sc.name}")

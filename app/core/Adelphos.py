@@ -83,6 +83,10 @@ class Adelphos(Kernel):
     def get_social_syscalls(self):
         return []
 
+
+    def get_social_api_calls(self):
+        return []
+
    
 # Adelphos is the main object which orchestrates all the messages.
 class Adelphos_OLD(SocialListener):

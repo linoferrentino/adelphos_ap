@@ -13,6 +13,8 @@
 
 
 from app.ad_api.BaseSocialApiProvider import BaseSocialApiProvider
+from tests.testers.MathRPCs import MathRPCs
+from app.logging import gCon
 
 
 class SimpleSocialApiProvider(BaseSocialApiProvider):
@@ -23,5 +25,12 @@ class SimpleSocialApiProvider(BaseSocialApiProvider):
 
     def get_social_user(self):
         return "test_kernel"
+
+
+    def _register_rpc_calls(self):
+
+        math_rpcs = MathRPCs.get_rpcs(self) 
+        gCon.log(f"The mathrpcs are {math_rpcs}")
+        self._add_context_rpcs('math', math_rpcs)
 
 

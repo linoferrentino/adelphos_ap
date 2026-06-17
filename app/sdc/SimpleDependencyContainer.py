@@ -172,6 +172,8 @@ class SimpleDependencyContainer(LifespanAware):
                 dep_ob = self.social_dao
             case Dependencies.BACKDOOR_NET:
                 dep_ob = self.backdoor_net
+            case Dependencies.SOCIAL_API:
+                dep_ob = self.social_api
             case _:
                 raise Exception(f"Invalid dep {dep}")
         return dep_ob

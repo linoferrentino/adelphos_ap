@@ -41,6 +41,11 @@ class Kernel(Dependency, LifespanAware):
 
 
     @abstractmethod
+    def get_social_api_calls(self):
+        pass
+
+
+    @abstractmethod
     def get_cli_syscalls(self):
         pass
 
