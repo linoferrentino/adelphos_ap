@@ -29,7 +29,9 @@ from app.core.Adelphos import Adelphos
 from app.config import Config
 from app.federation.BackdoorNet import BackdoorNet
 from app.federation.NullNet import NullNet
-from app.ad_api.SocialApiProvider import SocialApiProvider
+from app.ad_api.adelphos.AdelphosApiProvider import AdelphosApiProvider
+from tests.testers.SimpleSocialApiProvider import SimpleSocialApiProvider
+from app.logging import gCon
 
 
 
@@ -50,8 +52,21 @@ class SimpleDependencyContainer(LifespanAware):
         self.social_dao = self._make_social_dao()
         self.social_gateway = self._make_social_gateway()
         self.backdoor_net = self._make_backdoor_net()
-        #self.social_api_provider = self.SocialApiProvider(vhost)
+        self.social_api = self._make_social_api()
         self.transport = None
+
+
+    def _make_social_api(self):
+        social_api_build = self.config.get_social_api_build()
+        social_api_type = social_api_build['type']
+        match social_api_type:
+            case 'simple':
+                gCon.log(f"creating simple social api")
+                social_api = SimpleSocialApiProvider(self.vhost)
+            case 'adelphos':
+                gCon.log(f"creating adelphos social api")
+                social_api = AdelphosApiProvider(self.vhost)
+        return social_api
 
 
     def _make_backdoor_net(self):
@@ -176,9 +191,11 @@ class SimpleDependencyContainer(LifespanAware):
 
     async def start_async(self):
         await self.kernel.start_async()
+        await self.social_api.start_async()
 
     
     async def stop_async(self):
+        await self.social_api.stop_async()
         await self.kernel.stop_async()
 
 

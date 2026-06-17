@@ -21,42 +21,57 @@ from app.logging import gCon
 from app.cli.CliParser import CliParser
 
 
-class Kernel(Dependency, LifespanAware, SocialListener):
+class Kernel(Dependency, LifespanAware):
+    #class Kernel(Dependency, LifespanAware, SocialListener):
 
-    def __init__(self, vhost, social_name):
+    #def __init__(self, vhost, social_name):
+    def __init__(self, vhost):
         super().__init__(vhost)
-        self.social_name = social_name
+        #self.social_name = social_name
+
+
+    def get_syscalls(self, syscall_type):
+        match syscall_type:
+            case 'cli':
+                return self.get_cli_syscalls()
+            case 'social':
+                return self.get_social_syscalls()
+            case _:
+                raise Exception(f"invalid syscall req {syscall_type}")
 
 
     @abstractmethod
-    def get_syscalls(self):
+    def get_cli_syscalls(self):
         pass
 
 
     @abstractmethod
-    def get_social_syscalls():
+    def get_social_syscalls(self):
         pass
 
 
     async def start_async(self):
-        gCon.log(f"{id(self)} ============================= START ASYNC")
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
-        social.add_listener(self.social_name, self)
-        gCon.log(f"Registered user {self.social_name}")
+        #gCon.log(f"{id(self)} ============================= START ASYNC")
+        #social = self.vhost.get_dep(Dependencies.SOCIAL)
+        #social.add_listener(self.social_name, self)
+        #gCon.log(f"Registered user {self.social_name}")
+        pass
 
 
     async def stop_async(self):
-        gCon.log(f"{id(self)} ============================= STOP ASYNC")
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
-        social.remove_listener(self.social_name)
+        #gCon.log(f"{id(self)} ============================= STOP ASYNC")
+        #social = self.vhost.get_dep(Dependencies.SOCIAL)
+        #social.remove_listener(self.social_name)
+        pass
 
 
     async def new_post(self, actor_from, msg):
-        gCon.log(f"got msg from {actor_from} {msg}")
-        cp = CliParser(msg)
-        gCon.log(f"These are the params {cp}")
+        #gCon.log(f"got msg from {actor_from} {msg}")
+        #cp = CliParser(msg)
+        #gCon.log(f"These are the params {cp}")
         #social_api = self.vhost.get_dep(Dependencies.SOCIAL_API)
         #await social_api.new_post()
+        pass
 
 
 

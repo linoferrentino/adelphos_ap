@@ -24,6 +24,7 @@ from app.api.UserSession import UserSession
 import app.sdc.s_utils as sdc
 import app.consts as CNST
 import traceback
+from app.core.sys.SysCallGateway import SysCallGateway
 
 class StandardCliClient:
 
@@ -66,33 +67,33 @@ class StandardCliClient:
 
 
 # gateway
-class StandardCliProvider(CliProvider):
+class StandardCliProvider(CliProvider, SysCallGateway):
 
     def __init__(self, vhost):
         self.vhost = vhost
         self.clients = []
 
 
-    def _add_syscalls(self):
-        self.syscalls = dict()
-        kernel = self.vhost.get_dep(Dependencies.KERNEL)
-        if kernel is None:
-            raise Exception("No kernel to run.")
+    #def _add_syscalls_old(self):
+    #    self.syscalls = dict()
+    #    kernel = self.vhost.get_dep(Dependencies.KERNEL)
+    #    if kernel is None:
+    #        raise Exception("No kernel to run.")
 
-        syscalls = kernel.get_syscalls()
-        for sc in syscalls:
-            if sc.name in self.syscalls:
-                raise Exception(f"Duplicated syscall {sc.name}")
-            self.syscalls[sc.name] = sc
+    #    syscalls = kernel.get_syscalls()
+    #    for sc in syscalls:
+    #        if sc.name in self.syscalls:
+    #            raise Exception(f"Duplicated syscall {sc.name}")
+    #        self.syscalls[sc.name] = sc
 
 
-    async def sys_call_gateway(self, session, pars):
-        cmd = pars.cmd
-        syscall = self.syscalls.get(cmd)
-        if syscall is None:
-            return f"{cmd}: no such command"
-        msg_out = await syscall.method(syscall.self_instance, session, pars)
-        return msg_out
+    #async def sys_call_gateway(self, session, pars):
+    #    cmd = pars.cmd
+    #    syscall = self.syscalls.get(cmd)
+    #    if syscall is None:
+    #        return f"{cmd}: no such command"
+    #    msg_out = await syscall.method(syscall.self_instance, session, pars)
+    #    return msg_out
 
 
     async def serve_forever(self, websocket):
@@ -104,7 +105,7 @@ class StandardCliProvider(CliProvider):
 
 
     def start_sync(self):
-        self._add_syscalls()
+        self._add_syscalls('cli')
 
 
     def stop_sync(self):

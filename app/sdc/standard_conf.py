@@ -22,6 +22,9 @@ adelphos_standard_configuration = {
        'social': {
            'type' : 'activity_pub',
             },
+       'social_api' : {
+           'type' : 'adelphos',
+           },
         'social_gateway' : {
            'type' : 'activity_pub',
            },

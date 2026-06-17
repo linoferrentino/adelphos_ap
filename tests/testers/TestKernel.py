@@ -22,16 +22,16 @@ from app.core.sys.DebugModule import DebugModule
 class TestKernel(Kernel):
 
     def __init__(self, vhost):
-        super().__init__(vhost, 'test_kernel')
+        super().__init__(vhost)
 
 
-    def get_syscalls(self):
+    def get_cli_syscalls(self):
         syscalls = []
         syscalls.extend(DebugModule.get_syscalls(self))
         return syscalls
 
 
-    def get_social_syscalls():
+    def get_social_syscalls(self):
         return []
 
 

@@ -24,6 +24,7 @@ class AdErrno(IntEnum):
     ENOLOGIN = 3
     EINVALID_HANDLE = 4
     EINVALID_SIGNATURE = 5
+    ENOSUCH_SYSCALL = 6
 
 
 def parse_exc(err_str):
@@ -46,6 +47,6 @@ class AdelphosException(Exception):
     def __init__(self, errno, msg = None):
         super().__init__(msg)
         self.errno = errno
-        self.out_str = f"Adelphos error: #{errno}#"
+        self.out_str = f"Adelphos error: #{errno}#" if msg is None else msg
 
 

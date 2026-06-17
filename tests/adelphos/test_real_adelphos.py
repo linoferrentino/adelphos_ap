@@ -57,7 +57,7 @@ async def test_real_sndmsg(get_standalone_app):
             async with aconnect_ws(f"http://localhost:{port}/api/ws", client) as ws:
                 await ws.send_text("WHAT")
                 datas = await ws.receive_text()
-                assert datas == "WHAT: no such command"
+                assert datas == "User Error: WHAT, no such command."
 
                 await ws.send_text("dbg.echo msg lino")
                 datas = await ws.receive_text()

@@ -20,13 +20,8 @@ from app.federation.SocialListener import SocialListener
 
 class SocialApiProvider(Dependency, LifespanAware, SocialListener):
 
-    def __init__(self, vhost, social_name):
+    def __init__(self, vhost):
         super().__init__(vhost)
-        self.social_name = social_name
- 
-
-    #async def remote_req(self, cmd, host, **kwargs):
-    #    pass
 
 
     def add_context_listener(self, context, listener):
@@ -37,9 +32,5 @@ class SocialApiProvider(Dependency, LifespanAware, SocialListener):
     async def remote_req(self, context, cmd, host, **kwargs):
         pass
 
-
-    @abstractmethod
-    def get_social_user(self):
-        pass
 
 
