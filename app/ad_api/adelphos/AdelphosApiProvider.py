@@ -29,4 +29,6 @@ class AdelphosApiProvider(BaseSocialApiProvider):
         pass
 
 
+    def _is_allowed_remote_rpc_host(self, host, mode):
+        raise Exception("TODO")
 

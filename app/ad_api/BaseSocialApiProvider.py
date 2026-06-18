@@ -12,6 +12,8 @@
 ######################################################
 
 
+import json
+import base64
 from abc import ABC, abstractmethod
 from app.ad_api.SocialApiProvider import SocialApiProvider
 from app.logging import gCon
@@ -19,20 +21,81 @@ from app.cli.CliParser import CliParser
 from app.sdc.Dependencies import Dependencies
 from app.core.sys.SysCallGateway import SysCallGateway
 from app.cli.SysCall import SysCall
+from app.exc.AdelphosException import AdelphosException
+from app.exc.AdelphosException import AdErrno
 
 
 class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
 
     def __init__(self, vhost):
         super().__init__(vhost)
+        self.contexts = dict()
 
 
     async def remote_req(self, context, cmd, host, **kwargs):
-        pass
+        rpcs = self.contexts.get(context)
+        if rpcs is None:
+            raise Exception(f"unknonw context to run {context}")
+        is_enabled = self._is_allowed_remote_rpc_host(host, 'q')
+        if is_enabled == False:
+            raise AdelphosException(AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED, host)
+        rpc = rpcs.get(cmd)
+        if rpc is None:
+            raise Exception(f"No such remote call {context}/{rpc}")
+        gCon.log(f"found the syscall {rpc}")
+        self._check_params(rpc, kwargs)
+
+        msg = self._pack_request_message(cmd, kwargs)
+
+        gCon.log(f"Sending payload -> {msg}")
+
+        #method_to_call = f"{cmd}_proxy"
+        #try:
+        #    pfnc = getattr(rpc.class_instance, method_to_call)
+        #except AttributeError:
+        #    raise Exception(f"remote proxy call not found for command {cmd}")
+
+        #kernel = self.vhost.get_dep(Dependencies.KERNEL)
+        #res = await pfnc(kernel, kwargs)
+
+
+    def _pack_request_message(self, command, param_dict):
+        cmd_json = {
+                'cmd' : command,
+                'params' : param_dict
+                }
+        rcmd_str = json.dumps(cmd_json)
+        return self._encode_daemon_message(rcmd_str)
+
+
+    def _encode_daemon_message(self, message_str):
+        remote_payload = base64.b64encode(message_str.encode())
+        remote_payload_str = remote_payload.decode()
+        return remote_payload_str
+
+
+    def _check_params(self, rpc, kwargs):
+        gCon.log(f"get params from {kwargs}")
+        for param in rpc.required_pars:
+            if param not in kwargs:
+                raise Exception(f"required param {param} not provided")
+        for param in kwargs:
+            if param not in rpc.required_pars:
+                raise Exception(f"got extra parameter {param} not required.")
+
+
+
+    @abstractmethod
+    def _is_allowed_remote_rpc_host(self, host, mode):
+        return True
 
 
     def _add_context_rpcs(self, context, rpcs):
-        pass
+        if self.contexts.get(context) is not None:
+            raise Exception(f"Context {context} already existing")
+        gCon.log(f"Adding the context {context}")
+        rpc_map = self._transform_list(rpcs)
+        self.contexts[context] = rpc_map
 
 
     async def start_async(self):
@@ -56,6 +119,8 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
         social_user = self.get_social_user()
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         social.remove_listener(social_user)
+        self.contexts = dict()
+        del self.syscalls
 
 
     async def _sys_call_q(self, session, pars):

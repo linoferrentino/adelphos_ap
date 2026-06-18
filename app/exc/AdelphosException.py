@@ -25,6 +25,7 @@ class AdErrno(IntEnum):
     EINVALID_HANDLE = 4
     EINVALID_SIGNATURE = 5
     ENOSUCH_SYSCALL = 6
+    EREMOTE_ADELPHOS_UNAUTHORIZED = 7
 
 
 def parse_exc(err_str):

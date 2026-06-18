@@ -21,19 +21,26 @@ class SysCallGateway:
 
 
     def init_syscalls(self, syscall_type):
-        self.syscalls = dict()
+        #self.syscalls = dict()
         kernel = self.vhost.get_dep(Dependencies.KERNEL)
         if kernel is None:
             raise Exception("No kernel to run.")
-        syscalls = kernel.get_syscalls(syscall_type)
-        self._add_syscalls(syscalls)
+        syscalls_list = kernel.get_syscalls(syscall_type)
+        self.syscalls = self._transform_list(syscalls_list)
 
 
-    def _add_syscalls(self, syscalls):
-        for sc in syscalls:
-            if sc.name in self.syscalls:
+    def _transform_list(self, syscalls_list, syscall_map = None):
+        if syscall_map is None:
+            syscall_map = dict()
+        for sc in syscalls_list:
+            if sc.name in syscall_map:
                 raise Exception(f"Duplicated syscall {sc.name}")
-            self.syscalls[sc.name] = sc
+            syscall_map[sc.name] = sc
+        return syscall_map
+
+
+    def _add_syscalls(self, syscalls_list):
+        self.syscalls = self._transform_list(syscalls_list, self.syscalls)
 
 
     async def sys_call_gateway(self, session, pars):

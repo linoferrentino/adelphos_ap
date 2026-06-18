@@ -29,8 +29,10 @@ class SimpleSocialApiProvider(BaseSocialApiProvider):
 
     def _register_rpc_calls(self):
 
-        math_rpcs = MathRPCs.get_rpcs(self) 
+        math_rpcs = MathRPCs.get_rpcs() 
         gCon.log(f"The mathrpcs are {math_rpcs}")
         self._add_context_rpcs('math', math_rpcs)
 
 
+    def _is_allowed_remote_rpc_host(self, host, mode):
+        return True

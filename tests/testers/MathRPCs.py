@@ -13,25 +13,26 @@
 
 
 from app.federation.social.SocialRPC import SocialRPC
+from app.logging import gCon
 
 
 class MathRPCs:
 
 
-    @staticmethod
-    def radd_proxy(self, n1, n2):
-        pass
+    #@staticmethod
+    #async def radd_proxy(kernel, kwargs):
+    #    gCon.log(f"radd_proxy get the {kwargs} kernel {kernel}")
 
 
     @staticmethod
-    def radd_stub(self, n1, n2):
+    async def radd_handler(kernel, pars):
         pass
 
 
     @classmethod
-    def get_rpcs(cls, other_self):
+    def get_rpcs(cls):
         return [
-                SocialRPC('radd', cls, other_self, ['n1', 'n2']),
-                SocialRPC('pow', cls, other_self, ['base', 'exponent']),
+                SocialRPC('radd', cls,  ['n1', 'n2']),
+                SocialRPC('pow', cls,  ['base', 'exponent']),
                 ]
 

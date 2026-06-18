@@ -34,7 +34,6 @@ class SyncRequest:
         self._inner_json = json_ob
         self.json = self.get_json 
         self.headers = headers if headers is not None else {}
-        #self.url = urlp.geturl()
         self.url = urlp
         self.client = ""
         self._inner_body = json.dumps(json_ob).encode('utf-8')

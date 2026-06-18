@@ -62,6 +62,10 @@ class BaseSocial(SocialProvider):
         self.users = {}
 
 
+    def is_allowed_rpc_actor(self, user, context, is_query):
+        pass
+
+
     def create_users(self, users):
 
         for user in users:
@@ -195,4 +199,12 @@ class BaseSocial(SocialProvider):
 
 
     def stop_sync(self):
+        pass
+
+
+    def get_user_tag(self, user):
+        pass
+
+
+    def set_user_tag(self, user, tag):
         pass

@@ -20,7 +20,5 @@ class SocialRPC:
 
     name: str
     class_instance: object
-    self_instance: object
     required_pars: list = field(default_factory = list)
-
 
