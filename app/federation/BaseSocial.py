@@ -169,6 +169,8 @@ class BaseSocial(SocialProvider):
  
     def local_user_get(self, user_name):
         user_local = self.users.get(user_name)
+        if user_local is None:
+            gCon.log(f"{id(self)} user {user_name} not present")
         return user_local
 
 

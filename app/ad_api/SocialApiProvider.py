@@ -24,11 +24,6 @@ class SocialApiProvider(Dependency, LifespanAware, SocialListener):
         super().__init__(vhost)
 
 
-    #@abstractmethod
-    #def add_context_listener(self, context, listener):
-    #    pass
-
-
     @abstractmethod
     async def remote_req(self, context, cmd, host, **kwargs):
         pass
