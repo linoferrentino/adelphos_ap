@@ -43,13 +43,13 @@ class SysCallGateway:
         self.syscalls = self._transform_list(syscalls_list, self.syscalls)
 
 
-    async def sys_call_gateway(self, session, pars):
+    async def sys_call_gateway(self, param, pars):
         cmd = pars.cmd
         syscall = self.syscalls.get(cmd)
         if syscall is None:
             raise AdelphosException(AdErrno.ENOSUCH_SYSCALL,
                                     f"{cmd}, no such command.")
-        msg_out = await syscall.method(syscall.self_instance, session, pars)
+        msg_out = await syscall.method(syscall.self_instance, param, pars)
         return msg_out
 
 

@@ -84,6 +84,10 @@ class ApActorDto:
         return f"{uri}#main-key"
 
 
+    def get_social_handle(self):
+        return f"@{self.act.preferred_username}@{self.srv.host_name}"
+
+
     def get_private_key_bytes(self):
         if self.cached_private_key is not None:
             return self.cached_private_key

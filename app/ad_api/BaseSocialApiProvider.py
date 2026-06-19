@@ -114,9 +114,24 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
         return self._encode_daemon_message(rcmd_str)
 
 
+    def _pack_response_message(self, errno, res):
+        res_json = {
+                'errno' : errno,
+                'res' : res,
+                }
+        res_str = json.dumps(res_json)
+        return self._encode_daemon_message(res_str)
+
+
     def _encode_daemon_message(self, message_str):
         remote_payload = base64.b64encode(message_str.encode())
         remote_payload_str = remote_payload.decode()
+        return remote_payload_str
+
+
+    def _decode_daemon_message(self, daemon_str):
+        remote_payload_b = base64.b64decode(daemon_str.encode())
+        remote_payload_str = remote_payload_b.decode()
         return remote_payload_str
 
 
@@ -169,13 +184,54 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
         del self.syscalls
 
 
-    async def _sys_call_q(self, session, pars):
+    def _check_actor_identity(self, actor_from, mode):
+        allowed = self._is_allowed_remote_rpc_host(actor_from.srv.host_name, mode)
+        if allowed == False:
+            raise AdelphosException(EAdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
+        if actor_from.act.preferred_username != self.get_social_user():
+            raise AdelphosException(EAdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
+
+
+    async def _sys_call_q(self, actor_from, pars):
         gCon.log(f"received the _sys_call_q with {pars}")
-        pass
+
+        self._check_actor_identity(actor_from, 'proc')
+
+        api_id = pars.get_param_safe('api_id')
+        try:
+            #payload_ans = await self._sys_call_q_try(session, pars)
+            res = "33"
+            remote_errno = AdErrno.DONE_OK
+        except AdelphosException as adex:
+            res = str(adex)
+            remote_errno = adex.errno
+        except Exception as exc:
+            res = str(exc)
+            remote_errno = AdErrno.EREMOTE_ADELPHOS_ERROR
+
+        payload_ans = self._pack_response_message(remote_errno, res)
+        answer_msg = f"{SOCIAL_API_ANSWER} api_id {api_id} payload {payload_ans}"
+        gCon.log(f"Will return {answer_msg}")
+        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        await social.outgoing_message(self.get_social_user(),
+              actor_from.get_social_handle(), answer_msg)
 
 
-    async def _sys_call_a(self, session, pars):
-        pass
+    async def _sys_call_a(self, actor_from, pars):
+        gCon.log(f"received the _sys_call_a with {pars}")
+
+        self._check_actor_identity(actor_from, 'a')
+        api_id = pars.get_param_safe('api_id')
+        payload_str = pars.get_param_safe('payload')
+        async_ctx = self.async_contexts.pop(int(api_id), None)
+        if (async_ctx is None):
+            raise AdelphosException(EAdErrno.EGENERIC_SERVER)
+        payload_decoded = self._decode_daemon_message(payload_str)
+        remote_json = json.loads(payload_decoded)
+        gCon.log(f"[green]--> ANS_GOT for apiid {api_id} {payload_decoded}[/green]")
+        async_ctx.answer = remote_json
+        async with async_ctx.async_cond:
+           async_ctx.async_cond.notify()
 
 
     @abstractmethod
@@ -192,5 +248,5 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
         gCon.log(f"got msg from {actor_from} {msg}")
         cp = CliParser(msg)
         gCon.log(f"These are the params {cp}")
-        await self.sys_call_gateway(None, cp)
+        await self.sys_call_gateway(actor_from, cp)
 

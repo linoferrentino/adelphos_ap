@@ -19,6 +19,7 @@ from app.logging import gCon
 
 class AdErrno(IntEnum):
 
+    DONE_OK = 0
     USER_DOES_NOT_EXIST = 1
     USER_ALREADY_EXISTING = 2
     ENOLOGIN = 3
@@ -26,6 +27,8 @@ class AdErrno(IntEnum):
     EINVALID_SIGNATURE = 5
     ENOSUCH_SYSCALL = 6
     EREMOTE_ADELPHOS_UNAUTHORIZED = 7
+    EREMOTE_ADELPHOS_ERROR = 8
+    EGENERIC_SERVER = 9
 
 
 def parse_exc(err_str):
