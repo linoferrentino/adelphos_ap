@@ -42,6 +42,10 @@ class Config:
         return self.config['conf']['social_dao']
 
 
+    def get_conf(self, section):
+        return self.config['conf'][section]
+
+
     def get_social_dao_build(self):
         return self.config['sdc']['social_dao']
 

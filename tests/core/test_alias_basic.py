@@ -13,22 +13,13 @@
 #
 
 import pytest
-#from app.core.Adelphos import Adelphos
-#from app.core.EAdErrno import EAdErrno
-#from app.core.MemoryAdelphosDao import MemoryAdelphosDao
-#from app.core.AdelphosDao import AdelphosDao
-#from app.core.SqliteAdelphosDao import SqliteAdelphosDao
 from app.store.MemoryStore import MemoryStore
-#from app.federation.MemoryAdelphosSocial import MemoryAdelphosSocial
-#from app.dao.AdelphosDb import AdelphosDb
 from app.core.algo.AdelphosAlgo import AdelphosAlgo 
 from app.federation.FederatedStore import FederatedStore
 from app.core.model.schema import adelphos_schema
 from app.exc.AdelphosException import AdErrno
 
 
-# this is the local world
-#@pytest.fixture(scope = "module")
 @pytest.fixture
 def w_local():
 

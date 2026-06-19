@@ -25,6 +25,7 @@ from app.exc.AdelphosException import AdErrno
 from app.exc.AdelphosException import AdelphosException
 from app.logging import gCon
 from app.sdc.Dependencies import Dependencies
+import app.misc.utils as misc
 
 from app.misc.WrapInt import WrapInt
 import asyncio
@@ -275,11 +276,17 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
         pass
 
 
-    @abstractmethod
     def _register_rpc_calls(self):
-        pass
 
+        config = self.vhost.get_dep(Dependencies.CONFIG)
+        rpcs_providers = config.get_conf('rpc_providers')
 
+        for context, provider in rpcs_providers.items():
+            provider_class = misc.import_string(provider)
+            rpcs = provider_class.get_rpcs()
+            self._add_context_rpcs(context, rpcs)
+
+    
     async def new_post(self, actor_from, msg):
         gCon.log(f"got msg from {actor_from} {msg}")
         cp = CliParser(msg)

@@ -116,7 +116,8 @@ cli_stub_dep_conf = {
 adelphos_stub =  {
         "conf" : {
             "social_dao" : social_dao_test_conf,
-            "social" : test_social_cnf
+            "social" : test_social_cnf,
+            "rpc_providers" : { 'math' : 'tests.testers.MathRPCs.MathRPCs' } ,
             },
         "General": {
     "debug": True, 
@@ -137,6 +138,7 @@ routable_test_kernel =  {
         "conf" : {
             "social_dao" : social_dao_test_conf,
             "social" :  social_test_kernel,
+            "rpc_providers" : { 'math' : 'tests.testers.MathRPCs.MathRPCs' },
             },
         "General": {
     "debug": True, 
@@ -155,7 +157,8 @@ routable_test_kernel =  {
 adelphos_t1_test =  {
         "conf" : {
             "social_dao" : social_dao_test_conf,
-            "social" : test_social2_cnf
+            "social" : test_social2_cnf,
+            "rpc_providers" : { 'math' : 'tests.testers.MathRPCs.MathRPCs' },
             },
     "General": {
     "debug": True, 
@@ -172,7 +175,8 @@ adelphos_t1_test =  {
 adelphos_t2_test =  {
         "conf" : {
             "social_dao" : social_dao_test_conf,
-            "social" : test_social2_cnf
+            "social" : test_social2_cnf,
+            "rpc_providers" : { 'math' : 'tests.testers.MathRPCs.MathRPCs' },
             },
     "General": {
     "debug": True, 
@@ -189,7 +193,8 @@ adelphos_t2_test =  {
 routable_test2_kernel =  {
         "conf" : {
             "social_dao" : social_dao_test_conf,
-            "social" : social_test_kernel2
+            "social" : social_test_kernel2,
+            "rpc_providers" : { 'math' : 'tests.testers.MathRPCs.MathRPCs' },
             },
     "General": {
     "debug": True, 

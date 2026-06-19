@@ -26,10 +26,6 @@ class AdelphosApiProvider(BaseSocialApiProvider):
         return "adelphos"
 
 
-    def _register_rpc_calls(self):
-        pass
-
-
     def _is_allowed_remote_rpc_host(self, host, mode):
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         user_tag = social.get_user_tag(self.get_social_user())

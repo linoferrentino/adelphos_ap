@@ -35,7 +35,7 @@ def test_basic2(get_standalone_app):
                            tconf.adelphos_simple_conf)
 
     with ad1:
-        time.sleep(1)
+        time.sleep(2)
         port = tconf.adelphos_stub['General']['port']
         gCon.log(f"I want to connect to port {port}")
         response = httpx.post(f'http://127.0.0.1:{port}/api/users/adelphos/inbox', 
@@ -56,6 +56,7 @@ def test_comm(get_standalone_app):
     port2 = tconf.adelphos_t2_test['General']['port']
 
     with ad1, ad2:
+        time.sleep(3)
         response = httpx.post(f'http://127.0.0.1:{port}/api/_backdoor', 
              json = {'msg' : f'discover_uri uri http://{host2}/api/users/demo77'})
         assert response.status_code == 202

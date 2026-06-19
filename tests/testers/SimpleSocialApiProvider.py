@@ -14,7 +14,9 @@
 
 from app.ad_api.BaseSocialApiProvider import BaseSocialApiProvider
 from tests.testers.MathRPCs import MathRPCs
+from app.sdc.Dependencies import Dependencies
 from app.logging import gCon
+import app.misc.utils as misc
 
 
 class SimpleSocialApiProvider(BaseSocialApiProvider):
@@ -25,13 +27,6 @@ class SimpleSocialApiProvider(BaseSocialApiProvider):
 
     def get_social_user(self):
         return "test_kernel"
-
-
-    def _register_rpc_calls(self):
-
-        math_rpcs = MathRPCs.get_rpcs() 
-        gCon.log(f"The mathrpcs are {math_rpcs}")
-        self._add_context_rpcs('math', math_rpcs)
 
 
     def _is_allowed_remote_rpc_host(self, host, mode):

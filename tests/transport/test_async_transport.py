@@ -40,6 +40,7 @@ def app_t1():
 def remote_app1():
     server = ProcessWrapper()
     with server.run_in_subprocess(TRoutable, ("flag1",), PORT1):
+        time.sleep(2)
         yield
 
 
@@ -47,6 +48,7 @@ def remote_app1():
 def remote_app2():
     server = ProcessWrapper()
     with server.run_in_subprocess(TRoutable, ("flag1",), PORT2):
+        time.sleep(2)
         yield
 
 

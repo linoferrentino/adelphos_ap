@@ -28,15 +28,10 @@ class ProcessWrapper:
 
     @contextlib.contextmanager
     def run_in_subprocess(self, routable, parms, port):
-        gCon.log(f"AO {routable}")
         p = mp.Process(target = start_starlette_app, args = (routable, parms, port))
-        gCon.log("A1")
         p.start()
-        gCon.log("A99")
         try:
-            time.sleep(1)
             yield
-            #time.sleep(1)
         finally:
             p.kill()
             p.join()
@@ -44,10 +39,8 @@ class ProcessWrapper:
 
 def start_starlette_app(aroutable, parms, port):
 
-    gCon.log("AAAAAA START X")
     routable = aroutable(*parms)
     app = starlette_app_creator(routable)
-    gCon.log("AAAAAA START")
     uvicorn.run(app, host=LOCALHOST, port=port, log_level="debug")
 
 

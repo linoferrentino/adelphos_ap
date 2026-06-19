@@ -40,7 +40,7 @@ def test_real1(get_standalone_app):
                            adelphos_standard_configuration)
 
     with ad1:
-        time.sleep(1)
+        time.sleep(2)
         port = tconf.adelphos_t1_test['General']['port']
         gCon.log(f"I want to connect to port {port}")
         response = httpx.post(f'http://127.0.0.1:{port}/api/users/adelphos/inbox', 
@@ -58,6 +58,7 @@ async def test_real_sndmsg(get_standalone_app):
                            adelphos_standard_configuration)
 
     with ad1, ad2:
+        time.sleep(4)
         port = tconf.adelphos_t1_test['General']['port']
         async with httpx.AsyncClient() as client:
             async with aconnect_ws(f"http://localhost:{port}/api/ws", client) as ws:
@@ -94,9 +95,9 @@ def test_real_remote_add(get_routable_app):
 
 def Xtest_real_remote_add_simple(get_routable_app):
     test1 = get_routable_app('test100', tconf.adelphos_stub, 
-                                bconf.adelphos_simple_social_api_conf)
+                                adelphos_standard_configuration)
     test2 = get_routable_app('test201', tconf.adelphos_t2_test,
-                                bconf.adelphos_simple_social_api_conf)
+                                adelphos_standard_configuration)
 
     host2 = tconf.adelphos_t2_test['General']['host']
     dtests._test_remote_add(test1, test2, host2)
