@@ -16,12 +16,16 @@ from app.exc.AdelphosException import parse_exc_str
 from app.exc.AdelphosException import AdErrno
 from app.sdc.Dependencies import Dependencies
 
-def _test_remote_add(test1, test2, host2):
+def _test_remote_add(test1, test2, host2, exp_errno_code = None):
 
     with test1, test2:
         with test1.websocket_connect(CNST.WS_ROUTE) as websocket:
             websocket.send_text(
     f"dbg.radd host {host2} n1 11 n2 22")
             data = websocket.receive_text()
-            assert data == "33"
+            if exp_errno_code == None:
+                assert data == "33"
+            else:
+                assert exp_errno_code == parse_exc_str(data)
+
 

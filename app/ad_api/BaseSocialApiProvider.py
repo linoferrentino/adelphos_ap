@@ -28,6 +28,7 @@ from app.sdc.Dependencies import Dependencies
 
 from app.misc.WrapInt import WrapInt
 import asyncio
+import traceback
 
 SOCIAL_API_QUERY  = "sapi.q"
 SOCIAL_API_ANSWER = "sapi.a"
@@ -73,22 +74,28 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
         self.async_contexts = dict()
 
 
-    async def remote_req(self, context, cmd, host, **kwargs):
+    def _get_rpc(self, context, cmd):
         rpcs = self.contexts.get(context)
         if rpcs is None:
             raise Exception(f"unknonw context to run {context}")
-
-        is_enabled = self._is_allowed_remote_rpc_host(host, 'q')
-        if is_enabled == False:
-            raise AdelphosException(AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED, host)
-
         rpc = rpcs.get(cmd)
         if rpc is None:
             raise Exception(f"No such remote call {context}/{rpc}")
+        return rpc
+
+
+    async def remote_req(self, context, cmd, host, **kwargs):
+
+        is_enabled = self._is_allowed_remote_rpc_host(host, 'q')
+        if is_enabled == False:
+            raise AdelphosException(AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED, 
+            f"{host} not allowed")
+
+        rpc = self._get_rpc(context, cmd)
 
         gCon.log(f"found the syscall {rpc}")
         self._check_params(rpc, kwargs)
-        msg = self._pack_request_message(cmd, kwargs)
+        msg = self._pack_request_message(context, cmd, kwargs)
         gCon.log(f"Sending payload -> {msg}")
         res = await self._make_rpc_request(host, msg)
         return res
@@ -98,15 +105,27 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
         cur_api_id = self.remote_api_id.get_and_inc()
         query_txt = f"{SOCIAL_API_QUERY} api_id {cur_api_id} payload {msg}"
         social = self.vhost.get_dep(Dependencies.SOCIAL)
+
         async_ctx = AsyncCtx(social, self.get_social_user(), host, query_txt)
         self.async_contexts[int(cur_api_id)] = async_ctx
+
         await async_ctx.wait_until_done()
-        gCon.log("Waited!")
-        #return (async_ctx.answer['res'], async_ctx.answer['payload'])
+
+        gCon.log(f"Waited! got {async_ctx.answer}")
+        remote_errno = async_ctx.answer['errno'] 
+        if remote_errno != AdErrno.DONE_OK:
+            gCon.log("[red]Remote error {remote_errno}[/red]")
+            raise AdelphosException(remote_errno, async_ctx.answer['res'])
+        
+        if async_ctx.answer['res'] is None:
+            raise AdelphosException(AdErrno.ENODATA)
+
+        return async_ctx.answer['res']
 
 
-    def _pack_request_message(self, command, param_dict):
+    def _pack_request_message(self, context, command, param_dict):
         cmd_json = {
+                'context' : context, 
                 'cmd' : command,
                 'params' : param_dict
                 }
@@ -199,14 +218,14 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
 
         api_id = pars.get_param_safe('api_id')
         try:
-            #payload_ans = await self._sys_call_q_try(session, pars)
-            res = "33"
+            res = await self._sys_call_q_try(actor_from, pars)
             remote_errno = AdErrno.DONE_OK
         except AdelphosException as adex:
             res = str(adex)
             remote_errno = adex.errno
         except Exception as exc:
             res = str(exc)
+            traceback.print_exc()
             remote_errno = AdErrno.EREMOTE_ADELPHOS_ERROR
 
         payload_ans = self._pack_response_message(remote_errno, res)
@@ -215,6 +234,23 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         await social.outgoing_message(self.get_social_user(),
               actor_from.get_social_handle(), answer_msg)
+
+
+    async def _sys_call_q_try(self, actor_from, pars):
+        payload_str = pars.get_param_safe('payload')
+        payload_decoded = self._decode_daemon_message(payload_str)
+        req_json = json.loads(payload_decoded)
+        gCon.log(f"request {req_json}")
+        cmd = req_json['cmd']
+        context = req_json['context']
+        rpc = self._get_rpc(context, cmd)
+        try:
+            handler = getattr(rpc.class_instance, f'{cmd}_handler')
+        except AttributeError as attr:
+            raise AdelphosException(AdErrno.ENOSUCH_SYSCALL, cmd)
+        kernel = self.vhost.get_dep(Dependencies.KERNEL)
+        res = await handler(kernel, req_json['params'])
+        return res 
 
 
     async def _sys_call_a(self, actor_from, pars):

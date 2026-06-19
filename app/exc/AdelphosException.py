@@ -29,17 +29,18 @@ class AdErrno(IntEnum):
     EREMOTE_ADELPHOS_UNAUTHORIZED = 7
     EREMOTE_ADELPHOS_ERROR = 8
     EGENERIC_SERVER = 9
+    ENODATA = 10
 
 
 def parse_exc(err_str):
-    re_match = re.match(br"Adelphos error: #(\d*)#", err_str)
+    re_match = re.search(br"Adelphos error #(\d*)#", err_str)
     if re_match is None:
         return -1
     return int(re_match.group(1))
 
 
 def parse_exc_str(err_str):
-    re_match = re.match(r"User Error: Adelphos error: #(\d*)#", err_str)
+    re_match = re.search(r"User Error: Adelphos error #(\d*)#", err_str)
     if re_match is None:
         return -1
     return int(re_match.group(1))
@@ -51,6 +52,8 @@ class AdelphosException(Exception):
     def __init__(self, errno, msg = None):
         super().__init__(msg)
         self.errno = errno
-        self.out_str = f"Adelphos error: #{errno}#" if msg is None else msg
+        self.out_str = f"Adelphos error #{errno}#"
+        if msg is not None:
+            self.out_str += f" {msg}"
 
 

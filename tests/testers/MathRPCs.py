@@ -19,14 +19,12 @@ from app.logging import gCon
 class MathRPCs:
 
 
-    #@staticmethod
-    #async def radd_proxy(kernel, kwargs):
-    #    gCon.log(f"radd_proxy get the {kwargs} kernel {kernel}")
-
-
     @staticmethod
     async def radd_handler(kernel, pars):
-        pass
+        n1 = int(pars['n1'])
+        n2 = int(pars['n2'])
+        ans = n1 + n2
+        return str(ans)
 
 
     @classmethod

@@ -18,6 +18,8 @@ import httpx
 import time
 
 import tests.adelphoi_test_config as tconf
+import tests.adelphoi_build_config as bconf
+
 from app.sdc.standard_conf import adelphos_standard_configuration
 from app.logging import gCon
 from tests.testers.fixtures import get_standalone_app
@@ -27,6 +29,10 @@ from tests.testers.fixtures import get_routable_app
 from httpx_ws import aconnect_ws
 from httpx_ws.transport import ASGIWebSocketTransport
 import tests.social.social_tests as stests
+import tests.daemon.daemon_tests as dtests
+from app.exc.AdelphosException import parse_exc_str
+from app.exc.AdelphosException import AdErrno
+
 
 
 def test_real1(get_standalone_app):
@@ -57,7 +63,7 @@ async def test_real_sndmsg(get_standalone_app):
             async with aconnect_ws(f"http://localhost:{port}/api/ws", client) as ws:
                 await ws.send_text("WHAT")
                 datas = await ws.receive_text()
-                assert datas == "User Error: WHAT, no such command."
+                assert AdErrno.ENOSUCH_SYSCALL == parse_exc_str(datas)
 
                 await ws.send_text("dbg.echo msg lino")
                 datas = await ws.receive_text()
@@ -73,5 +79,26 @@ def test_post_real_kernel(get_routable_app):
     host2 = tconf.adelphos_t2_test['General']['host']
     stests._test_sndpost_to_host(test1, test2, host2, 'demo1', 'demo77', 'demo1')
 
+
+
+def test_real_remote_add(get_routable_app):
+    test1 = get_routable_app('test100', tconf.adelphos_stub, 
+                                 adelphos_standard_configuration)
+    test2 = get_routable_app('test201', tconf.adelphos_t2_test,
+                             adelphos_standard_configuration)
+
+    host2 = tconf.adelphos_t2_test['General']['host']
+    dtests._test_remote_add(test1, test2, host2,
+                            AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
+
+
+def Xtest_real_remote_add_simple(get_routable_app):
+    test1 = get_routable_app('test100', tconf.adelphos_stub, 
+                                bconf.adelphos_simple_social_api_conf)
+    test2 = get_routable_app('test201', tconf.adelphos_t2_test,
+                                bconf.adelphos_simple_social_api_conf)
+
+    host2 = tconf.adelphos_t2_test['General']['host']
+    dtests._test_remote_add(test1, test2, host2)
 
 
