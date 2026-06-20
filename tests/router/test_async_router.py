@@ -20,7 +20,6 @@ from starlette.websockets import WebSocket
 from app.AdelphosRouter import AdelphosRouter
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 
-from tests.testers.fixtures import CliBypassStub
 import tests.test_constants as tc
 import tests.adelphoi_test_config as tconf
 from app.transport.bridge.loop import stop_loop, get_loop

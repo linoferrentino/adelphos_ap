@@ -10,30 +10,7 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
 
-# a federated store is a distributed database in which objects
-# are identified with an URI, AdelphosURI
-
-# the store exposes a sync interface, but internally it might
-# call async functions.
-
-
-
-# the FederatedStore uses the transport to access objects which
-# are beyond its reach and to perform a distributed commit.
-
-
-# open uri 
-# #al#lino.ferre@adelphos.it#objects.link
-# the uri can have a fragment, this will lock only the corresponding part.
-
-# Adelphos Database Daemon
-
-
-# the database can have the possibility to know the value of the link
-
-# the store has a router it is needed to do remote queries.
 
 import uuid
 import copy
@@ -44,6 +21,8 @@ from enum import IntEnum
 from enum import StrEnum
 from enum import auto
 from datetime import datetime
+from app.sdc.Dependency import Dependency
+from app.federation.LifespanAware import LifespanAware
 from app.federation.FederatedObject import FederatedObject
 from app.federation.SocialListener import SocialListener
 from app.federation.FederatedObject import str_to_fob
@@ -51,7 +30,6 @@ from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
 from app.federation.FederatedUri import FederatedUri
 from app.federation.FederatedFactory import FederatedFactory
-#from app.federation.SocialGateway import SocialGateway
 from app.federation.FederatedStoreApi import FederatedStoreApi
 from app.federation.Kernel import Kernel
 
@@ -70,22 +48,6 @@ class ELockResolution(StrEnum):
     RETRY_TIMEOUT = auto()
 
 
-
-# the federated store is not thread safe, but it is transaction safe,
-# that is, it is able to memorize different transactions
-
-# the object should be called by one thread, usually the async loop,
-# the object will enter the loop already existing, if there is one.
-
-# the store is not tied to a particular URI format: it could function with
-# any type of uris, as long as they are unique and follow a common interface,
-# the federated uri interface.
-
-
-# the federated transaction collects all changed data in a coherent way.
-# the transaction either it is commited or rolled back in full.
-# the transaction is not durable, unless commited, during the building
-# of the transaction the data is all in memory.
 class FederatedTransaction:
 
     def __init__(self, tid, fdb):
@@ -248,21 +210,16 @@ class FedStore_ReadCtx:
     fob : FederatedObject = None
 
  
-# the federated store uses a social network to synchronize to other peers.
-class FederatedStore:
+class FederatedStore(Dependency, LifespanAware):
 
-
-    # I initialize myself with my hostname to distinguish my own URIs from the others.
     def __init__(self, hostname, db, schema_init):
 
         self.db = db
         self.hostname = hostname
 
-        # at first the transaction set is empty
         self.transactions = {}
 
         schema_init()
-        self.fede_api = None
 
         #run_coro_in_loop(self.start_async, ())
 
@@ -273,15 +230,16 @@ class FederatedStore:
 
     async def start_async(self, social):
         self.db.open()
-        self.fede_api = FederatedStoreApi(social)
+        #self.fede_api = FederatedStoreApi(social)
 
 
     async def stop_async(self):
+        assert False
         self.db.close()
 
 
-    async def proc_msg(self, msg):
-        pass
+    #async def proc_msg(self, msg):
+    #    pass
 
 
     def is_local_uri(self, uri):
@@ -398,7 +356,8 @@ class FederatedStore:
 
 
     async def _read_remote_ctx(self, rctx):
-        remote_ob_str = await self.fede_api.read_remote_uri(rctx)
+        #remote_ob_str = await self.fede_api.read_remote_uri(rctx)
+        remote_ob_str = None
         return remote_ob_str
 
 

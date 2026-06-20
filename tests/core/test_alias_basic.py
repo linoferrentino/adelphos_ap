@@ -35,7 +35,7 @@ def test_add_alias(w_local):
     assert lino_ob is not None
 
 
-def OLDAP_test_add_dup_family(w_local):
+def Atest_add_dup_family(w_local):
 
     lino_ob = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
     assert lino_ob is not None

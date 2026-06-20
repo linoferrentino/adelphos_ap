@@ -30,6 +30,7 @@ class AdErrno(IntEnum):
     EREMOTE_ADELPHOS_ERROR = 8
     EGENERIC_SERVER = 9
     ENODATA = 10
+    EDUPLICATED_FAMILY = 11
 
 
 def parse_exc(err_str):

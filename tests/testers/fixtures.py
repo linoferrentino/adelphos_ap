@@ -122,19 +122,17 @@ def app(aroutable, request):
         app = StarletteWrap(routable = aroutable)
         wrappedapp = TestClient(app)
 
-    #with wrappedapp:
-    #    yield wrappedapp
     return wrappedapp
 
 
-class CliBypassStub(CliProvider):
-
-    async def serve_forever(self, websocket):
-        await websocket.accept()
-        text = await websocket.receive_text()
-        response = await self.kernel.proc_msg(text)
-        await websocket.send_text(f"{response}")
-        await websocket.close()
+#class CliBypassStub(CliProvider):
+#
+#    async def serve_forever(self, websocket):
+#        await websocket.accept()
+#        text = await websocket.receive_text()
+#        response = await self.kernel.proc_msg(text)
+#        await websocket.send_text(f"{response}")
+#        await websocket.close()
 
 
 
