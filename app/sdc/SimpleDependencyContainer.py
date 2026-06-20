@@ -43,10 +43,12 @@ class SimpleDependencyContainer(LifespanAware):
         self.vhost = vhost
         self.config = Config(instance, config)
 
-        self.social = self._make_social()
-        self.kernel = self._make_kernel()
-        self.cli_handler = self._make_cli_handler()
-        self.social_net = ActivityPubNetwork(vhost)
+        self.mods = dict()
+
+        self.mods[Dependencies.SOCIAL] = self._make_social()
+        self.mods[Dependencies.KERNEL] = self._make_kernel()
+        self.mods[Dependencies.CLI_HANDLER] = self._make_cli_handler()
+        self.mods[Dependencies.SOCIAL_NET] = ActivityPubNetwork(vhost)
         self.cli_net = AdelphosCliRouter(vhost)
         self.social_dao = self._make_social_dao()
         self.social_gateway = self._make_social_gateway()
@@ -145,17 +147,17 @@ class SimpleDependencyContainer(LifespanAware):
     def get_dep(self, dep):
         match dep:
             case Dependencies.SOCIAL:
-                dep_ob = self.social
+                dep_ob = self.mods[Dependencies.SOCIAL]
             case Dependencies.SOCIAL_NET:
-                dep_ob = self.social_net
+                dep_ob = self.mods[Dependencies.SOCIAL_NET]
             case Dependencies.CLI_NET:
                 dep_ob = self.cli_net
             case Dependencies.KERNEL:
-                dep_ob = self.kernel
+                dep_ob = self.mods[Dependencies.KERNEL]
             case Dependencies.CONFIG:
                 dep_ob = self.config
             case Dependencies.CLI_HANDLER:
-                dep_ob = self.cli_handler
+                dep_ob = self.mods[Dependencies.CLI_HANDLER]
             case Dependencies.TRANSPORT:
                 dep_ob = self.transport
             case Dependencies.SOCIAL_GATEWAY:
@@ -172,25 +174,25 @@ class SimpleDependencyContainer(LifespanAware):
 
 
     def start_sync(self):
-        self.cli_handler.start_sync()
+        self.mods[Dependencies.CLI_HANDLER].start_sync()
         self.social_dao.start_sync()
-        self.social.start_sync()
+        self.mods[Dependencies.SOCIAL].start_sync()
 
 
     def stop_sync(self):
-        self.social.stop_sync()
+        self.mods[Dependencies.SOCIAL].stop_sync()
         self.social_dao.stop_sync()
-        self.cli_handler.stop_sync()
+        self.mods[Dependencies.CLI_HANDLER].stop_sync()
 
 
     async def start_async(self):
-        await self.kernel.start_async()
+        await self.mods[Dependencies.KERNEL].start_async()
         await self.social_api.start_async()
 
     
     async def stop_async(self):
         await self.social_api.stop_async()
-        await self.kernel.stop_async()
+        await self.mods[Dependencies.KERNEL].stop_async()
 
 
 
