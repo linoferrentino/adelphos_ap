@@ -40,6 +40,8 @@ class SysCallGateway:
 
 
     def _add_syscalls(self, syscalls_list):
+        if hasattr(self, 'syscalls') == False:
+            self.syscalls = dict()
         self.syscalls = self._transform_list(syscalls_list, self.syscalls)
 
 

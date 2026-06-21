@@ -74,28 +74,6 @@ class StandardCliProvider(CliProvider, SysCallGateway):
         self.clients = []
 
 
-    #def _add_syscalls_old(self):
-    #    self.syscalls = dict()
-    #    kernel = self.vhost.get_dep(Dependencies.KERNEL)
-    #    if kernel is None:
-    #        raise Exception("No kernel to run.")
-
-    #    syscalls = kernel.get_syscalls()
-    #    for sc in syscalls:
-    #        if sc.name in self.syscalls:
-    #            raise Exception(f"Duplicated syscall {sc.name}")
-    #        self.syscalls[sc.name] = sc
-
-
-    #async def sys_call_gateway(self, session, pars):
-    #    cmd = pars.cmd
-    #    syscall = self.syscalls.get(cmd)
-    #    if syscall is None:
-    #        return f"{cmd}: no such command"
-    #    msg_out = await syscall.method(syscall.self_instance, session, pars)
-    #    return msg_out
-
-
     async def serve_forever(self, websocket):
 
         await websocket.accept()

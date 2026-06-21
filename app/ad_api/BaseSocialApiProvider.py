@@ -186,7 +186,7 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
         social.add_listener(social_user, self)
         gCon.log(f"Registered user {social_user}")
 
-        self.init_syscalls('social')
+        #self.init_syscalls('social')
         syscalls = [
                 SysCall(SOCIAL_API_QUERY, BaseSocialApiProvider._sys_call_q, self),
                 SysCall(SOCIAL_API_ANSWER, BaseSocialApiProvider._sys_call_a, self),

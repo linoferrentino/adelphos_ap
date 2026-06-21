@@ -36,6 +36,7 @@ class Kernel(Dependency):
             case 'cli':
                 return self.get_cli_syscalls()
             case 'social':
+                assert False
                 return self.get_social_syscalls()
             case _:
                 raise Exception(f"invalid syscall req {syscall_type}")
@@ -51,9 +52,9 @@ class Kernel(Dependency):
         pass
 
 
-    @abstractmethod
-    def get_social_syscalls(self):
-        pass
+    #@abstractmethod
+    #def get_social_syscalls(self):
+    #    pass
 
 
     #async def start_async(self):

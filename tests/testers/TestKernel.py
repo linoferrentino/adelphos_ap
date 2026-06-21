@@ -32,8 +32,8 @@ class TestKernel(Kernel):
         return syscalls
 
 
-    def get_social_syscalls(self):
-        return []
+    #def get_social_syscalls(self):
+    #    return []
 
 
     #def get_social_api_calls(self):
