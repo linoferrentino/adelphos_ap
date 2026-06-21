@@ -186,7 +186,7 @@ class BaseSocial(SocialProvider):
 
 
     def start_sync(self):
-        config = self.vhost.get_dep(Dependencies.CONFIG)
+        config = self.vhost.conf()
         self.social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
         soc_cnf  = config.get_social_config()
         host = config.get_host()

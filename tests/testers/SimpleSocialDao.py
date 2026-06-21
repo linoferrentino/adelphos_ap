@@ -62,7 +62,7 @@ class SimpleSocialDao(BaseSocialDao):
 
     def actor_get_from_parsed_url(self, parsed_url):
         if len(parsed_url.netloc) == 0:
-            host = self.vhost.get_dep(Dependencies.CONFIG).get_host()
+            host = self.vhost.conf().get_host()
         else:
             host = parsed_url.netloc
     

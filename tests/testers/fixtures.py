@@ -49,7 +49,7 @@ def _build_routable_config_impl(instance_name, configuration,
 
     if mode == 'sync':
         gCon.log("====================== SYNC")
-        config = aroutable.get_dep(Dependencies.CONFIG)
+        config = aroutable.conf()
         host = config.get_host()
         app = SyncApp(host, aroutable, API_POINT)
         wrappedapp = SyncTester(app)
@@ -114,7 +114,7 @@ def aroutable(request):
 def app(aroutable, request):
 
     if request.param == 'sync':
-        config = aroutable.get_dep(Dependencies.CONFIG)
+        config = aroutable.conf()
         host = config.get_host()
         app = SyncApp(host, aroutable, API_POINT)
         wrappedapp = SyncTester(app)

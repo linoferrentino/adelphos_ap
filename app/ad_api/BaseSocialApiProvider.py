@@ -278,7 +278,7 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
 
     def _register_rpc_calls(self):
 
-        config = self.vhost.get_dep(Dependencies.CONFIG)
+        config = self.vhost.conf()
         rpcs_providers = config.get_conf('rpc_providers')
 
         for context, provider in rpcs_providers.items():

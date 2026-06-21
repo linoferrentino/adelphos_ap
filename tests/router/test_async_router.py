@@ -141,7 +141,7 @@ def test_webfinger(app, aroutable):
     response = test1.get(url_query)
     assert response.status_code == 404
 
-    config = aroutable.get_dep(Dependencies.CONFIG)
+    config = aroutable.conf()
     host = config.get_host()
 
     url_query = f"{CNST.WEBFINGER_ROUTE}?resource=acct:t1@{host}"

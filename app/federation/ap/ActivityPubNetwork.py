@@ -53,7 +53,7 @@ class ActivityPubNetwork(SocialNetwork):
         ap_user_rex = ap_user_match.group(1)
         ap_host_rex = ap_user_match.group(2)
 
-        config = self.vhost.get_dep(Dependencies.CONFIG)
+        config = self.vhost.conf()
         host = config.get_host()
 
         if ap_host_rex != host:
@@ -94,7 +94,7 @@ class ActivityPubNetwork(SocialNetwork):
         if userob is None:
             return Response(status_code=404)
 
-        config = self.vhost.get_dep(Dependencies.CONFIG)
+        config = self.vhost.conf()
         host = config.get_host()
         host_api = f"{host}{CNST.API_POINT}"
 

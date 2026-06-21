@@ -92,7 +92,7 @@ class SqliteSocialDao(BaseSocialDao):
     
     def start_sync(self):
 
-        config = self.vhost.get_dep(Dependencies.CONFIG)
+        config = self.vhost.conf()
         my_conf = config.get_social_dao_cnf()
         db_name = my_conf['db_name']
 

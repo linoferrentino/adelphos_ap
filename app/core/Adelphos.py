@@ -75,7 +75,7 @@ class Adelphos(Kernel):
 
     def get_cli_syscalls(self):
         syscalls = []
-        if (self.vhost.get_dep(Dependencies.CONFIG)).is_test_instance():
+        if self.vhost.conf().is_test_instance():
             syscalls.extend(DebugModule.get_syscalls(self))
         return syscalls
 
@@ -84,8 +84,8 @@ class Adelphos(Kernel):
         return []
 
 
-    def get_social_api_calls(self):
-        return []
+    #def get_social_api_calls(self):
+    #    return []
 
    
 # Adelphos is the main object which orchestrates all the messages.

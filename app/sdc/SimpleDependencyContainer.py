@@ -39,22 +39,24 @@ class SimpleDependencyContainer(LifespanAware):
                  
         instance = vhost.instance_name
         config = vhost.config
-
-        self.vhost = vhost
         self.config = Config(instance, config)
 
+        self.vhost = vhost
         self.mods = dict()
 
         self.mods[Dependencies.SOCIAL] = self._make_social()
         self.mods[Dependencies.KERNEL] = self._make_kernel()
         self.mods[Dependencies.CLI_HANDLER] = self._make_cli_handler()
         self.mods[Dependencies.SOCIAL_NET] = ActivityPubNetwork(vhost)
-        self.cli_net = AdelphosCliRouter(vhost)
-        self.social_dao = self._make_social_dao()
-        self.social_gateway = self._make_social_gateway()
-        self.backdoor_net = self._make_backdoor_net()
-        self.social_api = self._make_social_api()
-        self.transport = None
+        self.mods[Dependencies.CLI_NET] = AdelphosCliRouter(vhost)
+        self.mods[Dependencies.SOCIAL_DAO] = self._make_social_dao()
+        self.mods[Dependencies.SOCIAL_GATEWAY] = self._make_social_gateway()
+        self.mods[Dependencies.BACKDOOR_NET] = self._make_backdoor_net()
+        self.mods[Dependencies.SOCIAL_API] = self._make_social_api()
+
+
+    def conf(self):
+        return self.config
 
 
     def _make_social_api(self):
@@ -139,60 +141,36 @@ class SimpleDependencyContainer(LifespanAware):
     def set_dep(self, dep_type, dep):
         match dep_type:
             case Dependencies.TRANSPORT:
-                self.transport = dep
+                self.mods[Dependencies.TRANSPORT] = dep
             case _:
                 raise Exception(f"Cannot set the dep {dep_type}")
 
 
     def get_dep(self, dep):
-        match dep:
-            case Dependencies.SOCIAL:
-                dep_ob = self.mods[Dependencies.SOCIAL]
-            case Dependencies.SOCIAL_NET:
-                dep_ob = self.mods[Dependencies.SOCIAL_NET]
-            case Dependencies.CLI_NET:
-                dep_ob = self.cli_net
-            case Dependencies.KERNEL:
-                dep_ob = self.mods[Dependencies.KERNEL]
-            case Dependencies.CONFIG:
-                dep_ob = self.config
-            case Dependencies.CLI_HANDLER:
-                dep_ob = self.mods[Dependencies.CLI_HANDLER]
-            case Dependencies.TRANSPORT:
-                dep_ob = self.transport
-            case Dependencies.SOCIAL_GATEWAY:
-                dep_ob = self.social_gateway
-            case Dependencies.SOCIAL_DAO:
-                dep_ob = self.social_dao
-            case Dependencies.BACKDOOR_NET:
-                dep_ob = self.backdoor_net
-            case Dependencies.SOCIAL_API:
-                dep_ob = self.social_api
-            case _:
-                raise Exception(f"Invalid dep {dep}")
-        return dep_ob
+        dep_mod = self.mods.get(dep)
+        return dep_mod
 
 
     def start_sync(self):
         self.mods[Dependencies.CLI_HANDLER].start_sync()
-        self.social_dao.start_sync()
+        self.mods[Dependencies.SOCIAL_DAO].start_sync()
         self.mods[Dependencies.SOCIAL].start_sync()
 
 
     def stop_sync(self):
         self.mods[Dependencies.SOCIAL].stop_sync()
-        self.social_dao.stop_sync()
+        self.mods[Dependencies.SOCIAL_DAO].stop_sync()
         self.mods[Dependencies.CLI_HANDLER].stop_sync()
 
 
     async def start_async(self):
-        await self.mods[Dependencies.KERNEL].start_async()
-        await self.social_api.start_async()
+        #await self.mods[Dependencies.KERNEL].start_async()
+        await self.mods[Dependencies.SOCIAL_API].start_async()
 
     
     async def stop_async(self):
-        await self.social_api.stop_async()
-        await self.mods[Dependencies.KERNEL].stop_async()
+        await self.mods[Dependencies.SOCIAL_API].stop_async()
+        #await self.mods[Dependencies.KERNEL].stop_async()
 
 
 

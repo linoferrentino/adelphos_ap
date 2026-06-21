@@ -88,6 +88,10 @@ class AdelphosRouter(Routable):
         return self.sdc.get_dep(dep)
 
 
+    def conf(self):
+        return self.sdc.conf()
+
+
     def set_transport(self, transport):
         self.sdc.set_dep(Dependencies.TRANSPORT, transport)
 
