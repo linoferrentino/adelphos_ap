@@ -32,7 +32,7 @@ class DebugModule:
         msg = pars.get_param_safe('msg')
         from_user = pars.get_param_safe('from')
         gCon.log(f"sending message {msg} to {recipient} from {from_user}")
-        social = kernel.vhost.get_dep(Dependencies.SOCIAL)
+        social = kernel.get_dep(Dependencies.SOCIAL)
         await social.outgoing_message(from_user, recipient, msg)
         return 'DONE!'
 
@@ -41,7 +41,7 @@ class DebugModule:
         host = pars.get_param_safe('host')
         n1 = pars.get_param_safe('n1')
         n2 = pars.get_param_safe('n2')
-        social_api = kernel.vhost.get_dep(Dependencies.SOCIAL_API)
+        social_api = kernel.get_dep(Dependencies.SOCIAL_API)
         res = await social_api.remote_req('math', 'radd', host, n1 = n1, n2 = n2)
         return res
 
@@ -49,8 +49,8 @@ class DebugModule:
     @staticmethod
     def get_syscalls(kernel):
           return [
-                SysCall('dbg.echo', DebugModule._sys_call_echo, kernel),
-                SysCall('dbg.sndpost', DebugModule._sys_call_sndpost, kernel),
-                SysCall('dbg.radd', DebugModule._sys_call_radd, kernel),
+                SysCall('dbg.echo', DebugModule._sys_call_echo),
+                SysCall('dbg.sndpost', DebugModule._sys_call_sndpost),
+                SysCall('dbg.radd', DebugModule._sys_call_radd),
           ]
 

@@ -30,7 +30,7 @@ class MathRPCs:
     @classmethod
     def get_rpcs(cls):
         return [
-                SocialRPC('radd', cls,  ['n1', 'n2']),
-                SocialRPC('pow', cls,  ['base', 'exponent']),
+                SocialRPC('radd', MathRPCs.radd_handler,  ['n1', 'n2']),
+                SocialRPC('pow', None,  ['base', 'exponent']),
                 ]
 

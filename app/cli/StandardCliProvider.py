@@ -84,6 +84,9 @@ class StandardCliProvider(CliProvider, SysCallGateway):
 
     def start_sync(self):
         self.init_syscalls('cli')
+        #config = self.vhost.conf()
+        #cli_providers = config.get_conf('cli_providers')
+        
 
 
     def stop_sync(self):

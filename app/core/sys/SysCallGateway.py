@@ -51,7 +51,10 @@ class SysCallGateway:
         if syscall is None:
             raise AdelphosException(AdErrno.ENOSUCH_SYSCALL,
                                     f"{cmd}, no such command.")
-        msg_out = await syscall.method(syscall.self_instance, param, pars)
+
+        #kernel = self.vhost.get_dep(Dependencies.KERNEL)
+        kernel = self.vhost
+        msg_out = await syscall.handler(kernel, param, pars)
         return msg_out
 
 

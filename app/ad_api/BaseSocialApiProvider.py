@@ -55,9 +55,22 @@ class AsyncCtx:
                     remote_user, self.query_txt)
         except AdelphosException as adex:
             gCon.log(f"adex {adex}")
+            self.answer = {
+                'errno' : AdErrno.EGENERIC_USER_ERROR,
+                'res' : adex,
+                }
+            self.answer = str(adex)
+            async with self.async_cond:
+                self.async_cond.notify_all()
         except Exception as exc:
             gCon.log(f"generic ex {exc}")
-
+            self.answer = {
+                'errno' : AdErrno.EGENERIC_SERVER,
+                'res' : exc,
+                }
+            async with self.async_cond:
+                self.async_cond.notify_all()
+ 
 
     async def wait_until_done(self):
         gCon.log("wait!")
@@ -188,8 +201,8 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
 
         #self.init_syscalls('social')
         syscalls = [
-                SysCall(SOCIAL_API_QUERY, BaseSocialApiProvider._sys_call_q, self),
-                SysCall(SOCIAL_API_ANSWER, BaseSocialApiProvider._sys_call_a, self),
+                SysCall(SOCIAL_API_QUERY, BaseSocialApiProvider._sys_call_q),
+                SysCall(SOCIAL_API_ANSWER, BaseSocialApiProvider._sys_call_a),
           ]
         self._add_syscalls(syscalls)
         self._register_rpc_calls()
@@ -212,9 +225,10 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
             raise AdelphosException(EAdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
 
 
-    async def _sys_call_q(self, actor_from, pars):
+    async def _sys_call_q(kernel, actor_from, pars):
         gCon.log(f"received the _sys_call_q with {pars}")
 
+        self = kernel.get_dep(Dependencies.SOCIAL_API)
         self._check_actor_identity(actor_from, 'proc')
 
         api_id = pars.get_param_safe('api_id')
@@ -245,18 +259,19 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
         cmd = req_json['cmd']
         context = req_json['context']
         rpc = self._get_rpc(context, cmd)
-        try:
-            handler = getattr(rpc.class_instance, f'{cmd}_handler')
-        except AttributeError as attr:
-            raise AdelphosException(AdErrno.ENOSUCH_SYSCALL, cmd)
+        #try:
+        #    handler = getattr(rpc.class_instance, f'{cmd}_handler')
+        #except AttributeError as attr:
+        #    raise AdelphosException(AdErrno.ENOSUCH_SYSCALL, cmd)
         kernel = self.vhost.get_dep(Dependencies.KERNEL)
-        res = await handler(kernel, req_json['params'])
+        res = await rpc.handler(kernel, req_json['params'])
         return res 
 
 
-    async def _sys_call_a(self, actor_from, pars):
+    async def _sys_call_a(kernel, actor_from, pars):
         gCon.log(f"received the _sys_call_a with {pars}")
 
+        self = kernel.get_dep(Dependencies.SOCIAL_API)
         self._check_actor_identity(actor_from, 'a')
         api_id = pars.get_param_safe('api_id')
         payload_str = pars.get_param_safe('payload')

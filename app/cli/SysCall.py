@@ -18,6 +18,6 @@ from dataclasses import dataclass
 class SysCall:
 
     name : str
-    method: callable
-    self_instance: object
+    handler: callable
+    #self_instance: object
 

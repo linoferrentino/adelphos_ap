@@ -19,6 +19,6 @@ from dataclasses import field
 class SocialRPC:
 
     name: str
-    class_instance: object
+    handler: callable
     required_pars: list = field(default_factory = list)
 
