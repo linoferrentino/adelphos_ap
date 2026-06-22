@@ -79,23 +79,25 @@ class AsyncCtx:
                 await self.async_cond.wait()
 
 
-class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
+#class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
+class BaseSocialApiProvider(SocialApiProvider):
 
     def __init__(self, vhost):
         super().__init__(vhost)
-        self.contexts = dict()
+        #self.contexts = dict()
         self.remote_api_id = WrapInt()
         self.async_contexts = dict()
+        #self.rpc_gateway = SysCallGateway('rpc_providers')
 
 
-    def _get_rpc(self, context, cmd):
-        rpcs = self.contexts.get(context)
-        if rpcs is None:
-            raise Exception(f"unknonw context to run {context}")
-        rpc = rpcs.get(cmd)
-        if rpc is None:
-            raise Exception(f"No such remote call {context}/{rpc}")
-        return rpc
+    #def _get_syscall(self, context, cmd):
+    #    rpcs = self.contexts.get(context)
+    #    if rpcs is None:
+    #        raise Exception(f"unknonw context to run {context}")
+    #    rpc = rpcs.get(cmd)
+    #    if rpc is None:
+    #        raise Exception(f"No such remote call {context}/{rpc}")
+    #    return rpc
 
 
     async def remote_req(self, context, cmd, host, **kwargs):
@@ -105,7 +107,8 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
             raise AdelphosException(AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED, 
             f"{host} not allowed")
 
-        rpc = self._get_rpc(context, cmd)
+        rpc_api = self.vhost.get_dep(Dependencies.RPC_API)
+        rpc = rpc_api.get_syscall(context, cmd)
 
         gCon.log(f"found the syscall {rpc}")
         self._check_params(rpc, kwargs)
@@ -183,7 +186,6 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
         #        raise Exception(f"got extra parameter {param} not required.")
 
 
-
     @abstractmethod
     def _is_allowed_remote_rpc_host(self, host, mode):
         return True
@@ -202,15 +204,14 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
         gCon.log(f"{id(self)} ============= START ASYNC with user {social_user}")
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         social.add_listener(social_user, self)
-        gCon.log(f"Registered user {social_user}")
 
-        #self.init_syscalls('social')
-        syscalls = [
-                SysCall(SOCIAL_API_QUERY, BaseSocialApiProvider._sys_call_q),
-                SysCall(SOCIAL_API_ANSWER, BaseSocialApiProvider._sys_call_a),
-          ]
-        self._add_syscalls(syscalls)
-        self._register_rpc_calls()
+        gCon.log(f"Registered user {social_user}")
+        #syscalls = [
+        #        SysCall(SOCIAL_API_QUERY, BaseSocialApiProvider._sys_call_q),
+        #        SysCall(SOCIAL_API_ANSWER, BaseSocialApiProvider._sys_call_a),
+        #  ]
+        #self._add_syscalls_old(syscalls)
+        #self._register_rpc_calls()
 
     
     async def stop_async(self):
@@ -218,8 +219,8 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
         social_user = self.get_social_user()
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         social.remove_listener(social_user)
-        self.contexts = dict()
-        del self.syscalls
+        #del self.syscalls
+        #self.rpc_gateway.clear_syscalls()
 
 
     def _check_actor_identity(self, actor_from, mode):
@@ -263,11 +264,10 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
         gCon.log(f"request {req_json}")
         cmd = req_json['cmd']
         context = req_json['context']
-        rpc = self._get_rpc(context, cmd)
-        #try:
-        #    handler = getattr(rpc.class_instance, f'{cmd}_handler')
-        #except AttributeError as attr:
-        #    raise AdelphosException(AdErrno.ENOSUCH_SYSCALL, cmd)
+
+        rpc_api = self.vhost.get_dep(Dependencies.RPC_API)
+        rpc = rpc_api.get_syscall(context, cmd)
+
         kernel = self.vhost.get_dep(Dependencies.KERNEL)
         res = await rpc.handler(kernel, req_json['params'])
         return res 
@@ -296,15 +296,18 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
         pass
 
 
-    def _register_rpc_calls(self):
+    #def _register_rpc_calls(self):
 
-        config = self.vhost.conf()
-        rpcs_providers = config.get_conf('rpc_providers')
+        #self.rpc_gateway.register_syscalls(self.vhost, 'rpc_providers')
 
-        for context, provider in rpcs_providers.items():
-            provider_class = misc.import_string(provider)
-            rpcs = provider_class.get_rpcs()
-            self._add_context_rpcs(context, rpcs)
+        #config = self.vhost.conf()
+        #rpcs_providers = config.get_conf('rpc_providers')
+
+        #for context, provider in rpcs_providers.items():
+        #    provider_class = misc.import_string(provider)
+        #    rpcs = provider_class.get_rpcs()
+        #    #self._add_context_rpcs(context, rpcs)
+        #    self.rpc_gateway._add_syscalls(context, rpcs)
 
     
     async def new_post(self, actor_from, msg):

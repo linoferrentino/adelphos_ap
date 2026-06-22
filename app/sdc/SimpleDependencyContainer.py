@@ -30,6 +30,7 @@ from app.federation.NullNet import NullNet
 from app.ad_api.adelphos.AdelphosApiProvider import AdelphosApiProvider
 from tests.testers.SimpleSocialApiProvider import SimpleSocialApiProvider
 from app.logging import gCon
+from app.core.sys.SysCallGateway import SysCallGateway
 
 
 
@@ -53,6 +54,9 @@ class SimpleDependencyContainer(LifespanAware):
         self.mods[Dependencies.SOCIAL_GATEWAY] = self._make_social_gateway()
         self.mods[Dependencies.BACKDOOR_NET] = self._make_backdoor_net()
         self.mods[Dependencies.SOCIAL_API] = self._make_social_api()
+        self.mods[Dependencies.RPC_API] = SysCallGateway(vhost, 'rpc_providers')
+        self.mods[Dependencies.INBOX_API] = SysCallGateway(vhost, 'inbox_providers')
+        self.mods[Dependencies.CLI_API] = SysCallGateway(vhost, 'cli_providers')
 
 
     def conf(self):
@@ -155,22 +159,24 @@ class SimpleDependencyContainer(LifespanAware):
         self.mods[Dependencies.CLI_HANDLER].start_sync()
         self.mods[Dependencies.SOCIAL_DAO].start_sync()
         self.mods[Dependencies.SOCIAL].start_sync()
+        self.mods[Dependencies.RPC_API].start_sync()
+        self.mods[Dependencies.INBOX_API].start_sync()
 
 
     def stop_sync(self):
+        self.mods[Dependencies.INBOX_API].stop_sync()
+        self.mods[Dependencies.RPC_API].stop_sync()
         self.mods[Dependencies.SOCIAL].stop_sync()
         self.mods[Dependencies.SOCIAL_DAO].stop_sync()
         self.mods[Dependencies.CLI_HANDLER].stop_sync()
 
 
     async def start_async(self):
-        #await self.mods[Dependencies.KERNEL].start_async()
         await self.mods[Dependencies.SOCIAL_API].start_async()
 
     
     async def stop_async(self):
         await self.mods[Dependencies.SOCIAL_API].stop_async()
-        #await self.mods[Dependencies.KERNEL].stop_async()
 
 
 

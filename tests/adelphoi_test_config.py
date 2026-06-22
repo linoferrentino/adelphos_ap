@@ -114,7 +114,64 @@ cli_stub_dep_conf = {
 
 
 debug_syscalls = {
-        'dbg' : 'app.core.sys.DebugModule'
+        'dbg' : {
+            'module' : 'app.core.sys.DebugModule',
+            'echo' : {
+                },
+            'sndpost' : {
+                },
+            'radd' : {
+                },
+            }
+        }
+
+
+remote_syscalls = {
+        'math' : {
+            'class' : 'tests.testers.MathRPCs.MathRPCs',
+            'syscalls' : [ {
+                'name' : 'radd',
+                'pars' : {
+                    'n1' : {
+                        'required' : True,
+                        },
+                    'n2' : {
+                        'required' : True,
+                        },
+                    }
+                } ]
+            }
+        }
+
+
+inbox_syscalls = {
+        'sapi' : {
+            'class' : 'app.ad_api.BaseSocialApiProvider.BaseSocialApiProvider',
+            'syscalls' : [ {
+                'name' : 'q',
+                'handler' : '_sys_call_q',
+                'pars' : {
+                    'api_id' : {
+                            'required' : True,
+                        },
+                    'payload' : {
+                            'required' : True,
+                        },
+                    },
+                },
+                {
+                'name' : 'a',
+                'handler' : '_sys_call_a',
+                'pars' : {
+                    'api_id' : {
+                            'required' : True,
+                        },
+                    'payload' : {
+                            'required' : True,
+                        }
+                    }
+                } ]
+            }
         }
 
 
@@ -122,8 +179,9 @@ adelphos_stub =  {
         "conf" : {
             "social_dao" : social_dao_test_conf,
             "social" : test_social_cnf,
-            "rpc_providers" : { 'math' : 'tests.testers.MathRPCs.MathRPCs' } ,
+            "rpc_providers" : remote_syscalls, 
             "cli_syscalls" : debug_syscalls,
+            'inbox_syscalls' : inbox_syscalls,
             },
         "General": {
     "debug": True, 
@@ -144,8 +202,9 @@ routable_test_kernel =  {
         "conf" : {
             "social_dao" : social_dao_test_conf,
             "social" :  social_test_kernel,
-            "rpc_providers" : { 'math' : 'tests.testers.MathRPCs.MathRPCs' },
+            "rpc_providers" : remote_syscalls,
             "cli_syscalls" : debug_syscalls,
+            'inbox_providers' : inbox_syscalls,
             },
         "General": {
     "debug": True, 
@@ -167,6 +226,7 @@ adelphos_t1_test =  {
             "social" : test_social2_cnf,
             "rpc_providers" : { 'math' : 'tests.testers.MathRPCs.MathRPCs' },
             "cli_syscalls" : debug_syscalls,
+            'inbox_syscalls' : inbox_syscalls,
             },
     "General": {
     "debug": True, 
@@ -186,6 +246,7 @@ adelphos_t2_test =  {
             "social" : test_social2_cnf,
             "rpc_providers" : { 'math' : 'tests.testers.MathRPCs.MathRPCs' },
             "cli_syscalls" : debug_syscalls,
+            'inbox_syscalls' : inbox_syscalls,
             },
     "General": {
     "debug": True, 
@@ -203,8 +264,9 @@ routable_test2_kernel =  {
         "conf" : {
             "social_dao" : social_dao_test_conf,
             "social" : social_test_kernel2,
-            "rpc_providers" : { 'math' : 'tests.testers.MathRPCs.MathRPCs' },
+            "rpc_providers" : remote_syscalls,
             "cli_syscalls" : debug_syscalls,
+            'inbox_providers' : inbox_syscalls,
             },
     "General": {
     "debug": True, 
@@ -221,7 +283,8 @@ routable_test2_kernel =  {
 adelphos_remote2_conf  =  {
         "conf" : {
             "social_dao" : social_dao_test_conf,
-            "social" : test_social_cnf
+            "social" : test_social_cnf,
+            'inbox_syscalls' : inbox_syscalls,
             },
         "General": {
     "debug": True, 

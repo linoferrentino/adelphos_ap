@@ -19,7 +19,6 @@ from enum import auto
 class Dependencies(StrEnum):
     CLI_NET = auto()
     KERNEL = auto()
-    #CONFIG = auto()
     CLI_HANDLER = auto()
     TRANSPORT = auto()
     SOCIAL = auto()
@@ -28,4 +27,7 @@ class Dependencies(StrEnum):
     SOCIAL_DAO = auto()
     BACKDOOR_NET = auto()
     SOCIAL_API = auto()
+    RPC_API = auto()
+    INBOX_API = auto()
+    CLI_API = auto()
 

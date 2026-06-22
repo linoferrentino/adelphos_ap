@@ -12,16 +12,17 @@
 ######################################################
 
 
-from app.federation.social.SocialRPC import SocialRPC
+#from app.federation.social.SocialRPC import SocialRPC
 from app.logging import gCon
 from app.cli.SysCall import SysCallPar
+from app.cli.SysCall import SysCall
 
 
 class MathRPCs:
 
 
     @staticmethod
-    async def radd_handler(kernel, pars):
+    async def _sys_call_radd(kernel, pars):
         n1 = int(pars['n1'])
         n2 = int(pars['n2'])
         ans = n1 + n2
@@ -29,10 +30,10 @@ class MathRPCs:
 
 
     @classmethod
-    def get_rpcs(cls):
+    def __get_rpcs(cls):
         return [
-                SocialRPC('radd', MathRPCs.radd_handler,  [SysCallPar('n1', True),
+                SysCall('radd', MathRPCs.radd_handler,  [SysCallPar('n1', True),
                                                            SysCallPar('n2', True)]),
-                SocialRPC('pow', None,  ['base', 'exponent']),
+                SysCall('pow', None,  ['base', 'exponent']),
                 ]
 
