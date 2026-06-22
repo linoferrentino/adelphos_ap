@@ -15,10 +15,12 @@
 from dataclasses import dataclass
 from dataclasses import field
 
+from app.cli.SysCall import SysCallPar
+
 @dataclass
 class SocialRPC:
 
     name: str
     handler: callable
-    required_pars: list = field(default_factory = list)
+    pars: list[SysCallPar] = field(default_factory = list)
 

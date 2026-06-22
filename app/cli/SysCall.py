@@ -13,11 +13,20 @@
 
 
 from dataclasses import dataclass
+from dataclasses import field
+
+
+@dataclass
+class SysCallPar:
+    name: str
+    required: bool
+    def_value: str = None
+
 
 @dataclass
 class SysCall:
 
     name : str
     handler: callable
-    #self_instance: object
+    pars: list[SysCallPar] = field(default_factory = list)
 

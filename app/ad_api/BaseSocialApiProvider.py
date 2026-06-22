@@ -170,12 +170,17 @@ class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
 
     def _check_params(self, rpc, kwargs):
         gCon.log(f"get params from {kwargs}")
-        for param in rpc.required_pars:
-            if param not in kwargs:
-                raise Exception(f"required param {param} not provided")
-        for param in kwargs:
-            if param not in rpc.required_pars:
-                raise Exception(f"got extra parameter {param} not required.")
+
+        for param in rpc.pars:
+            if param.name not in kwargs:
+                if param.required == True:
+                    raise Exception(f"required param {param} not provided")
+                else:
+                    kwargs[param.name] = param.def_value
+
+        #for param in kwargs:
+        #    if param not in rpc.pars:
+        #        raise Exception(f"got extra parameter {param} not required.")
 
 
 

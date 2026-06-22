@@ -14,6 +14,7 @@
 
 from app.federation.social.SocialRPC import SocialRPC
 from app.logging import gCon
+from app.cli.SysCall import SysCallPar
 
 
 class MathRPCs:
@@ -30,7 +31,8 @@ class MathRPCs:
     @classmethod
     def get_rpcs(cls):
         return [
-                SocialRPC('radd', MathRPCs.radd_handler,  ['n1', 'n2']),
+                SocialRPC('radd', MathRPCs.radd_handler,  [SysCallPar('n1', True),
+                                                           SysCallPar('n2', True)]),
                 SocialRPC('pow', None,  ['base', 'exponent']),
                 ]
 

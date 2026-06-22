@@ -21,7 +21,6 @@ class SysCallGateway:
 
 
     def init_syscalls(self, syscall_type):
-        #self.syscalls = dict()
         kernel = self.vhost.get_dep(Dependencies.KERNEL)
         if kernel is None:
             raise Exception("No kernel to run.")
