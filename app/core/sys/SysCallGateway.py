@@ -15,6 +15,7 @@
 from app.sdc.Dependencies import Dependencies
 from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
+from app.cli.CliParser import CliParser
 
 from app.logging import gCon
 import app.misc.utils as misc
@@ -60,13 +61,17 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         self.syscalls = self._transform_list(syscalls_list, self.syscalls)
 
 
-    async def sys_call_gateway(self, param, pars):
-        cmd = pars.cmd
-        syscall = self.syscalls.get(cmd)
+    async def sys_call_gateway_msg(self, param, msg):
+        cp = CliParser(msg)
+        (context, cmd) = cp.cmd.split('.')
+        gCon.log(f"Searching cmd {cmd} and context {context}")
+        syscall = self.get_syscall(context, cmd)
         if syscall is None:
             raise AdelphosException(AdErrno.ENOSUCH_SYSCALL,
-                                    f"{cmd}, no such command.")
+                                    f"{context}.{cmd}, no such command.")
         kernel = self.vhost
+
+
         msg_out = await syscall.handler(kernel, param, pars)
         return msg_out
 

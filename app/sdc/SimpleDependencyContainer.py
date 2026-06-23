@@ -161,9 +161,11 @@ class SimpleDependencyContainer(LifespanAware):
         self.mods[Dependencies.SOCIAL].start_sync()
         self.mods[Dependencies.RPC_API].start_sync()
         self.mods[Dependencies.INBOX_API].start_sync()
+        self.mods[Dependencies.CLI_API].start_sync()
 
 
     def stop_sync(self):
+        self.mods[Dependencies.CLI_API].stop_sync()
         self.mods[Dependencies.INBOX_API].stop_sync()
         self.mods[Dependencies.RPC_API].stop_sync()
         self.mods[Dependencies.SOCIAL].stop_sync()

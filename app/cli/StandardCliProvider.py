@@ -28,18 +28,19 @@ from app.core.sys.SysCallGateway import SysCallGateway
 
 class StandardCliClient:
 
-    def __init__(self, gateway, websocket):
-        self.gateway = gateway
+    def __init__(self, kernel, websocket):
+        self.cli_api = kernel.get_dep(Dependencies.CLI_API)
         self.websocket = websocket
-        self.session = UserSession(gateway)
+        self.session = UserSession(kernel)
 
 
     async def _internal_serve(self):
 
         while True:
             data = await self.websocket.receive_text()
-            cp = CliParser(data)
-            response = await self.gateway.sys_call_gateway(self.session, cp)
+            gCon.log(f"I have to process {data} on {self.cli_api}")
+            #cp = CliParser(data)
+            response = await self.cli_api.sys_call_gateway_msg(self.session, data)
             await self.websocket.send_text(response)
 
 
@@ -77,16 +78,17 @@ class StandardCliProvider(CliProvider, SysCallGateway):
     async def serve_forever(self, websocket):
 
         await websocket.accept()
-        client = StandardCliClient(self, websocket)
+        client = StandardCliClient(self.vhost, websocket)
         self.clients.append(client)
         await client.serve_forever()
 
 
     def start_sync(self):
-        self.init_syscalls('cli')
+        #self.init_syscalls('cli')
         #config = self.vhost.conf()
         #cli_syscalls = config.get_conf('cli_syscalls')
         #gCon.log(f"These are the syscalls {cli_syscalls}")
+        pass
         
 
     def stop_sync(self):

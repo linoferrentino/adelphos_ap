@@ -54,6 +54,7 @@ class AsyncCtx:
             await self.social.outgoing_message(self.social_user,
                     remote_user, self.query_txt)
         except AdelphosException as adex:
+            traceback.print_exc()
             gCon.log(f"adex {adex}")
             self.answer = {
                 'errno' : AdErrno.EGENERIC_USER_ERROR,
@@ -63,6 +64,7 @@ class AsyncCtx:
             async with self.async_cond:
                 self.async_cond.notify_all()
         except Exception as exc:
+            traceback.print_exc()
             gCon.log(f"generic ex {exc}")
             self.answer = {
                 'errno' : AdErrno.EGENERIC_SERVER,
@@ -312,7 +314,6 @@ class BaseSocialApiProvider(SocialApiProvider):
     
     async def new_post(self, actor_from, msg):
         gCon.log(f"got msg from {actor_from} {msg}")
-        cp = CliParser(msg)
-        gCon.log(f"These are the params {cp}")
-        await self.sys_call_gateway(actor_from, cp)
+        inbox_api = self.vhost.get_dep(Dependencies.INBOX_API)
+        await inbox_api.sys_call_gateway_msg(actor_from, msg)
 

@@ -115,13 +115,45 @@ cli_stub_dep_conf = {
 
 debug_syscalls = {
         'dbg' : {
-            'module' : 'app.core.sys.DebugModule',
-            'echo' : {
+            'class' : 'app.core.sys.DebugModule.DebugModule',
+            'syscalls' : [
+                { 'name' : 'echo',
+                  'pars' : {
+                      'msg' : {
+                          'required' : True,
+                          }
+                      }
+
+                 },
+                {
+                  'name' : 'sndpost',
+                  'pars' : {
+                      'from' : {
+                          'required' : True,
+                       },
+                      'to' : {
+                          'required' : True,
+                      },
+                      'msg': {
+                          'required' : True,
+                      }
+                  }
                 },
-            'sndpost' : {
+                {
+                    'name' : 'radd',
+                    'pars' : {
+                        'host' : {
+                            'required' : True,
+                        },
+                        'n1' : {
+                            'required' : True,
+                        },
+                        'n2' : {
+                            'required' : True,
+                        }
+                    }
                 },
-            'radd' : {
-                },
+                ]
             }
         }
 
@@ -203,7 +235,7 @@ routable_test_kernel =  {
             "social_dao" : social_dao_test_conf,
             "social" :  social_test_kernel,
             "rpc_providers" : remote_syscalls,
-            "cli_syscalls" : debug_syscalls,
+            "cli_providers" : debug_syscalls,
             'inbox_providers' : inbox_syscalls,
             },
         "General": {
@@ -265,7 +297,7 @@ routable_test2_kernel =  {
             "social_dao" : social_dao_test_conf,
             "social" : social_test_kernel2,
             "rpc_providers" : remote_syscalls,
-            "cli_syscalls" : debug_syscalls,
+            "cli_providers" : debug_syscalls,
             'inbox_providers' : inbox_syscalls,
             },
     "General": {
