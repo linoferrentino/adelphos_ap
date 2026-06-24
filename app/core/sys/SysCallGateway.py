@@ -70,10 +70,29 @@ class SysCallGateway(Dependency, SyncLifespanAware):
             raise AdelphosException(AdErrno.ENOSUCH_SYSCALL,
                                     f"{context}.{cmd}, no such command.")
         kernel = self.vhost
+        kwargs = self._create_params_dict_from_cmd_line(cp, syscall)
 
 
-        msg_out = await syscall.handler(kernel, param, pars)
+        msg_out = await syscall.handler(kernel, param, kwargs)
         return msg_out
+
+
+    @staticmethod
+    def _create_params_dict_from_cmd_line(cp, syscall):
+        kwargs = dict()
+        gCon.log(f"I have the syscall {syscall}")
+        for par in syscall.pars:
+            try:
+                kwargs[par.name] = cp.get_param_safe(par.name)
+            except:
+                if par.required:
+                    raise
+                else:
+                    default_value = par.def_value
+                    kwargs[par.name] = default_value
+
+        gCon.log(f"the dictionary is now {kwargs}")
+        return kwargs
 
 
     @staticmethod

@@ -239,7 +239,7 @@ class BaseSocialApiProvider(SocialApiProvider):
         self = kernel.get_dep(Dependencies.SOCIAL_API)
         self._check_actor_identity(actor_from, 'proc')
 
-        api_id = pars.get_param_safe('api_id')
+        api_id = pars['api_id']
         try:
             res = await self._sys_call_q_try(actor_from, pars)
             remote_errno = AdErrno.DONE_OK
@@ -260,7 +260,7 @@ class BaseSocialApiProvider(SocialApiProvider):
 
 
     async def _sys_call_q_try(self, actor_from, pars):
-        payload_str = pars.get_param_safe('payload')
+        payload_str = pars['payload']
         payload_decoded = self._decode_daemon_message(payload_str)
         req_json = json.loads(payload_decoded)
         gCon.log(f"request {req_json}")
@@ -280,8 +280,8 @@ class BaseSocialApiProvider(SocialApiProvider):
 
         self = kernel.get_dep(Dependencies.SOCIAL_API)
         self._check_actor_identity(actor_from, 'a')
-        api_id = pars.get_param_safe('api_id')
-        payload_str = pars.get_param_safe('payload')
+        api_id = pars['api_id']
+        payload_str = pars['payload']
         async_ctx = self.async_contexts.pop(int(api_id), None)
         if (async_ctx is None):
             raise AdelphosException(EAdErrno.EGENERIC_SERVER)
