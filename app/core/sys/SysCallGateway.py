@@ -139,16 +139,13 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         syscalls = list()
 
         for context, provider in syscalls_providers.items():
+            gCon.log(f"adding {provider} for context {context}")
 
             provider_class_str = provider['class']
             provider_class = misc.import_string(provider_class_str)
             syscalls = SysCallGateway._create_syscalls_list(provider_class, provider)
             gCon.log(f"here are the syscalls {syscalls}")
             self._add_syscalls(context, syscalls)
-
-
-            #syscalls = provider_class.get_rpcs()
-            #self._add_syscalls(context, syscalls)
 
 
     def clear_syscalls(self):
