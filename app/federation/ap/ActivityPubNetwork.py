@@ -41,7 +41,7 @@ class ActivityPubNetwork(SocialNetwork):
 
     async def in_webfinger(self, request):
         resource = request.query_params.get('resource')
-        gCon.log(f"resource {resource}")
+        #gCon.log(f"resource {resource}")
         if resource is None:
             return Response(status_code = 401)
 
@@ -99,7 +99,7 @@ class ActivityPubNetwork(SocialNetwork):
         host_api = f"{host}{CNST.API_POINT}"
 
 
-        gCon.log(f"user is {userob.actor_dto}")
+        #gCon.log(f"user is {userob.actor_dto}")
 
         info_user = {
             "@context": [
@@ -124,14 +124,14 @@ class ActivityPubNetwork(SocialNetwork):
         assert userob.actor_dto.act.public_key is not None
         response = JSONResponse(content = info_user)
         response.headers['Content-Type'] = 'application/activity+json'
-        gCon.log(f"info {info_user}")
+        #gCon.log(f"info {info_user}")
         return response
     
 
     async def in_inbox(self, request):
         social_gw = self.vhost.get_dep(Dependencies.SOCIAL_GATEWAY)
         user = request.path_params['username']
-        gCon.log(f">>>>>>>> user {user} request {request}")
+        #gCon.log(f">>>>>>>> user {user} request {request}")
         response = await social_gw.in_inbox(user, request)
         return response
 

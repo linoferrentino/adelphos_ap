@@ -46,7 +46,6 @@ class SimpleDependencyContainer(LifespanAware):
         self.mods = dict()
 
         self.mods[Dependencies.SOCIAL] = self._make_social()
-        self.mods[Dependencies.KERNEL] = self._make_kernel()
         self.mods[Dependencies.CLI_HANDLER] = self._make_cli_handler()
         self.mods[Dependencies.SOCIAL_NET] = ActivityPubNetwork(vhost)
         self.mods[Dependencies.CLI_NET] = AdelphosCliRouter(vhost)

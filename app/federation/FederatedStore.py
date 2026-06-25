@@ -107,8 +107,6 @@ class FederatedTransaction:
         self._release_all_locks()
         
 
-    # important! the federated db is not thread safe, but internally it
-    # has an async loop which can give a sort of paralellism
     def t_commit(self):
 
         # the commit in a federated transaction has become a local commit
@@ -225,12 +223,11 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     def start(self):
-        run_coro_in_loop(self.start_async, (None,))
+        run_coro_in_loop(FederatedStore.start_async, (self,))
         
 
-    async def start_async(self, social):
+    async def start_async(self):
         self.db.open()
-        #self.fede_api = FederatedStoreApi(social)
 
 
     async def stop_async(self):

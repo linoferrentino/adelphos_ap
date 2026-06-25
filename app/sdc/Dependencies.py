@@ -18,7 +18,6 @@ from enum import auto
 
 class Dependencies(StrEnum):
     CLI_NET = auto()
-    KERNEL = auto()
     CLI_HANDLER = auto()
     TRANSPORT = auto()
     SOCIAL = auto()

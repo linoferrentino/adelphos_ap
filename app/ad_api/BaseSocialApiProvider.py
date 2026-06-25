@@ -112,10 +112,10 @@ class BaseSocialApiProvider(SocialApiProvider):
         rpc_api = self.vhost.get_dep(Dependencies.RPC_API)
         rpc = rpc_api.get_syscall(context, cmd)
 
-        gCon.log(f"found the syscall {rpc}")
+        #gCon.log(f"found the syscall {rpc}")
         self._check_params(rpc, kwargs)
         msg = self._pack_request_message(context, cmd, kwargs)
-        gCon.log(f"Sending payload -> {msg}")
+        #gCon.log(f"Sending payload -> {msg}")
         res = await self._make_rpc_request(host, msg)
         return res
 
@@ -203,11 +203,11 @@ class BaseSocialApiProvider(SocialApiProvider):
 
     async def start_async(self):
         social_user = self.get_social_user()
-        gCon.log(f"{id(self)} ============= START ASYNC with user {social_user}")
+        #gCon.log(f"{id(self)} ============= START ASYNC with user {social_user}")
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         social.add_listener(social_user, self)
 
-        gCon.log(f"Registered user {social_user}")
+        #gCon.log(f"Registered user {social_user}")
         #syscalls = [
         #        SysCall(SOCIAL_API_QUERY, BaseSocialApiProvider._sys_call_q),
         #        SysCall(SOCIAL_API_ANSWER, BaseSocialApiProvider._sys_call_a),
@@ -270,8 +270,8 @@ class BaseSocialApiProvider(SocialApiProvider):
         rpc_api = self.vhost.get_dep(Dependencies.RPC_API)
         rpc = rpc_api.get_syscall(context, cmd)
 
-        kernel = self.vhost.get_dep(Dependencies.KERNEL)
-        res = await rpc.handler(kernel, req_json['params'])
+        #kernel = self.vhost.get_dep(Dependencies.KERNEL)
+        res = await rpc.handler(self.vhost, req_json['params'])
         return res 
 
 

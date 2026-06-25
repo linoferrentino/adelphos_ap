@@ -55,10 +55,10 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         return syscall_map
 
 
-    def _add_syscalls_old(self, syscalls_list):
-        if hasattr(self, 'syscalls') == False:
-            self.syscalls = dict()
-        self.syscalls = self._transform_list(syscalls_list, self.syscalls)
+    #def _add_syscalls_old(self, syscalls_list):
+    #    if hasattr(self, 'syscalls') == False:
+    #        self.syscalls = dict()
+    #    self.syscalls = self._transform_list(syscalls_list, self.syscalls)
 
 
     async def sys_call_gateway_msg(self, param, msg):
@@ -159,7 +159,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
     def _add_syscalls(self, context, syscalls):
         if self.contexts.get(context) is not None:
             raise Exception(f"Context {context} already existing")
-        gCon.log(f"Adding the context {context}")
+        #gCon.log(f"Adding the context {context}")
         syscall_map = self._transform_list(syscalls)
         self.contexts[context] = syscall_map
 
