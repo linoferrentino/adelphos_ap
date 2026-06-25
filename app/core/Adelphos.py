@@ -40,7 +40,6 @@
 #from app.federation.SocialListener import SocialListener
 #from app.consts import DAEMON_ID
 #from app.logging import exit_err
-#from app.federation.FederatedStore import FederatedStore
 #from app.ap_api.ActivityPubMockup import ActivityPubMockup
 #from app.cli.ConnHandler import ConnHandler
 
@@ -101,7 +100,7 @@ class Adelphos_OLD(SocialListener):
 
         host_name = config['General']['host']
         # I can build a federated store with a local db and a transport
-        self.fdb = FederatedStore(host_name, db, transport)
+        self.fdb = F_ederatedStore(host_name, db, transport)
         self.social = ActivityPubMockup(config, True, transport)
         self.cli = ConnHandler(self, transport)
 

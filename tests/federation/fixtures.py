@@ -18,7 +18,8 @@ from tests.federation.schema_simple import LOCALHOST, LOCALHOST1, OTHERHOST
 from app.store.MemoryStore import MemoryStore
 from app.store.SqliteStore import SqliteStore
 from app.federation.FederatedStore import FederatedStore
-from tests.federation.schema_simple import my_test_schema_init
+#from tests.federation.schema_simple import my_test_schema_init
+from tests.federation.schema_simple import schema_simple
 from app.transport.bridge.loop import run_coro_in_loop
 
 
@@ -30,7 +31,8 @@ def fdb1_loc(request):
     else:
         db = SqliteStore()
 
-    fdb = FederatedStore(LOCALHOST, db, my_test_schema_init)
+    #fdb = FederatedStore(LOCALHOST, db, my_test_schema_init)
+    fdb = FederatedStore(LOCALHOST, db, schema_simple)
     fdb.start()
     return fdb
 

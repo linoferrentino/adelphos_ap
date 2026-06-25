@@ -30,7 +30,6 @@ from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
 from app.federation.FederatedUri import FederatedUri
 from app.federation.FederatedFactory import FederatedFactory
-from app.federation.FederatedStoreApi import FederatedStoreApi
 from app.federation.Kernel import Kernel
 
 from app.transport.bridge.loop import run_coro_in_loop
@@ -210,16 +209,24 @@ class FedStore_ReadCtx:
  
 class FederatedStore(Dependency, LifespanAware):
 
-    def __init__(self, hostname, db, schema_init):
+    #def __init__(self, hostname, db, schema_init):
+
+    #    self.db = db
+    #    self.hostname = hostname
+
+    #    self.transactions = {}
+    #    schema_init()
+
+
+    def __init__(self, hostname, db, schema_dict):
 
         self.db = db
         self.hostname = hostname
 
         self.transactions = {}
-
-        schema_init()
-
-        #run_coro_in_loop(self.start_async, ())
+        self.fact = FederatedFactory()
+        self.fact.parse_schema(schema_dict)
+        #schema_init()
 
 
     def start(self):
@@ -233,10 +240,6 @@ class FederatedStore(Dependency, LifespanAware):
     async def stop_async(self):
         assert False
         self.db.close()
-
-
-    #async def proc_msg(self, msg):
-    #    pass
 
 
     def is_local_uri(self, uri):
@@ -307,7 +310,7 @@ class FederatedStore(Dependency, LifespanAware):
 
     async def new_ob_coro(self, t_id, ob_type, name, family = None, fields = {}):
 
-        registrar = FederatedFactory.get_registrar(ob_type)
+        registrar = self.fact.get_registrar(ob_type)
         if registrar is None:
             raise FdbException(EFdbErrors.EFDB_UNKNOWN_TYPE)
 
@@ -318,7 +321,7 @@ class FederatedStore(Dependency, LifespanAware):
             if family is not None:
                 raise FdbException(EFdbErrors.EFDB_FAMILY_NOT_WANTED)
 
-        uri = FederatedFactory.uri_constructor(ob_type, name, family)
+        uri = self.fact.uri_constructor(ob_type, name, family)
         
         t_ob = self.get_tob_safe(t_id)
 

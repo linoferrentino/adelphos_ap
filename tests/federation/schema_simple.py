@@ -89,6 +89,32 @@ def my_test_schema_init():
     FedeObClass2.register_class()
 
 
+schema_simple = {
+        'uri_constructor' : 'tests.federation.schema_simple.FederatedUriTest',
+        'classes' : [ {
+                'uri_prefix' : TYPE_T1,
+                'class_def' : 'tests.federation.schema_simple.FedeObClass1', 
+                'first_class' : True,
+                'needs_family' : False,
+                'columns' : [
+                    {
+                        'name' : 'key_int',
+                        'type' : 'int',
+                        'cardinality' : 'scalar',
+                        'required' : True
+                     },
+                    {
+                        'name' : 'key_str',
+                        'type' : 'str',
+                        'cardinality' : 'scalar',
+                        'required' : False
+                    },
+                    ]
+                },
+            ],
+        }
+
+
 LOCALHOST = "www.example.com"
 OTHERHOST = "www.faraway.org"
 LOCALHOST1 = "::1"
