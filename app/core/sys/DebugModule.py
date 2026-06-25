@@ -22,15 +22,15 @@ class DebugModule:
 
 
     async def _sys_call_echo(kernel, session, pars):
-        val = pars.get_param_safe('msg')
+        val = pars['msg']
         res = f"hello {val}!"
         return res
 
 
     async def _sys_call_sndpost(kernel, session, pars):
-        recipient = pars.get_param_safe('to')
-        msg = pars.get_param_safe('msg')
-        from_user = pars.get_param_safe('from')
+        recipient = pars['to']
+        msg = pars['msg']
+        from_user = pars['from']
         gCon.log(f"sending message {msg} to {recipient} from {from_user}")
         social = kernel.get_dep(Dependencies.SOCIAL)
         await social.outgoing_message(from_user, recipient, msg)
@@ -46,11 +46,11 @@ class DebugModule:
         return res
 
 
-    @staticmethod
-    def get_syscalls(kernel):
-          return [
-                SysCall('dbg.echo', DebugModule._sys_call_echo),
-                SysCall('dbg.sndpost', DebugModule._sys_call_sndpost),
-                SysCall('dbg.radd', DebugModule._sys_call_radd),
-          ]
+    #@staticmethod
+    #def get_syscalls(kernel):
+    #      return [
+    #            SysCall('dbg.echo', DebugModule._sys_call_echo),
+    #            SysCall('dbg.sndpost', DebugModule._sys_call_sndpost),
+    #            SysCall('dbg.radd', DebugModule._sys_call_radd),
+    #      ]
 

@@ -63,7 +63,11 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
     async def sys_call_gateway_msg(self, param, msg):
         cp = CliParser(msg)
-        (context, cmd) = cp.cmd.split('.')
+        ctx_cmd = cp.cmd.split('.')
+        if len(ctx_cmd) != 2:
+            raise AdelphosException(AdErrno.EINVALID_SYNTAX,
+                                    f"{cp.cmd} not understood.")
+        (context, cmd) = ctx_cmd
         gCon.log(f"Searching cmd {cmd} and context {context}")
         syscall = self.get_syscall(context, cmd)
         if syscall is None:

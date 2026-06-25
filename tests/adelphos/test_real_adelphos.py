@@ -64,7 +64,7 @@ async def test_real_sndmsg(get_standalone_app):
             async with aconnect_ws(f"http://localhost:{port}/api/ws", client) as ws:
                 await ws.send_text("WHAT")
                 datas = await ws.receive_text()
-                assert AdErrno.ENOSUCH_SYSCALL == parse_exc_str(datas)
+                assert AdErrno.EINVALID_SYNTAX == parse_exc_str(datas)
 
                 await ws.send_text("dbg.echo msg lino")
                 datas = await ws.receive_text()

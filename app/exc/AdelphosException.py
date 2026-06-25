@@ -32,6 +32,7 @@ class AdErrno(IntEnum):
     ENODATA = 10
     EDUPLICATED_FAMILY = 11
     EGENERIC_USER_ERROR = 12
+    EINVALID_SYNTAX = 13
 
 
 def parse_exc(err_str):
