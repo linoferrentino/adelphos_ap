@@ -16,7 +16,7 @@ from app.federation.FederatedFactory import FederatedFactory
 from app.core.model.AdelphosUri import AdelphosUri
 from app.core.model.AdelphosUri import EAdelphosType
 
-from app.core.model.AliasFob import AliasFob
+#from app.core.model.AliasFob import AliasFob
 #from app.core.model.FamilyFob import FamilyFob
 
 #def adelphos_schema_fn():
@@ -31,7 +31,7 @@ adelphos_schema = {
         'uri_constructor' : 'app.core.model.AdelphosUri.AdelphosUri',
         'classes' : [ {
             'uri_prefix' : EAdelphosType.ALIAS_TYPE,
-            'class_def' : 'app.core.model.AliasFob.AliasFob',
+            #'class_def' : 'app.core.model.AliasFob.AliasFob',
             'first_class' : True,
             'needs_family' : True,
             'columns' : [

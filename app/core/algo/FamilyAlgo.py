@@ -10,11 +10,8 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
 
-# the algorithmic part for the families.
 
-from app.core.model.FamilyFob import FamilyFob
 
 class FamilyAlgo:
 

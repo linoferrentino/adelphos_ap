@@ -24,7 +24,7 @@ from app.logging import gCon
 from tests.federation.schema_simple import LOCALHOST, LOCALHOST1
 from tests.federation.schema_simple import TYPE_T1, TYPE_T2
 from tests.federation.schema_simple import FederatedUriTest
-from tests.federation.schema_simple import my_test_schema_init
+#from tests.federation.schema_simple import my_test_schema_init
 
 from tests.federation.fixtures import fdb1_loc
 
