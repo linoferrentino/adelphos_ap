@@ -31,31 +31,34 @@ from app.ad_api.adelphos.AdelphosApiProvider import AdelphosApiProvider
 from tests.testers.SimpleSocialApiProvider import SimpleSocialApiProvider
 from app.logging import gCon
 from app.core.sys.SysCallGateway import SysCallGateway
+from app.AdelphosRouter import AdelphosRouter
 
 
-
+# Kernel
 class SimpleDependencyContainer(LifespanAware):
 
-    def __init__(self, vhost):
+    def __init__(self, instance, config):
                  
-        instance = vhost.instance_name
-        config = vhost.config
-        self.config = Config(instance, config)
+        self.instance = instance
+        self.config_data = config
+        self.config = Config(instance, self.config_data)
 
-        self.vhost = vhost
+        self.vhost = self
         self.mods = dict()
 
+        self.mods[Dependencies.ROUTER] = AdelphosRouter(self.vhost)
         self.mods[Dependencies.SOCIAL] = self._make_social()
         self.mods[Dependencies.CLI_HANDLER] = self._make_cli_handler()
-        self.mods[Dependencies.SOCIAL_NET] = ActivityPubNetwork(vhost)
-        self.mods[Dependencies.CLI_NET] = AdelphosCliRouter(vhost)
+        self.mods[Dependencies.SOCIAL_NET] = ActivityPubNetwork(self.vhost)
+        self.mods[Dependencies.CLI_NET] = AdelphosCliRouter(self.vhost)
         self.mods[Dependencies.SOCIAL_DAO] = self._make_social_dao()
         self.mods[Dependencies.SOCIAL_GATEWAY] = self._make_social_gateway()
         self.mods[Dependencies.BACKDOOR_NET] = self._make_backdoor_net()
         self.mods[Dependencies.SOCIAL_API] = self._make_social_api()
-        self.mods[Dependencies.RPC_API] = SysCallGateway(vhost, 'rpc_providers')
-        self.mods[Dependencies.INBOX_API] = SysCallGateway(vhost, 'inbox_providers')
-        self.mods[Dependencies.CLI_API] = SysCallGateway(vhost, 'cli_providers')
+        self.mods[Dependencies.RPC_API] = SysCallGateway(self.vhost, 'rpc_providers')
+        self.mods[Dependencies.INBOX_API] = SysCallGateway(self.vhost,
+                                                           'inbox_providers')
+        self.mods[Dependencies.CLI_API] = SysCallGateway(self.vhost, 'cli_providers')
 
 
     def conf(self):

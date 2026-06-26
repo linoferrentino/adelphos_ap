@@ -17,7 +17,7 @@ import pytest
 from starlette.testclient import TestClient
 from starlette.websockets import WebSocket
 
-from app.AdelphosRouter import AdelphosRouter
+#from app.AdelphosRouter import AdelphosRouter
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 
 import tests.test_constants as tc

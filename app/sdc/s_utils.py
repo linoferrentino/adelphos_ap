@@ -24,12 +24,12 @@ from app.sdc.standard_conf import adelphos_standard_configuration
 _conts = dict()
 
 
-def build_from(vhost):
+def build_kernel(instance, config):
 
     global _conts
 
-    instance = vhost.instance_name
-    config = vhost.config
+    #instance = vhost.instance_name
+    #config = vhost.config
     sdc = config.get('sdc')
 
     if sdc is None:
@@ -44,7 +44,8 @@ def build_from(vhost):
         gCon.log(f"[red]Returning container {id(cont)}[/red]")
         return cont
 
-    cont = SimpleDependencyContainer(vhost)
+    #cont = SimpleDependencyContainer(vhost)
+    cont = SimpleDependencyContainer(instance, config)
     gCon.log(f"[red]Creating container {id(cont)}[/red]")
 
     _conts[hash_conf] = cont

@@ -10,47 +10,6 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
-# the router for our application.
-
-#from fastapi import APIRouter, FastAPI, WebSocket
-#import typer
-#from urllib.parse import urlparse
-#import sys
-#import base64
-#from datetime import timedelta
-#from datetime import datetime
-#
-#import json
-#import hashlib
-#import os
-#import uuid
-#from cryptography.hazmat.backends import default_backend as crypto_default_backend
-#from cryptography.hazmat.primitives import serialization as crypto_serialization
-#from cryptography.hazmat.primitives import hashes
-#from cryptography.hazmat.primitives.asymmetric import padding
-#from typing import Union
-#import asyncio
-#
-#from fastapi import FastAPI
-#import json
-#from fastapi import APIRouter, Request, Depends, Query, HTTPException, status, Response
-#
-#from fastapi.encoders import jsonable_encoder
-#from fastapi.responses import JSONResponse
-#
-#from app.logging import gCon
-#from app.config import load_conf
-##from app.ap_api.ActivityPubGateway import ActivityPubGateway
-#import uvicorn
-#import re
-#
-##from app.AdelphosApp import AdelphosApp, get_app
-#from app.consts import DAEMON_ID 
-#from app.consts import API_POINT
-#from fastapi import FastAPI, WebSocket
-#from fastapi.responses import HTMLResponse
-#
 
 import re
 import json
@@ -77,23 +36,30 @@ from app.sdc.Dependencies import Dependencies
 
 class AdelphosRouter(Routable):
 
-    def __init__(self, instance_name, config):
 
-        self.instance_name = instance_name
-        self.config = config
-        self.sdc = sdc.build_from(self)
+    def __init__(self, vhost):
+        super().__init__(vhost)
+        #self.remote_api_id = WrapInt()
+        #self.async_contexts = dict()
+  
+
+    #def __init__(self, instance_name, config):
+
+    #    self.instance_name = instance_name
+    #    self.config = config
+    #    self.sdc = sdc.build_from(self)
 
         
     def get_dep(self, dep):
-        return self.sdc.get_dep(dep)
+        return self.vhost.get_dep(dep)
 
 
     def conf(self):
-        return self.sdc.conf()
+        return self.vhost.conf()
 
 
     def set_transport(self, transport):
-        self.sdc.set_dep(Dependencies.TRANSPORT, transport)
+        self.vhost.set_dep(Dependencies.TRANSPORT, transport)
 
 
     def get_routes(self):
@@ -105,13 +71,13 @@ class AdelphosRouter(Routable):
 
 
     async def init_up(self):
-        self.sdc.start_sync()
-        await self.sdc.start_async()
+        self.vhost.start_sync()
+        await self.vhost.start_async()
 
 
     async def tear_down(self):
-        await self.sdc.stop_async()
-        self.sdc.stop_sync()
+        await self.vhost.stop_async()
+        self.vhost.stop_sync()
 
 
 # I initialize the router with the app.

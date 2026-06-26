@@ -28,7 +28,7 @@ from app.exc.AdelphosException import AdErrno
 from app.cli.CliProvider import CliProvider
 from app.sdc.Dependencies import Dependencies
 
-from app.AdelphosRouter import AdelphosRouter
+#from app.AdelphosRouter import AdelphosRouter
 from tests.testers.SyncApp import SyncApp
 from tests.testers.SyncTester import SyncTester
 from tests.testers.ProcessWrapper import ProcessWrapper
@@ -37,6 +37,7 @@ import app.consts as CNST
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 from starlette.testclient import TestClient
 from app.consts import API_POINT
+import app.sdc.s_utils as su
 
 
 def _build_routable_config_impl(instance_name, configuration,
@@ -45,7 +46,9 @@ def _build_routable_config_impl(instance_name, configuration,
     configuration['sdc'] = build_structure
 
     prefix = mode
-    aroutable = AdelphosRouter(f"{prefix}-{instance_name}", configuration)
+    #aroutable = AdelphosRouter(f"{prefix}-{instance_name}", configuration)
+    kernel = su.build_kernel(f"{prefix}-{instance_name}", configuration)
+    aroutable = kernel.get_dep(Dependencies.ROUTER)
 
     if mode == 'sync':
         gCon.log("====================== SYNC")

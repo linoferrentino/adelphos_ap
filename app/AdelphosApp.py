@@ -73,7 +73,7 @@ from app.logging import exit_err
 from app.logging import gCon
 from app.consts import ADELPHOS_AP_ENV_KEY
 from app.config import load_conf
-from app.AdelphosRouter import AdelphosRouter
+#from app.AdelphosRouter import AdelphosRouter
 from app.transport.async_mode.StarletteHelper import starlette_app_creator
 
 
@@ -432,7 +432,8 @@ variable not defined")
 
     #social_provider = ActivityPubMockup()
 
-    adelphos_in_gw = AdelphosRouter(instance_name, config)
+    #adelphos_in_gw = AdelphosRouter(instance_name, config)
+    adelphos_in_gw = build_kernel(instance_name, config)
 
     #app = StarletteWrap(instance_name, lifespan = lifespan)
     app = starlette_app_creator(adelphos_in_gw)

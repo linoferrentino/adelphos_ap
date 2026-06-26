@@ -13,8 +13,9 @@
 
 
 from abc import ABC, abstractmethod
+from app.sdc.Dependency import Dependency
 
-class Routable(ABC):
+class Routable(Dependency):
 
 
     def set_transport(self, transport):

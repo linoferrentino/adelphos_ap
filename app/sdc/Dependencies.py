@@ -30,4 +30,5 @@ class Dependencies(StrEnum):
     INBOX_API = auto()
     CLI_API = auto()
     FEDERATED_DB = auto()
+    ROUTER = auto()
 
