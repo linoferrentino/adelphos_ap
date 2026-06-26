@@ -30,11 +30,12 @@ from argon2 import PasswordHasher
 #from app.core.algo.utils import commit_or_raise
 from app.core.algo.utils import federated_transaction
 from app.core.algo.FamilyAlgo import FamilyAlgo
-from app.core.model.AliasFob import AliasFob
+#from app.core.model.AliasFob import AliasFob
 #from app.dao.AdelphosUri import uriparse_type
 #from app.dao.AdelphosUri import EAdelphosType
 #
 #from app.core.AliasModel import alias_dto_password
+from app.core.model.AdelphosUri import EAdelphosType
 
 
 class AliasAlgo:
@@ -57,7 +58,8 @@ class AliasAlgo:
                 'password': pass_hashed
         }
 
-        fob1 = self.kernel.fdb.new_ob(t_id, AliasFob._type, name, family, fields = fields)
+        fob1 = self.kernel.fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
+                                      name, family, fields = fields)
 
         return fob1
  

@@ -65,9 +65,11 @@ def test_new_object_f(fdb1_loc):
 @pytest.fixture
 def fdb1_loc_a(fdb1_loc):
 
-    t1uri = FederatedUriTest(TYPE_T1, 'a')
+    #t1uri = FederatedUriTest(TYPE_T1, 'a')
     t_id = fdb1_loc.begin_transaction()
-    fob = fdb1_loc.create_uri(t_id, t1uri, 1)
+    fob = fdb1_loc.new_ob(t_id, TYPE_T1, 'a', fields = {
+        'key_int' : 11
+        })
     fob().set_primitive_value('key1', 'val1')
     fdb1_loc.commit_transaction(t_id)
     return fdb1_loc
@@ -80,7 +82,8 @@ def fdb1_link_a(fdb1_loc_a):
     t2uri = FederatedUriTest(TYPE_T2, 'a')
     t_id = fdb1_loc_a.begin_transaction()
 
-    fob2 = fdb1_loc_a.create_uri(t_id, t2uri)
+    fob2 = fdb1_loc_a.new_ob(t_id, TYPE_T2, 'a')
+
     fob1 = fdb1_loc_a.uri_read_lock(t_id, t1uri)
     fob1().compare_and_swap_link('uses', None, fob2)
     fdb1_loc_a.commit_transaction(t_id)
@@ -99,7 +102,7 @@ def test_link2(fdb1_link_a):
 
     fob1 = fdb1_link_a.uri_read_lock(t_id, t1uri)
     fob2_old = fdb1_link_a.uri_read_lock(t_id, t2uri_old)
-    fob2_new = fdb1_link_a.create_uri(t_id, t2uri_new)
+    fob2_new = fdb1_link_a.new_ob_uri(t_id, t2uri_new)
     fob1().compare_and_swap_link('uses', fob2_old, fob2_new)
 
     fdb1_link_a.commit_transaction(t_id)
@@ -127,7 +130,6 @@ def test_link1_new(fdb1_link_a):
     assert fob_get == None
 
 
-
 def test_link1(fdb1_loc_a):
 
     t1uri = FederatedUriTest(TYPE_T1, 'a')
@@ -135,8 +137,8 @@ def test_link1(fdb1_loc_a):
     t2urib = FederatedUriTest(TYPE_T2, 'b')
     t_id = fdb1_loc_a.begin_transaction()
 
-    fob2 = fdb1_loc_a.create_uri(t_id, t2uri)
-    fob2_b = fdb1_loc_a.create_uri(t_id, t2urib)
+    fob2 = fdb1_loc_a.new_ob_uri(t_id, t2uri)
+    fob2_b = fdb1_loc_a.new_ob_uri(t_id, t2urib)
     fob1 = fdb1_loc_a.uri_read_lock(t_id, t1uri)
     fob1().compare_and_swap_link('uses', None, fob2)
     fdb1_loc_a.commit_transaction(t_id)
@@ -186,7 +188,9 @@ def test_set_uri_local_1(fdb1_loc):
 
     t1uri = FederatedUriTest(TYPE_T1, 'a', host = LOCALHOST)
     t_id = fdb1_loc.begin_transaction()
-    fob = fdb1_loc.create_uri(t_id, t1uri, 1)
+    fob = fdb1_loc.new_ob_uri(t_id, t1uri, fields = {
+        'key_int' : 1032
+        })
     fob_get = fdb1_loc.uri_read_no_lock(t_id, t1uri)
     assert fob().uri == fob_get().uri
 
@@ -196,7 +200,7 @@ def test_set_uri_no_loc(fdb1_loc):
     t1uri = FederatedUriTest(TYPE_T1, 'a', host = 'www.h2.com')
     t_id = fdb1_loc.begin_transaction()
     with pytest.raises(FdbException):
-        fob = fdb1_loc.create_uri(t_id, t1uri, 1)
+        fob = fdb1_loc.new_ob_uri(t_id, t1uri)
 
 
 def test_set_uri_local(fdb1_loc):
@@ -206,10 +210,12 @@ def test_set_uri_local(fdb1_loc):
     # test of a insert, no transaction no party
     fob = None
     with pytest.raises(FdbException):
-        fob = fdb1_loc.create_uri(None, t1uri, 1)
+        fob = fdb1_loc.new_ob_uri(None, t1uri )
 
     t_id = fdb1_loc.begin_transaction()
-    fob = fdb1_loc.create_uri(t_id, t1uri, 1)
+    fob = fdb1_loc.new_ob_uri(t_id, t1uri, fields = {
+        'key_int' : 391
+        })
 
     fob_get = fdb1_loc.uri_read_no_lock(t_id, t1uri)
     assert fob().uri == fob_get().uri

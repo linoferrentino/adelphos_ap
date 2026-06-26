@@ -34,10 +34,10 @@ from app.federation.FdbException import EFdbErrors
 # to a string: 
 
 
-def str_to_fob(uri_ob, str_ob, locked = False):
+def str_to_fob(uri_ob, registrar, str_ob, locked = False):
     ob = json.loads(str_ob)
     obs = FObSerialized(**ob)
-    fob = FederatedObject(uri_ob, ob = obs, locked = locked)
+    fob = FederatedObject(uri_ob, registrar, ob = obs, locked = locked)
     return fob
 
 
@@ -119,11 +119,20 @@ class FederatedObject:
 
     # there are some objects which do not exist in isolation.
     # they start with a reference count of zero.
-    def __init__(self, uri, ref_count = 0, ob = None, locked = False, **kwargs):
+    def __init__(self, uri, registrar, *, ob = None, locked = False, 
+                 fields = {}):
         self.uri = uri
 
+        self.registrar = registrar
+
         if ob is None:
+            if registrar.first_class:
+                ref_count = 1
+            else:
+                ref_count = 0
+
             self.ob = FObSerialized(0, ref_count)
+            self._enforce_schema_init(fields)
             self.modified = True
         else:
             self.ob = ob
@@ -135,11 +144,11 @@ class FederatedObject:
             assert ob is not None
             self.ts_locked = None
 
-        schema = self.__class__.get_schema()
-        if (schema is None) or (ob is not None):
-            return
+        #self.schema = self.__class__.get_schema()
+        #if (schema is None) or (ob is not None):
+        #    return
+        #self.schema = 
 
-        self._enforce_schema_init(schema, kwargs['fields'])
 
 
     @staticmethod
@@ -172,7 +181,9 @@ class FederatedObject:
         raise FdbException(EFdbErrors.EFDB_URIS_MUST_BE_NULLS)
 
 
-    def _enforce_schema_init(self, schema, fields):
+    def _enforce_schema_init(self, fields):
+
+        schema = self.registrar.pars
 
         for col_name, col_def in schema.items():
 
@@ -206,6 +217,7 @@ class FederatedObject:
 
 
     def get_primitive_value(self, key, maybe = False):
+        #gCon.log(f"{self.ob.fields}")
         return self.ob.fields[key]
 
 

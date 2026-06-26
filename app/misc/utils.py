@@ -14,6 +14,8 @@
 
 import importlib
 
+from app.logging import gCon
+
 
 # Source - https://stackoverflow.com/a/34963527
 # Posted by eugene, modified by community. See post 'Timeline' for change history
@@ -27,7 +29,8 @@ def import_string(dotted_path):
         module_path, class_name = dotted_path.rsplit('.', 1)
     except ValueError:
         msg = "%s doesn't look like a module path" % dotted_path
-        six.reraise(ImportError, ImportError(msg), sys.exc_info()[2])
+        gCon.log(msg)
+        raise Exception(msg)
 
     module = importlib.import_module(module_path)
 
@@ -36,5 +39,6 @@ def import_string(dotted_path):
     except AttributeError:
         msg = 'Module "%s" does not define a "%s" attribute/class' % (
             module_path, class_name)
-        six.reraise(ImportError, ImportError(msg), sys.exc_info()[2])
+        gCon.log(msg)
+        raise Exception(msg)
 

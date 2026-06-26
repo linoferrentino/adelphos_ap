@@ -27,7 +27,7 @@ from app.logging import gCon
 @dataclass
 class FederatedFactoryRegistrar:
     
-    constructor : callable
+    #constructor : callable
     first_class : bool
     needs_family : bool
     pars: dict = field(default_factory = dict)
@@ -98,12 +98,12 @@ class FederatedFactory:
 
     def _add_class(self, class_ob):
         uri_prefix = class_ob['uri_prefix']
-        name_class_str = class_ob['class_def']
-        class_def = misc.import_string(name_class_str)
+        #name_class_str = class_ob['class_def']
+        #class_def = misc.import_string(name_class_str)
         first_class = class_ob['first_class']
         needs_family = class_ob['needs_family']
 
-        registrar = FederatedFactoryRegistrar(class_def, first_class, needs_family)
+        registrar = FederatedFactoryRegistrar(first_class, needs_family)
 
         col_array = class_ob ['columns']
         for col in col_array:

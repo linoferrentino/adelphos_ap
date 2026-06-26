@@ -93,7 +93,7 @@ schema_simple = {
         'uri_constructor' : 'tests.federation.schema_simple.FederatedUriTest',
         'classes' : [ {
                 'uri_prefix' : TYPE_T1,
-                'class_def' : 'tests.federation.schema_simple.FedeObClass1', 
+                #'class_def' : 'tests.federation.schema_simple.FedeObClass1', 
                 'first_class' : True,
                 'needs_family' : False,
                 'columns' : [
@@ -111,6 +111,14 @@ schema_simple = {
                     },
                     ]
                 },
+                {
+                'uri_prefix' : TYPE_T2,
+                #'class_def' : 'tests.federation.schema_simple.FedeObClass1', 
+                'first_class' : False,
+                'needs_family' : False,
+                'columns' : [ ]
+                },
+
             ],
         }
 

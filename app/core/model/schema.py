@@ -17,14 +17,14 @@ from app.core.model.AdelphosUri import AdelphosUri
 from app.core.model.AdelphosUri import EAdelphosType
 
 from app.core.model.AliasFob import AliasFob
-from app.core.model.FamilyFob import FamilyFob
+#from app.core.model.FamilyFob import FamilyFob
 
-def adelphos_schema_fn():
-
-    FederatedFactory.set_uri_constructor(AdelphosUri)
-    
-    AliasFob.register_class()
-    FamilyFob.register_class()
+#def adelphos_schema_fn():
+#
+#    FederatedFactory.set_uri_constructor(AdelphosUri)
+#    
+#    AliasFob.register_class()
+#    FamilyFob.register_class()
 
 
 adelphos_schema = {
