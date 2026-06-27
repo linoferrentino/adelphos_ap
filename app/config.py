@@ -66,6 +66,10 @@ class Config:
         return self.config['conf'][CNF_GENERAL_SECTION]['debug']
 
 
+    def conf_mod(self, dependency):
+        return self.config['conf'][dependency]
+
+
 def load_conf(instance_name, toml_file):
 
     if (toml_file is None):

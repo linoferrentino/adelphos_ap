@@ -32,6 +32,7 @@ from tests.testers.SimpleSocialApiProvider import SimpleSocialApiProvider
 from app.logging import gCon
 from app.core.sys.SysCallGateway import SysCallGateway
 from app.AdelphosRouter import AdelphosRouter
+import app.misc.utils as misc
 
 
 # Kernel
@@ -62,19 +63,27 @@ class SimpleDependencyContainer(LifespanAware):
         #self.mods[Dependencies.CLI_API] = SysCallGateway(self.vhost, 'cli_providers')
 
 
+    def _create_module(self, module):
+        module_name = module['name']
+        module_builder_str = module['constructor']
+        module_builder = misc.import_string(module_builder_str)
+        self.mods[module_name] = module_builder(self)
+
+
     def _build_modules(self):
         self.mods = dict()
 
         for module in self.config.modules():
             gCon.log(f"Create module {module}")
+            self._create_module(module)
 
 
     def conf(self):
         return self.config
 
 
-    def conf_mod(dependecy):
-        return self.config[dependecy]
+    def conf_mod(self, dependency):
+        return self.config.conf_mod(dependency)
 
 
 

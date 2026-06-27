@@ -50,7 +50,10 @@ test_routable_kernel = {
 @pytest.fixture
 def app_t1():
 
-    aroutable = TRoutable("test")
+    kernel = su.build_kernel('test1', test_routable_kernel)
+
+    #aroutable = TRoutable("test")
+    aroutable = kernel.get_dep(Dependencies.ROUTER)
     app = StarletteWrap(routable = aroutable)
     return app
 
@@ -67,7 +70,8 @@ def remote_app1():
 @pytest.fixture(scope = "module")
 def remote_app2():
     server = ProcessWrapper()
-    with server.run_in_subprocess(TRoutable, ("flag1",), PORT2):
+    with server.run_in_subprocess(su.build_kernel, ("rem2", test_routable_kernel),
+                                  PORT2):
         time.sleep(2)
         yield
 
