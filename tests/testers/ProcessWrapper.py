@@ -21,14 +21,15 @@ import uvicorn
 from app.transport.async_mode.StarletteHelper import starlette_app_creator
 import time
 from app.consts import API_POINT, LOCALHOST
+from app.sdc.Dependencies import Dependencies
 from app.logging import gCon
 
 
 class ProcessWrapper:
 
     @contextlib.contextmanager
-    def run_in_subprocess(self, routable, parms, port):
-        p = mp.Process(target = start_starlette_app, args = (routable, parms, port))
+    def run_in_subprocess(self, builder, parms, port):
+        p = mp.Process(target = start_starlette_app, args = (builder, parms, port))
         p.start()
         try:
             yield
@@ -37,9 +38,10 @@ class ProcessWrapper:
             p.join()
 
 
-def start_starlette_app(aroutable, parms, port):
+def start_starlette_app(builder, parms, port):
 
-    routable = aroutable(*parms)
+    kernel = builder(*parms)
+    routable = kernel.get_dep(Dependencies.ROUTER)
     app = starlette_app_creator(routable)
     uvicorn.run(app, host=LOCALHOST, port=port, log_level="debug")
 

@@ -26,6 +26,10 @@ class Config:
         return host
 
 
+    def modules(self):
+        return self.config['modules']
+
+
     def get_instance(self):
         return self.instance
 
@@ -59,7 +63,7 @@ class Config:
 
 
     def is_test_instance(self):
-        return self.config[CNF_GENERAL_SECTION]['debug']
+        return self.config['conf'][CNF_GENERAL_SECTION]['debug']
 
 
 def load_conf(instance_name, toml_file):

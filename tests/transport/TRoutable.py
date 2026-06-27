@@ -17,6 +17,7 @@ from starlette.routing import Route
 from starlette.responses import PlainTextResponse
 from starlette.responses import Response
 from starlette.responses import JSONResponse
+from app.sdc.Dependencies import Dependencies
 
 from app.logging import gCon
 
@@ -29,8 +30,11 @@ import json
 class TRoutable(Routable):
 
 
-    def __init__(self, flag):
-        self.flag = flag
+    def __init__(self, kernel):
+        super().__init__(kernel)
+        #self.flag = flag
+        config = kernel.conf_mod(Dependencies.ROUTER)
+        self.flag = config['args'][0] 
 
 
     async def post_inbox(self, request):

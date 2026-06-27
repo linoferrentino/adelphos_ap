@@ -23,9 +23,28 @@ from app.transport.async_mode.StarletteWrap import StarletteWrap
 from starlette.testclient import TestClient
 from tests.testers.ProcessWrapper import ProcessWrapper
 from app.logging import gCon
+from app.sdc.Dependencies import Dependencies
+import app.sdc.s_utils as su
 
 PORT1 = 5999
 PORT2 = 5997
+
+
+test_routable_kernel = {
+        'modules' : [  {
+                'name' : Dependencies.ROUTER,
+                'constructor' : "tests.transport.TRoutable.TRoutable",
+                },
+        ],
+        'conf' : {
+            'General' : {
+                'debug' : True,
+            },
+            Dependencies.ROUTER : {
+                    'args' : [ "flag1" ],
+            }
+        }
+}
 
 
 @pytest.fixture
@@ -39,7 +58,8 @@ def app_t1():
 @pytest.fixture(scope = "module")
 def remote_app1():
     server = ProcessWrapper()
-    with server.run_in_subprocess(TRoutable, ("flag1",), PORT1):
+    with server.run_in_subprocess(su.build_kernel, ("rem1", 
+                                                    test_routable_kernel), PORT1):
         time.sleep(2)
         yield
 

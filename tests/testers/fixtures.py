@@ -95,7 +95,7 @@ def get_standalone_app():
         configuration['sdc'] = build_structure
         server = ProcessWrapper()
         port = configuration['General']['port']
-        return server.run_in_subprocess(AdelphosRouter, 
+        return server.run_in_subprocess(su.build_kernel, 
                                       (instance_name, configuration), 
                                       port)
 
@@ -109,7 +109,9 @@ def aroutable(request):
             else tconf.routable_test_kernel
     gCon.log(f"conf {configuration}")
     configuration['sdc'] = tconf.cli_stub_dep_conf
-    aroutable = AdelphosRouter("test", configuration)
+    #aroutable = AdelphosRouter("test", configuration)
+    kernel = su.build_kernel("test", configuration)
+    aroutable = kernel.get_dep(Dependencies.ROUTER)
     return aroutable 
 
 
