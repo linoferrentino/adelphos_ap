@@ -11,6 +11,9 @@
 #
 ######################################################
 
+from app.sdc.Dependencies import Dependencies
+
+
 social_dao_test_conf = {
         "db_name" : ":memory:"
         }
@@ -46,7 +49,62 @@ test_social2_cnf = {"users" : [
 
 
 
-adelphos_simple_conf = {
+simple_testable_kernel = {
+        'modules' : [  {
+                    'name' : Dependencies.ROUTER,
+                    'constructor' : 'app.AdelphosRouter.AdelphosRouter',
+                },
+                {
+                    'name' : Dependencies.CLI_HANDLER,
+                    'constructor' : 'app.cli.StandardCliProvider.StandardCliProvider',
+                },
+                {
+                    'name' : Dependencies.SOCIAL,
+                    'constructor' : 'app.federation.BaseSocial.BaseSocial',
+                },
+                {
+                    'name' : Dependencies.SOCIAL_NET,
+                    'constructor' : 'app.federation.ap.ActivityPubNetwork.ActivityPubNetwork',
+                },
+                {
+                    'name' : Dependencies.CLI_NET,
+                    'constructor' : 'app.cli.AdelphosCliRouter.AdelphosCliRouter',
+                },
+                {
+                    'name' : Dependencies.SOCIAL_DAO,
+                    'constructor' : 'tests.testers.SimpleSocialDao.SimpleSocialDao',
+                },
+                {
+                    'name' : Dependencies.SOCIAL_GATEWAY,
+                    'constructor' : 'tests.testers.SimpleSocialGateway.SimpleSocialGateway',
+                },
+                {
+                    'name' : Dependencies.BACKDOOR_NET,
+                    'constructor' : 'app.federation.BackdoorNet.BackdoorNet',
+                },
+                {
+                    'name' : Dependencies.SOCIAL_API,
+                    'constructor' : 'app.ad_api.adelphos.AdelphosApiProvider.AdelphosApiProvider',
+                },
+                {
+                    'name' : Dependencies.RPC_API,
+                    'constructor' : 'app.core.sys.SysCallGateway.SysCallGateway',
+                    'args' : [ 'rpc_providers' ],
+                },
+                {
+                    'name' : Dependencies.INBOX_API,
+                    'constructor' : 'app.core.sys.SysCallGateway.SysCallGateway',
+                    'args' : [ 'inbox_providers' ],
+                },
+                {
+                    'name' : Dependencies.CLI_API,
+                    'constructor' : 'app.core.sys.SysCallGateway.SysCallGateway',
+                    'args' : [ 'cli_providers' ],
+                },
+        ],
+}
+
+adelphos_simple_conf_deprecated = {
        'cli_handler' : {
                 'type' : 'standard_cli',
                 },
@@ -205,6 +263,15 @@ inbox_syscalls = {
                 } ]
             }
         }
+
+
+simple_testable_conf = {
+        "General": {
+            "debug": True, 
+            "port": 7777, 
+            "host":  "localhost:7777",
+        }
+}
 
 
 adelphos_stub =  {

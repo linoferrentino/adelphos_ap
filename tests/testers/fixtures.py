@@ -40,14 +40,14 @@ from app.consts import API_POINT
 import app.sdc.s_utils as su
 
 
-def _build_routable_config_impl(instance_name, configuration,
-                                build_structure, mode):
+def _build_routable_config_impl(instance_name, build_structure, *,
+            conf = None, mode = None):
 
-    configuration['sdc'] = build_structure
+    if conf is not None:
+        build_structure['conf'] = conf
 
     prefix = mode
-    #aroutable = AdelphosRouter(f"{prefix}-{instance_name}", configuration)
-    kernel = su.build_kernel(f"{prefix}-{instance_name}", configuration)
+    kernel = su.build_kernel(f"{prefix}-{instance_name}", build_structure)
     aroutable = kernel.get_dep(Dependencies.ROUTER)
 
     if mode == 'sync':
@@ -67,10 +67,10 @@ def _build_routable_config_impl(instance_name, configuration,
 @pytest.fixture(scope = "session", params = ['sync', 'async'])
 def get_routable_app_param(request):
 
-    def _build_routable_from_config(instance_name, configuration, 
-                                    build_structure):
-        return _build_routable_config_impl(instance_name, configuration,
-                                           build_structure, request.param)
+    def _build_routable_from_config(instance_name, build_structure, *,
+                                    conf = None):
+        return _build_routable_config_impl(instance_name, build_structure,
+                                           conf = conf, mode = request.param)
 
     return _build_routable_from_config
  

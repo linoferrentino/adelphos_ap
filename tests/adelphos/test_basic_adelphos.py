@@ -26,8 +26,8 @@ import json
 
 def test_basic1(get_routable_app_param):
 
-    ad1 = get_routable_app_param('adelphos1', tconf.adelphos_stub,
-                           tconf.adelphos_simple_conf)
+    ad1 = get_routable_app_param('adelphos1', tconf.simple_testable_kernel,
+                           conf = tconf.simple_testable_conf)
 
 
 def test_basic2(get_standalone_app):

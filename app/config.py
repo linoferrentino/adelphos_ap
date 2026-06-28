@@ -22,7 +22,7 @@ class Config:
 
 
     def get_host(self):
-        host = self.config[CNF_GENERAL_SECTION][CNF_HOST_KEY]
+        host = self.config['conf'][CNF_GENERAL_SECTION][CNF_HOST_KEY]
         return host
 
 
