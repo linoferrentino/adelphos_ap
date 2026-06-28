@@ -78,10 +78,11 @@ def get_routable_app_param(request):
 @pytest.fixture(scope = "session")
 def get_routable_app():
 
-    def _build_routable_from_config(instance_name, configuration, 
-                                    build_structure, mode = "sync"):
-        return _build_routable_config_impl(instance_name, configuration,
-                                           build_structure, mode)
+    def _build_routable_from_config(instance_name, build_structure, *,
+                                    conf = None, mode = "sync"):
+
+        return _build_routable_config_impl(instance_name, build_structure,
+                                           conf = conf, mode = mode)
 
 
     return _build_routable_from_config
@@ -90,13 +91,16 @@ def get_routable_app():
 @pytest.fixture(scope = "session")
 def get_standalone_app():
 
-    def _get_standalone_app(instance_name, configuration, build_structure):
+    def _get_standalone_app(instance_name, build_structure,
+                            conf = None):
 
-        configuration['sdc'] = build_structure
+        if conf is not None:
+            build_structure['conf'] = conf
+
         server = ProcessWrapper()
-        port = configuration['General']['port']
+        port = build_structure['conf']['General']['port']
         return server.run_in_subprocess(su.build_kernel, 
-                                      (instance_name, configuration), 
+                                      (instance_name, build_structure), 
                                       port)
 
     return _get_standalone_app

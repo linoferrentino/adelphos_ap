@@ -270,11 +270,32 @@ simple_testable_conf = {
             "debug": True, 
             "port": 7777, 
             "host":  "localhost:7777",
-        }
+        },
+        "social_dao" : social_dao_test_conf,
+        "social" : test_social_cnf,
+        "rpc_providers" : remote_syscalls, 
+        "cli_providers" : debug_syscalls,
+        'inbox_providers' : inbox_syscalls,
 }
 
+simple_testable_conf_2 =  {
+        "General": {
+             "debug": True, 
+             "port": 9921, 
+             "host":  "localhost:9921", 
+        },
+        "social_dao" : social_dao_test_conf,
+        "social" : test_social2_cnf,
+        "rpc_providers" : remote_syscalls,
+        "cli_providers" : debug_syscalls,
+        'inbox_providers' : inbox_syscalls,
+    }
 
-adelphos_stub =  {
+
+
+
+
+adelphos_stub_deprecated =  {
         "conf" : {
             "social_dao" : social_dao_test_conf,
             "social" : test_social_cnf,

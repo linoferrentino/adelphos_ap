@@ -67,7 +67,11 @@ class SimpleDependencyContainer(LifespanAware):
         module_name = module['name']
         module_builder_str = module['constructor']
         module_builder = misc.import_string(module_builder_str)
-        self.mods[module_name] = module_builder(self)
+        args = module.get('args')
+        if args is None:
+            self.mods[module_name] = module_builder(self)
+        else:
+            self.mods[module_name] = module_builder(self, *args)
 
 
     def _build_modules(self):

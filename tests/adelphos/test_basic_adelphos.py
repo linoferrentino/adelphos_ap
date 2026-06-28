@@ -31,12 +31,14 @@ def test_basic1(get_routable_app_param):
 
 
 def test_basic2(get_standalone_app):
-    ad1 = get_standalone_app('adelphos1', tconf.adelphos_stub,
-                           tconf.adelphos_simple_conf)
+    ad1 = get_standalone_app('adelphos1', tconf.simple_testable_kernel,
+                           conf = tconf.simple_testable_conf)
+    #ad1 = get_standalone_app('adelphos1', tconf.adelphos_stub,
+    #                       tconf.adelphos_simple_conf)
 
     with ad1:
         time.sleep(2)
-        port = tconf.adelphos_stub['General']['port']
+        port = tconf.simple_testable_conf['General']['port']
         gCon.log(f"I want to connect to port {port}")
         response = httpx.post(f'http://127.0.0.1:{port}/api/users/adelphos/inbox', 
                               json = {'msg' : 'do_all'})
@@ -45,15 +47,15 @@ def test_basic2(get_standalone_app):
 
 def test_comm(get_standalone_app):
 
-    ad1 = get_standalone_app('adelphos1', tconf.adelphos_stub,
-                           tconf.adelphos_simple_conf)
+    ad1 = get_standalone_app('adelphos1', tconf.simple_testable_kernel,
+                           conf = tconf.simple_testable_conf)
 
-    ad2 = get_standalone_app('adelphos2', tconf.adelphos_t2_test,
-                           tconf.adelphos_simple_conf)
+    ad2 = get_standalone_app('adelphos2', tconf.simple_testable_kernel,
+                           conf = tconf.simple_testable_conf_2)
 
-    port = tconf.adelphos_stub['General']['port']
-    host2 = tconf.adelphos_t2_test['General']['host']
-    port2 = tconf.adelphos_t2_test['General']['port']
+    port = tconf.simple_testable_conf['General']['port']
+    host2 = tconf.simple_testable_conf_2['General']['host']
+    port2 = tconf.simple_testable_conf_2['General']['port']
 
     with ad1, ad2:
         time.sleep(3)
@@ -65,15 +67,15 @@ def test_comm(get_standalone_app):
 #@pytest.mark.parametrize("get_routable_app", "sync", indirect=True)
 def test_sync_comm(get_routable_app):
 
-    test1 = get_routable_app('test1', tconf.adelphos_stub, 
-                                 tconf.adelphos_simple_conf)
-    test2 = get_routable_app('test2', tconf.adelphos_t2_test,
-                             tconf.adelphos_simple_conf)
+    test1 = get_routable_app('test1', tconf.simple_testable_kernel, 
+                        conf = tconf.simple_testable_conf)
+    test2 = get_routable_app('test2', tconf.simple_testable_kernel,
+                        conf = tconf.simple_testable_conf_2)
 
     with test1, test2:
 
-        port = tconf.adelphos_stub['General']['port']
-        host2 = tconf.adelphos_t2_test['General']['host']
+        port = tconf.simple_testable_conf['General']['port']
+        host2 = tconf.simple_testable_conf_2['General']['host']
         response = test1.post(f'/_backdoor', 
             json = {'msg' : f'discover_uri uri https://{host2}/api/users/demo77'})
         assert response.status_code == 202
