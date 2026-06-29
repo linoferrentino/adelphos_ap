@@ -17,6 +17,7 @@ import httpx
 import time
 import json
 
+import tests.adelphoi_test_config as tconf
 from app.transport.async_mode.AsyncTransport import AsyncTransport
 from tests.transport.TRoutable import TRoutable
 from app.transport.async_mode.StarletteWrap import StarletteWrap
@@ -30,27 +31,11 @@ PORT1 = 5999
 PORT2 = 5997
 
 
-test_routable_kernel = {
-        'modules' : [  {
-                'name' : Dependencies.ROUTER,
-                'constructor' : "tests.transport.TRoutable.TRoutable",
-                },
-        ],
-        'conf' : {
-            'General' : {
-                'debug' : True,
-            },
-            Dependencies.ROUTER : {
-                    'args' : [ "flag1" ],
-            }
-        }
-}
-
 
 @pytest.fixture
 def app_t1():
 
-    kernel = su.build_kernel('test1', test_routable_kernel)
+    kernel = su.build_kernel('test1', tconf.test_routable_kernel)
 
     #aroutable = TRoutable("test")
     aroutable = kernel.get_dep(Dependencies.ROUTER)
@@ -62,7 +47,7 @@ def app_t1():
 def remote_app1():
     server = ProcessWrapper()
     with server.run_in_subprocess(su.build_kernel, ("rem1", 
-                                                    test_routable_kernel), PORT1):
+                          tconf.test_routable_kernel), PORT1):
         time.sleep(2)
         yield
 
@@ -70,8 +55,8 @@ def remote_app1():
 @pytest.fixture(scope = "module")
 def remote_app2():
     server = ProcessWrapper()
-    with server.run_in_subprocess(su.build_kernel, ("rem2", test_routable_kernel),
-                                  PORT2):
+    with server.run_in_subprocess(su.build_kernel, ("rem2", 
+                tconf.test_routable_kernel), PORT2):
         time.sleep(2)
         yield
 

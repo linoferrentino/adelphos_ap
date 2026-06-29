@@ -38,13 +38,20 @@ from app.transport.async_mode.StarletteWrap import StarletteWrap
 from starlette.testclient import TestClient
 from app.consts import API_POINT
 import app.sdc.s_utils as su
+import copy
 
 
-def _build_routable_config_impl(instance_name, build_structure, *,
+def _build_routable_config_impl(instance_name, build_structure_ref, *,
             conf = None, mode = None):
+
+    build_structure = copy.deepcopy(build_structure_ref)
 
     if conf is not None:
         build_structure['conf'] = conf
+
+    gCon.log("===============================================================")
+    gCon.log(f"Configuration {conf}")
+    gCon.log("===============================================================")
 
     prefix = mode
     kernel = su.build_kernel(f"{prefix}-{instance_name}", build_structure)
@@ -91,8 +98,10 @@ def get_routable_app():
 @pytest.fixture(scope = "session")
 def get_standalone_app():
 
-    def _get_standalone_app(instance_name, build_structure,
+    def _get_standalone_app(instance_name, build_structure_ref, *,
                             conf = None):
+
+        build_structure = copy.deepcopy(build_structure_ref)
 
         if conf is not None:
             build_structure['conf'] = conf
@@ -109,7 +118,7 @@ def get_standalone_app():
 @pytest.fixture(scope = "session")
 def aroutable(request):
 
-    build_kernel = tconf.toy_testable_kernel
+    build_kernel = copy.deepcopy(tconf.toy_testable_kernel)
 
     if hasattr(request, 'param'):
         gCon.log(f"Got the conf {request.param}")
@@ -139,16 +148,5 @@ def app(aroutable, request):
         wrappedapp = TestClient(app)
 
     return wrappedapp
-
-
-#class CliBypassStub(CliProvider):
-#
-#    async def serve_forever(self, websocket):
-#        await websocket.accept()
-#        text = await websocket.receive_text()
-#        response = await self.kernel.proc_msg(text)
-#        await websocket.send_text(f"{response}")
-#        await websocket.close()
-
 
 

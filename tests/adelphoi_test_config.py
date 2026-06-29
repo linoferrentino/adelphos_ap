@@ -207,6 +207,63 @@ adelphos_simple_conf_deprecated = {
         }
 
 
+
+medium_testable_kernel = {
+        'modules' : [  {
+                    'name' : Dependencies.ROUTER,
+                    'constructor' : 'app.AdelphosRouter.AdelphosRouter',
+                },
+                {
+                    'name' : Dependencies.CLI_HANDLER,
+                    'constructor' : 'app.cli.StandardCliProvider.StandardCliProvider',
+                },
+                {
+                    'name' : Dependencies.SOCIAL,
+                    'constructor' : 'app.federation.BaseSocial.BaseSocial',
+                },
+                {
+                    'name' : Dependencies.SOCIAL_NET,
+                    'constructor' : 'app.federation.ap.ActivityPubNetwork.ActivityPubNetwork',
+                },
+                {
+                    'name' : Dependencies.CLI_NET,
+                    'constructor' : 'app.cli.AdelphosCliRouter.AdelphosCliRouter',
+                },
+                {
+                    'name' : Dependencies.SOCIAL_DAO,
+                    'constructor' : 'tests.testers.SimpleSocialDao.SimpleSocialDao',
+                },
+                {
+                    'name' : Dependencies.SOCIAL_GATEWAY,
+                    'constructor' : 'tests.testers.SimpleSocialGateway.SimpleSocialGateway',
+                },
+                {
+                    'name' : Dependencies.BACKDOOR_NET,
+                    'constructor' : 'app.federation.BackdoorNet.BackdoorNet',
+                },
+                {
+                    'name' : Dependencies.SOCIAL_API,
+                    'constructor' : 'tests.testers.SimpleSocialApiProvider.SimpleSocialApiProvider',
+                },
+                {
+                    'name' : Dependencies.RPC_API,
+                    'constructor' : 'app.core.sys.SysCallGateway.SysCallGateway',
+                    'args' : [ 'rpc_providers' ],
+                },
+                {
+                    'name' : Dependencies.INBOX_API,
+                    'constructor' : 'app.core.sys.SysCallGateway.SysCallGateway',
+                    'args' : [ 'inbox_providers' ],
+                },
+                {
+                    'name' : Dependencies.CLI_API,
+                    'constructor' : 'app.core.sys.SysCallGateway.SysCallGateway',
+                    'args' : [ 'cli_providers' ],
+                },
+        ],
+}
+
+
 simple_tester_config = {
        'cli_handler' : {
                 'type' : 'standard_cli',
@@ -353,6 +410,20 @@ simple_toy_conf = {
 }
 
 
+simple_toy_conf_2 = {
+        "General": {
+            "debug": True, 
+            "port": 9921, 
+            "host":  "localhost:9921",
+        },
+        "social_dao" : social_dao_test_conf,
+        "social" : social_test_kernel2,
+        "rpc_providers" : remote_syscalls, 
+        "cli_providers" : debug_syscalls,
+        'inbox_providers' : inbox_syscalls,
+}
+
+
 simple_testable_conf_2 =  {
         "General": {
              "debug": True, 
@@ -415,7 +486,23 @@ routable_test_kernel =  {
     {"name": "bobzz", "alias": "##bob2.bf", "password": "bob22"}]
 }
 
-adelphos_t1_test =  {
+
+adelphos_t1_test = {
+       "General": {
+            "debug": True, 
+            "port": 9919, 
+            "host":  "localhost:9919", 
+        },
+       "social_dao" : social_dao_test_conf,
+       "social" : test_social_cnf,
+       "rpc_providers" : remote_syscalls,
+       "cli_providers" : debug_syscalls,
+       'inbox_providers' : inbox_syscalls,
+
+    }
+
+
+adelphos_t1_test_deprecated =  {
         "conf" : {
             "social_dao" : social_dao_test_conf,
             "social" : test_social2_cnf,
@@ -436,6 +523,20 @@ adelphos_t1_test =  {
 
 
 adelphos_t2_test =  {
+    "General": {
+        "debug": True, 
+        "port": 9921, 
+        "host":  "localhost:9921", 
+    },
+    "social_dao" : social_dao_test_conf,
+    "social" : test_social2_cnf,
+    "rpc_providers" : remote_syscalls,
+    "cli_providers" : debug_syscalls,
+    'inbox_providers' : inbox_syscalls,
+}
+
+
+adelphos_t2_test_deprecated =  {
         "conf" : {
             "social_dao" : social_dao_test_conf,
             "social" : test_social2_cnf,
@@ -493,6 +594,21 @@ adelphos_remote2_conf  =  {
             "demo_users":
    [{"name": "john_test", "alias": "##john.jf", "password": "john11"}, 
     {"name": "mary_test", "alias": "##mary.mf", "password": "mary11"}]
+}
+
+
+test_routable_kernel = {
+        'modules' : [  {
+                'name' : Dependencies.ROUTER,
+                'constructor' : "tests.transport.TRoutable.TRoutable",
+                'args' : [ 'flag1', ],
+                },
+        ],
+        'conf' : {
+            'General' : {
+                'debug' : True,
+            },
+        }
 }
 
 

@@ -13,7 +13,7 @@
 
 import pytest
 import app.consts as CNST
-from app.AdelphosRouter import AdelphosRouter
+#from app.AdelphosRouter import AdelphosRouter
 from app.sdc.Dependencies import Dependencies
 import tests.adelphoi_test_config as tconf
 from tests.testers.SyncApp import SyncApp
@@ -26,8 +26,8 @@ from tests.testers.fixtures import get_routable_app
 
 def test_simple_router(get_routable_app):
 
-    app = get_routable_app('test/test_simple_router', tconf.routable_test_kernel,
-                           tconf.simple_tester_config)
+    app = get_routable_app('test/test_simple_router', tconf.medium_testable_kernel,
+                           conf = tconf.simple_toy_conf)
     with app:
         with app.websocket_connect(CNST.WS_ROUTE) as websocket:
             websocket.send_text("dbg.echo msg lino99")

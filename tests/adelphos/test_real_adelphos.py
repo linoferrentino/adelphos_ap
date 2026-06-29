@@ -36,9 +36,8 @@ from app.exc.AdelphosException import AdErrno
 
 
 def test_real1(get_standalone_app):
-    ad1 = get_standalone_app('adelphos1', tconf.adelphos_t1_test,
-                           adelphos_standard_configuration)
-
+    ad1 = get_standalone_app('adelphos1', adelphos_standard_configuration,
+                             conf = tconf.adelphos_t1_test)
     with ad1:
         time.sleep(2)
         port = tconf.adelphos_t1_test['General']['port']
@@ -51,11 +50,11 @@ def test_real1(get_standalone_app):
 @pytest.mark.anyio
 async def test_real_sndmsg(get_standalone_app):
 
-    ad1 = get_standalone_app('adelphos1', tconf.adelphos_t1_test,
-                           adelphos_standard_configuration)
+    ad1 = get_standalone_app('adelphos1', adelphos_standard_configuration,
+                            conf = tconf.adelphos_t1_test)
 
-    ad2 = get_standalone_app('adelphos2', tconf.adelphos_t2_test,
-                           adelphos_standard_configuration)
+    ad2 = get_standalone_app('adelphos2', adelphos_standard_configuration,
+                            conf = tconf.adelphos_t2_test)
 
     with ad1, ad2:
         time.sleep(4)
@@ -72,10 +71,11 @@ async def test_real_sndmsg(get_standalone_app):
 
 
 def test_post_real_kernel(get_routable_app):
-    test1 = get_routable_app('test100', tconf.adelphos_stub, 
-                                 adelphos_standard_configuration)
-    test2 = get_routable_app('test201', tconf.adelphos_t2_test,
-                             adelphos_standard_configuration)
+    test1 = get_routable_app('test100', adelphos_standard_configuration,
+                             conf = tconf.adelphos_t1_test)
+
+    test2 = get_routable_app('test201', adelphos_standard_configuration,
+                            conf = tconf.adelphos_t2_test)
 
     host2 = tconf.adelphos_t2_test['General']['host']
     stests._test_sndpost_to_host(test1, test2, host2, 'demo1', 'demo77', 'demo1')
@@ -83,10 +83,10 @@ def test_post_real_kernel(get_routable_app):
 
 
 def test_real_remote_add(get_routable_app):
-    test1 = get_routable_app('test100', tconf.adelphos_stub, 
-                                 adelphos_standard_configuration)
-    test2 = get_routable_app('test201', tconf.adelphos_t2_test,
-                             adelphos_standard_configuration)
+    test1 = get_routable_app('test100', adelphos_standard_configuration,
+                             conf = tconf.adelphos_t1_test)
+    test2 = get_routable_app('test201', adelphos_standard_configuration,
+                             conf = tconf.adelphos_t2_test)
 
     host2 = tconf.adelphos_t2_test['General']['host']
     dtests._test_remote_add(test1, test2, host2,

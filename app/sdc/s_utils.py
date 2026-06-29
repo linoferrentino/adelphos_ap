@@ -30,11 +30,12 @@ def build_kernel(instance, config):
 
     #instance = vhost.instance_name
     #config = vhost.config
-    sdc = config.get('sdc')
+    #sdc = config.get('sdc')
 
-    if sdc is None:
-        gCon.log("Using standard configuration.")
-        config['sdc'] = adelphos_standard_configuration
+    #if sdc is None:
+    #    gCon.log("Using standard configuration.")
+    #    config['sdc'] = adelphos_standard_configuration
+    gCon.log(f"build kernel with conf {id(config)} conf {id(config['conf'])}")
 
     hash_conf = base64.b64encode(hashlib.sha256(
         (instance + str(config)).encode('utf-8')).digest())

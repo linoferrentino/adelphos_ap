@@ -30,11 +30,10 @@ import json
 class TRoutable(Routable):
 
 
-    def __init__(self, kernel):
+    def __init__(self, kernel, flag):
         super().__init__(kernel)
-        #self.flag = flag
-        config = kernel.conf_mod(Dependencies.ROUTER)
-        self.flag = config['args'][0] 
+        #config = kernel.conf_mod(Dependencies.ROUTER)
+        self.flag = flag
 
 
     async def post_inbox(self, request):

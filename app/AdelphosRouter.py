@@ -66,7 +66,9 @@ class AdelphosRouter(Routable):
         routes = []
         routes.extend(self.get_dep(Dependencies.SOCIAL_NET).get_social_routes())
         routes.extend(self.get_dep(Dependencies.CLI_NET).get_cli_routes())
-        routes.extend(self.get_dep(Dependencies.BACKDOOR_NET).get_backdoor_routes())
+        backdoor_net = self.get_dep(Dependencies.BACKDOOR_NET)
+        if backdoor_net is not None:
+            routes.extend(backdoor_net.get_backdoor_routes())
         return routes
 
 

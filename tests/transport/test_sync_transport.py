@@ -23,12 +23,21 @@ from tests.transport.sync_mode.SyncTransport import SyncTransport
 from app.transport.bridge.loop import stop_loop, get_loop
 from app.logging import gCon
 
+import tests.adelphoi_test_config as tconf
+import app.sdc.s_utils as su
+from app.sdc.Dependencies import Dependencies
+import copy
 
 
 @pytest.fixture
 def sync1():
 
-    aroutable = TRoutable(tc.FLAG_1)
+    conf = copy.deepcopy(tconf.test_routable_kernel)
+    conf['modules'][0]['args'] = ( tc.FLAG_1, )
+    kernel = su.build_kernel('testsync', conf)
+
+    aroutable = kernel.get_dep(Dependencies.ROUTER)
+    #aroutable = TRoutable(tc.FLAG_1)
     app = SyncApp(tc.HOST_1, aroutable)
     return app
 
@@ -36,7 +45,12 @@ def sync1():
 @pytest.fixture
 def sync2():
 
-    aroutable = TRoutable(tc.FLAG_2)
+    conf = copy.deepcopy(tconf.test_routable_kernel)
+    conf['modules'][0]['args'] = ( tc.FLAG_2, )
+    kernel = su.build_kernel('testsync', conf)
+
+    aroutable = kernel.get_dep(Dependencies.ROUTER)
+    #aroutable = TRoutable(tc.FLAG_2)
     app = SyncApp(tc.HOST_2, aroutable)
     return app
 

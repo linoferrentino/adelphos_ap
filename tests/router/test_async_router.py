@@ -78,20 +78,20 @@ def test_post_inbox_KO(app, aroutable):
 
 
 def test_post_from_kernel(get_routable_app):
-    test1 = get_routable_app('test1', tconf.routable_test_kernel, 
-                                 tconf.simple_tester_config)
-    test2 = get_routable_app('test2', tconf.routable_test2_kernel,
-                             tconf.simple_tester_config)
+    test1 = get_routable_app('test1', tconf.medium_testable_kernel, 
+                                 conf = tconf.simple_toy_conf)
+    test2 = get_routable_app('test2', tconf.medium_testable_kernel,
+                             conf = tconf.simple_toy_conf_2)
 
-    host2 = tconf.routable_test2_kernel['General']['host']
+    host2 = tconf.simple_toy_conf_2['General']['host']
     stests._test_sndpost_to_host(test1, test2, host2, 'x1', 't99', 't1')
 
 
 def test_remote_add(get_routable_app):
-    test1 = get_routable_app('test1', tconf.routable_test_kernel, 
-                                 tconf.simple_tester_config)
-    test2 = get_routable_app('test2', tconf.routable_test2_kernel,
-                             tconf.simple_tester_config)
+    test1 = get_routable_app('test3', tconf.medium_testable_kernel, 
+                                 conf = tconf.simple_toy_conf)
+    test2 = get_routable_app('test2', tconf.medium_testable_kernel,
+                             conf = tconf.simple_toy_conf_2)
 
     host2 = tconf.routable_test2_kernel['General']['host']
     dtests._test_remote_add(test1, test2, host2)

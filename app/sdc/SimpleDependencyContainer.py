@@ -78,7 +78,7 @@ class SimpleDependencyContainer(LifespanAware):
         self.mods = dict()
 
         for module in self.config.modules():
-            gCon.log(f"Create module {module}")
+            #gCon.log(f"Create module {module}")
             self._create_module(module)
 
 

@@ -68,7 +68,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
             raise AdelphosException(AdErrno.EINVALID_SYNTAX,
                                     f"{cp.cmd} not understood.")
         (context, cmd) = ctx_cmd
-        gCon.log(f"Searching cmd {cmd} and context {context}")
+        #gCon.log(f"Searching cmd {cmd} and context {context}")
         syscall = self.get_syscall(context, cmd)
         if syscall is None:
             raise AdelphosException(AdErrno.ENOSUCH_SYSCALL,
@@ -84,7 +84,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
     @staticmethod
     def _create_params_dict_from_cmd_line(cp, syscall):
         kwargs = dict()
-        gCon.log(f"I have the syscall {syscall}")
+        #gCon.log(f"I have the syscall {syscall}")
         for par in syscall.pars:
             try:
                 kwargs[par.name] = cp.get_param_safe(par.name)
@@ -102,7 +102,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
     @staticmethod
     def _get_pars(provider):
         par_list = list()
-        gCon.log(f"provider {provider}")
+        #gCon.log(f"provider {provider}")
         for par_name, value in provider['pars'].items():
             required = value['required']
             default_value = None
@@ -143,12 +143,12 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         syscalls = list()
 
         for context, provider in syscalls_providers.items():
-            gCon.log(f"adding {provider} for context {context}")
+            #gCon.log(f"adding {provider} for context {context}")
 
             provider_class_str = provider['class']
             provider_class = misc.import_string(provider_class_str)
             syscalls = SysCallGateway._create_syscalls_list(provider_class, provider)
-            gCon.log(f"here are the syscalls {syscalls}")
+            #gCon.log(f"here are the syscalls {syscalls}")
             self._add_syscalls(context, syscalls)
 
 
