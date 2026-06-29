@@ -40,7 +40,8 @@ import tests.social.social_tests as stests
 import tests.daemon.daemon_tests as dtests
 
 
-@pytest.mark.parametrize('aroutable', ( tconf.adelphos_stub, ), indirect = True)
+@pytest.mark.parametrize('aroutable', ( tconf.simple_toy_conf, ),
+                         indirect = True)
 def test_context(app, aroutable):
 
     app.post("", json = None)

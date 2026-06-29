@@ -104,6 +104,86 @@ simple_testable_kernel = {
         ],
 }
 
+cli_stub_dep_conf = {
+        'cli_handler' : {
+                'type' : 'cli_stub',
+                },
+        'kernel': {
+                'type' : 'test_kernel',
+            },
+       'social': {
+           #'type' : 'simple',
+            },
+        'social_api' : {
+           'type' : 'simple'
+           },
+       'social_gateway' : {
+           'type' : 'simple',
+           },
+        'social_dao' : {
+           'type' : 'simple',
+            },
+        }
+
+
+toy_testable_kernel = {
+        'modules' : [  {
+                    'name' : Dependencies.ROUTER,
+                    'constructor' : 'app.AdelphosRouter.AdelphosRouter',
+                },
+                {
+                    'name' : Dependencies.CLI_HANDLER,
+                    'constructor' : 'tests.testers.CliHandlerStub.CliHandlerStub',
+                },
+                {
+                    'name' : Dependencies.SOCIAL,
+                    'constructor' : 'app.federation.BaseSocial.BaseSocial',
+                },
+                {
+                    'name' : Dependencies.SOCIAL_NET,
+                    'constructor' : 'app.federation.ap.ActivityPubNetwork.ActivityPubNetwork',
+                },
+                {
+                    'name' : Dependencies.CLI_NET,
+                    'constructor' : 'app.cli.AdelphosCliRouter.AdelphosCliRouter',
+                },
+                {
+                    'name' : Dependencies.SOCIAL_DAO,
+                    'constructor' : 'tests.testers.SimpleSocialDao.SimpleSocialDao',
+                },
+                {
+                    'name' : Dependencies.SOCIAL_GATEWAY,
+                    'constructor' : 'tests.testers.SimpleSocialGateway.SimpleSocialGateway',
+                },
+                {
+                    'name' : Dependencies.BACKDOOR_NET,
+                    'constructor' : 'app.federation.BackdoorNet.BackdoorNet',
+                },
+                {
+                    'name' : Dependencies.SOCIAL_API,
+                    'constructor' : 'tests.testers.SimpleSocialApiProvider.SimpleSocialApiProvider',
+                },
+                {
+                    'name' : Dependencies.RPC_API,
+                    'constructor' : 'app.core.sys.SysCallGateway.SysCallGateway',
+                    'args' : [ 'rpc_providers' ],
+                },
+                {
+                    'name' : Dependencies.INBOX_API,
+                    'constructor' : 'app.core.sys.SysCallGateway.SysCallGateway',
+                    'args' : [ 'inbox_providers' ],
+                },
+                {
+                    'name' : Dependencies.CLI_API,
+                    'constructor' : 'app.core.sys.SysCallGateway.SysCallGateway',
+                    'args' : [ 'cli_providers' ],
+                },
+        ],
+}
+
+
+
+
 adelphos_simple_conf_deprecated = {
        'cli_handler' : {
                 'type' : 'standard_cli',
@@ -149,26 +229,6 @@ simple_tester_config = {
         }
 
 
-cli_stub_dep_conf = {
-        'cli_handler' : {
-                'type' : 'cli_stub',
-                },
-        'kernel': {
-                'type' : 'test_kernel',
-            },
-       'social': {
-           #'type' : 'simple',
-            },
-        'social_api' : {
-           'type' : 'simple'
-           },
-       'social_gateway' : {
-           'type' : 'simple',
-           },
-        'social_dao' : {
-           'type' : 'simple',
-            },
-        }
 
 
 debug_syscalls = {
@@ -277,6 +337,21 @@ simple_testable_conf = {
         "cli_providers" : debug_syscalls,
         'inbox_providers' : inbox_syscalls,
 }
+
+
+simple_toy_conf = {
+        "General": {
+            "debug": True, 
+            "port": 7777, 
+            "host":  "localhost:7777",
+        },
+        "social_dao" : social_dao_test_conf,
+        "social" : social_test_kernel,
+        "rpc_providers" : remote_syscalls, 
+        "cli_providers" : debug_syscalls,
+        'inbox_providers' : inbox_syscalls,
+}
+
 
 simple_testable_conf_2 =  {
         "General": {
