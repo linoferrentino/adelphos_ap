@@ -89,38 +89,30 @@ class FederatedUriTest(FederatedUri):
 #    FedeObClass2.register_class()
 #
 
-schema_simple = {
-        'uri_constructor' : 'tests.federation.schema_simple.FederatedUriTest',
-        'classes' : [ {
-                'uri_prefix' : TYPE_T1,
-                #'class_def' : 'tests.federation.schema_simple.FedeObClass1', 
-                'first_class' : True,
-                'needs_family' : False,
-                'columns' : [
-                    {
-                        'name' : 'key_int',
-                        'type' : 'int',
-                        'cardinality' : 'scalar',
-                        'required' : True
-                     },
-                    {
-                        'name' : 'key_str',
-                        'type' : 'str',
-                        'cardinality' : 'scalar',
-                        'required' : False
-                    },
-                    ]
-                },
-                {
-                'uri_prefix' : TYPE_T2,
-                #'class_def' : 'tests.federation.schema_simple.FedeObClass1', 
-                'first_class' : False,
-                'needs_family' : False,
-                'columns' : [ ]
-                },
+schema_simple_yaml = f"""
 
-            ],
-        }
+uri_constructor: 'tests.federation.schema_simple.FederatedUriTest'
+
+classes:
+    - uri_prefix: "{TYPE_T1}"
+      first_class: true
+      needs_family: false
+      columns:
+        - name: 'key_int'
+          type: 'int'
+          cardinality: 'scalar'
+          required: true
+        - name: 'key_str'
+          type: 'str'
+          cardinality: 'scalar'
+          required: false
+
+    - uri_prefix: "{TYPE_T2}"
+      first_class: false
+      needs_family: false
+      columns: []
+
+"""
 
 
 LOCALHOST = "www.example.com"

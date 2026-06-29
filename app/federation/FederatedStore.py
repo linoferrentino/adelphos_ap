@@ -224,6 +224,7 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     def __init__(self, hostname, db, schema_dict):
+        #super().__init__(kernel)
 
         self.db = db
         self.hostname = hostname
@@ -231,7 +232,6 @@ class FederatedStore(Dependency, LifespanAware):
         self.transactions = {}
         self.fact = FederatedFactory()
         self.fact.parse_schema(schema_dict)
-        #schema_init()
 
 
     def start(self):

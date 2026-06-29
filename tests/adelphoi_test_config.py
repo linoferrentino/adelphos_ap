@@ -612,3 +612,15 @@ test_routable_kernel = {
 }
 
 
+
+federated_store_kernel = """
+
+modules:
+    - mame: 'feddb'
+      constructor: 'app.federation.FederatedStore.FederatedStore'
+      args: []
+    - conf:
+      - General:
+        debug: true 
+
+"""
