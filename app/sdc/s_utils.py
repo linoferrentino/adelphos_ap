@@ -43,4 +43,6 @@ def build_kernel(instance, config):
     return cont
 
 
-
+def boot_new_kernel(instance, config):
+    cont = SimpleDependencyContainer(instance, config)
+    return cont

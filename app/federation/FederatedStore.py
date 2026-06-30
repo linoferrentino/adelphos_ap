@@ -226,7 +226,7 @@ class FederatedStore(Dependency, LifespanAware):
         self.fact = FederatedFactory()
 
         self.hostname = kernel.conf().get_host()
-        gCon.log(f"Federated store host |{self.hostname}|")
+        #gCon.log(f"Federated store host |{self.hostname}|")
 
         if (isinstance(schema, str)):
             raise Exception('loading of schema not yet supported')
@@ -368,21 +368,15 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     def remove_localhost(self, uriob):
-        gCon.log(f"removing localhost from {uriob} my host is {self.hostname}")
-        gCon.log(f"host: /{uriob.host}/ myhost /{self.hostname}/")
-
         if uriob.host is None:
-            gCon.log("this is already a local URI")
             return uriob
         if ((uriob.host == self.hostname) or
             (uriob.host == '::1') or
             (uriob.host == 'localhost') or
             (uriob.host == '127.0.0.1')):
-            gCon.log("Hello! This is a local URI")
             copied_uri = copy.copy(uriob)
             copied_uri.host = None
             return copied_uri
-        gCon.log('this is a REMOTE Uri')
         return uriob
 
 
@@ -401,12 +395,12 @@ class FederatedStore(Dependency, LifespanAware):
         if rctx.fob is not None:
             return
 
-        gCon.log(f"searching {rctx.uri_str}")
+        #gCon.log(f"searching {rctx.uri_str}")
 
         first_pass = True
         while True:
             t_ob_str = self.db.get_maybe(rctx.uri_str) 
-            gCon.log(f"got the string {t_ob_str}")
+            #gCon.log(f"got the string {t_ob_str}")
             if (t_ob_str is None) and first_pass and (rctx.uri_ob.host is not None):
                 first_pass = False
                 t_ob_str = await self._read_remote_ctx(rctx)

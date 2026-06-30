@@ -26,20 +26,19 @@ from tests.federation.schema_simple import TYPE_T1, TYPE_T2
 from tests.federation.schema_simple import FederatedUriTest
 #from tests.federation.schema_simple import my_test_schema_init
 from app.sdc.Dependencies import Dependencies
-from tests.federation.fixtures import kernel_fdb1_loc
+#from tests.federation.fixtures import kernel_fdb1_loc
+from tests.federation.fixtures import fdb1_loc
 
 
-def test_new_object_f(kernel_fdb1_loc):
-
-    with kernel_fdb1_loc:
-        kernel = kernel_fdb1_loc.get_kernel()
-        fdb1_loc = kernel.get_dep(Dependencies.FEDERATED_DB)
-        _test_new_object_f(fdb1_loc)
-        #gCon.log("--------------------------")
-        pass
+#def Atest_new_object_f(kernel_fdb1_loc):
+#
+#    with kernel_fdb1_loc:
+#        kernel = kernel_fdb1_loc.get_kernel()
+#        fdb1_loc = kernel.get_dep(Dependencies.FEDERATED_DB)
+#        _test_new_object_f(fdb1_loc)
 
 
-def _test_new_object_f(fdb1_loc):
+def test_new_object_f(fdb1_loc):
 
     t_id = fdb1_loc.begin_transaction()
 
@@ -75,7 +74,6 @@ def _test_new_object_f(fdb1_loc):
 @pytest.fixture
 def fdb1_loc_a(fdb1_loc):
 
-    #t1uri = FederatedUriTest(TYPE_T1, 'a')
     t_id = fdb1_loc.begin_transaction()
     fob = fdb1_loc.new_ob(t_id, TYPE_T1, 'a', fields = {
         'key_int' : 11
