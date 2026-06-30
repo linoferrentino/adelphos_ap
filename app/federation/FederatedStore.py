@@ -33,6 +33,8 @@ from app.federation.FederatedFactory import FederatedFactory
 from app.federation.Kernel import Kernel
 
 from app.transport.bridge.loop import run_coro_in_loop
+from app.store.MemoryStore import MemoryStore
+from app.store.SqliteStore import SqliteStore
 
 from dataclasses import dataclass
 from app.logging import gCon
@@ -223,15 +225,30 @@ class FederatedStore(Dependency, LifespanAware):
     #    schema_init()
 
 
-    def __init__(self, hostname, db, schema_dict):
-        #super().__init__(kernel)
+    #def __init__(self, hostname, db, schema_dict):
 
-        self.db = db
-        self.hostname = hostname
+    def __init__(self, kernel, *, db_type = 'mem', schema = None):
+        super().__init__(kernel)
+
+        self.db = self._create_db(db_type)
 
         self.transactions = {}
         self.fact = FederatedFactory()
-        self.fact.parse_schema(schema_dict)
+
+        self.hostname = kernel.conf().get_host()
+
+        if (isinstance(schema, str)):
+            raise Exception('loading of schema not yet supported')
+
+        self.fact.parse_schema(schema)
+
+
+    def _create_db(self, db_type):
+        if db_type == 'mem':
+            db = MemoryStore()
+        else:
+            db = SqliteStore()
+        return db
 
 
     def start(self):

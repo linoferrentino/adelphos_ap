@@ -67,11 +67,11 @@ class SimpleDependencyContainer(LifespanAware):
         module_name = module['name']
         module_builder_str = module['constructor']
         module_builder = misc.import_string(module_builder_str)
-        args = module.get('args')
-        if args is None:
+        kwargs = module.get('args')
+        if kwargs is None:
             self.mods[module_name] = module_builder(self)
         else:
-            self.mods[module_name] = module_builder(self, *args)
+            self.mods[module_name] = module_builder(self, **kwargs)
 
 
     def _build_modules(self):
@@ -88,7 +88,6 @@ class SimpleDependencyContainer(LifespanAware):
 
     def conf_mod(self, dependency):
         return self.config.conf_mod(dependency)
-
 
 
     def _make_social_api(self):

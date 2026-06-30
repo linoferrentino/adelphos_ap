@@ -613,14 +613,20 @@ test_routable_kernel = {
 
 
 
-federated_store_kernel = """
+federated_store_kernel_template = """
 
 modules:
-    - mame: 'feddb'
-      constructor: 'app.federation.FederatedStore.FederatedStore'
-      args: []
-    - conf:
-      - General:
-        debug: true 
+    - name: fed_db
+      constructor: app.federation.FederatedStore.FederatedStore
+      args: 
+        schema:  {_inline_schema_}
+        db_type: {_db_type_}
+conf:
+    General:
+      debug: true 
+      host:  {_hostname_},
+
+    fed_db:
+      db_name: ':memory:'
 
 """

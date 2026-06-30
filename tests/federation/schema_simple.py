@@ -94,7 +94,7 @@ schema_simple_yaml = f"""
 uri_constructor: 'tests.federation.schema_simple.FederatedUriTest'
 
 classes:
-    - uri_prefix: "{TYPE_T1}"
+    - uri_prefix: '{TYPE_T1}'
       first_class: true
       needs_family: false
       columns:
@@ -107,7 +107,7 @@ classes:
           cardinality: 'scalar'
           required: false
 
-    - uri_prefix: "{TYPE_T2}"
+    - uri_prefix: '{TYPE_T2}'
       first_class: false
       needs_family: false
       columns: []
