@@ -19,7 +19,7 @@ class Config:
     def __init__(self, instance, config):
         self.instance = instance
         self.config = config
-        gCon.log(f"the config is {config}")
+        #gCon.log(f"the config is {config}")
 
 
     def get_host(self):

@@ -22,13 +22,16 @@ from app.federation.FederatedStore import FederatedStore
 from tests.federation.schema_simple import schema_simple_yaml
 from app.sdc.Dependencies import Dependencies
 
+from tests.testers.SyncApp import SyncApp
+from tests.testers.SyncTester import SyncTester
+
 import tests.adelphoi_test_config as tconf
 from app.logging import gCon
 import app.sdc.s_utils as su
 
 
 @pytest.fixture(params = ['mem', 'sqlite'])
-def fdb1_loc(request):
+def kernel_fdb1_loc(request):
 
     _inline_schema_ = "{}"
     _db_type_ = request.param
@@ -38,11 +41,7 @@ def fdb1_loc(request):
         _db_type_ = _db_type_,
         _hostname_ = LOCALHOST)
 
-    gCon.log(f"this is the schema {complete_conf}")
-
     kernel_conf = yaml.safe_load(complete_conf)
-
-    gCon.log(f"this is the schema dict {kernel_conf}")
 
     schema_dict = yaml.safe_load(schema_simple_yaml)
 
@@ -50,9 +49,11 @@ def fdb1_loc(request):
 
     kernel = su.build_kernel('test1', kernel_conf)
 
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    app = SyncApp(LOCALHOST, kernel)
+    wrappedapp = SyncTester(app)
 
-    return fdb
+    #fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    return wrappedapp
 
 
 

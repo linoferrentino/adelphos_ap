@@ -156,6 +156,10 @@ class SyncTester(ContextDecorator):
         return self.app
 
 
+    def get_kernel(self):
+        return self.app.get_kernel()
+
+
     def websocket_connect(self, path) -> WebSocketSync:
         sock = WebSocketSync()
         self.app.incoming_websocket(path, sock)

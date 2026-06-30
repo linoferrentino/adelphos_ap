@@ -28,15 +28,6 @@ def build_kernel(instance, config):
 
     global _conts
 
-    #instance = vhost.instance_name
-    #config = vhost.config
-    #sdc = config.get('sdc')
-
-    #if sdc is None:
-    #    gCon.log("Using standard configuration.")
-    #    config['sdc'] = adelphos_standard_configuration
-    gCon.log(f"build kernel with conf {id(config)} conf {id(config['conf'])}")
-
     hash_conf = base64.b64encode(hashlib.sha256(
         (instance + str(config)).encode('utf-8')).digest())
 
@@ -45,9 +36,8 @@ def build_kernel(instance, config):
         gCon.log(f"[red]Returning container {id(cont)}[/red]")
         return cont
 
-    #cont = SimpleDependencyContainer(vhost)
     cont = SimpleDependencyContainer(instance, config)
-    gCon.log(f"[red]Creating container {id(cont)}[/red]")
+    #gCon.log(f"[red]Creating container {id(cont)}[/red]")
 
     _conts[hash_conf] = cont
     return cont

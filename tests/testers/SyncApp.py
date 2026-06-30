@@ -29,6 +29,7 @@ from starlette.responses import Response, PlainTextResponse
 from starlette.exceptions import HTTPException
 from app.logging import gCon
 from app.exc.AdelphosException import AdelphosException 
+from app.sdc.Dependencies import Dependencies
 
 from contextlib import contextmanager
 from app.transport.Routable import Routable
@@ -73,12 +74,20 @@ class SyncApp:
         return self.routable
 
 
-    def __init__(self, host, routable, root_path = ""):
+    def get_kernel(self):
+        return self.kernel
+
+
+    def __init__(self, host, kernel, root_path = ""):
 
         transport = SyncTransport(host, self)
         self.transport = transport
-        routable.set_transport(transport)
 
+        self.kernel = kernel
+
+        routable = kernel.get_dep(Dependencies.ROUTER)
+
+        routable.set_transport(transport)
         self.routable = routable
 
         self.get_routes = []

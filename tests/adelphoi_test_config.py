@@ -621,10 +621,13 @@ modules:
       args: 
         schema:  {_inline_schema_}
         db_type: {_db_type_}
+    - name: router
+      constructor: app.AdelphosRouter.AdelphosRouter
 conf:
     General:
       debug: true 
-      host:  {_hostname_},
+      host:  {_hostname_}
+      api_point: null
 
     fed_db:
       db_name: ':memory:'
