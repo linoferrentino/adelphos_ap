@@ -83,12 +83,11 @@ def get_routable_app_param(request):
 @pytest.fixture(scope = "session")
 def get_routable_app():
 
-    def _build_routable_from_config(instance_name, build_structure, *,
-                                    conf = None, mode = "sync"):
+    def _build_routable_from_config(instance_name, build_structure, 
+                                    conf, mode = "sync"):
 
         return _build_routable_config_impl(instance_name, build_structure,
-                                           conf = conf, mode = mode)
-
+                                           conf, mode)
 
     return _build_routable_from_config
 

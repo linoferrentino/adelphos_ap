@@ -646,25 +646,29 @@ adelphos_testable_1_conf = {
 }
 
 
+adelphos_testable_2_conf = {
 
-testable_debug_kernel_template = """
+        '_port_': 9921,
+        '_demo_1_nick_': 'demo77',
+        '_demo_1_complete_name_': 'demo77 alt',
+        '_demo_2_nick_': 'demo88',
+        '_demo_2_complete_name_': 'demo88 alt',
+}
 
-modules:
 
-    router:
-      constructor: app.AdelphosRouter.AdelphosRouter
+real_adelphos_chunk_modules = """
 
-    cli_handler:
-      constructor: app.cli.StandardCliProvider.StandardCliProvider
+    social_dao:
+      constructor: app.federation.store.SqliteSocialDao.SqliteSocialDao
+      priority: -100
 
-    social:
-      constructor: app.federation.BaseSocial.BaseSocial
+    social_gateway:
+      constructor: app.federation.ap.ActivityPubGateway.ActivityPubGateway
 
-    social_net:
-      constructor: app.federation.ap.ActivityPubNetwork.ActivityPubNetwork
 
-    cli_net:
-      constructor: app.cli.AdelphosCliRouter.AdelphosCliRouter
+"""
+
+debug_adelphos_chunk_modules = """
 
     social_dao:
       constructor: tests.testers.SimpleSocialDao.SimpleSocialDao
@@ -675,8 +679,42 @@ modules:
     backdoor_net:
       constructor: app.federation.BackdoorNet.BackdoorNet
 
+
+"""
+
+
+common_adelphos_modules = """
+
+    cli_handler:
+      constructor: app.cli.StandardCliProvider.StandardCliProvider
+
     social_api:
       constructor: app.ad_api.adelphos.AdelphosApiProvider.AdelphosApiProvider
+
+
+"""
+
+
+testable_kernel_prefix = """
+
+modules:
+
+    router:
+      constructor: app.AdelphosRouter.AdelphosRouter
+
+    social:
+      constructor: app.federation.BaseSocial.BaseSocial
+
+    social_net:
+      constructor: app.federation.ap.ActivityPubNetwork.ActivityPubNetwork
+
+    cli_net:
+      constructor: app.cli.AdelphosCliRouter.AdelphosCliRouter
+
+"""
+
+
+testable_kernel_suffix = """
 
     rcp_api:
       constructor: app.core.sys.SysCallGateway.SysCallGateway
@@ -781,6 +819,15 @@ conf:
 
 
 """
+
+testable_debug_kernel_template = (testable_kernel_prefix
+                + common_adelphos_modules 
+                + debug_adelphos_chunk_modules + testable_kernel_suffix)
+
+
+testable_release_kernel_template = (testable_kernel_prefix
+                + common_adelphos_modules
+                + real_adelphos_chunk_modules + testable_kernel_suffix)
 
 
 simple_testable_conf = {

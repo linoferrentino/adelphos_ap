@@ -13,20 +13,62 @@
 
 
 import pytest
+import yaml
+
 from app.store.MemoryStore import MemoryStore
 from app.core.algo.AdelphosAlgo import AdelphosAlgo 
 from app.federation.FederatedStore import FederatedStore
-from app.core.model.schema import adelphos_schema
+from app.core.model.schema import adelphos_schema_yaml
 from app.exc.AdelphosException import AdErrno
+import tests.adelphoi_test_config as tconf
+from app.logging import gCon
+import app.sdc.s_utils as su
+from tests.testers.SyncApp import SyncApp
+from tests.testers.SyncTester import SyncTester
+from app.sdc.Dependencies import Dependencies
 
 
-@pytest.fixture
-def w_local():
 
-    db = MemoryStore()
-    fdb = FederatedStore('www.h1.com', db, adelphos_schema)
-    model = AdelphosAlgo(fdb)
-    return model 
+
+#@pytest.fixture
+#def w_local():
+#
+#    db = MemoryStore()
+#    fdb = FederatedStore('www.h1.com', db, adelphos_schema)
+#    model = AdelphosAlgo(fdb)
+#    return model 
+
+@pytest.fixture(params = ['mem', 'sqlite'])
+def w_local(request):
+
+    _inline_schema_ = "{}"
+    _db_type_ = request.param
+
+    host_name = 'www.h1.com'
+
+    complete_conf = tconf.federated_store_kernel_template.format(
+        _inline_schema_ = _inline_schema_,
+        _db_type_ = _db_type_,
+        _hostname_ = host_name)
+
+    kernel_conf = yaml.safe_load(complete_conf)
+
+    #gCon.log(f"This is the kernel_conf {kernel_conf}")
+
+    schema_dict = yaml.safe_load(adelphos_schema_yaml)
+
+    kernel_conf['modules']['fed_db']['args']['schema'] = schema_dict
+
+    kernel = su.boot_new_kernel('test1', kernel_conf)
+
+    app = SyncApp(host_name, kernel)
+    wrappedapp = SyncTester(app)
+
+    with wrappedapp:
+        kernel = wrappedapp.get_kernel()
+        fdb1_loc = kernel.get_dep(Dependencies.FEDERATED_DB)
+        model = AdelphosAlgo(fdb1_loc)
+        yield model
 
 
 def test_add_alias(w_local):

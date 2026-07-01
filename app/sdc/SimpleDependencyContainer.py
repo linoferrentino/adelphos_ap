@@ -35,6 +35,18 @@ from app.AdelphosRouter import AdelphosRouter
 from app.federation.SyncLifespanAware import SyncLifespanAware
 import app.misc.utils as misc
 
+from dataclasses import dataclass
+
+
+@dataclass
+class PriorityModule:
+
+    priority: int
+    module: object
+
+    def __lt__(self, other):
+        return self.priority < other.priority
+
 
 class SimpleDependencyContainer(LifespanAware):
 
@@ -66,31 +78,43 @@ class SimpleDependencyContainer(LifespanAware):
 
 
     def _create_module(self, module_name, module):
-        #module_name = module['name']
         module_builder_str = module['constructor']
         module_builder = misc.import_string(module_builder_str)
         kwargs = module.get('args')
         
         if kwargs is None:
-            module = module_builder(self)
+            module_ob = module_builder(self)
         else:
-            module = module_builder(self, **kwargs)
-        self.mods[module_name] = module
+            module_ob = module_builder(self, **kwargs)
+        self.mods[module_name] = module_ob
 
-        if (isinstance(module, LifespanAware)):
-            #gCon.log(f"Module {module_name} needs ASYNC starting")
-            self.async_modules.append(module)
-        elif (isinstance(module, SyncLifespanAware)):
-            #gCon.log(f"Module {module_name} needs SYNC starting")
-            self.sync_modules.append(module)
+        if (isinstance(module_ob, LifespanAware)):
+            prio_mod = SimpleDependencyContainer.get_priority_mod(module, module_ob)
+            self.async_modules.append(prio_mod)
+
+        elif (isinstance(module_ob, SyncLifespanAware)):
+            prio_mod = SimpleDependencyContainer.get_priority_mod(module, module_ob)
+            self.sync_modules.append(prio_mod)
+
+
+    @staticmethod
+    def get_priority_mod(module, module_ob):
+        if module.get('priority') is not None:
+            priority = int(module.get('priority'))
+        else:
+            priority = 0
+        prio_mod = PriorityModule(priority, module_ob)
+        return prio_mod
 
 
     def _build_modules(self):
         self.mods = dict()
 
         for module_name, module in self.config.modules().items():
-            #gCon.log(f"Create module {module}")
             self._create_module(module_name, module)
+
+        self.async_modules.sort()
+        self.sync_modules.sort()
 
 
     def conf(self):
@@ -201,7 +225,7 @@ class SimpleDependencyContainer(LifespanAware):
         #self.mods[Dependencies.INBOX_API].start_sync()
         #self.mods[Dependencies.CLI_API].start_sync()
         for module in self.sync_modules:
-            module.start_sync()
+            module.module.start_sync()
 
 
 
@@ -213,13 +237,13 @@ class SimpleDependencyContainer(LifespanAware):
         #self.mods[Dependencies.SOCIAL_DAO].stop_sync()
         #self.mods[Dependencies.CLI_HANDLER].stop_sync()
         for module in reversed(self.sync_modules):
-            module.stop_sync()
+            module.module.stop_sync()
 
 
     async def start_async(self):
 
         for module in self.async_modules:
-            await module.start_async()
+            await module.module.start_async()
 
         #await self.mods[Dependencies.SOCIAL_API].start_async()
 
@@ -229,7 +253,7 @@ class SimpleDependencyContainer(LifespanAware):
         #await self.mods[Dependencies.SOCIAL_API].stop_async()
 
         for module in reversed(self.async_modules):
-            await module.stop_async()
+            await module.module.stop_async()
 
 
 

@@ -36,11 +36,11 @@ from app.exc.AdelphosException import AdErrno
 
 
 def test_real1(get_standalone_app):
-    ad1 = get_standalone_app('adelphos1', adelphos_standard_configuration,
-                             conf = tconf.adelphos_t1_test)
+    ad1 = get_standalone_app('adelphos1', tconf.testable_release_kernel_template,
+                             tconf.adelphos_testable_1_conf)
     with ad1:
         time.sleep(2)
-        port = tconf.adelphos_t1_test['General']['port']
+        port = tconf.adelphos_testable_1_conf['_port_']
         gCon.log(f"I want to connect to port {port}")
         response = httpx.post(f'http://127.0.0.1:{port}/api/users/adelphos/inbox', 
                               json = {'msg' : 'do_all'})
@@ -50,15 +50,15 @@ def test_real1(get_standalone_app):
 @pytest.mark.anyio
 async def test_real_sndmsg(get_standalone_app):
 
-    ad1 = get_standalone_app('adelphos1', adelphos_standard_configuration,
-                            conf = tconf.adelphos_t1_test)
+    ad1 = get_standalone_app('adelphos1', tconf.testable_release_kernel_template,
+                            tconf.adelphos_testable_1_conf)
 
-    ad2 = get_standalone_app('adelphos2', adelphos_standard_configuration,
-                            conf = tconf.adelphos_t2_test)
+    ad2 = get_standalone_app('adelphos2', tconf.testable_release_kernel_template,
+                            tconf.adelphos_testable_2_conf)
 
     with ad1, ad2:
         time.sleep(4)
-        port = tconf.adelphos_t1_test['General']['port']
+        port = tconf.adelphos_testable_1_conf['_port_']
         async with httpx.AsyncClient() as client:
             async with aconnect_ws(f"http://localhost:{port}/api/ws", client) as ws:
                 await ws.send_text("WHAT")
@@ -71,24 +71,26 @@ async def test_real_sndmsg(get_standalone_app):
 
 
 def test_post_real_kernel(get_routable_app):
-    test1 = get_routable_app('test100', adelphos_standard_configuration,
-                             conf = tconf.adelphos_t1_test)
+    test1 = get_routable_app('adelphos1', tconf.testable_release_kernel_template,
+                             tconf.adelphos_testable_1_conf)
 
-    test2 = get_routable_app('test201', adelphos_standard_configuration,
-                            conf = tconf.adelphos_t2_test)
+    test2 = get_routable_app('adelphos2', tconf.testable_release_kernel_template,
+                             tconf.adelphos_testable_2_conf)
 
-    host2 = tconf.adelphos_t2_test['General']['host']
+    port2 = tconf.adelphos_testable_2_conf['_port_']
+    host2 = f'localhost:{port2}'
     stests._test_sndpost_to_host(test1, test2, host2, 'demo1', 'demo77', 'demo1')
 
 
 
 def test_real_remote_add(get_routable_app):
-    test1 = get_routable_app('test100', adelphos_standard_configuration,
-                             conf = tconf.adelphos_t1_test)
-    test2 = get_routable_app('test201', adelphos_standard_configuration,
-                             conf = tconf.adelphos_t2_test)
+    test1 = get_routable_app('test100', tconf.testable_release_kernel_template,
+                             tconf.adelphos_testable_1_conf)
+    test2 = get_routable_app('test201', tconf.testable_release_kernel_template,
+                             tconf.adelphos_testable_2_conf)
 
-    host2 = tconf.adelphos_t2_test['General']['host']
+    port2 = tconf.adelphos_testable_2_conf['_port_']
+    host2 = f'localhost:{port2}'
     dtests._test_remote_add(test1, test2, host2,
                             AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
 

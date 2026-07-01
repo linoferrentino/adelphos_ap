@@ -27,7 +27,28 @@ from app.core.model.AdelphosUri import EAdelphosType
 #    FamilyFob.register_class()
 
 
-adelphos_schema = {
+adelphos_schema_yaml = f"""
+
+uri_constructor: app.core.model.AdelphosUri.AdelphosUri
+
+classes:
+    - uri_prefix: {EAdelphosType.ALIAS_TYPE}
+      first_class: true,
+      needs_family: true,
+      columns:
+        - name: actor_id
+          type: int
+          cardinality: scalar
+          required: true
+
+        - name: key_str
+          type: str
+          cardinality: scalar
+          required: false
+"""
+
+
+adelphos_schema_dict = {
         'uri_constructor' : 'app.core.model.AdelphosUri.AdelphosUri',
         'classes' : [ {
             'uri_prefix' : EAdelphosType.ALIAS_TYPE,
