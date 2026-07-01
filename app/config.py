@@ -9,7 +9,7 @@ from .logging import exit_err
 import json
 
 
-CNF_GENERAL_SECTION = "General"
+CNF_GENERAL_SECTION = "general"
 CNF_PRIVATE_KEY_FILE_KEY = "private_key"
 CNF_HOST_KEY = "host"
 

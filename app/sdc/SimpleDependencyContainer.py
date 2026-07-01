@@ -65,8 +65,8 @@ class SimpleDependencyContainer(LifespanAware):
         #self.mods[Dependencies.CLI_API] = SysCallGateway(self.vhost, 'cli_providers')
 
 
-    def _create_module(self, module):
-        module_name = module['name']
+    def _create_module(self, module_name, module):
+        #module_name = module['name']
         module_builder_str = module['constructor']
         module_builder = misc.import_string(module_builder_str)
         kwargs = module.get('args')
@@ -78,19 +78,19 @@ class SimpleDependencyContainer(LifespanAware):
         self.mods[module_name] = module
 
         if (isinstance(module, LifespanAware)):
-            gCon.log(f"Module {module_name} needs ASYNC starting")
+            #gCon.log(f"Module {module_name} needs ASYNC starting")
             self.async_modules.append(module)
         elif (isinstance(module, SyncLifespanAware)):
-            gCon.log(f"Module {module_name} needs SYNC starting")
+            #gCon.log(f"Module {module_name} needs SYNC starting")
             self.sync_modules.append(module)
 
 
     def _build_modules(self):
         self.mods = dict()
 
-        for module in self.config.modules():
+        for module_name, module in self.config.modules().items():
             #gCon.log(f"Create module {module}")
-            self._create_module(module)
+            self._create_module(module_name, module)
 
 
     def conf(self):

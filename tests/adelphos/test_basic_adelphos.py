@@ -26,19 +26,18 @@ import json
 
 def test_basic1(get_routable_app_param):
 
-    ad1 = get_routable_app_param('adelphos1', tconf.simple_testable_kernel,
-                           conf = tconf.simple_testable_conf)
+    ad1 = get_routable_app_param('adelphos1', tconf.testable_debug_kernel_template,
+                           conf = tconf.adelphos_testable_1_conf)
 
 
 def test_basic2(get_standalone_app):
-    ad1 = get_standalone_app('adelphos1', tconf.simple_testable_kernel,
-                           conf = tconf.simple_testable_conf)
-    #ad1 = get_standalone_app('adelphos1', tconf.adelphos_stub,
-    #                       tconf.adelphos_simple_conf)
+
+    ad1 = get_standalone_app('adelphos1', tconf.testable_debug_kernel_template,
+                           conf = tconf.adelphos_testable_1_conf)
 
     with ad1:
         time.sleep(2)
-        port = tconf.simple_testable_conf['General']['port']
+        port = tconf.adelphos_testable_1_conf['_port_']
         gCon.log(f"I want to connect to port {port}")
         response = httpx.post(f'http://127.0.0.1:{port}/api/users/adelphos/inbox', 
                               json = {'msg' : 'do_all'})

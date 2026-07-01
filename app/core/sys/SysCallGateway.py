@@ -31,8 +31,8 @@ from app.cli.SysCall import SysCallPar
 class SysCallGateway(Dependency, SyncLifespanAware):
 
 
-    def __init__(self, vhost, realm = None):
-        super().__init__(vhost)
+    def __init__(self, kernel, realm = None):
+        super().__init__(kernel)
         self.contexts = dict()
         self.realm = realm
 
@@ -139,6 +139,8 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
         config = kernel.conf()
         syscalls_providers = config.get_conf(realm)
+
+        gCon.log(f"my providers are {syscalls_providers}")
 
         syscalls = list()
 

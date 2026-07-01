@@ -30,31 +30,6 @@ from app.logging import gCon
 import app.sdc.s_utils as su
 
 
-#@pytest.fixture(params = ['mem', 'sqlite'])
-#def kernel_fdb1_loc(request):
-#
-#    _inline_schema_ = "{}"
-#    _db_type_ = request.param
-#
-#    complete_conf = tconf.federated_store_kernel_template.format(
-#        _inline_schema_ = _inline_schema_,
-#        _db_type_ = _db_type_,
-#        _hostname_ = LOCALHOST)
-#
-#    kernel_conf = yaml.safe_load(complete_conf)
-#
-#    schema_dict = yaml.safe_load(schema_simple_yaml)
-#
-#    kernel_conf['modules'][0]['args']['schema'] = schema_dict
-#
-#    kernel = su.build_kernel('test1', kernel_conf)
-#
-#    app = SyncApp(LOCALHOST, kernel)
-#    wrappedapp = SyncTester(app)
-#
-#    return wrappedapp
-
-
 @pytest.fixture(params = ['mem', 'sqlite'])
 def fdb1_loc(request):
 
@@ -68,9 +43,11 @@ def fdb1_loc(request):
 
     kernel_conf = yaml.safe_load(complete_conf)
 
+    #gCon.log(f"This is the kernel_conf {kernel_conf}")
+
     schema_dict = yaml.safe_load(schema_simple_yaml)
 
-    kernel_conf['modules'][0]['args']['schema'] = schema_dict
+    kernel_conf['modules']['fed_db']['args']['schema'] = schema_dict
 
     kernel = su.boot_new_kernel('test1', kernel_conf)
 
@@ -83,18 +60,3 @@ def fdb1_loc(request):
         yield fdb1_loc
 
 
-#@pytest.fixture(params = ['mem', 'sqlite'])
-#def fdb1_loc(request):
-#
-#    if request.param == 'mem':
-#        db = MemoryStore()
-#    else:
-#        db = SqliteStore()
-#
-#
-#    schema_yaml = yaml.safe_load(schema_simple_yaml)
-#    fdb = FederatedStore(LOCALHOST, db, schema_yaml)
-#
-#    fdb.start()
-#    return fdb
-#

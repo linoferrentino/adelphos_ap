@@ -611,20 +611,22 @@ test_routable_kernel = {
         }
 }
 
-
-
 federated_store_kernel_template = """
 
 modules:
-    - name: fed_db
+
+    fed_db:
       constructor: app.federation.FederatedStore.FederatedStore
       args: 
         schema:  {_inline_schema_}
         db_type: {_db_type_}
-    - name: router
+
+    router:
       constructor: app.AdelphosRouter.AdelphosRouter
+
 conf:
-    General:
+
+    general:
       debug: true 
       host:  {_hostname_}
       api_point: null
@@ -633,3 +635,164 @@ conf:
       db_name: ':memory:'
 
 """
+
+adelphos_testable_1_conf = {
+
+        '_port_': 7777,
+        '_demo_1_nick_': 'demo1',
+        '_demo_1_complete_name_': 'John Demo1',
+        '_demo_2_nick_': 'demo2',
+        '_demo_2_complete_name_': 'Mary Demo2',
+}
+
+
+
+testable_debug_kernel_template = """
+
+modules:
+
+    router:
+      constructor: app.AdelphosRouter.AdelphosRouter
+
+    cli_handler:
+      constructor: app.cli.StandardCliProvider.StandardCliProvider
+
+    social:
+      constructor: app.federation.BaseSocial.BaseSocial
+
+    social_net:
+      constructor: app.federation.ap.ActivityPubNetwork.ActivityPubNetwork
+
+    cli_net:
+      constructor: app.cli.AdelphosCliRouter.AdelphosCliRouter
+
+    social_dao:
+      constructor: tests.testers.SimpleSocialDao.SimpleSocialDao
+
+    social_gateway:
+      constructor: tests.testers.SimpleSocialGateway.SimpleSocialGateway
+
+    backdoor_net:
+      constructor: app.federation.BackdoorNet.BackdoorNet
+
+    social_api:
+      constructor: app.ad_api.adelphos.AdelphosApiProvider.AdelphosApiProvider
+
+    rcp_api:
+      constructor: app.core.sys.SysCallGateway.SysCallGateway
+      args:
+        realm: rpc_api
+
+    inbox_api:
+      constructor: app.core.sys.SysCallGateway.SysCallGateway
+      args:
+        realm: inbox_api
+
+    cli_api:
+      constructor: app.core.sys.SysCallGateway.SysCallGateway
+      args:
+        realm: cli_api
+
+conf:
+
+    general:
+
+      debug: true 
+      port: {_port_}
+      host: localhost:{_port_} 
+      api_point: null
+
+    social_dao:
+      db_name: ':memory:'
+
+    social:
+      users:
+
+        - preferredusername: adelphos
+          name: Adelphos daemon
+          login_shell: false
+
+        - preferredusername: {_demo_1_nick_}
+          name: {_demo_1_complete_name_} 
+          login_shell: true
+
+        - preferredusername: {_demo_2_nick_}
+          name: {_demo_2_complete_name_}
+          login_shell: true
+
+
+    rpc_api:
+        math:
+            class: tests.testers.MathRPCs.MathRPCs
+            syscalls:
+                - name: radd
+                  pars:
+                    n1:
+                      required: true
+                    n2:
+                      required: true
+
+    cli_api:
+      dbg:
+          class: app.core.sys.DebugModule.DebugModule
+          syscalls:
+            - name: echo
+              pars:
+                msg:
+                  required: true
+            - name: sndpost
+              pars:
+                from:
+                  required: true
+                to:
+                  required: true
+                msg:
+                  required: true
+
+            - name: radd
+              pars:
+                host:
+                  required: true
+                n1:
+                  required: true
+                n2:
+                  required: true
+
+    inbox_api:
+      sapi:
+          class: app.ad_api.BaseSocialApiProvider.BaseSocialApiProvider
+          syscalls:
+
+            - name: q
+              handler: _sys_call_q
+              pars: 
+                api_id: 
+                  required: true
+                payload:
+                  required: true
+
+            - name: a
+              handler: _sys_call_a
+              pars:
+                api_id:
+                  required: true
+                payload:
+                  required: true
+
+
+"""
+
+
+simple_testable_conf = {
+        "General": {
+            "debug": True, 
+            "port": 7777, 
+            "host":  "localhost:7777",
+        },
+        "social_dao" : social_dao_test_conf,
+        "social" : test_social_cnf,
+        "rpc_providers" : remote_syscalls, 
+        "cli_providers" : debug_syscalls,
+        'inbox_providers' : inbox_syscalls,
+}
+
