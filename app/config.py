@@ -19,7 +19,6 @@ class Config:
     def __init__(self, instance, config):
         self.instance = instance
         self.config = config
-        #gCon.log(f"the config is {config}")
 
 
     def get_host(self):
@@ -36,7 +35,6 @@ class Config:
 
     
     def get_social_config(self):
-        gCon.log(f"[green]{id(self)} my config is {id(self.config)}[/green]")
         return self.config['conf']['social']
 
 

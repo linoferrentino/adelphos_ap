@@ -16,6 +16,7 @@ import pytest
 import httpx
 import time
 import json
+import yaml
 
 import tests.adelphoi_test_config as tconf
 from app.transport.async_mode.AsyncTransport import AsyncTransport
@@ -31,13 +32,12 @@ PORT1 = 5999
 PORT2 = 5997
 
 
-
 @pytest.fixture
 def app_t1():
 
-    kernel = su.build_kernel('test1', tconf.test_routable_kernel)
+    kernel_conf = yaml.safe_load(tconf.testable_routable_kernel_template)
+    kernel = su.boot_kernel('test1', kernel_conf)
 
-    #aroutable = TRoutable("test")
     aroutable = kernel.get_dep(Dependencies.ROUTER)
     app = StarletteWrap(routable = aroutable)
     return app
@@ -46,8 +46,9 @@ def app_t1():
 @pytest.fixture(scope = "module")
 def remote_app1():
     server = ProcessWrapper()
-    with server.run_in_subprocess(su.build_kernel, ("rem1", 
-                          tconf.test_routable_kernel), PORT1):
+    kernel_conf = yaml.safe_load(tconf.testable_routable_kernel_template)
+    with server.run_in_subprocess(su.boot_kernel, ("rem1", 
+                          kernel_conf), PORT1):
         time.sleep(2)
         yield
 
@@ -55,8 +56,9 @@ def remote_app1():
 @pytest.fixture(scope = "module")
 def remote_app2():
     server = ProcessWrapper()
-    with server.run_in_subprocess(su.build_kernel, ("rem2", 
-                tconf.test_routable_kernel), PORT2):
+    kernel_conf = yaml.safe_load(tconf.testable_routable_kernel_template)
+    with server.run_in_subprocess(su.boot_kernel, ("rem2", 
+                kernel_conf), PORT2):
         time.sleep(2)
         yield
 

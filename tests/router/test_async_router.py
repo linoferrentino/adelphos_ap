@@ -40,7 +40,7 @@ import tests.social.social_tests as stests
 import tests.daemon.daemon_tests as dtests
 
 
-@pytest.mark.parametrize('aroutable', ( tconf.simple_toy_conf, ),
+@pytest.mark.parametrize('aroutable', ( tconf.adelphos_toy_1_conf, ),
                          indirect = True)
 def test_context(app, aroutable):
 
@@ -78,20 +78,20 @@ def test_post_inbox_KO(app, aroutable):
 
 
 def test_post_from_kernel(get_routable_app):
-    test1 = get_routable_app('test1', tconf.medium_testable_kernel, 
-                                 conf = tconf.simple_toy_conf)
-    test2 = get_routable_app('test2', tconf.medium_testable_kernel,
-                             conf = tconf.simple_toy_conf_2)
+    test1 = get_routable_app('test1', tconf.testable_hybrid_kernel_template,
+                                 tconf.adelphos_toy_1_conf)
+    test2 = get_routable_app('test2', tconf.testable_hybrid_kernel_template,
+                                 tconf.adelphos_toy_2_conf)
 
     host2 = tconf.simple_toy_conf_2['General']['host']
     stests._test_sndpost_to_host(test1, test2, host2, 'x1', 't99', 't1')
 
 
 def test_remote_add(get_routable_app):
-    test1 = get_routable_app('test3', tconf.medium_testable_kernel, 
-                                 conf = tconf.simple_toy_conf)
-    test2 = get_routable_app('test2', tconf.medium_testable_kernel,
-                             conf = tconf.simple_toy_conf_2)
+    test1 = get_routable_app('test3', tconf.testable_hybrid_kernel_template, 
+                                 tconf.adelphos_toy_1_conf)
+    test2 = get_routable_app('test2', tconf.testable_hybrid_kernel_template,
+                                 tconf.adelphos_toy_2_conf)
 
     host2 = tconf.routable_test2_kernel['General']['host']
     dtests._test_remote_add(test1, test2, host2)

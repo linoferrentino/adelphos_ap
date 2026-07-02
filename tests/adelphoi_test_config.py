@@ -126,7 +126,7 @@ cli_stub_dep_conf = {
         }
 
 
-toy_testable_kernel = {
+toy_testable_kernel_deprecated = {
         'modules' : [  {
                     'name' : Dependencies.ROUTER,
                     'constructor' : 'app.AdelphosRouter.AdelphosRouter',
@@ -205,6 +205,7 @@ adelphos_simple_conf_deprecated = {
             },
 
         }
+
 
 
 
@@ -611,6 +612,21 @@ test_routable_kernel = {
         }
 }
 
+testable_routable_kernel_template = """
+
+modules:
+    router:
+      constructor: tests.transport.TRoutable.TRoutable
+      args: 
+        flag: flag1
+
+conf:
+  general:
+    debug: true
+
+"""
+
+
 federated_store_kernel_template = """
 
 modules:
@@ -636,9 +652,31 @@ conf:
 
 """
 
+adelphos_toy_1_conf = {
+
+        '_port_': 7777,
+        '_daemon_user_': 'test_kernel',
+        '_demo_1_nick_': 't1',
+        '_demo_1_complete_name_': 'demo user 1',
+        '_demo_2_nick_': 't2',
+        '_demo_2_complete_name_': 'demo user 2',
+}
+
+adelphos_toy_2_conf = {
+
+        '_port_': 9921,
+        '_daemon_user_': 'test_kernel',
+        '_demo_1_nick_': 't99',
+        '_demo_1_complete_name_': 'demo user 99',
+        '_demo_2_nick_': 't100',
+        '_demo_2_complete_name_': 'demo user 100',
+}
+
+
 adelphos_testable_1_conf = {
 
         '_port_': 7777,
+        '_daemon_user_': 'adelphos',
         '_demo_1_nick_': 'demo1',
         '_demo_1_complete_name_': 'John Demo1',
         '_demo_2_nick_': 'demo2',
@@ -649,6 +687,7 @@ adelphos_testable_1_conf = {
 adelphos_testable_2_conf = {
 
         '_port_': 9921,
+        '_daemon_user_': 'adelphos',
         '_demo_1_nick_': 'demo77',
         '_demo_1_complete_name_': 'demo77 alt',
         '_demo_2_nick_': 'demo88',
@@ -672,6 +711,7 @@ debug_adelphos_chunk_modules = """
 
     social_dao:
       constructor: tests.testers.SimpleSocialDao.SimpleSocialDao
+      priority: -100
 
     social_gateway:
       constructor: tests.testers.SimpleSocialGateway.SimpleSocialGateway
@@ -690,6 +730,27 @@ common_adelphos_modules = """
 
     social_api:
       constructor: app.ad_api.adelphos.AdelphosApiProvider.AdelphosApiProvider
+
+
+"""
+
+toy_common_adelphos_modules = """
+
+    cli_handler:
+      constructor: tests.testers.CliHandlerStub.CliHandlerStub
+
+    social_api:
+      constructor: tests.testers.SimpleSocialApiProvider.SimpleSocialApiProvider
+
+"""
+
+hybrid_common_adelphos_modules = """
+
+    cli_handler:
+      constructor: app.cli.StandardCliProvider.StandardCliProvider
+
+    social_api:
+      constructor: tests.testers.SimpleSocialApiProvider.SimpleSocialApiProvider
 
 
 """
@@ -716,7 +777,7 @@ modules:
 
 testable_kernel_suffix = """
 
-    rcp_api:
+    rpc_api:
       constructor: app.core.sys.SysCallGateway.SysCallGateway
       args:
         realm: rpc_api
@@ -746,7 +807,7 @@ conf:
     social:
       users:
 
-        - preferredusername: adelphos
+        - preferredusername: {_daemon_user_}
           name: Adelphos daemon
           login_shell: false
 
@@ -820,8 +881,19 @@ conf:
 
 """
 
+
+testable_toy_kernel_template = (testable_kernel_prefix
+                + toy_common_adelphos_modules
+                + debug_adelphos_chunk_modules + testable_kernel_suffix)
+
+
 testable_debug_kernel_template = (testable_kernel_prefix
                 + common_adelphos_modules 
+                + debug_adelphos_chunk_modules + testable_kernel_suffix)
+
+
+testable_hybrid_kernel_template = (testable_kernel_prefix
+                + hybrid_common_adelphos_modules 
                 + debug_adelphos_chunk_modules + testable_kernel_suffix)
 
 

@@ -82,7 +82,7 @@ class BaseSocial(SocialProvider):
     def _create_user(self, user):
         
         preferredusername = user['preferredusername']
-        #gCon.log(f"creating user {user}")
+        gCon.log(f"creating user {user}")
 
         user_path = API_POINT + f"/users/{preferredusername}"
         user_inbox = user_path + "/inbox"

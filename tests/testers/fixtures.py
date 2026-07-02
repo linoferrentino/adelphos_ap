@@ -116,19 +116,22 @@ def get_standalone_app():
 @pytest.fixture(scope = "session")
 def aroutable(request):
 
-    build_kernel = copy.deepcopy(tconf.toy_testable_kernel)
+    #build_kernel = copy.deepcopy(tconf.toy_testable_kernel)
 
     if hasattr(request, 'param'):
         gCon.log(f"Got the conf {request.param}")
-        configuration = request.param
+        conf = request.param
     else:
         gCon.log(f"Use the default")
-        configuration = tconf.simple_toy_conf
+        conf = tconf.adelphos_toy_1_conf
 
-    build_kernel['conf'] = configuration
+    #build_kernel['conf'] = configuration
+
+    build_complete = tconf.testable_toy_kernel_template.format(**conf)
+    kernel_conf = yaml.safe_load(build_complete)
 
     #aroutable = AdelphosRouter("test", configuration)
-    kernel = su.build_kernel("test", build_kernel)
+    kernel = su.boot_kernel("test", kernel_conf)
     aroutable = kernel.get_dep(Dependencies.ROUTER)
     return aroutable 
 

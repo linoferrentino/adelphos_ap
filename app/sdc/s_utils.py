@@ -35,11 +35,11 @@ def boot_kernel(instance, config, *, use_cache = True):
         cont = _conts.get(hash_conf)
 
         if cont is not None:
-            gCon.log(f"[red]Returning already booted kernel {id(cont)}[/red]")
+            gCon.log(f"[red]Returning already booted kernel {instance} {id(cont)}[/red]")
             return cont
 
     cont = SimpleDependencyContainer(instance, config)
-    #gCon.log(f"[red]Creating container {id(cont)}[/red]")
+    gCon.log(f"[red]Booting kernel {instance} {id(cont)}[/red]")
 
     if use_cache == True:
         _conts[hash_conf] = cont

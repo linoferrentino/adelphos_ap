@@ -43,11 +43,14 @@ class TRoutable(Routable):
 
 
     async def get_remote_flag(self, request):
+        gCon.log(f"================================ get_remote_flag")
         json_val = await request.json()
         dest = json_val['dest']
         which_flag = json_val['msg']
         url_to_call = f"https://{dest}/get_local_flag?flag={which_flag}"
+        gCon.log(f"will call {url_to_call}")
         flag = await self.transport.get_json(url_to_call)
+        gCon.log(f"================================ get_remote_flag {flag}")
         return JSONResponse(json.loads(flag)) 
 
 

@@ -26,8 +26,9 @@ from tests.testers.fixtures import get_routable_app
 
 def test_simple_router(get_routable_app):
 
-    app = get_routable_app('test/test_simple_router', tconf.medium_testable_kernel,
-                           conf = tconf.simple_toy_conf)
+    app = get_routable_app('test/test_simple_router', 
+                           tconf.testable_hybrid_kernel_template,
+                           conf = tconf.adelphos_toy_1_conf)
     with app:
         with app.websocket_connect(CNST.WS_ROUTE) as websocket:
             websocket.send_text("dbg.echo msg lino99")

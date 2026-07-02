@@ -10,7 +10,8 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
+import traceback
 
 from app.transport.AbstractTransport import AbstractTransport
 from urllib.parse import urlsplit
@@ -28,6 +29,7 @@ class SyncTransport(AbstractTransport):
 
     def _check_gateway_local(self, url):
         urls = urlsplit(url)
+        gCon.log(f"gateway url {urls} self host {self.host}")
         if urls.netloc == self.host:
             return (True, urls)
         if self.gateway is None:
@@ -57,6 +59,7 @@ class SyncTransport(AbstractTransport):
         try:
             return await self._get_json_try(url)
         except Exception as exc:
+            traceback.print_exc()
             gCon.log(f"exception in get {exc}")
             raise HTTPException(401)
         
@@ -64,7 +67,7 @@ class SyncTransport(AbstractTransport):
     async def _get_json_try(self, url):
         (is_local, urls) = self._check_gateway_local(url)
         if is_local == True:
-            val = self.in_get_json(self, urls)
+            val = await self.in_get_json(urls)
         else:
             val = await self.gateway.route_message("GET", urls)
 
@@ -82,7 +85,7 @@ class SyncTransport(AbstractTransport):
         if urlp.netloc != self.host:
             raise Exception("Invalid host")
         if self.in_app is None:
-            return Response(500, None)
+            raise HTTPException(500)
         gCon.log(f">>>> {urlp} in app {self.in_app}")
         return self.in_app.in_get_json(urlp)
 
