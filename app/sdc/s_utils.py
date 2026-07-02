@@ -18,7 +18,7 @@ from app.logging import gCon
 
 from app.sdc.SimpleDependencyContainer import SimpleDependencyContainer
 import app.sdc.Dependencies as dep
-from app.sdc.standard_conf import adelphos_standard_configuration
+#from app.sdc.standard_conf import adelphos_standard_configuration
 
 
 _conts = dict()

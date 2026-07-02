@@ -18,3 +18,11 @@ class Dependency(ABC):
     def __init__(self, vhost):
         self.vhost = vhost
 
+
+    def get_dep(self, dep):
+        return self.vhost.get_dep(dep)
+
+
+    def conf(self):
+        return self.vhost.conf()
+

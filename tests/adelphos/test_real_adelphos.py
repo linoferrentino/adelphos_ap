@@ -20,7 +20,7 @@ import time
 import tests.adelphoi_test_config as tconf
 import tests.adelphoi_build_config as bconf
 
-from app.sdc.standard_conf import adelphos_standard_configuration
+#from app.sdc.standard_conf import adelphos_standard_configuration
 from app.logging import gCon
 from tests.testers.fixtures import get_standalone_app
 from tests.testers.fixtures import get_routable_app
@@ -33,10 +33,11 @@ import tests.daemon.daemon_tests as dtests
 from app.exc.AdelphosException import parse_exc_str
 from app.exc.AdelphosException import AdErrno
 
+import app.sdc.standard_conf as stdcnf
 
 
 def test_real1(get_standalone_app):
-    ad1 = get_standalone_app('adelphos1', tconf.testable_release_kernel_template,
+    ad1 = get_standalone_app('adelphos1', stdcnf.release_kernel_template,
                              tconf.adelphos_testable_1_conf)
     with ad1:
         time.sleep(2)
@@ -50,10 +51,10 @@ def test_real1(get_standalone_app):
 @pytest.mark.anyio
 async def test_real_sndmsg(get_standalone_app):
 
-    ad1 = get_standalone_app('adelphos1', tconf.testable_release_kernel_template,
+    ad1 = get_standalone_app('adelphos1', stdcnf.release_kernel_template,
                             tconf.adelphos_testable_1_conf)
 
-    ad2 = get_standalone_app('adelphos2', tconf.testable_release_kernel_template,
+    ad2 = get_standalone_app('adelphos2', stdcnf.release_kernel_template,
                             tconf.adelphos_testable_2_conf)
 
     with ad1, ad2:
@@ -71,10 +72,10 @@ async def test_real_sndmsg(get_standalone_app):
 
 
 def test_post_real_kernel(get_routable_app):
-    test1 = get_routable_app('adelphos1', tconf.testable_release_kernel_template,
+    test1 = get_routable_app('adelphos1', stdcnf.release_kernel_template,
                              tconf.adelphos_testable_1_conf)
 
-    test2 = get_routable_app('adelphos2', tconf.testable_release_kernel_template,
+    test2 = get_routable_app('adelphos2', stdcnf.release_kernel_template,
                              tconf.adelphos_testable_2_conf)
 
     port2 = tconf.adelphos_testable_2_conf['_port_']
@@ -84,9 +85,9 @@ def test_post_real_kernel(get_routable_app):
 
 
 def test_real_remote_add(get_routable_app):
-    test1 = get_routable_app('test100', tconf.testable_release_kernel_template,
+    test1 = get_routable_app('test100', stdcnf.release_kernel_template,
                              tconf.adelphos_testable_1_conf)
-    test2 = get_routable_app('test201', tconf.testable_release_kernel_template,
+    test2 = get_routable_app('test201', stdcnf.release_kernel_template,
                              tconf.adelphos_testable_2_conf)
 
     port2 = tconf.adelphos_testable_2_conf['_port_']

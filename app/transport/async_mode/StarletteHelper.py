@@ -16,9 +16,11 @@
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 
 from app.logging import gCon
+from app.sdc.Dependencies import Dependencies
 
 
-def starlette_app_creator(routable):
+def starlette_app_creator(kernel):
+    routable = kernel.get_dep(Dependencies.ROUTER)
     app = StarletteWrap(routable = routable)
     return app
 

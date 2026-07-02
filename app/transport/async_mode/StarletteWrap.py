@@ -30,6 +30,8 @@ from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
 
 from starlette.middleware import Middleware
+from app.sdc.Dependencies import Dependencies
+
 
 class AdelphosExcMiddleware:
 
@@ -98,7 +100,7 @@ class StarletteWrap(Starlette):
 
 
     def get_config(self):
-        return self.routable.config
+        return self.routable.conf()
 
 
     def set_out_gateway(self, gw):

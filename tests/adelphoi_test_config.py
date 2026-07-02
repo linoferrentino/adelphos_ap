@@ -13,6 +13,8 @@
 
 from app.sdc.Dependencies import Dependencies
 
+import app.sdc.standard_conf as stdcnf
+
 
 testable_routable_kernel_template = """
 
@@ -97,18 +99,6 @@ adelphos_testable_2_conf = {
 }
 
 
-real_adelphos_chunk_modules = """
-
-    social_dao:
-      constructor: app.federation.store.SqliteSocialDao.SqliteSocialDao
-      priority: -100
-
-    social_gateway:
-      constructor: app.federation.ap.ActivityPubGateway.ActivityPubGateway
-
-
-"""
-
 debug_adelphos_chunk_modules = """
 
     social_dao:
@@ -121,20 +111,10 @@ debug_adelphos_chunk_modules = """
     backdoor_net:
       constructor: app.federation.BackdoorNet.BackdoorNet
 
+conf:
 
 """
 
-
-common_adelphos_modules = """
-
-    cli_handler:
-      constructor: app.cli.StandardCliProvider.StandardCliProvider
-
-    social_api:
-      constructor: app.ad_api.adelphos.AdelphosApiProvider.AdelphosApiProvider
-
-
-"""
 
 toy_common_adelphos_modules = """
 
@@ -158,149 +138,25 @@ hybrid_common_adelphos_modules = """
 """
 
 
-testable_kernel_prefix = """
-
-modules:
-
-    router:
-      constructor: app.AdelphosRouter.AdelphosRouter
-
-    social:
-      constructor: app.federation.BaseSocial.BaseSocial
-
-    social_net:
-      constructor: app.federation.ap.ActivityPubNetwork.ActivityPubNetwork
-
-    cli_net:
-      constructor: app.cli.AdelphosCliRouter.AdelphosCliRouter
-
-"""
-
-
-testable_kernel_suffix = """
-
-    rpc_api:
-      constructor: app.core.sys.SysCallGateway.SysCallGateway
-      args:
-        realm: rpc_api
-
-    inbox_api:
-      constructor: app.core.sys.SysCallGateway.SysCallGateway
-      args:
-        realm: inbox_api
-
-    cli_api:
-      constructor: app.core.sys.SysCallGateway.SysCallGateway
-      args:
-        realm: cli_api
-
-conf:
-
-    general:
-
-      debug: true 
-      port: {_port_}
-      host: localhost:{_port_} 
-      api_point: null
-
-    social_dao:
-      db_name: ':memory:'
-
-    social:
-      users:
-
-        - preferredusername: {_daemon_user_}
-          name: Adelphos daemon
-          login_shell: false
-
-        - preferredusername: {_demo_1_nick_}
-          name: {_demo_1_complete_name_} 
-          login_shell: true
-
-        - preferredusername: {_demo_2_nick_}
-          name: {_demo_2_complete_name_}
-          login_shell: true
-
-
-    rpc_api:
-        math:
-            class: tests.testers.MathRPCs.MathRPCs
-            syscalls:
-                - name: radd
-                  pars:
-                    n1:
-                      required: true
-                    n2:
-                      required: true
-
-    cli_api:
-      dbg:
-          class: app.core.sys.DebugModule.DebugModule
-          syscalls:
-            - name: echo
-              pars:
-                msg:
-                  required: true
-            - name: sndpost
-              pars:
-                from:
-                  required: true
-                to:
-                  required: true
-                msg:
-                  required: true
-
-            - name: radd
-              pars:
-                host:
-                  required: true
-                n1:
-                  required: true
-                n2:
-                  required: true
-
-    inbox_api:
-      sapi:
-          class: app.ad_api.BaseSocialApiProvider.BaseSocialApiProvider
-          syscalls:
-
-            - name: q
-              handler: _sys_call_q
-              pars: 
-                api_id: 
-                  required: true
-                payload:
-                  required: true
-
-            - name: a
-              handler: _sys_call_a
-              pars:
-                api_id:
-                  required: true
-                payload:
-                  required: true
-
-
-"""
-
-
-testable_toy_kernel_template = (testable_kernel_prefix
+testable_toy_kernel_template = (stdcnf.testable_kernel_prefix
                 + toy_common_adelphos_modules
-                + debug_adelphos_chunk_modules + testable_kernel_suffix)
+                + debug_adelphos_chunk_modules 
+                + stdcnf.testable_kernel_suffix_template
+                + stdcnf.syscalls_suffix)
 
 
-testable_debug_kernel_template = (testable_kernel_prefix
-                + common_adelphos_modules 
-                + debug_adelphos_chunk_modules + testable_kernel_suffix)
+testable_debug_kernel_template = (stdcnf.testable_kernel_prefix
+                + stdcnf.common_adelphos_modules 
+                + debug_adelphos_chunk_modules 
+                + stdcnf.testable_kernel_suffix_template
+                + stdcnf.syscalls_suffix)
 
 
-testable_hybrid_kernel_template = (testable_kernel_prefix
+testable_hybrid_kernel_template = (stdcnf.testable_kernel_prefix
                 + hybrid_common_adelphos_modules 
-                + debug_adelphos_chunk_modules + testable_kernel_suffix)
+                + debug_adelphos_chunk_modules 
+                + stdcnf.testable_kernel_suffix_template
+                + stdcnf.syscalls_suffix)
 
-
-testable_release_kernel_template = (testable_kernel_prefix
-                + common_adelphos_modules
-                + real_adelphos_chunk_modules + testable_kernel_suffix)
 
 

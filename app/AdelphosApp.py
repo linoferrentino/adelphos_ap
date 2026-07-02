@@ -73,8 +73,10 @@ from app.logging import exit_err
 from app.logging import gCon
 from app.consts import ADELPHOS_AP_ENV_KEY
 from app.config import load_conf
-#from app.AdelphosRouter import AdelphosRouter
 from app.transport.async_mode.StarletteHelper import starlette_app_creator
+import app.sdc.s_utils as su
+import yaml
+import app.sdc.standard_conf as stdcnf
 
 
 app = None
@@ -432,11 +434,19 @@ variable not defined")
 
     #social_provider = ActivityPubMockup()
 
+    build_kernel = yaml.safe_load(stdcnf.release_kernel_conf)
+
+    for key, val in config.items():
+        if build_kernel['conf'].get(key) is not None:
+            raise Exception("duplicate conf key in kernel configuration")
+        gCon.log(f"Putting {key} = {val} in conf")
+        build_kernel['conf'][key] = val
+
     #adelphos_in_gw = AdelphosRouter(instance_name, config)
-    adelphos_in_gw = build_kernel(instance_name, config)
+    kernel = su.boot_kernel(instance_name, build_kernel)
 
     #app = StarletteWrap(instance_name, lifespan = lifespan)
-    app = starlette_app_creator(adelphos_in_gw)
+    app = starlette_app_creator(kernel)
 
     return app
 
