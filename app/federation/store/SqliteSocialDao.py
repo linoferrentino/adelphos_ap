@@ -70,8 +70,11 @@ class SqliteSocialDao(BaseSocialDao):
         server_dto = self.server_dao.get_from_hostname(parsed_url.netloc)
         if server_dto is None:
             return None
-        actor_dto = self.actor_dao.get_from_server_path(server_dto.server_id,
+        actor_impl = self.actor_dao.get_from_server_path(server_dto.server_id,
                                                         parsed_url.path)
+        if actor_impl is None:
+            return None
+        actor_dto = ApActorDto(server_dto, actor_impl)
         BaseSocialDao._fill_public_key(actor_dto)
         return actor_dto
 

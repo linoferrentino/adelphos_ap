@@ -31,7 +31,7 @@ def _test_sndpost_to_host(test1, test2, host2, userKO, userOK, user_from):
             data = websocket.receive_text()
             assert data == "DONE!"
 
-            websocket.close()
+            #websocket.close()
             
             user_ob = test2.app.routable.get_dep(
                     Dependencies.SOCIAL).login_user(userOK)
@@ -41,4 +41,18 @@ def _test_sndpost_to_host(test1, test2, host2, userKO, userOK, user_from):
             msg = user_ob.pop_lst_msg()
             assert msg == 'echo_test_x918'
 
+            websocket.send_text(
+    f"dbg.sndpost to @{userOK}@{host2} msg echo_test_x911 from {user_from}")
+            data = websocket.receive_text()
+            assert data == "DONE!"
+            
+            user_ob = test2.app.routable.get_dep(
+                    Dependencies.SOCIAL).login_user(userOK)
+            count_msg = user_ob.count_msg()
+            assert count_msg == 1
+
+            msg = user_ob.pop_lst_msg()
+            assert msg == 'echo_test_x911'
+
+            websocket.close()
 
