@@ -83,7 +83,9 @@ def test_post_from_kernel(get_routable_app):
     test2 = get_routable_app('test2', tconf.testable_hybrid_kernel_template,
                                  tconf.adelphos_toy_2_conf)
 
-    host2 = tconf.simple_toy_conf_2['General']['host']
+    port2 = tconf.adelphos_toy_2_conf['_port_']
+    host2 = f"localhost:{port2}"
+    #host2 = tconf.simple_toy_conf_2['General']['host']
     stests._test_sndpost_to_host(test1, test2, host2, 'x1', 't99', 't1')
 
 
@@ -93,7 +95,9 @@ def test_remote_add(get_routable_app):
     test2 = get_routable_app('test2', tconf.testable_hybrid_kernel_template,
                                  tconf.adelphos_toy_2_conf)
 
-    host2 = tconf.routable_test2_kernel['General']['host']
+    port2 = tconf.adelphos_toy_2_conf['_port_']
+    host2 = f"localhost:{port2}"
+    #host2 = tconf.routable_test2_kernel['General']['host']
     dtests._test_remote_add(test1, test2, host2)
 
 

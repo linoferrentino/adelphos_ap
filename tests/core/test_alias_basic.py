@@ -28,16 +28,6 @@ from tests.testers.SyncTester import SyncTester
 from app.sdc.Dependencies import Dependencies
 
 
-
-
-#@pytest.fixture
-#def w_local():
-#
-#    db = MemoryStore()
-#    fdb = FederatedStore('www.h1.com', db, adelphos_schema)
-#    model = AdelphosAlgo(fdb)
-#    return model 
-
 @pytest.fixture(params = ['mem', 'sqlite'])
 def w_local(request):
 

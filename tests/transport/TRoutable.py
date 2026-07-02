@@ -33,6 +33,7 @@ class TRoutable(Routable):
     def __init__(self, kernel, flag):
         super().__init__(kernel)
         #config = kernel.conf_mod(Dependencies.ROUTER)
+        gCon.log(f"create routable with flag {flag}")
         self.flag = flag
 
 
@@ -56,7 +57,7 @@ class TRoutable(Routable):
 
     async def get_local_flag(self, request):
         which_flag = request.query_params['flag']
-        response = JSONResponse({ 'flag' : 'hello' })
+        response = JSONResponse({ 'flag' : self.flag })
         return response
         
 

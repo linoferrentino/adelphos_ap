@@ -18,6 +18,7 @@ import time
 import json
 import yaml
 
+import tests.test_constants as tc
 import tests.adelphoi_test_config as tconf
 from app.transport.async_mode.AsyncTransport import AsyncTransport
 from tests.transport.TRoutable import TRoutable
@@ -35,7 +36,9 @@ PORT2 = 5997
 @pytest.fixture
 def app_t1():
 
-    kernel_conf = yaml.safe_load(tconf.testable_routable_kernel_template)
+    kernel_build = tconf.testable_routable_kernel_template.format(
+            _flag_ = tc.FLAG_1 )
+    kernel_conf = yaml.safe_load(kernel_build)
     kernel = su.boot_kernel('test1', kernel_conf)
 
     aroutable = kernel.get_dep(Dependencies.ROUTER)
@@ -46,7 +49,10 @@ def app_t1():
 @pytest.fixture(scope = "module")
 def remote_app1():
     server = ProcessWrapper()
-    kernel_conf = yaml.safe_load(tconf.testable_routable_kernel_template)
+
+    kernel_build = tconf.testable_routable_kernel_template.format(
+            _flag_ = tc.FLAG_1 )
+    kernel_conf = yaml.safe_load(kernel_build)
     with server.run_in_subprocess(su.boot_kernel, ("rem1", 
                           kernel_conf), PORT1):
         time.sleep(2)
@@ -56,7 +62,9 @@ def remote_app1():
 @pytest.fixture(scope = "module")
 def remote_app2():
     server = ProcessWrapper()
-    kernel_conf = yaml.safe_load(tconf.testable_routable_kernel_template)
+    kernel_build = tconf.testable_routable_kernel_template.format(
+            _flag_ = tc.FLAG_2 )
+    kernel_conf = yaml.safe_load(kernel_build)
     with server.run_in_subprocess(su.boot_kernel, ("rem2", 
                 kernel_conf), PORT2):
         time.sleep(2)
@@ -89,4 +97,4 @@ def test_async_comm(remote_app1, remote_app2):
 
     assert response.status_code == 200
     jsonres = json.loads(response.content)
-    assert jsonres['flag'] == 'hello'
+    assert jsonres['flag'] == tc.FLAG_2
