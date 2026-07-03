@@ -27,7 +27,6 @@ from app.logging import gCon
 @dataclass
 class FederatedFactoryRegistrar:
     
-    #constructor : callable
     first_class : bool
     needs_family : bool
     pars: dict = field(default_factory = dict)
@@ -56,6 +55,8 @@ class FederatedFactory:
                 return FObColType.INTEGER
             case 'str':
                 return FObColType.STRING
+            case 'real':
+                return FObColType.REAL
             case _:
                 raise Exception(f"Invalid col type {col_type_str}")
 
@@ -120,7 +121,7 @@ class FederatedFactory:
         classes_arr = schema['classes']
         for class_ob in classes_arr:
             self._add_class(class_ob)
-            gCon.log(f"I have added class {class_ob}")
+            #gCon.log(f"I have added class {class_ob}")
 
 
     @classmethod

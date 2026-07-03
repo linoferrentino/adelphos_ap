@@ -178,6 +178,10 @@ class FederatedObject:
 
         schema = self.registrar.pars
 
+        for field in fields.keys():
+            if field not in schema:
+                raise FdbException(EFdbErrors.EFDB_EXTRA_FIELD, field)
+
         for col_name, col_def in schema.items():
 
             if col_def.cardinality != FObCardType.SCALAR:
@@ -210,7 +214,6 @@ class FederatedObject:
 
 
     def get_primitive_value(self, key, maybe = False):
-        gCon.log(f"fields {self.ob.fields}")
         return self.ob.fields[key]
 
 

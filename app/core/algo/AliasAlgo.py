@@ -23,8 +23,8 @@ import weakref
 class AliasAlgo:
 
 
-    def __init__(self, kernel):
-        self.kernel = kernel 
+    def __init__(self, algo_root):
+        self.algo_root = algo_root
 
 
     @federated_transaction(raise_if_fail = False)
@@ -38,11 +38,11 @@ class AliasAlgo:
                 'password': pass_hashed
         }
 
-        fob1 = self.kernel.fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
+        fob1 = self.algo_root.fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
                                       name, family, fields = fields)
 
         gCon.log(fob1)
-        #gCon.log(fob1())
+        gCon.log(fob1())
 
         return fob1
  

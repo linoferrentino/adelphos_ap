@@ -29,6 +29,7 @@ class EFdbErrors(IntEnum):
     EFDB_FAMILY_NOT_WANTED = 11
     EFDB_REQUIRED_FIELD_MISSING = 12
     EFDB_URIS_MUST_BE_NULLS = 13
+    EFDB_EXTRA_FIELD = 14
 
 
 # I have a FdbException
@@ -37,5 +38,10 @@ class FdbException(Exception):
     def __init__(self, error: EFdbErrors, msg = None):
         super().__init__(msg)
         self.errno = error
+
+    def __str__(self):
+        out_str = f"Federated Db Error #{self.errno}#. Details: "
+        out_str += super().__str__()
+        return out_str
 
 

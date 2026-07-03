@@ -16,6 +16,7 @@ import traceback
 
 from app.core.EAdErrno import EAdErrno
 from app.core.AdelphosCoreException import AdelphosCoreException
+from app.federation.FdbException import FdbException
 import traceback
 
 # decorator to do the commit fence.
@@ -64,21 +65,27 @@ def federated_transaction(raise_if_fail = True):
     def commit_or_die_maybe(func):
 
         def internal_commit(self, *args, **kwargs):
-            t_id = self.kernel.fdb.begin_transaction()
+            t_id = self.algo_root.fdb.begin_transaction()
             kwargs['t_id'] = t_id
             try:
                 res = func(self, *args, **kwargs)
-                self.kernel.fdb.commit_transaction(t_id)
+                self.algo_root.fdb.commit_transaction(t_id)
                 return res 
             except AdelphosCoreException as ex:
                 traceback.print_exc()
-                self.instance.fdb.rollback_transaction(t_id)
+                self.algo_root.fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return -ex.errno
                 raise
+            except FdbException as fdbex:
+                #traceback.print_exc()
+                self.algo_root.fdb.rollback_transaction(t_id)
+                if raise_if_fail == False:
+                    return str(fdbex)
+                raise
             except Exception as exc:
                 traceback.print_exc()
-                self.kernel.fdb.rollback_transaction(t_id)
+                self.algo_root.fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return -EAdErrno.ESYS
                 raise

@@ -269,36 +269,14 @@ class FederatedStore(Dependency, LifespanAware):
         if t_ob is None:
             raise FdbException(EFdbErrors.EFDB_NO_SUCH_TRANSACTION)
         return t_ob
+
+
+    def is_present_object(self, t_ob, ob_type, name, family = None):
+        uri = FederatedUri(ob_type, name, family)
+        return self.is_present_uri(t_ob, uri)
  
 
-    # creates an object with a certain URI and a certain reference count.
-    # only some objects start with a reference count of one.
-    # deprecated, use new_ob instead
-    #def create_uri(self, t_id, uri_ob, ref_count = 0):
-    #    return run_coro_in_loop(self.create_uri_coro, (t_id, uri_ob, ref_count))
-
-
-    #async def create_uri_coro(self, t_id, uri_ob, ref_count = 0):
-
-    #    # the uri must be local!
-    #    if self.is_local_uri(uri_ob) == False:
-    #        raise FdbException(EFdbErrors.EFDB_NO_LOCAL_URI)
-
-    #    uri_ob = self.remove_localhost(uri_ob)
-
-    #    t_ob = self.get_tob_safe(t_id)
-
-    #    self.ensure_uri_not_existing(t_ob, uri_ob)
-
-    #    # a new object is by definition locked, because it starts in the
-    #    # transaction
-    #    registrar = self.fact.get_registrar(uri_ob.ob_type)
-    #    fob = FederatedObject(uri_ob, registrar, locked = True)
-    #    t_ob.new_ob(fob)
-    #    return weakref.ref(fob)
-
-
-    def _is_present_uri(self, t_ob, uri):
+    def is_present_uri(self, t_ob, uri):
         key_uri = uri.unparse()
 
         exists_trx = t_ob.exists_ob(key_uri)
@@ -311,7 +289,7 @@ class FederatedStore(Dependency, LifespanAware):
 
     def ensure_uri_not_existing(self, t_ob, uri):
 
-        exists_trx = self._is_present_uri(t_ob, uri)
+        exists_trx = self.is_present_uri(t_ob, uri)
 
         if exists_trx == True:
             raise FdbException(EFdbErrors.EFDB_URI_EXISTS)
@@ -341,6 +319,9 @@ class FederatedStore(Dependency, LifespanAware):
         if registrar.needs_family == True:
             if family is None:
                 raise FdbException(EFdbErrors.EFDB_REQUIRED_FAMILY_MISSING)
+
+            #check_family = self.is_present_family()
+
         else:
             if family is not None:
                 raise FdbException(EFdbErrors.EFDB_FAMILY_NOT_WANTED)
@@ -355,12 +336,10 @@ class FederatedStore(Dependency, LifespanAware):
 
         self.ensure_uri_not_existing(t_ob, uri)
 
-        #gCon.log(f"Storing {uri}")
-
         fob = FederatedObject(uri, registrar, fields = fields, locked = True)
         t_ob.new_ob(fob)
 
-        return fob
+        return weakref.ref(fob)
 
 
     def uri_snapshot(self, uri_ob):
@@ -425,11 +404,6 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     async def uri_read_lock_coro(self, t_id, uri_ob):
-        """
-        Reads an object and puts it into the working set of the current transaction.
-    
-        if the object is already locked use the lock_resolution method to know what to do
-        """
         rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = True) 
         await self._read_ctx(rctx)
         return weakref.ref(rctx.fob)

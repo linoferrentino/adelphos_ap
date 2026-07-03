@@ -43,9 +43,9 @@ def w_local(federated_db_local):
 def test_add_alias(w_local):
 
     lino_ob = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
-    gCon.log(f"lino ob {lino_ob}")
-    pass_hashed = lino_ob.get_primitive_value('password')
-    assert pass_hashed == 'doios'
+    actor_id = lino_ob().get_primitive_value('actor_id')
+    assert actor_id == 0
+    assert isinstance(actor_id, int)
 
 
 def test_add_dup_family(w_local):
