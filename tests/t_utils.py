@@ -15,12 +15,12 @@
 
 from app.logging import gCon
 import time
-from fastapi.testclient import TestClient
+from starlette.testclient import TestClient
 from app.AdelphosApp import get_app
 from app.AdelphosApp import del_app
 import json
 from app.exc.AdelphosException import parse_exc
-import httpx
+import httpx2
 #from app.api.AdelphosException import EAdelhposErrno
 
 
@@ -115,7 +115,7 @@ def play_script_on_instance_OK(adelphos_instance, script):
 
 def assert_error_code_in_response(response, error_expt):
     assert response.status_code == 401
-    if isinstance(response, httpx.Response) == True:
+    if isinstance(response, httpx2.Response) == True:
         int_code = parse_exc(response._content)
     else:
         int_code = parse_exc(response.body)

@@ -16,11 +16,11 @@
 
 from app.AdelphosApp import get_existent_app
 #from app.ad_api.AdDaemonApi import AdDaemonApi
-from fastapi.testclient import TestClient
+#from fastapi.testclient import TestClient
 from app.logging import gCon
-from fastapi.websockets import WebSocket
+#from fastapi.websockets import WebSocket
 import re
-from fastapi import FastAPI
+#from fastapi import FastAPI
 import pytest
 import time
 from tests.ProcessServer import ProcessServer
@@ -28,7 +28,7 @@ import tests.t_utils as tu
 import pytest
 #from app.api.AdelphosException import EAdelhposErrno
 
-import httpx
+import httpx2
 from httpx_ws import aconnect_ws
 from httpx_ws.transport import ASGIWebSocketTransport
 

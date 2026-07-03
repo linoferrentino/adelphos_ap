@@ -16,12 +16,12 @@
 
 from app.AdelphosApp import get_app
 from app.AdelphosApp import del_app
-from fastapi.testclient import TestClient
+#from fastapi.testclient import TestClient
 from app.logging import gCon
-from fastapi.websockets import WebSocket
+#from fastapi.websockets import WebSocket
 from contextlib import asynccontextmanager
 import re
-from fastapi import FastAPI
+#from fastapi import FastAPI
 import multiprocessing as mp
 import pytest
 import time
