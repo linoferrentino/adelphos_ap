@@ -31,32 +31,38 @@ import app.sdc.s_utils as su
 
 
 @pytest.fixture(params = ['mem', 'sqlite'])
-def fdb1_loc(request):
+def federated_db_local(request):
 
-    _inline_schema_ = "{}"
-    _db_type_ = request.param
+    def _build_a_federated_db(host, schema_yaml):
 
-    complete_conf = tconf.federated_store_kernel_template.format(
-        _inline_schema_ = _inline_schema_,
-        _db_type_ = _db_type_,
-        _hostname_ = LOCALHOST)
+        _inline_schema_ = "{}"
+        _db_type_ = request.param
 
-    kernel_conf = yaml.safe_load(complete_conf)
+        complete_conf = tconf.federated_store_kernel_template.format(
+            _inline_schema_ = _inline_schema_,
+            _db_type_ = _db_type_,
+            _hostname_ = host)
 
-    #gCon.log(f"This is the kernel_conf {kernel_conf}")
+        kernel_conf = yaml.safe_load(complete_conf)
 
-    schema_dict = yaml.safe_load(schema_simple_yaml)
+        schema_dict = yaml.safe_load(schema_simple_yaml)
 
-    kernel_conf['modules']['fed_db']['args']['schema'] = schema_dict
+        kernel_conf['modules']['fed_db']['args']['schema'] = schema_dict
 
-    kernel = su.boot_new_kernel('test1', kernel_conf)
+        kernel = su.boot_new_kernel('test1', kernel_conf)
 
-    app = SyncApp(LOCALHOST, kernel)
-    wrappedapp = SyncTester(app)
+        app = SyncApp(LOCALHOST, kernel)
+        wrappedapp = SyncTester(app)
 
-    with wrappedapp:
-        kernel = wrappedapp.get_kernel()
-        fdb1_loc = kernel.get_dep(Dependencies.FEDERATED_DB)
-        yield fdb1_loc
+        with wrappedapp:
+            kernel = wrappedapp.get_kernel()
+            fdb1_loc = kernel.get_dep(Dependencies.FEDERATED_DB)
+            yield fdb1_loc
+
+    return _build_a_federated_db
 
 
+@pytest.fixture
+def fdb1_loc(federated_db_local):
+
+    yield from federated_db_local(LOCALHOST, schema_simple_yaml)

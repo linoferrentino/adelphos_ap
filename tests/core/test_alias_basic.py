@@ -27,38 +27,17 @@ from tests.testers.SyncApp import SyncApp
 from tests.testers.SyncTester import SyncTester
 from app.sdc.Dependencies import Dependencies
 
+from tests.federation.fixtures import federated_db_local
 
-@pytest.fixture(params = ['mem', 'sqlite'])
-def w_local(request):
 
-    _inline_schema_ = "{}"
-    _db_type_ = request.param
-
+@pytest.fixture
+def w_local(federated_db_local):
+    
     host_name = 'www.h1.com'
-
-    complete_conf = tconf.federated_store_kernel_template.format(
-        _inline_schema_ = _inline_schema_,
-        _db_type_ = _db_type_,
-        _hostname_ = host_name)
-
-    kernel_conf = yaml.safe_load(complete_conf)
-
-    #gCon.log(f"This is the kernel_conf {kernel_conf}")
-
-    schema_dict = yaml.safe_load(adelphos_schema_yaml)
-
-    kernel_conf['modules']['fed_db']['args']['schema'] = schema_dict
-
-    kernel = su.boot_new_kernel('test1', kernel_conf)
-
-    app = SyncApp(host_name, kernel)
-    wrappedapp = SyncTester(app)
-
-    with wrappedapp:
-        kernel = wrappedapp.get_kernel()
-        fdb1_loc = kernel.get_dep(Dependencies.FEDERATED_DB)
-        model = AdelphosAlgo(fdb1_loc)
-        yield model
+    
+    fdb1_loc = federated_db_local(host_name, adelphos_schema_yaml)
+    model = AdelphosAlgo(next(fdb1_loc))
+    yield model
 
 
 def test_add_alias(w_local):

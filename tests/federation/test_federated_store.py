@@ -28,6 +28,7 @@ from tests.federation.schema_simple import FederatedUriTest
 from app.sdc.Dependencies import Dependencies
 #from tests.federation.fixtures import kernel_fdb1_loc
 from tests.federation.fixtures import fdb1_loc
+from tests.federation.fixtures import federated_db_local
 
 
 #def Atest_new_object_f(kernel_fdb1_loc):
