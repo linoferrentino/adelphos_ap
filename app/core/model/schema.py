@@ -33,8 +33,8 @@ uri_constructor: app.core.model.AdelphosUri.AdelphosUri
 
 classes:
     - uri_prefix: {EAdelphosType.ALIAS_TYPE}
-      first_class: true,
-      needs_family: true,
+      first_class: true
+      needs_family: true
       columns:
         - name: actor_id
           type: int
@@ -47,29 +47,4 @@ classes:
           required: false
 """
 
-
-adelphos_schema_dict = {
-        'uri_constructor' : 'app.core.model.AdelphosUri.AdelphosUri',
-        'classes' : [ {
-            'uri_prefix' : EAdelphosType.ALIAS_TYPE,
-            #'class_def' : 'app.core.model.AliasFob.AliasFob',
-            'first_class' : True,
-            'needs_family' : True,
-            'columns' : [
-                {
-                    'name' : 'actor_id',
-                        'type' : 'int',
-                        'cardinality' : 'scalar',
-                        'required' : True
-                },
-                {
-                    'name' : 'key_str',
-                    'type' : 'str',
-                    'cardinality' : 'scalar',
-                    'required' : False
-                }
-                ]
-
-            }]
-        }
 

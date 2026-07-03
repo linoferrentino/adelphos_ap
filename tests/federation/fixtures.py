@@ -45,7 +45,7 @@ def federated_db_local(request):
 
         kernel_conf = yaml.safe_load(complete_conf)
 
-        schema_dict = yaml.safe_load(schema_simple_yaml)
+        schema_dict = yaml.safe_load(schema_yaml)
 
         kernel_conf['modules']['fed_db']['args']['schema'] = schema_dict
 

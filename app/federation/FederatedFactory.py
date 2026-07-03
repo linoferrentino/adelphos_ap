@@ -120,7 +120,7 @@ class FederatedFactory:
         classes_arr = schema['classes']
         for class_ob in classes_arr:
             self._add_class(class_ob)
-            #gCon.log(f"I have added class {class_ob}")
+            gCon.log(f"I have added class {class_ob}")
 
 
     @classmethod

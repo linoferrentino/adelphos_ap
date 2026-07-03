@@ -116,7 +116,6 @@ class FObColumnDefinition:
 
 class FederatedObject:
 
-
     # there are some objects which do not exist in isolation.
     # they start with a reference count of zero.
     def __init__(self, uri, registrar, *, ob = None, locked = False, 
@@ -143,12 +142,6 @@ class FederatedObject:
         else:
             assert ob is not None
             self.ts_locked = None
-
-        #self.schema = self.__class__.get_schema()
-        #if (schema is None) or (ob is not None):
-        #    return
-        #self.schema = 
-
 
 
     @staticmethod
@@ -217,7 +210,7 @@ class FederatedObject:
 
 
     def get_primitive_value(self, key, maybe = False):
-        #gCon.log(f"{self.ob.fields}")
+        gCon.log(f"fields {self.ob.fields}")
         return self.ob.fields[key]
 
 

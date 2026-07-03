@@ -43,10 +43,12 @@ def w_local(federated_db_local):
 def test_add_alias(w_local):
 
     lino_ob = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
-    assert lino_ob is not None
+    gCon.log(f"lino ob {lino_ob}")
+    pass_hashed = lino_ob.get_primitive_value('password')
+    assert pass_hashed == 'doios'
 
 
-def Atest_add_dup_family(w_local):
+def test_add_dup_family(w_local):
 
     lino_ob = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
     assert lino_ob is not None

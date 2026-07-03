@@ -335,7 +335,8 @@ class FederatedStore(Dependency, LifespanAware):
 
         registrar = self.fact.get_registrar(ob_type)
         if registrar is None:
-            raise FdbException(EFdbErrors.EFDB_UNKNOWN_TYPE)
+            gCon.log(f"Unknown type {ob_type}")
+            raise FdbException(EFdbErrors.EFDB_UNKNOWN_TYPE, ob_type)
 
         if registrar.needs_family == True:
             if family is None:
@@ -359,7 +360,7 @@ class FederatedStore(Dependency, LifespanAware):
         fob = FederatedObject(uri, registrar, fields = fields, locked = True)
         t_ob.new_ob(fob)
 
-        return weakref.ref(fob)
+        return fob
 
 
     def uri_snapshot(self, uri_ob):

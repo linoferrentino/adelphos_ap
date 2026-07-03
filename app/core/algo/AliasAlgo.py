@@ -16,6 +16,8 @@ from argon2 import PasswordHasher
 from app.core.algo.utils import federated_transaction
 from app.core.algo.FamilyAlgo import FamilyAlgo
 from app.core.model.AdelphosUri import EAdelphosType
+from app.logging import gCon
+import weakref
 
 
 class AliasAlgo:
@@ -38,6 +40,9 @@ class AliasAlgo:
 
         fob1 = self.kernel.fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
                                       name, family, fields = fields)
+
+        gCon.log(fob1)
+        #gCon.log(fob1())
 
         return fob1
  
