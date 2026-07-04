@@ -71,8 +71,6 @@ def enforce_schema(func):
     return _inner_enforce
 
 
-# the schema is free: we do not enforce a schema, derived classes should do that
-# this is the object as it is stored permanently
 @dataclass
 class FObSerialized:
     version: int

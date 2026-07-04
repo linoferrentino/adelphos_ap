@@ -14,6 +14,7 @@
 
 import uuid
 import copy
+import sys
 
 from app.misc.WrapInt import WrapInt
 from app.transport.RouterProvider import RouterProvider
@@ -142,7 +143,7 @@ class FederatedTransaction:
         #if self.deleted_uris.get(key_uri) is not None:
         #    raise FdbException(EFdbErrors.EFDB_URI_DELETED)
         
-        #gCon.log(f"storing the {key_uri} in db with {fob}")
+        gCon.log(f"storing the {key_uri} in db with {id(fob)} {sys.getrefcount(fob)}")
         self.created_uris[key_uri] = fob
 
 
@@ -337,9 +338,13 @@ class FederatedStore(Dependency, LifespanAware):
         self.ensure_uri_not_existing(t_ob, uri)
 
         fob = FederatedObject(uri, registrar, fields = fields, locked = True)
+        gCon.log(f"fob before {sys.getrefcount(fob)}")
         t_ob.new_ob(fob)
+        gCon.log(f"fob after {sys.getrefcount(fob)}")
 
-        return weakref.ref(fob)
+        retref = weakref.ref(fob)
+        gCon.log(f"fob after weak {sys.getrefcount(fob)}")
+        return retref
 
 
     def uri_snapshot(self, uri_ob):

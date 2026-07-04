@@ -18,6 +18,7 @@ from app.core.algo.FamilyAlgo import FamilyAlgo
 from app.core.model.AdelphosUri import EAdelphosType
 from app.logging import gCon
 import weakref
+import sys
 
 
 class AliasAlgo:
@@ -41,10 +42,13 @@ class AliasAlgo:
         fob1 = self.algo_root.fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
                                       name, family, fields = fields)
 
-        gCon.log(fob1)
-        gCon.log(fob1())
+        #self.fob1 = fob1()
+        gCon.log(f"ob ret {sys.getrefcount(fob1())}")
 
-        return fob1
+        gCon.log(fob1)
+        gCon.log(f" object {id(fob1())} {sys.getrefcount(fob1())}")
+
+        #return fob1().ob.fields
  
 
 
