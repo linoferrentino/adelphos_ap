@@ -55,7 +55,7 @@ def federated_db_local(request):
         wrappedapp = SyncTester(app)
 
         with wrappedapp:
-            kernel = wrappedapp.get_kernel()
+            #kernel = wrappedapp.get_kernel()
             fdb1_loc = kernel.get_dep(Dependencies.FEDERATED_DB)
             yield fdb1_loc
 

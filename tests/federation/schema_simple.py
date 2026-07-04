@@ -38,57 +38,6 @@ class FederatedUriTest(FederatedUri):
         return base_name
 
 
-#class FedeObClass1(FederatedObject):
-#
-#    _schema = {
-#            'key_int' : FObColumnDefinition(
-#                FObColType.INTEGER,
-#                FObCardType.SCALAR,
-#                FObReqType.REQUIRED
-#                ),
-#            'key_str' : FObColumnDefinition(
-#                FObColType.STRING,
-#                FObCardType.SCALAR,
-#                FObReqType.NO_REQUIRED_DEFAULT_NULL
-#                )
-#    }
-#
-#    def __init__(self, uri, ref_count, **kwargs):
-#        super().__init__(uri, ref_count, **kwargs)
-#
-#
-#    @classmethod
-#    def get_schema(cls):
-#        return cls._schema
-#
-#    
-#    @classmethod
-#    def register_class(cls):
-#        reg = FederatedFactoryRegistrar(FedeObClass1, True, False)
-#        FederatedFactory._register_ob_type(TYPE_T1, reg)
-#
-#
-#class FedeObClass2(FederatedObject):
-#
-#
-#    def __init__(self, uri, ref_count, **kwargs):
-#        super().__init__(uri, ref_count, **kwargs)
-#
-#
-#    @classmethod
-#    def register_class(cls):
-#        reg = FederatedFactoryRegistrar(FedeObClass2, False, False)
-#        FederatedFactory._register_ob_type(TYPE_T2, reg)
-#
-#
-#def my_test_schema_init():
-#
-#    FederatedFactory.set_uri_constructor(FederatedUriTest)
-#
-#    FedeObClass1.register_class()
-#    FedeObClass2.register_class()
-#
-
 schema_simple_yaml = f"""
 
 uri_constructor: 'tests.federation.schema_simple.FederatedUriTest'
@@ -111,6 +60,16 @@ classes:
       first_class: false
       needs_family: false
       columns: []
+
+    - uri_prefix: al
+      first_class: true
+      needs_family: true
+      columns:
+        - name: equity
+          type: real
+          cardinality: scalar
+          required: true
+
 
 """
 
