@@ -317,6 +317,8 @@ class FederatedStore(Dependency, LifespanAware):
             gCon.log(f"Unknown type {ob_type}")
             raise FdbException(EFdbErrors.EFDB_UNKNOWN_TYPE, ob_type)
 
+        assert False
+
         if registrar.needs_family == True:
             if family is None:
                 raise FdbException(EFdbErrors.EFDB_REQUIRED_FAMILY_MISSING)
@@ -338,12 +340,12 @@ class FederatedStore(Dependency, LifespanAware):
         self.ensure_uri_not_existing(t_ob, uri)
 
         fob = FederatedObject(uri, registrar, fields = fields, locked = True)
-        gCon.log(f"fob before {sys.getrefcount(fob)}")
+        #gCon.log(f"fob before {sys.getrefcount(fob)}")
         t_ob.new_ob(fob)
-        gCon.log(f"fob after {sys.getrefcount(fob)}")
+        #gCon.log(f"fob after {sys.getrefcount(fob)}")
 
         retref = weakref.ref(fob)
-        gCon.log(f"fob after weak {sys.getrefcount(fob)}")
+        #gCon.log(f"fob after weak {sys.getrefcount(fob)}")
         return retref
 
 
