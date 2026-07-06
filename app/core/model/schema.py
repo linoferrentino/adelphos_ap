@@ -46,7 +46,7 @@ classes:
         - name: equity
           type: real
           cardinality: scalar
-          required: true
+          required: false
 
 """
 

@@ -14,7 +14,7 @@
 
 import traceback
 
-from app.core.EAdErrno import EAdErrno
+from app.core.EAdErrno import ECoreErrno
 from app.core.AdelphosCoreException import AdelphosCoreException
 from app.federation.FdbException import FdbException
 import traceback
@@ -58,6 +58,7 @@ import traceback
 #
 #    return internal_commit
 
+from app.logging import gCon
 
 
 def federated_transaction(raise_if_fail = True):
@@ -70,25 +71,24 @@ def federated_transaction(raise_if_fail = True):
             try:
                 res = func(self, *args, **kwargs)
                 self.algo_root.fdb.commit_transaction(t_id)
-                return res 
+                return res if res is not None else ECoreErrno.DONE_OK
             except AdelphosCoreException as ex:
-                traceback.print_exc()
                 self.algo_root.fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return -ex.errno
-                raise
+                raise ex
             except FdbException as fdbex:
-                #traceback.print_exc()
+                traceback.print_exc()
                 self.algo_root.fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return str(fdbex)
-                raise
+                raise AdelphosCoreException(ECoreErrno.EFDB) from fdbex
             except Exception as exc:
                 traceback.print_exc()
                 self.algo_root.fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
-                    return -EAdErrno.ESYS
-                raise
+                    return -ECoreErrno.ESYS
+                raise AdelphosCoreException(ECoreErrno.ESYS) from fdbex
 
         return internal_commit
 

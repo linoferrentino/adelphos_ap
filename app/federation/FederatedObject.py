@@ -115,8 +115,6 @@ class FObColumnDefinition:
 
 class FederatedObject:
 
-    # there are some objects which do not exist in isolation.
-    # they start with a reference count of zero.
     def __init__(self, uri, registrar, *, ob = None, locked = False, 
                  fields = {}):
         self.uri = uri
@@ -203,13 +201,15 @@ class FederatedObject:
             self.ob.fields[col_name] = col_val
 
 
-    @classmethod
-    def get_schema(cls):
-        return None
+    #@classmethod
+    #def get_schema(cls):
+    #    return None
 
     
     def to_store_str(self):
-        return json.dumps(asdict(self.ob))
+        store_str = json.dumps(asdict(self.ob))
+        gCon.log(f"store str {store_str}")
+        return store_str
 
 
     def get_primitive_value(self, key, maybe = False):
@@ -218,6 +218,10 @@ class FederatedObject:
 
     def get_link(self, key):
         prev_link = self.ob.fields.get(key)
+
+
+    def add_phantom_link(self):
+        self._inc_ref_ob()
 
 
     @ensure_lock

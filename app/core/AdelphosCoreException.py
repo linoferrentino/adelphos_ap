@@ -10,7 +10,7 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
 
 
 class AdelphosCoreException(Exception):
@@ -18,3 +18,4 @@ class AdelphosCoreException(Exception):
     def __init__(self, ad_errno, msg = None):
         super().__init__(msg)
         self.errno = ad_errno
+

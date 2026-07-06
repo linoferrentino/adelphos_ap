@@ -17,6 +17,9 @@ from app.core.algo.utils import federated_transaction
 from app.core.algo.FamilyAlgo import FamilyAlgo
 from app.core.model.AdelphosUri import EAdelphosType
 from app.logging import gCon
+from app.core.EAdErrno import ECoreErrno
+from app.core.AdelphosCoreException import AdelphosCoreException
+from app.core.model.AdelphosUri import AdelphosUri
 import weakref
 import sys
 
@@ -31,6 +34,17 @@ class AliasAlgo:
     @federated_transaction(raise_if_fail = False)
     def alias_create(self, actor_id, name, family, password, t_id):
 
+        family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
+
+        is_present_family = self.algo_root.fdb.is_present_uri(
+                t_id, family_uri)
+
+        if is_present_family is True:
+            raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY)
+
+        family_ob = self.algo_root.fdb.new_ob_uri(t_id, family_uri)
+        family_ob().add_phantom_link()
+
         ph = PasswordHasher()
         pass_hashed = ph.hash(password)
 
@@ -39,18 +53,9 @@ class AliasAlgo:
                 'password': pass_hashed
         }
 
-        fob1 = self.algo_root.fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
+        alias_ob = self.algo_root.fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
                                       name, family = family, fields = fields)
-
-        #self.fob1 = fob1()
-        gCon.log(f"ob ret {sys.getrefcount(fob1())}")
-
-        gCon.log(fob1)
-        gCon.log(f" object {id(fob1())} {sys.getrefcount(fob1())}")
-
-        #return fob1().ob.fields
  
-
 
     # this can be called also externally to create the root alias
     #@commit_or_errno

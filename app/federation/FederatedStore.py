@@ -15,6 +15,7 @@
 import uuid
 import copy
 import sys
+import threading
 
 from app.misc.WrapInt import WrapInt
 from app.transport.RouterProvider import RouterProvider
@@ -225,9 +226,7 @@ class FederatedStore(Dependency, LifespanAware):
 
         self.transactions = {}
         self.fact = FederatedFactory()
-
         self.hostname = kernel.conf().get_host()
-        #gCon.log(f"Federated store host |{self.hostname}|")
 
         if (isinstance(schema, str)):
             raise Exception('loading of schema not yet supported')
@@ -242,10 +241,6 @@ class FederatedStore(Dependency, LifespanAware):
             db = SqliteStore()
         return db
 
-
-    #def start(self):
-    #    run_coro_in_loop(FederatedStore.start_async, (self,))
-        
 
     async def start_async(self):
         self.db.open()
@@ -272,12 +267,18 @@ class FederatedStore(Dependency, LifespanAware):
         return t_ob
 
 
-    def is_present_object(self, t_ob, ob_type, name, **kwargs):
-        uri = self.fact.uri_constructor(ob_type, name, **kwargs)
-        return self.is_present_uri(t_ob, uri)
+    #def is_present_object(self, t_ob, ob_type, name, **kwargs):
+    #    uri = self.fact.uri_constructor(ob_type, name, **kwargs)
+    #    return self.is_present_uri(t_ob, uri)
+
+
+    def is_present_uri(self, t_id, uri):
+
+        t_ob = self.get_tob_safe(t_id)
+        return run_coro_in_loop(self._is_present_uri_coro, (t_ob, uri))
  
 
-    def is_present_uri(self, t_ob, uri):
+    async def _is_present_uri_coro(self, t_ob, uri):
         key_uri = uri.unparse()
 
         exists_trx = t_ob.exists_ob(key_uri)
@@ -288,9 +289,9 @@ class FederatedStore(Dependency, LifespanAware):
         return exists_trx
 
 
-    def ensure_uri_not_existing(self, t_ob, uri):
+    async def ensure_uri_not_existing(self, t_ob, uri):
 
-        exists_trx = self.is_present_uri(t_ob, uri)
+        exists_trx = await self._is_present_uri_coro(t_ob, uri)
 
         if exists_trx == True:
             raise FdbException(EFdbErrors.EFDB_URI_EXISTS)
@@ -336,7 +337,7 @@ class FederatedStore(Dependency, LifespanAware):
         
         t_ob = self.get_tob_safe(t_id)
 
-        self.ensure_uri_not_existing(t_ob, uri)
+        await self.ensure_uri_not_existing(t_ob, uri)
 
         fob = FederatedObject(uri, registrar, fields = fields, locked = True)
         #gCon.log(f"fob before {sys.getrefcount(fob)}")
@@ -367,7 +368,6 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     async def _read_remote_ctx(self, rctx):
-        #remote_ob_str = await self.fede_api.read_remote_uri(rctx)
         remote_ob_str = None
         return remote_ob_str
 

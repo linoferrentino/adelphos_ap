@@ -43,6 +43,10 @@ def test_new_object_f(fdb1_loc):
     assert val_int == 99
     val_str = fob1().get_primitive_value('key_str')
     assert val_str is None
+    val_int = fob1().get_primitive_value('int_none')
+    assert val_int is None
+    val_int = fob1().get_primitive_value('int_def')
+    assert val_int == 101
 
     with pytest.raises(KeyError):
         val_str = fob1().get_primitive_value('key_str111')

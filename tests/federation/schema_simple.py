@@ -54,10 +54,19 @@ classes:
           type: 'int'
           cardinality: 'scalar'
           required: true
+        - name: int_none
+          type: int
+          cardinality: scalar
+          required: false
         - name: 'key_str'
           type: 'str'
           cardinality: 'scalar'
           required: false
+        - name: int_def
+          type: int
+          cardinality: scalar
+          required: false
+          default: 101
 
     - uri_prefix: '{TYPE_T2}'
       can_be_root: false
