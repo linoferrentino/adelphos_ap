@@ -86,6 +86,7 @@ class FObColType(IntEnum):
     DATETIME = 3
     BOOL = 4
     URI = 5
+    LOCAL_URI = 6
 
 
 class FObCardType(IntEnum):
@@ -123,7 +124,7 @@ class FederatedObject:
         self.registrar = registrar
 
         if ob is None:
-            if registrar.first_class:
+            if registrar.can_be_root:
                 ref_count = 1
             else:
                 ref_count = 0

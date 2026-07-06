@@ -143,7 +143,7 @@ class FederatedTransaction:
         #if self.deleted_uris.get(key_uri) is not None:
         #    raise FdbException(EFdbErrors.EFDB_URI_DELETED)
         
-        gCon.log(f"storing the {key_uri} in db with {id(fob)} {sys.getrefcount(fob)}")
+        gCon.log(f"storing key {key_uri} in local db")
         self.created_uris[key_uri] = fob
 
 
@@ -272,8 +272,8 @@ class FederatedStore(Dependency, LifespanAware):
         return t_ob
 
 
-    def is_present_object(self, t_ob, ob_type, name, family = None):
-        uri = FederatedUri(ob_type, name, family)
+    def is_present_object(self, t_ob, ob_type, name, **kwargs):
+        uri = self.fact.uri_constructor(ob_type, name, **kwargs)
         return self.is_present_uri(t_ob, uri)
  
 
@@ -296,8 +296,9 @@ class FederatedStore(Dependency, LifespanAware):
             raise FdbException(EFdbErrors.EFDB_URI_EXISTS)
 
 
-    def new_ob(self, t_id, ob_type, name, family = None, *, fields = {}):
-        return run_coro_in_loop(self.new_ob_coro, (t_id, ob_type, name, family, fields))
+    def new_ob(self, t_id, ob_type, name, *, fields = {}, **kwargs):
+        return run_coro_in_loop(self.new_ob_coro, 
+                                (t_id, ob_type, name, fields, kwargs))
 
 
     def new_ob_uri(self, t_id, uri, fields = {} ):
@@ -310,25 +311,23 @@ class FederatedStore(Dependency, LifespanAware):
                                 (t_id, registrar, uri_loc, fields))
 
 
-    async def new_ob_coro(self, t_id, ob_type, name, family = None, fields = {}):
+    async def new_ob_coro(self, t_id, ob_type, name, fields , kwargs):
 
         registrar = self.fact.get_registrar(ob_type)
         if registrar is None:
             gCon.log(f"Unknown type {ob_type}")
             raise FdbException(EFdbErrors.EFDB_UNKNOWN_TYPE, ob_type)
 
-        assert False
+        #if registrar.needs_family == True:
+        #    if family is None:
+        #        raise FdbException(EFdbErrors.EFDB_REQUIRED_FAMILY_MISSING)
 
-        if registrar.needs_family == True:
-            if family is None:
-                raise FdbException(EFdbErrors.EFDB_REQUIRED_FAMILY_MISSING)
+        #    #check_family = self.is_present_family()
 
-            #check_family = self.is_present_family()
-
-        else:
-            if family is not None:
-                raise FdbException(EFdbErrors.EFDB_FAMILY_NOT_WANTED)
-        uri = self.fact.uri_constructor(ob_type, name, family)
+        #else:
+        #    if family is not None:
+        #        raise FdbException(EFdbErrors.EFDB_FAMILY_NOT_WANTED)
+        uri = self.fact.uri_constructor(ob_type, name, **kwargs)
 
         return await self.new_ob_from_uri_coro(t_id, registrar, uri, fields)
         

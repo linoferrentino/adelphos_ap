@@ -17,6 +17,7 @@
 
 from enum import StrEnum
 from app.federation.FederatedUri import FederatedUri
+from dataclasses import dataclass
 
 
 class EAdelphosType(StrEnum):
@@ -26,8 +27,10 @@ class EAdelphosType(StrEnum):
     TRUST_LINE_TYPE = 'tr'
 
 
+@dataclass
 class AdelphosUri(FederatedUri):
 
+    family: str = None
 
     def unparse(self):
 
@@ -46,3 +49,6 @@ class AdelphosUri(FederatedUri):
         return uri_local
 
      
+    def parse(self, uri_str):
+        raise Exception("TODO")
+        pass

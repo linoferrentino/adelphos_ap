@@ -40,7 +40,7 @@ class AliasAlgo:
         }
 
         fob1 = self.algo_root.fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
-                                      name, family, fields = fields)
+                                      name, family = family, fields = fields)
 
         #self.fob1 = fob1()
         gCon.log(f"ob ret {sys.getrefcount(fob1())}")

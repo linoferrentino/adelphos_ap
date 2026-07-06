@@ -29,13 +29,17 @@ class FederatedUriTest(FederatedUri):
 
     def unparse(self):
         base_name = "XX_test_type_" + self.ob_type + "/name=" + self.name
-        if self.family is not None:
-            base_name += f"/fam=_f{self.family}"
+        #if self.family is not None:
+        #    base_name += f"/fam=_f{self.family}"
         if self.host is not None:
             base_name += f"_@f{self.host}"
         if self.fragment is not None:
             base_name += f"_#f{self.fragment}"
         return base_name
+
+
+    def parse(self, uri_str):
+        pass
 
 
 schema_simple_yaml = f"""
@@ -44,8 +48,7 @@ uri_constructor: 'tests.federation.schema_simple.FederatedUriTest'
 
 classes:
     - uri_prefix: '{TYPE_T1}'
-      first_class: true
-      needs_family: false
+      can_be_root: true
       columns:
         - name: 'key_int'
           type: 'int'
@@ -57,19 +60,21 @@ classes:
           required: false
 
     - uri_prefix: '{TYPE_T2}'
-      first_class: false
-      needs_family: false
+      can_be_root: false
       columns: []
 
     - uri_prefix: al
-      first_class: true
-      needs_family: true
+      can_be_root: true
       columns:
         - name: equity
           type: real
           cardinality: scalar
           required: true
 
+        - name: family
+          type: local_uri 
+          cardinality: scalar
+          required: true
 
 """
 

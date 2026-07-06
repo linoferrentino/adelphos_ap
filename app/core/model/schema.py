@@ -24,8 +24,7 @@ uri_constructor: app.core.model.AdelphosUri.AdelphosUri
 classes:
 
     - uri_prefix: {EAdelphosType.ALIAS_TYPE}
-      first_class: true
-      needs_family: true
+      can_be_root: true
 
       columns:
 
@@ -40,8 +39,7 @@ classes:
           required: true
 
     - uri_prefix: {EAdelphosType.FAMILY_TYPE}
-      first_class: false
-      needs_family: false 
+      can_be_root: false
 
       columns:
 

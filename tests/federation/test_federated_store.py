@@ -51,8 +51,8 @@ def test_new_object_f(fdb1_loc):
 
     assert fob1() is None
 
-    t1uri = FederatedUriTest(TYPE_T1, 'ob1', None, LOCALHOST)
-    t1uri_1 = FederatedUriTest(TYPE_T1, 'ob1', None, LOCALHOST1)
+    t1uri = FederatedUriTest(TYPE_T1, 'ob1', host = LOCALHOST)
+    t1uri_1 = FederatedUriTest(TYPE_T1, 'ob1', host = LOCALHOST1)
     t_id = fdb1_loc.begin_transaction()
     fob1 = fdb1_loc.uri_read_no_lock(t_id, t1uri)
     val_int = fob1().get_primitive_value('key_int')
