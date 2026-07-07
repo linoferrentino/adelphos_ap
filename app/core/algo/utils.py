@@ -14,7 +14,7 @@
 
 import traceback
 
-from app.core.EAdErrno import ECoreErrno
+from app.core.ECoreErrno import ECoreErrno
 from app.core.AdelphosCoreException import AdelphosCoreException
 from app.federation.FdbException import FdbException
 import traceback
@@ -59,33 +59,35 @@ import traceback
 #    return internal_commit
 
 from app.logging import gCon
+from app.sdc.Dependencies import Dependencies
 
 
 def federated_transaction(raise_if_fail = True):
 
     def commit_or_die_maybe(func):
 
-        def internal_commit(self, *args, **kwargs):
-            t_id = self.algo_root.fdb.begin_transaction()
+        def internal_commit(kernel, *args, **kwargs):
+            fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+            t_id = fdb.begin_transaction()
             kwargs['t_id'] = t_id
             try:
-                res = func(self, *args, **kwargs)
-                self.algo_root.fdb.commit_transaction(t_id)
+                res = func(kernel, *args, **kwargs)
+                fdb.commit_transaction(t_id)
                 return res if res is not None else ECoreErrno.DONE_OK
             except AdelphosCoreException as ex:
-                self.algo_root.fdb.rollback_transaction(t_id)
+                fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return -ex.errno
                 raise ex
             except FdbException as fdbex:
                 traceback.print_exc()
-                self.algo_root.fdb.rollback_transaction(t_id)
+                fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return str(fdbex)
                 raise AdelphosCoreException(ECoreErrno.EFDB) from fdbex
             except Exception as exc:
                 traceback.print_exc()
-                self.algo_root.fdb.rollback_transaction(t_id)
+                fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return -ECoreErrno.ESYS
                 raise AdelphosCoreException(ECoreErrno.ESYS) from fdbex

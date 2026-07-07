@@ -11,7 +11,9 @@
 #
 ######################################################
 
+
 from abc import ABC, abstractmethod
+
 
 class Dependency(ABC):
 
@@ -21,6 +23,11 @@ class Dependency(ABC):
 
     def get_dep(self, dep):
         return self.vhost.get_dep(dep)
+
+
+    @property 
+    def kernel(self):
+        return self.vhost
 
 
     def conf(self):

@@ -17,9 +17,10 @@ from app.core.algo.utils import federated_transaction
 from app.core.algo.FamilyAlgo import FamilyAlgo
 from app.core.model.AdelphosUri import EAdelphosType
 from app.logging import gCon
-from app.core.EAdErrno import ECoreErrno
+from app.core.ECoreErrno import ECoreErrno
 from app.core.AdelphosCoreException import AdelphosCoreException
 from app.core.model.AdelphosUri import AdelphosUri
+from app.sdc.Dependencies import Dependencies
 import weakref
 import sys
 
@@ -27,22 +28,38 @@ import sys
 class AliasAlgo:
 
 
-    def __init__(self, algo_root):
-        self.algo_root = algo_root
+    #def __init__(self, algo_root):
+    #    self.algo_root = algo_root
 
 
+    @staticmethod
+    async def _sys_call_create(kernel, session, pars):
+        alias_name = pars['name']
+        password = pars['password']
+        alias_splits = alias_name.split('.')
+        if len(alias_splits) != 2:
+            raise AdelphosCoreException(ECoreErrno.EINVALID_ALIAS_SYNTAX, alias_name)
+        (alias, family) = alias_splits
+        algo = kernel.get_dep(Dependencies.ALGO)
+
+        algo.alias_algo.alias_create()
+
+ 
+
+    @staticmethod
     @federated_transaction(raise_if_fail = False)
-    def alias_create(self, actor_id, name, family, password, t_id):
+    def alias_create(kernel, actor_id, name, family, password, t_id):
 
+        fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
 
-        is_present_family = self.algo_root.fdb.is_present_uri(
+        is_present_family = fdb.is_present_uri(
                 t_id, family_uri)
 
         if is_present_family is True:
             raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY)
 
-        family_ob = self.algo_root.fdb.new_ob_uri(t_id, family_uri)
+        family_ob = fdb.new_ob_uri(t_id, family_uri)
         family_ob().add_phantom_link()
 
         ph = PasswordHasher()
@@ -53,7 +70,7 @@ class AliasAlgo:
                 'password': pass_hashed
         }
 
-        alias_ob = self.algo_root.fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
+        alias_ob = fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
                                       name, family = family, fields = fields)
  
 

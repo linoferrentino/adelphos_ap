@@ -44,15 +44,8 @@ import yaml
 
 def _build_routable_config_impl(instance_name, build_template, conf, mode):
 
-    #gCon.log(f"This is the conf {conf}")
-    #gCon.log(f"This is the template {build_template}")
-
     build_complete = build_template.format(**conf)
     kernel_conf = yaml.safe_load(build_complete)
-
-    #gCon.log("===============================================================")
-    #gCon.log(f"Configuration {kernel_conf}")
-    #gCon.log("===============================================================")
 
     prefix = mode
     kernel = su.boot_kernel(f"{prefix}-{instance_name}", kernel_conf)
@@ -97,14 +90,10 @@ def get_standalone_app():
 
     def _get_standalone_app(instance_name, build_template, conf):
 
-        #build_structure = copy.deepcopy(build_structure_ref)
-        #if conf is not None:
-        #    build_structure['conf'] = conf
         kernel_build_str = build_template.format(**conf)
         kernel_build = yaml.safe_load(kernel_build_str)
 
         server = ProcessWrapper()
-        #port = build_structure['conf']['General']['port']
         port = conf['_port_']
         return server.run_in_subprocess(su.boot_kernel, 
                                       (instance_name, kernel_build), 
@@ -116,8 +105,6 @@ def get_standalone_app():
 @pytest.fixture(scope = "session")
 def aroutable(request):
 
-    #build_kernel = copy.deepcopy(tconf.toy_testable_kernel)
-
     if hasattr(request, 'param'):
         gCon.log(f"Got the conf {request.param}")
         conf = request.param
@@ -125,12 +112,9 @@ def aroutable(request):
         gCon.log(f"Use the default")
         conf = tconf.adelphos_toy_1_conf
 
-    #build_kernel['conf'] = configuration
-
     build_complete = tconf.testable_toy_kernel_template.format(**conf)
     kernel_conf = yaml.safe_load(build_complete)
 
-    #aroutable = AdelphosRouter("test", configuration)
     kernel = su.boot_kernel("test", kernel_conf)
     aroutable = kernel.get_dep(Dependencies.ROUTER)
     return aroutable 

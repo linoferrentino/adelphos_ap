@@ -19,6 +19,7 @@ class ECoreErrno(IntEnum):
     DONE_OK = 0
     EDUPLICATED_FAMILY = 1
     EINVALID_USER_OR_PASSWORD = 2
+    EINVALID_ALIAS_SYNTAX = 3
     
 
     EFDB = 998

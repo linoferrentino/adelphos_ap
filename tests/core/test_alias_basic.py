@@ -16,10 +16,9 @@ import pytest
 import yaml
 
 from app.store.MemoryStore import MemoryStore
-from app.core.algo.AdelphosAlgo import AdelphosAlgo 
+#from app.core.algo.AdelphosAlgo import AdelphosAlgo 
 from app.federation.FederatedStore import FederatedStore
 from app.core.model.schema import adelphos_schema_yaml
-#from app.exc.AdelphosException import AdErrno
 import tests.adelphoi_test_config as tconf
 from app.logging import gCon
 import app.sdc.s_utils as su
@@ -28,8 +27,9 @@ from tests.testers.SyncTester import SyncTester
 from app.sdc.Dependencies import Dependencies
 
 from tests.federation.fixtures import federated_db_local
-from app.core.EAdErrno import ECoreErrno
+from app.core.ECoreErrno import ECoreErrno
 import threading
+from app.core.algo.AliasAlgo import AliasAlgo
 
 
 @pytest.fixture
@@ -37,26 +37,28 @@ def w_local(federated_db_local):
     
     host_name = 'www.h1.com'
     
-    fdb1_loc = federated_db_local(host_name, adelphos_schema_yaml)
-    model = AdelphosAlgo(next(fdb1_loc))
-    yield model
+    #fdb1_loc = federated_db_local(host_name, adelphos_schema_yaml)
+    yield from federated_db_local(host_name, adelphos_schema_yaml)
+    #model = AdelphosAlgo(next(fdb1_loc))
+    #yield model
 
 
 def test_add_alias(w_local):
 
-    gCon.log(f"test_add_alias {threading.current_thread().native_id}")
-
-    res = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
+    #res = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
+    kernel = w_local.kernel
+    res = AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre', 'pass')
     assert (res == ECoreErrno.DONE_OK)
 
 
 def test_add_dup_family(w_local):
 
-    res = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
+    kernel = w_local.kernel
+    res = AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre', 'pass')
     assert (res == ECoreErrno.DONE_OK)
-    res = w_local.alias_algo.alias_create(0, 'alice', 'famal', 'pass99')
+    res = AliasAlgo.alias_create(kernel, 0, 'alice', 'famal', 'pass99')
     assert (res == ECoreErrno.DONE_OK)
-    res = w_local.alias_algo.alias_create(0, 'bob', 'ferre', 'pass')
+    res = AliasAlgo.alias_create(kernel, 0, 'bob', 'ferre', 'pass')
     assert res == -ECoreErrno.EDUPLICATED_FAMILY
 
 

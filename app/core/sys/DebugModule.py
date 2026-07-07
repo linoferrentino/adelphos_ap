@@ -21,12 +21,14 @@ from app.logging import gCon
 class DebugModule:
 
 
+    @staticmethod
     async def _sys_call_echo(kernel, session, pars):
         val = pars['msg']
         res = f"hello {val}!"
         return res
 
 
+    @staticmethod
     async def _sys_call_sndpost(kernel, session, pars):
         recipient = pars['to']
         msg = pars['msg']
@@ -37,6 +39,7 @@ class DebugModule:
         return 'DONE!'
 
 
+    @staticmethod
     async def _sys_call_radd(kernel, session, pars):
         host = pars['host']
         n1 = pars['n1']
@@ -45,12 +48,4 @@ class DebugModule:
         res = await social_api.remote_req('math', 'radd', host, n1 = n1, n2 = n2)
         return res
 
-
-    #@staticmethod
-    #def get_syscalls(kernel):
-    #      return [
-    #            SysCall('dbg.echo', DebugModule._sys_call_echo),
-    #            SysCall('dbg.sndpost', DebugModule._sys_call_sndpost),
-    #            SysCall('dbg.radd', DebugModule._sys_call_radd),
-    #      ]
 

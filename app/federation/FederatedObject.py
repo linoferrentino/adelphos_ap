@@ -63,9 +63,9 @@ def ensure_val_type(atype):
 
 def enforce_schema(func):
     def _inner_enforce(self, key, val):
-        schema = self.get_schema()
-        if schema is not None:
-            gCon.log(f"enforcing!!!!! {key}")
+        #schema = self.get_schema()
+        #if schema is not None:
+        gCon.log(f"enforcing!!!!! {key} - {val}")
         return func(self, key, val)
 
     return _inner_enforce

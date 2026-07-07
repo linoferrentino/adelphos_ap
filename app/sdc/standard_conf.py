@@ -71,6 +71,7 @@ real_adelphos_chunk_modules = """
     social_gateway:
       constructor: app.federation.ap.ActivityPubGateway.ActivityPubGateway
 
+
 conf:
 
 
@@ -146,6 +147,17 @@ syscalls_suffix = """
                   required: true
 
     inbox_api:
+      alias:
+        class: app.core.algo.AliasAlgo.AliasAlgo
+        syscalls:
+          - name: create
+            handler: _sys_call_create
+            pars:
+                name:
+                    required: true
+                password:
+                    required: true
+
       sapi:
           class: app.ad_api.BaseSocialApiProvider.BaseSocialApiProvider
           syscalls:
