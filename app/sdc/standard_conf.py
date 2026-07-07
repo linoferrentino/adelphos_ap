@@ -58,6 +58,9 @@ common_adelphos_modules = """
     social_api:
       constructor: app.ad_api.adelphos.AdelphosApiProvider.AdelphosApiProvider
 
+    fed_db:
+      constructor: app.core.model.AdelphosFederatedStore.AdelphosFederatedStore
+     
 
 """
 

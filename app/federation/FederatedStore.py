@@ -16,6 +16,7 @@ import uuid
 import copy
 import sys
 import threading
+import yaml
 
 from app.misc.WrapInt import WrapInt
 from app.transport.RouterProvider import RouterProvider
@@ -24,6 +25,7 @@ from enum import StrEnum
 from enum import auto
 from datetime import datetime
 from app.sdc.Dependency import Dependency
+from app.sdc.Dependencies import Dependencies
 from app.federation.LifespanAware import LifespanAware
 from app.federation.FederatedObject import FederatedObject
 from app.federation.SocialListener import SocialListener
@@ -219,19 +221,20 @@ class FedStore_ReadCtx:
 class FederatedStore(Dependency, LifespanAware):
 
 
-    def __init__(self, kernel, *, db_type = 'mem', schema = None):
+    def __init__(self, kernel, *, db_type = None, schema = None):
         super().__init__(kernel)
 
-        self.db = self._create_db(db_type)
+        self.db_type = db_type
+
+        if isinstance(schema, str):
+            schema_dict = yaml.safe_load(schema)
+            self.schema = schema_dict
+        else:
+            self.schema = schema
 
         self.transactions = {}
         self.fact = FederatedFactory()
         self.hostname = kernel.conf().get_host()
-
-        if (isinstance(schema, str)):
-            raise Exception('loading of schema not yet supported')
-
-        self.fact.parse_schema(schema)
 
 
     def _create_db(self, db_type):
@@ -243,6 +246,20 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     async def start_async(self):
+
+        config = self.conf().get_conf(Dependencies.FEDERATED_DB)
+
+        if self.db_type is None:
+            if config is None:
+                self.db_type = 'mem'
+            else:
+                self.db_type = config.get('db_type', 'mem')
+
+        if self.schema is None:
+            raise Exception('loading of schema not yet supported')
+
+        self.db = self._create_db(self.db_type)
+        self.fact.parse_schema(self.schema)
         self.db.open()
 
 
@@ -265,11 +282,6 @@ class FederatedStore(Dependency, LifespanAware):
         if t_ob is None:
             raise FdbException(EFdbErrors.EFDB_NO_SUCH_TRANSACTION)
         return t_ob
-
-
-    #def is_present_object(self, t_ob, ob_type, name, **kwargs):
-    #    uri = self.fact.uri_constructor(ob_type, name, **kwargs)
-    #    return self.is_present_uri(t_ob, uri)
 
 
     def is_present_uri(self, t_id, uri):
@@ -319,15 +331,6 @@ class FederatedStore(Dependency, LifespanAware):
             gCon.log(f"Unknown type {ob_type}")
             raise FdbException(EFdbErrors.EFDB_UNKNOWN_TYPE, ob_type)
 
-        #if registrar.needs_family == True:
-        #    if family is None:
-        #        raise FdbException(EFdbErrors.EFDB_REQUIRED_FAMILY_MISSING)
-
-        #    #check_family = self.is_present_family()
-
-        #else:
-        #    if family is not None:
-        #        raise FdbException(EFdbErrors.EFDB_FAMILY_NOT_WANTED)
         uri = self.fact.uri_constructor(ob_type, name, **kwargs)
 
         return await self.new_ob_from_uri_coro(t_id, registrar, uri, fields)
@@ -340,12 +343,9 @@ class FederatedStore(Dependency, LifespanAware):
         await self.ensure_uri_not_existing(t_ob, uri)
 
         fob = FederatedObject(uri, registrar, fields = fields, locked = True)
-        #gCon.log(f"fob before {sys.getrefcount(fob)}")
         t_ob.new_ob(fob)
-        #gCon.log(f"fob after {sys.getrefcount(fob)}")
 
         retref = weakref.ref(fob)
-        #gCon.log(f"fob after weak {sys.getrefcount(fob)}")
         return retref
 
 

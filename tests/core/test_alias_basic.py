@@ -16,7 +16,6 @@ import pytest
 import yaml
 
 from app.store.MemoryStore import MemoryStore
-#from app.core.algo.AdelphosAlgo import AdelphosAlgo 
 from app.federation.FederatedStore import FederatedStore
 from app.core.model.schema import adelphos_schema_yaml
 import tests.adelphoi_test_config as tconf
@@ -36,16 +35,11 @@ from app.core.algo.AliasAlgo import AliasAlgo
 def w_local(federated_db_local):
     
     host_name = 'www.h1.com'
-    
-    #fdb1_loc = federated_db_local(host_name, adelphos_schema_yaml)
     yield from federated_db_local(host_name, adelphos_schema_yaml)
-    #model = AdelphosAlgo(next(fdb1_loc))
-    #yield model
 
 
 def test_add_alias(w_local):
 
-    #res = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
     kernel = w_local.kernel
     res = AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre', 'pass')
     assert (res == ECoreErrno.DONE_OK)

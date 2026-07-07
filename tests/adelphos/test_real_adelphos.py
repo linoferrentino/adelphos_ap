@@ -96,6 +96,19 @@ def test_real_remote_add(get_routable_app):
                             AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
 
 
+def test_real_alias_create(get_routable_app):
+    test1 = get_routable_app('test101', stdcnf.release_kernel_template,
+                             tconf.adelphos_testable_1_conf)
+    test2 = get_routable_app('test202', stdcnf.release_kernel_template,
+                             tconf.adelphos_testable_2_conf)
+
+    port2 = tconf.adelphos_testable_2_conf['_port_']
+    host2 = f'localhost:{port2}'
+
+    stests._send_to_daemon(test1, test2, host2,
+        "alias.create name lino.ferre password secret", 'demo1')
+
+
 def Xtest_real_remote_add_simple(get_routable_app):
     test1 = get_routable_app('test100', tconf.adelphos_stub, 
                                 adelphos_standard_configuration)

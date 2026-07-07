@@ -17,6 +17,15 @@ from app.exc.AdelphosException import parse_exc_str
 from app.exc.AdelphosException import AdErrno
 from app.sdc.Dependencies import Dependencies
 
+
+def _send_to_daemon(test1, test2, host2, msg, user_from):
+
+    with test1, test2:
+        with test1.websocket_connect(CNST.WS_ROUTE) as websocket:
+            websocket.send_text(
+    f"dbg.sndpost to @adelphos@{host2} msg {msg} from {user_from}")
+
+ 
 def _test_sndpost_to_host(test1, test2, host2, userKO, userOK, user_from):
 
     with test1, test2:

@@ -53,6 +53,8 @@ conf:
 
     fed_db:
       db_name: ':memory:'
+      db_type: mem
+      
 
 """
 

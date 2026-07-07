@@ -17,7 +17,6 @@ import pytest
 from starlette.testclient import TestClient
 from starlette.websockets import WebSocket
 
-#from app.AdelphosRouter import AdelphosRouter
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 
 import tests.test_constants as tc
@@ -85,7 +84,6 @@ def test_post_from_kernel(get_routable_app):
 
     port2 = tconf.adelphos_toy_2_conf['_port_']
     host2 = f"localhost:{port2}"
-    #host2 = tconf.simple_toy_conf_2['General']['host']
     stests._test_sndpost_to_host(test1, test2, host2, 'x1', 't99', 't1')
 
 
