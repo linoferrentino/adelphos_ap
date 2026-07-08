@@ -28,27 +28,22 @@ import sys
 class AliasAlgo:
 
 
-    #def __init__(self, algo_root):
-    #    self.algo_root = algo_root
-
-
     @staticmethod
-    async def _sys_call_create(kernel, session, pars):
+    async def _sys_call_create(kernel, actor_from, pars):
         alias_name = pars['name']
         password = pars['password']
         alias_splits = alias_name.split('.')
         if len(alias_splits) != 2:
             raise AdelphosCoreException(ECoreErrno.EINVALID_ALIAS_SYNTAX, alias_name)
         (alias, family) = alias_splits
-        algo = kernel.get_dep(Dependencies.ALGO)
+        AliasAlgo.alias_create(kernel, actor_from.act.actor_id,
+                               alias, family, password)
 
-        algo.alias_algo.alias_create()
-
- 
 
     @staticmethod
     @federated_transaction(raise_if_fail = False)
     def alias_create(kernel, actor_id, name, family, password, t_id):
+        gCon.log(f"//////////////////////////////////// transaction {t_id}")
 
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)

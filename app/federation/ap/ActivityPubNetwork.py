@@ -98,7 +98,6 @@ class ActivityPubNetwork(SocialNetwork):
         host = config.get_host()
         host_api = f"{host}{CNST.API_POINT}"
 
-
         #gCon.log(f"user is {userob.actor_dto}")
 
         info_user = {

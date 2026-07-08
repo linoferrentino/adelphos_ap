@@ -23,7 +23,10 @@ def _send_to_daemon(test1, test2, host2, msg, user_from):
     with test1, test2:
         with test1.websocket_connect(CNST.WS_ROUTE) as websocket:
             websocket.send_text(
-    f"dbg.sndpost to @adelphos@{host2} msg {msg} from {user_from}")
+    f"dbg.sndpost to @adelphos@{host2} msg '{msg}' from {user_from}")
+            data = websocket.receive_text()
+            assert data == "DONE!"
+
 
  
 def _test_sndpost_to_host(test1, test2, host2, userKO, userOK, user_from):

@@ -280,7 +280,7 @@ class FederatedStore(Dependency, LifespanAware):
             raise FdbException(EFdbErrors.EFDB_NO_SUCH_TRANSACTION)
         t_ob = self.transactions.get(t_id)
         if t_ob is None:
-            raise FdbException(EFdbErrors.EFDB_NO_SUCH_TRANSACTION)
+            raise FdbException(EFdbErrors.EFDB_NO_SUCH_TRANSACTION, t_id)
         return t_ob
 
 

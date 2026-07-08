@@ -142,6 +142,7 @@ class SyncApp:
 
     @exception_sync_middleware
     def in_get_json(self, urlp):
+        gCon.log(f"================ get json {urlp}")
         return self._do_sync_req("GET", self.get_routes, urlp)
 
 
@@ -175,10 +176,10 @@ class SyncApp:
         endpoint = route.endpoint
         request = SyncRequest(method, dict_params, path_params, in_json, urlp, headers)
 
-        gCon.log(f"endpoint {endpoint}")
+        gCon.log(f"found endpoint {endpoint}")
 
         res = run_coro_in_loop(endpoint, (request,))
 
-        gCon.log(f"------> res {res}")
+        gCon.log(f"res {res}")
         return res
 
