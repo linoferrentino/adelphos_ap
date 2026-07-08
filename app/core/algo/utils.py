@@ -64,7 +64,7 @@ from app.sdc.Dependencies import Dependencies
 
 def federated_transaction(raise_if_fail = True):
 
-    async def commit_or_die_maybe(func):
+    def commit_or_die_maybe(func):
 
         async def internal_commit(kernel, *args, **kwargs):
             fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
@@ -92,7 +92,7 @@ def federated_transaction(raise_if_fail = True):
                     return -ECoreErrno.ESYS
                 raise AdelphosCoreException(ECoreErrno.ESYS) from fdbex
 
-        return await internal_commit
+        return internal_commit
 
     return commit_or_die_maybe
 

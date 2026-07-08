@@ -137,12 +137,6 @@ class BaseSocial(SocialProvider):
         del self.users[user]
  
 
-    #def create_or_register_user_XX(self, user, *, listener = None):
-    #    if user in self.users:
-    #        raise AdelphosException(AdErrno.USER_ALREADY_EXISTING)
-    #    self.users[user] = UserStub(user, listener)
-
-
     def login_user(self, user):
         user_stub = self._pri_get_user_stub(user)
         return user_stub
@@ -152,7 +146,6 @@ class BaseSocial(SocialProvider):
         user = self.local_user_get(from_user)
         if user is None:
             raise Exception(f"No user {from_user}")
-        #gCon.log(f"the user is {user} actor {user.actor_dto} from {self.host}")
         social_gw = self.vhost.get_dep(Dependencies.SOCIAL_GATEWAY)
         await social_gw.out_outbox(user.actor_dto, recipient, message)
 

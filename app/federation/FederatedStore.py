@@ -286,13 +286,18 @@ class FederatedStore(Dependency, LifespanAware):
         return t_ob
 
 
-    def is_present_uri(self, t_id, uri):
+    #def is_present_uri(self, t_id, uri):
 
-        t_ob = self.get_tob_safe(t_id)
-        return run_coro_in_loop(self._is_present_uri_coro, (t_ob, uri))
+    #    t_ob = self.get_tob_safe(t_id)
+    #    return run_coro_in_loop(self._is_present_uri_coro, (t_ob, uri))
  
 
-    async def _is_present_uri_coro(self, t_ob, uri):
+    async def is_present_uri_str(self, t_id, uri):
+        t_ob = self.get_tob_safe(t_id)
+        return await self.is_present_uri(t_ob, uri)
+
+
+    async def is_present_uri(self, t_ob, uri):
         key_uri = uri.unparse()
 
         exists_trx = t_ob.exists_ob(key_uri)
@@ -305,15 +310,10 @@ class FederatedStore(Dependency, LifespanAware):
 
     async def ensure_uri_not_existing(self, t_ob, uri):
 
-        exists_trx = await self._is_present_uri_coro(t_ob, uri)
+        exists_trx = await self.is_present_uri(t_ob, uri)
 
         if exists_trx == True:
-            raise FdbException(EFdbErrors.EFDB_URI_EXISTS)
-
-
-    #def new_ob(self, t_id, ob_type, name, *, fields = {}, **kwargs):
-    #    return run_coro_in_loop(self.new_ob_coro, 
-    #                            (t_id, ob_type, name, fields, kwargs))
+            raise FdbException(EFdbErrors.EFDB_URI_EXISTS, uri)
 
 
     def new_ob_uri(self, t_id, uri, fields = {} ):

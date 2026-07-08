@@ -183,10 +183,6 @@ class BaseSocialApiProvider(SocialApiProvider):
                 else:
                     kwargs[param.name] = param.def_value
 
-        #for param in kwargs:
-        #    if param not in rpc.pars:
-        #        raise Exception(f"got extra parameter {param} not required.")
-
 
     @abstractmethod
     def _is_allowed_remote_rpc_host(self, host, mode):
@@ -203,17 +199,8 @@ class BaseSocialApiProvider(SocialApiProvider):
 
     async def start_async(self):
         social_user = self.get_social_user()
-        #gCon.log(f"{id(self)} ============= START ASYNC with user {social_user}")
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         social.add_listener(social_user, self)
-
-        #gCon.log(f"Registered user {social_user}")
-        #syscalls = [
-        #        SysCall(SOCIAL_API_QUERY, BaseSocialApiProvider._sys_call_q),
-        #        SysCall(SOCIAL_API_ANSWER, BaseSocialApiProvider._sys_call_a),
-        #  ]
-        #self._add_syscalls_old(syscalls)
-        #self._register_rpc_calls()
 
     
     async def stop_async(self):
@@ -221,8 +208,6 @@ class BaseSocialApiProvider(SocialApiProvider):
         social_user = self.get_social_user()
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         social.remove_listener(social_user)
-        #del self.syscalls
-        #self.rpc_gateway.clear_syscalls()
 
 
     def _check_actor_identity(self, actor_from, mode):
@@ -296,20 +281,6 @@ class BaseSocialApiProvider(SocialApiProvider):
     @abstractmethod
     def get_social_user(self):
         pass
-
-
-    #def _register_rpc_calls(self):
-
-        #self.rpc_gateway.register_syscalls(self.vhost, 'rpc_providers')
-
-        #config = self.vhost.conf()
-        #rpcs_providers = config.get_conf('rpc_providers')
-
-        #for context, provider in rpcs_providers.items():
-        #    provider_class = misc.import_string(provider)
-        #    rpcs = provider_class.get_rpcs()
-        #    #self._add_context_rpcs(context, rpcs)
-        #    self.rpc_gateway._add_syscalls(context, rpcs)
 
     
     async def new_post(self, actor_from, msg):

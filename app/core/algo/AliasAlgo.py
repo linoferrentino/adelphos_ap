@@ -37,24 +37,36 @@ class AliasAlgo:
             raise AdelphosCoreException(ECoreErrno.EINVALID_ALIAS_SYNTAX, alias_name)
         (alias, family) = alias_splits
         await AliasAlgo.alias_create(kernel, actor_from.act.actor_id,
-                               alias, family, password)
+                                     alias, family, password)
+        #await SocialAlgo.send_message()
 
 
     @staticmethod
     @federated_transaction(raise_if_fail = False)
     async def alias_create(kernel, actor_id, name, family, password, t_id):
+        return await AliasAlgo._alias_create_impl(kernel, actor_id, 
+                                            name, family, password, t_id)
+ 
+
+    @staticmethod
+    @federated_transaction(raise_if_fail = True)
+    async def alias_create_safe(kernel, actor_id, name, family, password, t_id):
+        return await AliasAlgo._alias_create_impl(kernel, actor_id, 
+                                            name, family, password, t_id)
+ 
+
+    async def _alias_create_impl(kernel, actor_id, name, family, password, t_id):
         gCon.log(f"//////////////////////////////////// transaction {t_id}")
 
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
 
-        is_present_family = fdb.is_present_uri(
-                t_id, family_uri)
+        is_present_family = await fdb.is_present_uri_str(t_id, family_uri)
 
         if is_present_family is True:
             raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY)
 
-        family_ob = fdb.new_ob_uri(t_id, family_uri)
+        family_ob = await fdb.new_ob_uri(t_id, family_uri)
         family_ob().add_phantom_link()
 
         ph = PasswordHasher()
@@ -65,16 +77,9 @@ class AliasAlgo:
                 'password': pass_hashed
         }
 
-        alias_ob = fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
+        alias_ob = await fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
                                       name, family = family, fields = fields)
  
-
-    # this can be called also externally to create the root alias
-    #@commit_or_errno
-
-    #    #return self._alias_create_internal_hashed(actor_id, alias_name,
-    #    #                                          alias_family, pass_hashed)
-    #    pass
 
 
     # it returns the id of the new alias.

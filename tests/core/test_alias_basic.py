@@ -29,6 +29,7 @@ from tests.federation.fixtures import federated_db_local
 from app.core.ECoreErrno import ECoreErrno
 import threading
 from app.core.algo.AliasAlgo import AliasAlgo
+from app.transport.bridge.loop import run_coro_in_loop
 
 
 @pytest.fixture
@@ -39,20 +40,28 @@ def w_local(federated_db_local):
 
 
 def test_add_alias(w_local):
+    run_coro_in_loop(a_test_add_alias, (w_local,))
+
+
+async def a_test_add_alias(w_local):
 
     kernel = w_local.kernel
-    res = AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre', 'pass')
+    res = await AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre', 'pass')
     assert (res == ECoreErrno.DONE_OK)
 
 
 def test_add_dup_family(w_local):
+    run_coro_in_loop(a_test_add_dup_family, (w_local,))
+
+
+async def a_test_add_dup_family(w_local):
 
     kernel = w_local.kernel
-    res = AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre', 'pass')
+    res = await AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre', 'pass')
     assert (res == ECoreErrno.DONE_OK)
-    res = AliasAlgo.alias_create(kernel, 0, 'alice', 'famal', 'pass99')
+    res = await AliasAlgo.alias_create(kernel, 0, 'alice', 'famal', 'pass99')
     assert (res == ECoreErrno.DONE_OK)
-    res = AliasAlgo.alias_create(kernel, 0, 'bob', 'ferre', 'pass')
+    res = await AliasAlgo.alias_create(kernel, 0, 'bob', 'ferre', 'pass')
     assert res == -ECoreErrno.EDUPLICATED_FAMILY
 
 
