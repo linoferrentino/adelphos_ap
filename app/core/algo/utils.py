@@ -64,35 +64,35 @@ from app.sdc.Dependencies import Dependencies
 
 def federated_transaction(raise_if_fail = True):
 
-    def commit_or_die_maybe(func):
+    async def commit_or_die_maybe(func):
 
-        def internal_commit(kernel, *args, **kwargs):
+        async def internal_commit(kernel, *args, **kwargs):
             fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-            t_id = fdb.begin_transaction()
+            t_id = await fdb.begin_transaction()
             kwargs['t_id'] = t_id
             try:
-                res = func(kernel, *args, **kwargs)
-                fdb.commit_transaction(t_id)
+                res = await func(kernel, *args, **kwargs)
+                await fdb.commit_transaction(t_id)
                 return res if res is not None else ECoreErrno.DONE_OK
             except AdelphosCoreException as ex:
-                fdb.rollback_transaction(t_id)
+                await fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return -ex.errno
                 raise ex
             except FdbException as fdbex:
                 traceback.print_exc()
-                fdb.rollback_transaction(t_id)
+                await fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return str(fdbex)
                 raise AdelphosCoreException(ECoreErrno.EFDB) from fdbex
             except Exception as exc:
                 traceback.print_exc()
-                fdb.rollback_transaction(t_id)
+                await fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return -ECoreErrno.ESYS
                 raise AdelphosCoreException(ECoreErrno.ESYS) from fdbex
 
-        return internal_commit
+        return await internal_commit
 
     return commit_or_die_maybe
 

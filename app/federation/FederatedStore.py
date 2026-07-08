@@ -247,6 +247,8 @@ class FederatedStore(Dependency, LifespanAware):
 
     async def start_async(self):
 
+        #gCon.log(f"Start db in {threading.current_thread().native_id}")
+
         config = self.conf().get_conf(Dependencies.FEDERATED_DB)
 
         if self.db_type is None:
@@ -309,9 +311,9 @@ class FederatedStore(Dependency, LifespanAware):
             raise FdbException(EFdbErrors.EFDB_URI_EXISTS)
 
 
-    def new_ob(self, t_id, ob_type, name, *, fields = {}, **kwargs):
-        return run_coro_in_loop(self.new_ob_coro, 
-                                (t_id, ob_type, name, fields, kwargs))
+    #def new_ob(self, t_id, ob_type, name, *, fields = {}, **kwargs):
+    #    return run_coro_in_loop(self.new_ob_coro, 
+    #                            (t_id, ob_type, name, fields, kwargs))
 
 
     def new_ob_uri(self, t_id, uri, fields = {} ):
@@ -324,7 +326,9 @@ class FederatedStore(Dependency, LifespanAware):
                                 (t_id, registrar, uri_loc, fields))
 
 
-    async def new_ob_coro(self, t_id, ob_type, name, fields , kwargs):
+    async def new_ob(self, t_id, ob_type, name, *, fields = {} , **kwargs):
+
+        #gCon.log(f"new ob in {threading.current_thread().native_id}")
 
         registrar = self.fact.get_registrar(ob_type)
         if registrar is None:
@@ -419,12 +423,12 @@ class FederatedStore(Dependency, LifespanAware):
         pass
 
 
-    def uri_read_no_lock(self, t_id, uri_ob, maybe = False):
+    #def uri_read_no_lock(self, t_id, uri_ob, maybe = False):
 
-        return run_coro_in_loop(self.uri_read_no_lock_coro, (t_id, uri_ob, maybe))
+    #    return run_coro_in_loop(self.uri_read_no_lock_coro, (t_id, uri_ob, maybe))
 
 
-    async def uri_read_no_lock_coro(self, t_id, uri_ob, maybe = False):
+    async def uri_read_no_lock(self, t_id, uri_ob, maybe = False):
 
         rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = False, maybe = maybe) 
         await self._read_ctx(rctx)
@@ -433,14 +437,11 @@ class FederatedStore(Dependency, LifespanAware):
         return weakref.ref(rctx.fob)
 
 
-    # the store has the concept of a federated transaction, all transactions
-    # live in isolation, the object returned must be passed to all the modifying
-    # methods.
-    def begin_transaction(self):
-        return run_coro_in_loop(self.begin_transaction_coro, ())
+    #def begin_transaction(self):
+    #    return run_coro_in_loop(self.begin_transaction_coro, ())
 
 
-    async def begin_transaction_coro(self):
+    async def begin_transaction(self):
 
         tid = uuid.uuid4()
         tob = FederatedTransaction(tid, self)
@@ -448,20 +449,20 @@ class FederatedStore(Dependency, LifespanAware):
         return tid
 
 
-    def commit_transaction(self, t_id):
-        run_coro_in_loop(self.commit_transaction_coro, (t_id,))
+    #def commit_transaction(self, t_id):
+    #    run_coro_in_loop(self.commit_transaction_coro, (t_id,))
 
 
-    async def commit_transaction_coro(self, t_id):
+    async def commit_transaction(self, t_id):
         t_ob = self.get_tob_safe(t_id)
         t_ob.t_commit()
 
 
-    def rollback_transaction(self, t_id):
-        run_coro_in_loop(self.rollback_transaction_coro, (t_id,))
+    #def rollback_transaction(self, t_id):
+    #    run_coro_in_loop(self.rollback_transaction_coro, (t_id,))
 
 
-    async def rollback_transaction_coro(self, t_id):
+    async def rollback_transaction(self, t_id):
         t_ob = self.get_tob_safe(t_id)
         t_ob.t_rollback()
 

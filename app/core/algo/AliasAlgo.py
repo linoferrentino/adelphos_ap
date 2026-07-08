@@ -36,13 +36,13 @@ class AliasAlgo:
         if len(alias_splits) != 2:
             raise AdelphosCoreException(ECoreErrno.EINVALID_ALIAS_SYNTAX, alias_name)
         (alias, family) = alias_splits
-        AliasAlgo.alias_create(kernel, actor_from.act.actor_id,
+        await AliasAlgo.alias_create(kernel, actor_from.act.actor_id,
                                alias, family, password)
 
 
     @staticmethod
     @federated_transaction(raise_if_fail = False)
-    def alias_create(kernel, actor_id, name, family, password, t_id):
+    async def alias_create(kernel, actor_id, name, family, password, t_id):
         gCon.log(f"//////////////////////////////////// transaction {t_id}")
 
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
