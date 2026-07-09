@@ -10,7 +10,7 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
 
 # This is the object that holds the data of an adelphos instance.
 # the adelphos instance is also an activity pub instance, but not the contrary

@@ -112,10 +112,8 @@ class BaseSocialApiProvider(SocialApiProvider):
         rpc_api = self.vhost.get_dep(Dependencies.RPC_API)
         rpc = rpc_api.get_syscall(context, cmd)
 
-        #gCon.log(f"found the syscall {rpc}")
         self._check_params(rpc, kwargs)
         msg = self._pack_request_message(context, cmd, kwargs)
-        #gCon.log(f"Sending payload -> {msg}")
         res = await self._make_rpc_request(host, msg)
         return res
 
@@ -218,8 +216,9 @@ class BaseSocialApiProvider(SocialApiProvider):
             raise AdelphosException(EAdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
 
 
-    async def _sys_call_q(kernel, actor_from, pars):
+    async def _sys_call_q(kernel, envelope, pars):
         gCon.log(f"received the _sys_call_q with {pars}")
+        actor_from = envelope.actor_from
 
         self = kernel.get_dep(Dependencies.SOCIAL_API)
         self._check_actor_identity(actor_from, 'proc')
@@ -238,10 +237,11 @@ class BaseSocialApiProvider(SocialApiProvider):
 
         payload_ans = self._pack_response_message(remote_errno, res)
         answer_msg = f"{SOCIAL_API_ANSWER} api_id {api_id} payload {payload_ans}"
-        gCon.log(f"Will return {answer_msg}")
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
-        await social.outgoing_message(self.get_social_user(),
-              actor_from.get_social_handle(), answer_msg)
+        return answer_msg
+        #gCon.log(f"------- Will return {answer_msg}")
+        #social = self.vhost.get_dep(Dependencies.SOCIAL)
+        #await social.outgoing_message(self.get_social_user(),
+        #      actor_from.get_social_handle(), answer_msg)
 
 
     async def _sys_call_q_try(self, actor_from, pars):
@@ -255,13 +255,13 @@ class BaseSocialApiProvider(SocialApiProvider):
         rpc_api = self.vhost.get_dep(Dependencies.RPC_API)
         rpc = rpc_api.get_syscall(context, cmd)
 
-        #kernel = self.vhost.get_dep(Dependencies.KERNEL)
         res = await rpc.handler(self.vhost, req_json['params'])
         return res 
 
 
-    async def _sys_call_a(kernel, actor_from, pars):
+    async def _sys_call_a(kernel, envelope, pars):
         gCon.log(f"received the _sys_call_a with {pars}")
+        actor_from = envelope.actor_from
 
         self = kernel.get_dep(Dependencies.SOCIAL_API)
         self._check_actor_identity(actor_from, 'a')
@@ -282,9 +282,24 @@ class BaseSocialApiProvider(SocialApiProvider):
     def get_social_user(self):
         pass
 
+
+    async def new_post(self, envelope):
+        try:
+            out_msg = await self.new_post_try(envelope)
+        except Exception as ex:
+            out_msg = "Error in syscall"
     
-    async def new_post(self, actor_from, msg):
-        gCon.log(f"got msg from {actor_from} {msg}")
+        if out_msg is None:
+            return
+
+        gCon.log(f"=== sending to {envelope.actor_from}")
+        social_gw = self.vhost.get_dep(Dependencies.SOCIAL_GATEWAY)
+        await social_gw.out_outbox_dtos(envelope.myself,
+                                        envelope.actor_from, out_msg)
+
+
+    async def new_post_try(self, envelope):
+        gCon.log(f"got msg from {envelope.actor_from} {envelope.content}")
         inbox_api = self.vhost.get_dep(Dependencies.INBOX_API)
-        await inbox_api.sys_call_gateway_msg(actor_from, msg)
+        return await inbox_api.sys_call_gateway_msg(envelope, envelope.content)
 

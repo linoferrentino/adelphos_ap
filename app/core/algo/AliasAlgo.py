@@ -29,16 +29,16 @@ class AliasAlgo:
 
 
     @staticmethod
-    async def _sys_call_create(kernel, actor_from, pars):
+    async def _sys_call_create(kernel, envelope, pars):
         alias_name = pars['name']
         password = pars['password']
         alias_splits = alias_name.split('.')
         if len(alias_splits) != 2:
             raise AdelphosCoreException(ECoreErrno.EINVALID_ALIAS_SYNTAX, alias_name)
         (alias, family) = alias_splits
-        await AliasAlgo.alias_create(kernel, actor_from.act.actor_id,
+        await AliasAlgo.alias_create(kernel, envelope.actor_from.act.actor_id,
                                      alias, family, password)
-        #await SocialAlgo.send_message()
+        return "Alias created, you can login, now."
 
 
     @staticmethod

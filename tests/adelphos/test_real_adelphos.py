@@ -17,6 +17,7 @@ import pytest
 import httpx
 import time
 
+from app.sdc.Dependencies import Dependencies
 import tests.adelphoi_test_config as tconf
 import tests.adelphoi_build_config as bconf
 
@@ -105,8 +106,19 @@ def test_real_alias_create(get_routable_app):
     port2 = tconf.adelphos_testable_2_conf['_port_']
     host2 = f'localhost:{port2}'
 
-    stests._send_to_daemon(test1, test2, host2,
-        "alias.create name lino.ferre password secret", 'demo1')
+    user_ok = 'demo1'
+
+    with test1, test2:
+        stests.send_to_daemon_ctx(test1, test2, host2,
+            "alias.create name lino.ferre password secret", user_ok)
+
+        user_ob = test1.app.routable.get_dep(
+                Dependencies.SOCIAL).login_user(user_ok)
+        count_msg = user_ob.count_msg()
+        assert count_msg == 1
+
+        msg = user_ob.pop_lst_msg()
+        assert msg.content == 'Alias created, you can login, now.'
 
 
 def Xtest_real_remote_add_simple(get_routable_app):

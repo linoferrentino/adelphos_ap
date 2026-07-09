@@ -12,6 +12,7 @@
 ######################################################
 
 
+from dataclasses import dataclass
 from app.sdc.Dependencies import Dependencies
 from abc import ABC, abstractmethod
 from app.federation.SocialProvider import SocialProvider
@@ -25,9 +26,17 @@ from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
 from io import StringIO
 from app.federation.SocialUser import SocialUser
+from app.dao.ApActorDto import ApActorDto
 
 
-class UserStub(SocialUser):
+@dataclass
+class UserMsg:
+    content: str
+    actor_from: ApActorDto
+    myself: ApActorDto
+
+
+class UserInbox(SocialUser):
 
     def __init__(self, actor_dto, aListener = None):
         self.actor_dto = actor_dto
@@ -39,9 +48,10 @@ class UserStub(SocialUser):
             self.is_daemon = True
 
 
-    async def new_msg(self, actor_from, msg):
+    async def new_msg(self, actor_from, content):
+        msg = UserMsg(content, actor_from, self.actor_dto)
         if self.is_daemon:
-            await self.listener.new_post(actor_from, msg)
+            await self.listener.new_post(msg)
         else:
             self.messages.append(msg)
 
@@ -76,7 +86,7 @@ class BaseSocial(SocialProvider):
                 continue
             gCon.log(f"[red]create user {user['preferredusername']}[/red]")
             self.users[user['preferredusername']] = \
-                    UserStub(actor_dto)
+                    UserInbox(actor_dto)
 
 
     def _create_user(self, user):
@@ -121,7 +131,7 @@ class BaseSocial(SocialProvider):
             gCon.log(f"Instance {id(self)} user {user} exists")
             raise AdelphosException(AdErrno.USER_ALREADY_EXISTING)
         gCon.log(f"Instance {id(self)} user {user} does not exist, will add it")
-        self.users[user] = UserStub(actor_dto, listener)
+        self.users[user] = UserInbox(actor_dto, listener)
 
 
     def remove_listener(self, user):

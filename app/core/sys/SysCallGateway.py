@@ -55,12 +55,6 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         return syscall_map
 
 
-    #def _add_syscalls_old(self, syscalls_list):
-    #    if hasattr(self, 'syscalls') == False:
-    #        self.syscalls = dict()
-    #    self.syscalls = self._transform_list(syscalls_list, self.syscalls)
-
-
     async def sys_call_gateway_msg(self, param, msg):
         cp = CliParser(msg)
         ctx_cmd = cp.cmd.split('.')
@@ -68,14 +62,12 @@ class SysCallGateway(Dependency, SyncLifespanAware):
             raise AdelphosException(AdErrno.EINVALID_SYNTAX,
                                     f"{cp.cmd} not understood.")
         (context, cmd) = ctx_cmd
-        #gCon.log(f"Searching cmd {cmd} and context {context}")
         syscall = self.get_syscall(context, cmd)
         if syscall is None:
             raise AdelphosException(AdErrno.ENOSUCH_SYSCALL,
                                     f"{context}.{cmd}, no such command.")
         kernel = self.vhost
         kwargs = self._create_params_dict_from_cmd_line(cp, syscall)
-
 
         msg_out = await syscall.handler(kernel, param, kwargs)
         return msg_out

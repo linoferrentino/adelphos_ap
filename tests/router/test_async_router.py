@@ -120,7 +120,7 @@ def test_post_inbox_ok(app, aroutable):
     assert count_msg == 1
 
     msg = user_ob.pop_lst_msg()
-    assert msg == 'hello1 demo1 secret X8a9'
+    assert msg.content == 'hello1 demo1 secret X8a9'
 
     count_msg = user_ob.count_msg()
     assert count_msg == 0
