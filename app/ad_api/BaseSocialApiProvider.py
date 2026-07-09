@@ -25,6 +25,7 @@ from app.exc.AdelphosException import AdErrno
 from app.exc.AdelphosException import AdelphosException
 from app.logging import gCon
 from app.sdc.Dependencies import Dependencies
+from app.core.AdelphosCoreException import AdelphosCoreException
 import app.misc.utils as misc
 
 from app.misc.WrapInt import WrapInt
@@ -286,8 +287,12 @@ class BaseSocialApiProvider(SocialApiProvider):
     async def new_post(self, envelope):
         try:
             out_msg = await self.new_post_try(envelope)
+        except AdelphosCoreException as exce:
+            traceback.print_exc()
+            out_msg = exce.out_str
         except Exception as ex:
-            out_msg = "Error in syscall"
+            traceback.print_exc()
+            out_msg = f"Server Error in syscall {ex}"
     
         if out_msg is None:
             return

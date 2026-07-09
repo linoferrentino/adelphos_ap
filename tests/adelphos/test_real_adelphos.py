@@ -28,11 +28,14 @@ from tests.testers.fixtures import get_routable_app
 #from tests.testers.fixtures import get_routable_app_TEST
 
 from httpx_ws import aconnect_ws
-from httpx_ws.transport import ASGIWebSocketTransport
+#from httpx_ws.transport import ASGIWebSocketTransport
 import tests.social.social_tests as stests
 import tests.daemon.daemon_tests as dtests
 from app.exc.AdelphosException import parse_exc_str
 from app.exc.AdelphosException import AdErrno
+
+from app.core.AdelphosCoreException import AdelphosCoreException
+from app.core.ECoreErrno import ECoreErrno
 
 import app.sdc.standard_conf as stdcnf
 
@@ -91,7 +94,7 @@ async def test_real_alias_create_async(get_standalone_app):
                 await ws.send_text(
 f"dbg.sndpost to @adelphos@{host2} msg 'alias.create name lino.ferre password test99' \
 from demo1")
-            time.sleep(5)
+            time.sleep(1)
 
 
 def test_post_real_kernel(get_routable_app):
@@ -119,7 +122,7 @@ def test_real_remote_add(get_routable_app):
                             AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
 
 
-def test_real_alias_create(get_routable_app):
+def test_real_alias_create_sync(get_routable_app):
     test1 = get_routable_app('test101', stdcnf.release_kernel_template,
                              tconf.adelphos_testable_1_conf)
     test2 = get_routable_app('test202', stdcnf.release_kernel_template,
@@ -131,11 +134,22 @@ def test_real_alias_create(get_routable_app):
     user_ok = 'demo1'
 
     with test1, test2:
-        stests.send_to_daemon_ctx(test1, test2, host2,
-            "alias.create name lino.ferre password secret", user_ok)
 
         user_ob = test1.app.routable.get_dep(
                 Dependencies.SOCIAL).login_user(user_ok)
+
+        stests.send_to_daemon_ctx(test1, test2, host2,
+            "alias.create name linoxferre password secret", user_ok)
+
+        count_msg = user_ob.count_msg()
+        assert count_msg == 1
+
+        msg = user_ob.pop_lst_msg()
+        assert msg.content == 'Alias created, you can login, now.'
+
+        stests.send_to_daemon_ctx(test1, test2, host2,
+            "alias.create name lino.ferre password secret", user_ok)
+
         count_msg = user_ob.count_msg()
         assert count_msg == 1
 

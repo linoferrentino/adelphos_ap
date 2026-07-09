@@ -12,10 +12,13 @@
 ######################################################
 
 
-
 class AdelphosCoreException(Exception):
 
     def __init__(self, ad_errno, msg = None):
         super().__init__(msg)
         self.errno = ad_errno
+        self.out_str = f"Adelphos core error #{ad_errno}#"
+        if msg is not None:
+            self.out_str += f" {msg}"
+
 

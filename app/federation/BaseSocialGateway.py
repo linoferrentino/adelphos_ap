@@ -13,6 +13,7 @@
 
 
 import json
+import asyncio
 
 from urllib.parse import urlsplit
 
@@ -82,7 +83,8 @@ class BaseSocialGateway(SocialGateway):
             gCon.log(msg)
             raise HTTPException(404, msg)
 
-        await social.incoming_message(actor_dto, local_user,  rest_of_line)
+        asyncio.create_task(social.incoming_message(
+            actor_dto, local_user,  rest_of_line))
         return Response(status_code=202)
 
 
