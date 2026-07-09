@@ -30,10 +30,9 @@ class AsyncTransport(AbstractTransport):
         self.gateway = gateway
 
 
-    async def post_json(self, url, json):
+    async def post_json(self, url, json, headers):
         urls = urlsplit(url)
-        return await self.gateway.route_message("POST", urls, json)
-        #pass
+        return await self.gateway.route_message("POST", urls, json, headers)
 
 
     async def get_json(self, url):

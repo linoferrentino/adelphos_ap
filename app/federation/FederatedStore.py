@@ -316,14 +316,13 @@ class FederatedStore(Dependency, LifespanAware):
             raise FdbException(EFdbErrors.EFDB_URI_EXISTS, uri)
 
 
-    def new_ob_uri(self, t_id, uri, fields = {} ):
+    async def new_ob_uri(self, t_id, uri, fields = {} ):
         registrar = self.fact.get_registrar(uri.ob_type)
         if registrar is None:
             raise FdbException(EFdbErrors.EFDB_UNKNOWN_TYPE)
 
         uri_loc = self.remove_localhost(uri)
-        return run_coro_in_loop(self.new_ob_from_uri_coro,
-                                (t_id, registrar, uri_loc, fields))
+        return await self.new_ob_from_uri_coro(t_id, registrar, uri_loc, fields)
 
 
     async def new_ob(self, t_id, ob_type, name, *, fields = {} , **kwargs):

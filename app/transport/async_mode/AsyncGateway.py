@@ -84,7 +84,7 @@ class AsyncGateway(AbstractGateway):
         return ar.text
 
 
-    async def route_message(self, method, urlp, json = None):
+    async def route_message(self, method, urlp, json = None, headers = {}):
 
         if method == "GET":
 
@@ -93,11 +93,11 @@ class AsyncGateway(AbstractGateway):
             return await self.async_req_wait(ar)
 
         elif method == "POST":
-            post_res  = AsyncPostReq(None, None, json)
+            post_res  = AsyncPostReq(None, headers, json)
             post_res.init_split(urlp)
             gCon.log(f"Sending to {urlp} ------")
-            #return await self.async_req_post(post_res)
-            return 202
+            return await self.async_req_post(post_res)
+            #return 202
         else:
             raise Exception(f"Invalid method {method}")
 

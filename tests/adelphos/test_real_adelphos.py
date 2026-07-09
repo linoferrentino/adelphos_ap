@@ -72,6 +72,28 @@ async def test_real_sndmsg(get_standalone_app):
                 assert datas == "hello lino!"
 
 
+@pytest.mark.anyio
+async def test_real_alias_create_async(get_standalone_app):
+
+    ad1 = get_standalone_app('adelphos11', stdcnf.release_kernel_template,
+                            tconf.adelphos_testable_1_conf)
+
+    ad2 = get_standalone_app('adelphos21', stdcnf.release_kernel_template,
+                            tconf.adelphos_testable_2_conf)
+
+    port2 = tconf.adelphos_testable_2_conf['_port_']
+    host2 = f"localhost:{port2}"
+    with ad1, ad2:
+        time.sleep(4)
+        port = tconf.adelphos_testable_1_conf['_port_']
+        async with httpx.AsyncClient() as client:
+            async with aconnect_ws(f"http://localhost:{port}/api/ws", client) as ws:
+                await ws.send_text(
+f"dbg.sndpost to @adelphos@{host2} msg 'alias.create name lino.ferre password test99' \
+from demo1")
+            time.sleep(5)
+
+
 def test_post_real_kernel(get_routable_app):
     test1 = get_routable_app('adelphos1', stdcnf.release_kernel_template,
                              tconf.adelphos_testable_1_conf)
