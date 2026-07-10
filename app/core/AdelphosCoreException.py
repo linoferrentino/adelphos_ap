@@ -11,14 +11,44 @@
 #
 ######################################################
 
+import re
 
-class AdelphosCoreException(Exception):
+
+class AdelphosBaseException(Exception):
+
+    def __init__(self, realm, errno, detail = None):
+        self.realm = realm
+        self.errno = errno
+        self.detail = detail
+
+
+    @property
+    def out_str(self):
+        out_str = f"Adelphos {self.realm} error #{self.errno}#"
+        if self.detail is not None:
+            out_str += f">: {self.detail}"
+        return out_str
+
+
+    @staticmethod
+    def parse_exc_str(err_str):
+        re_match = re.search(rf"#(\d*)#", err_str)
+        if re_match is None:
+            return -1
+        return int(re_match.group(1))
+
+
+    @staticmethod
+    def parse_detail(err_str):
+        re_match = re.search(rf">: (.*)$", err_str)
+        if re_match is None:
+            return -1
+        return re_match.group(1)
+
+
+class AdelphosCoreException(AdelphosBaseException):
 
     def __init__(self, ad_errno, msg = None):
-        super().__init__(msg)
-        self.errno = ad_errno
-        self.out_str = f"Adelphos core error #{ad_errno}#"
-        if msg is not None:
-            self.out_str += f" {msg}"
+        super().__init__("core", ad_errno, msg)
 
 

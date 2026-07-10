@@ -294,6 +294,7 @@ class BaseSocialApiProvider(SocialApiProvider):
             traceback.print_exc()
             out_msg = f"Server Error in syscall {ex}"
     
+        gCon.log(f"Now message is {out_msg}")
         if out_msg is None:
             return
 

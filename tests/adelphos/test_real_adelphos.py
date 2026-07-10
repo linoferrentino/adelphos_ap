@@ -38,6 +38,7 @@ from app.core.AdelphosCoreException import AdelphosCoreException
 from app.core.ECoreErrno import ECoreErrno
 
 import app.sdc.standard_conf as stdcnf
+from app.core.AdelphosCoreException import AdelphosBaseException
 
 
 def test_real1(get_standalone_app):
@@ -145,7 +146,10 @@ def test_real_alias_create_sync(get_routable_app):
         assert count_msg == 1
 
         msg = user_ob.pop_lst_msg()
-        assert msg.content == 'Alias created, you can login, now.'
+        #assert msg.content == 'Adelphos core error #3# linoxferre'
+        assert ECoreErrno.EINVALID_ALIAS_SYNTAX == \
+                AdelphosBaseException.parse_exc_str(msg.content)
+        assert "linoxferre" == AdelphosBaseException.parse_detail(msg.content)
 
         stests.send_to_daemon_ctx(test1, test2, host2,
             "alias.create name lino.ferre password secret", user_ok)
