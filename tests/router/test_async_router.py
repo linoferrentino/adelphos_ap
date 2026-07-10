@@ -26,7 +26,7 @@ from tests.testers.SyncApp import SyncApp
 import app.consts as CNST
 from tests.testers.SyncTester import SyncTester
 from app.exc.AdelphosException import AdelphosException
-from app.exc.AdelphosException import parse_exc_str
+#from app.exc.AdelphosException import parse_exc_str
 from app.exc.AdelphosException import AdErrno
 from app.logging import gCon
 from app.federation.SimpleSocial import SimpleSocial

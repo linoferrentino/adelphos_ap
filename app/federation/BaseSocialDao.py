@@ -23,10 +23,6 @@ class BaseSocialDao(SocialDao):
         super().__init__(vhost)
 
 
-    #def actor_local_get(self, user_name):
-    #    return self.actor_get(self.server_dto, user_name)
-
-
     @abstractmethod
     def _srv_get_or_create(self, host_name):
         pass
@@ -70,6 +66,5 @@ class BaseSocialDao(SocialDao):
         actor.act.server_fk = server_id
 
         actor_id = self._store_actor_impl(actor)
-        #actor.act.actor_id = actor_id
 
 

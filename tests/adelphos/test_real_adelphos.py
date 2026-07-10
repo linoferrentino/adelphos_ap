@@ -17,6 +17,7 @@ import pytest
 import httpx
 import time
 
+import app.consts as CNST
 from app.sdc.Dependencies import Dependencies
 import tests.adelphoi_test_config as tconf
 import tests.adelphoi_build_config as bconf
@@ -31,7 +32,7 @@ from httpx_ws import aconnect_ws
 #from httpx_ws.transport import ASGIWebSocketTransport
 import tests.social.social_tests as stests
 import tests.daemon.daemon_tests as dtests
-from app.exc.AdelphosException import parse_exc_str
+#from app.exc.AdelphosException import parse_exc_str
 from app.exc.AdelphosException import AdErrno
 
 from app.core.AdelphosCoreException import AdelphosCoreException
@@ -69,7 +70,9 @@ async def test_real_sndmsg(get_standalone_app):
             async with aconnect_ws(f"http://localhost:{port}/api/ws", client) as ws:
                 await ws.send_text("WHAT")
                 datas = await ws.receive_text()
-                assert AdErrno.EINVALID_SYNTAX == parse_exc_str(datas)
+                #assert AdErrno.EINVALID_SYNTAX == parse_exc_str(datas)
+                assert AdErrno.EINVALID_SYNTAX == \
+                        AdelphosBaseException.parse_exc_str(datas)
 
                 await ws.send_text("dbg.echo msg lino")
                 datas = await ws.receive_text()
@@ -146,7 +149,6 @@ def test_real_alias_create_sync(get_routable_app):
         assert count_msg == 1
 
         msg = user_ob.pop_lst_msg()
-        #assert msg.content == 'Adelphos core error #3# linoxferre'
         assert ECoreErrno.EINVALID_ALIAS_SYNTAX == \
                 AdelphosBaseException.parse_exc_str(msg.content)
         assert "linoxferre" == AdelphosBaseException.parse_detail(msg.content)
@@ -159,6 +161,21 @@ def test_real_alias_create_sync(get_routable_app):
 
         msg = user_ob.pop_lst_msg()
         assert msg.content == 'Alias created, you can login, now.'
+
+        stests.send_to_daemon_ctx(test1, test2, host2,
+            "alias.create name basso.ferre password secret99", user_ok)
+
+        count_msg = user_ob.count_msg()
+        assert count_msg == 1
+
+        msg = user_ob.pop_lst_msg()
+        assert ECoreErrno.EDUPLICATED_FAMILY == \
+                AdelphosBaseException.parse_exc_str(msg.content)
+
+        with test2.websocket_connect(CNST.WS_ROUTE) as websocket:
+            websocket.send_text(f"alias.login login lino.ferre password secret")
+            data = websocket.receive_text()
+            assert data == "Login OK, check your Mastodon inbox to get the token."
 
 
 def Xtest_real_remote_add_simple(get_routable_app):

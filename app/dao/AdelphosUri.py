@@ -122,20 +122,9 @@ Only one dot is allowed ")
     return alias_family_splits
 
 
-def validate_local_name(local_name):
+def validate_local_name_deprecated(local_name):
 
-    # a NULL is valid (
-    if (local_name is None):
-        return
-
-    if (re.match("[a-z0-9][a-z0-9_-]*[a-z0-9]+", local_name, 
-                 re.IGNORECASE) is None):
-        raise AdelphosException(f"Invalid name {local_name}, \
-it must begin and end with a letter or a digit.")
-
-    if (len(local_name) < 2 or len(local_name) > 64):
-        raise AdelphosException(f"name {local_name} length incorrect")
-
+    assert False
 
 # to parse the object part we need the uri_type, because not
 # all the types can have the family part.

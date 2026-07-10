@@ -124,6 +124,17 @@ syscalls_suffix = """
                       required: true
 
     cli_api:
+
+      alias:
+        class: app.core.sys.AliasCalls.AliasCalls
+        syscalls:
+            - name: login
+              pars:
+                login:
+                  required: true
+                password:
+                  required: true
+
       dbg:
           class: app.core.sys.DebugModule.DebugModule
           syscalls:

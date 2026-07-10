@@ -78,6 +78,17 @@ class SqliteSocialDao(BaseSocialDao):
         BaseSocialDao._fill_public_key(actor_dto)
         return actor_dto
 
+
+    def actor_get_from_id(self, actor_id):
+        actor_impl = self.actor_dao.get_from_id(actor_id)
+        if actor_impl is None:
+            return None
+        server_dto = self.server_dao.get_from_id(actor_impl.server_fk)
+        assert server_dto is not None
+        actor_dto = ApActorDto(server_dto, actor_impl)
+        BaseSocialDao._fill_public_key(actor_dto)
+        return actor_dto
+
  
     def actor_get(self, server, user_name):
         server_dto = self.server_dao.get_from_hostname(server)

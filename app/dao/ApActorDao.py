@@ -42,77 +42,10 @@ class ApActorDao(BaseDao):
         self.table_name = "ap_actor"
 
 
-    # this function will fetch the public key of the actor
-    def create_from_uri_moved_do_api(self, server_dto, actor_uri, key_parsed):
 
-        #gCon.log(f"Create here a cached actor {actor_uri}")
-
-        #res_key = AsyncGetReq(actor_uri)
-        res_key = self.apsrv.transport.get_json(actor_uri)
-        #await self.dao.app.async_req_wait(res_key)
-
-        if (res_key.status_code != 200):
-           raise AdelphosException(f"Could not fetch the public key {res_key.status_code}")
-
-        key_ob_text = res_key.body
-
-        key_ob = json.loads(key_ob_text)
-
-        #gCon.log(f"this is the actor {key_ob}")
-
-        pub_key_ob = key_ob['publicKey']
-
-        pub_key_ob_id = pub_key_ob['id']
-
-        # are they the same?
-        if (pub_key_ob_id != key_parsed.geturl()):
-            raise AdelphosException(f"Error, got {pub_key_ob_id} key \
-exp {actor_uri}")
-
-        # is he the owner?
-        owner = pub_key_ob['owner'] 
-        if (owner != actor_uri):
-            gCon.log(f"This is bad {pub_key_ob}")
-            gCon.log(f"Error, {owner} different from {actor_uri}")
-            raise AdelphosException("Bad key")
-
-        inbox_uri = key_ob['inbox']
-        preferred_username = key_ob['preferredUsername']
-
-        # I parse the inbox.
-        inbox_parsed = urlparse(inbox_uri)
-
-        # the inbox and the actor uri should belong to the same server,
-        # if not there is a problem
-        if (inbox_parsed.netloc != key_parsed.netloc):
-            raise AdelphosException(
-f"Cannot store actor with {inbox_parsed.netloc} != {key_parsed.netloc}")
-
-        if server_dto.server_id == 0:
-            #gCon.log("[red]This is a locally defined actor![/red]")
-            actor = self.get_from_server_path(0, key_parsed.path)
-        else:
-            # OK, now I can create the actor
-            actor = create_remote_actor(server_dto.server_id,
-                             key_parsed.path,
-                             inbox_parsed.path,
-                             preferred_username,
-                             pub_key_ob['publicKeyPem'])
-            self.store(actor)
-
-        # if it is zero it is a locally defined actor, we do not store it
-        # because it would violate the db integrity
-        #if (server_dto.server_id != 0):
-        #else:
-        #    local_actor = 
-        #gCon.log(f"Created actor {actor}")
-        return actor 
-
-
-    # this method returns the actor from a local id
-    def get_from_local_id_XX(self, local_id):
-        return self.dao.db.get_full_dto("ap_actor", "actor_id", local_id,
-                                        ApActorDto)
+    def get_from_id(self, actor_id):
+        return self.db.get_full_dto_ex(self.table_name, 
+                    ("actor_id",), (actor_id,), ApActorImpl)
 
 
     # more than one user can have the same preferred_username in different servers.

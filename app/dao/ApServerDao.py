@@ -57,7 +57,7 @@ class ApServerDao(BaseDao):
 
 
     def get_from_id(self, server_id):
-        server_dto = self.dao.db.get_full_dto(self.table_name,
+        server_dto = self.db.get_full_dto(self.table_name,
                         "server_id", server_id, ApServerDto)
         return server_dto
 

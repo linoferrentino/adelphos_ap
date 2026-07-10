@@ -90,7 +90,7 @@ def federated_transaction(raise_if_fail = True):
                 await fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return -ECoreErrno.ESYS
-                raise AdelphosCoreException(ECoreErrno.ESYS) from fdbex
+                raise AdelphosCoreException(ECoreErrno.ESYS) from exc 
 
         return internal_commit
 

@@ -12,13 +12,14 @@
 ######################################################
 
 from abc import ABC, abstractmethod
-from app.federation.SyncLifespanAware import SyncLifespanAware
+#from app.federation.SyncLifespanAware import SyncLifespanAware
+from app.sdc.Dependency import Dependency
 
 
-class CliProvider(SyncLifespanAware):
+class CliProvider(Dependency):
 
     def __init__(self, kernel):
-        self.kernel = kernel
+        super().__init__(kernel)
 
     
     @abstractmethod

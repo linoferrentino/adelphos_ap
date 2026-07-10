@@ -286,12 +286,6 @@ class FederatedStore(Dependency, LifespanAware):
         return t_ob
 
 
-    #def is_present_uri(self, t_id, uri):
-
-    #    t_ob = self.get_tob_safe(t_id)
-    #    return run_coro_in_loop(self._is_present_uri_coro, (t_ob, uri))
- 
-
     async def is_present_uri_str(self, t_id, uri):
         t_ob = self.get_tob_safe(t_id)
         return await self.is_present_uri(t_ob, uri)
@@ -303,7 +297,9 @@ class FederatedStore(Dependency, LifespanAware):
         exists_trx = t_ob.exists_ob(key_uri)
 
         if exists_trx is None:
+            gCon.log(f"Searching key {key_uri}")
             exists_trx = self.db.has_key(key_uri)
+            gCon.log(f"key is present {exists_trx}")
 
         return exists_trx
 
@@ -348,8 +344,7 @@ class FederatedStore(Dependency, LifespanAware):
         fob = FederatedObject(uri, registrar, fields = fields, locked = True)
         t_ob.new_ob(fob)
 
-        retref = weakref.ref(fob)
-        return retref
+        return weakref.ref(fob)
 
 
     def uri_snapshot(self, uri_ob):
@@ -418,15 +413,6 @@ class FederatedStore(Dependency, LifespanAware):
         return weakref.ref(rctx.fob)
 
 
-    async def uri_read_no_lock_coro():
-        pass
-
-
-    #def uri_read_no_lock(self, t_id, uri_ob, maybe = False):
-
-    #    return run_coro_in_loop(self.uri_read_no_lock_coro, (t_id, uri_ob, maybe))
-
-
     async def uri_read_no_lock(self, t_id, uri_ob, maybe = False):
 
         rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = False, maybe = maybe) 
@@ -434,10 +420,6 @@ class FederatedStore(Dependency, LifespanAware):
         if rctx.fob is None:
             return None
         return weakref.ref(rctx.fob)
-
-
-    #def begin_transaction(self):
-    #    return run_coro_in_loop(self.begin_transaction_coro, ())
 
 
     async def begin_transaction(self):
@@ -448,17 +430,9 @@ class FederatedStore(Dependency, LifespanAware):
         return tid
 
 
-    #def commit_transaction(self, t_id):
-    #    run_coro_in_loop(self.commit_transaction_coro, (t_id,))
-
-
     async def commit_transaction(self, t_id):
         t_ob = self.get_tob_safe(t_id)
         t_ob.t_commit()
-
-
-    #def rollback_transaction(self, t_id):
-    #    run_coro_in_loop(self.rollback_transaction_coro, (t_id,))
 
 
     async def rollback_transaction(self, t_id):

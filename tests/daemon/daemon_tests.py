@@ -12,8 +12,9 @@
 ######################################################
 
 import app.consts as CNST
-from app.exc.AdelphosException import parse_exc_str
+#from app.exc.AdelphosException import parse_exc_str
 from app.exc.AdelphosException import AdErrno
+from app.core.AdelphosCoreException import AdelphosBaseException
 from app.sdc.Dependencies import Dependencies
 
 def _test_remote_add(test1, test2, host2, exp_errno_code = None):
@@ -26,6 +27,6 @@ def _test_remote_add(test1, test2, host2, exp_errno_code = None):
             if exp_errno_code == None:
                 assert data == "33"
             else:
-                assert exp_errno_code == parse_exc_str(data)
+                assert exp_errno_code == AdelphosBaseException.parse_exc_str(data)
 
 

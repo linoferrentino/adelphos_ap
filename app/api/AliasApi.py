@@ -29,7 +29,17 @@ from app.api.BaseApi import BaseApi
 from app.api.BaseApi import only_in_debug
 
 
-class AliasApi(BaseApi):
+#class AliasApi:
+#
+#    @staticmethod
+#    async def _sys_call_login(kernel, session, pars):
+#        login = pars['login']
+#        password = pars['password']
+#
+#        return "LOGIN OK"
+
+
+class AliasApi_deprecated(BaseApi):
 
 
     # The Alias Api can serve the Activity pub context or the Web socket context.

@@ -13,8 +13,9 @@
 
 
 import app.consts as CNST
-from app.exc.AdelphosException import parse_exc_str
+#from app.exc.AdelphosException import parse_exc_str
 from app.exc.AdelphosException import AdErrno
+from app.core.AdelphosCoreException import AdelphosBaseException
 from app.sdc.Dependencies import Dependencies
 
 
@@ -40,7 +41,8 @@ def _test_sndpost_to_host(test1, test2, host2, userKO, userOK, user_from):
             websocket.send_text(
     f"dbg.sndpost to @{userKO}@{host2} msg echo_test_x918 from {user_from}")
             data = websocket.receive_text()
-            assert parse_exc_str(data) == AdErrno.USER_DOES_NOT_EXIST
+            assert AdelphosBaseException.parse_exc_str(data) == \
+                    AdErrno.USER_DOES_NOT_EXIST
 
             websocket.send_text(
     f"dbg.sndpost to @{userOK}@{host2} msg echo_test_x918 from {user_from}")

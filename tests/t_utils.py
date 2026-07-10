@@ -19,9 +19,10 @@ from starlette.testclient import TestClient
 from app.AdelphosApp import get_app
 from app.AdelphosApp import del_app
 import json
-from app.exc.AdelphosException import parse_exc
+#from app.exc.AdelphosException import parse_exc
 import httpx2
 #from app.api.AdelphosException import EAdelhposErrno
+from app.core.AdelphosCoreException import AdelphosBaseException
 
 
 # must_wait is true when we have to connect to a remote instance.
@@ -116,9 +117,9 @@ def play_script_on_instance_OK(adelphos_instance, script):
 def assert_error_code_in_response(response, error_expt):
     assert response.status_code == 401
     if isinstance(response, httpx2.Response) == True:
-        int_code = parse_exc(response._content)
+        int_code = AdelphosBaseException.parse_exc_str(response._content.decode())
     else:
-        int_code = parse_exc(response.body)
+        int_code = AdelphosBaseException.parse_exc_str(response.body.decode())
     assert int_code == error_expt 
 
 

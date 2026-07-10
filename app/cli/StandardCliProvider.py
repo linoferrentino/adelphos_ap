@@ -67,8 +67,7 @@ class StandardCliClient:
             await self.websocket.send_text(f"User Error: {err.out_str}")
 
 
-# gateway
-class StandardCliProvider(CliProvider, SysCallGateway):
+class StandardCliProvider(CliProvider):
 
     def __init__(self, vhost):
         self.vhost = vhost
@@ -83,13 +82,4 @@ class StandardCliProvider(CliProvider, SysCallGateway):
         await client.serve_forever()
 
 
-    def start_sync(self):
-        #self.init_syscalls('cli')
-        #config = self.vhost.conf()
-        #cli_syscalls = config.get_conf('cli_syscalls')
-        #gCon.log(f"These are the syscalls {cli_syscalls}")
-        pass
-        
 
-    def stop_sync(self):
-        pass

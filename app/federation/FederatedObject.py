@@ -200,11 +200,6 @@ class FederatedObject:
                     col_val = col_def.default_value
             self.ob.fields[col_name] = col_val
 
-
-    #@classmethod
-    #def get_schema(cls):
-    #    return None
-
     
     def to_store_str(self):
         store_str = json.dumps(asdict(self.ob))
@@ -214,6 +209,17 @@ class FederatedObject:
 
     def get_primitive_value(self, key, maybe = False):
         return self.ob.fields[key]
+
+
+    def val(self, key, maybe = False):
+        if maybe == False:
+            return self.ob.fields[key]
+        val = self.ob.fields.get(key)
+        if val is not None:
+            return val
+        if maybe == True:
+            return None
+        raise AttributeError(key)
 
 
     def get_link(self, key):

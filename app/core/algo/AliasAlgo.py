@@ -23,6 +23,7 @@ from app.core.model.AdelphosUri import AdelphosUri
 from app.sdc.Dependencies import Dependencies
 import weakref
 import sys
+import app.misc.alias_utils as au
 
 
 class AliasAlgo:
@@ -32,11 +33,10 @@ class AliasAlgo:
     async def _sys_call_create(kernel, envelope, pars):
         alias_name = pars['name']
         password = pars['password']
-        alias_splits = alias_name.split('.')
-        if len(alias_splits) != 2:
-            raise AdelphosCoreException(ECoreErrno.EINVALID_ALIAS_SYNTAX, alias_name)
-        (alias, family) = alias_splits
-        await AliasAlgo.alias_create(kernel, envelope.actor_from.act.actor_id,
+
+        (alias, family) = au.split_alias(alias_name, True)
+
+        await AliasAlgo.alias_create_safe(kernel, envelope.actor_from.act.actor_id,
                                      alias, family, password)
         return "Alias created, you can login, now."
 
@@ -61,9 +61,11 @@ class AliasAlgo:
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
 
+        gCon.log(f"//////// family uri {family_uri}")
         is_present_family = await fdb.is_present_uri_str(t_id, family_uri)
 
         if is_present_family is True:
+            gCon.log("Present the URI! duplicated family")
             raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY)
 
         family_ob = await fdb.new_ob_uri(t_id, family_uri)
@@ -136,17 +138,4 @@ class AliasAlgo:
 
    
 
-    #def _alias_create_internal_hashed(self, actor_id, alias_name, alias_family, pass_hashed):
-
-
-    #    #zioa 
-
-    #    #fam_ob = self.instance.family_model.create(alias_family)
-    #    #alias_ob = self.instance.alias_model.create(actor_id, alias_name, fam_ob, pass_hashed)
-
-    #    #self.instance.family_model.set_boss(fam_ob, alias_ob)
-
-    #    #return BaseModel.get_id(alias_ob)
-
-    #    pass
-
+    

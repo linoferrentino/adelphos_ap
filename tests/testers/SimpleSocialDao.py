@@ -16,7 +16,6 @@ from app.federation.BaseSocialDao import BaseSocialDao
 from app.dao.ApServerDto import ApServerDto
 from app.dao.ApActorDto import ApActorDto
 from app.dao.ApActorDto import ApActorImpl
-#from app.dao.ApActorDto import ApActorPack
 from app.dao.ApServerDto import create_ap_server
 from dataclasses import asdict
 from app.logging import gCon
@@ -40,6 +39,10 @@ class SimpleSocialDao(BaseSocialDao):
 
     def stop_sync(self):
         pass
+
+    
+    def actor_get_from_id(self, actor_id):
+        assert False
 
 
     def _srv_get_or_create(self, host_name):
