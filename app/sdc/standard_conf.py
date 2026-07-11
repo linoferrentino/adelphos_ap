@@ -125,6 +125,16 @@ syscalls_suffix = """
 
     cli_api:
 
+      family:
+        class: app.core.sys.FamilyCalls.FamilyCalls
+        syscalls:
+          - name: invite
+            pars:
+              initial_password:
+                required: true
+              user:
+                required: true
+
       alias:
         class: app.core.sys.AliasCalls.AliasCalls
         syscalls:

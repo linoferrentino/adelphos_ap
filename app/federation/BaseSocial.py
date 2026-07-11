@@ -82,9 +82,9 @@ class BaseSocial(SocialProvider):
             actor_dto = self.create_if_not_exists(user)
 
             if user['login_shell'] == False:
-                gCon.log(f"skipping non/login user: {user['preferredusername']}")
+                #gCon.log(f"skipping non/login user: {user['preferredusername']}")
                 continue
-            gCon.log(f"[red]create user {user['preferredusername']}[/red]")
+            #gCon.log(f"[red]create user {user['preferredusername']}[/red]")
             self.users[user['preferredusername']] = \
                     UserInbox(actor_dto)
 
@@ -92,7 +92,7 @@ class BaseSocial(SocialProvider):
     def _create_user(self, user):
         
         preferredusername = user['preferredusername']
-        gCon.log(f"creating user {user}")
+        #gCon.log(f"creating user {user}")
 
         user_path = API_POINT + f"/users/{preferredusername}"
         user_inbox = user_path + "/inbox"
@@ -128,9 +128,9 @@ class BaseSocial(SocialProvider):
         if actor_dto is None:
             raise AdelphosException(AdErrno.USER_DOES_NOT_EXIST)
         if user in self.users:
-            gCon.log(f"Instance {id(self)} user {user} exists")
+            #gCon.log(f"Instance {id(self)} user {user} exists")
             raise AdelphosException(AdErrno.USER_ALREADY_EXISTING)
-        gCon.log(f"Instance {id(self)} user {user} does not exist, will add it")
+        #gCon.log(f"Instance {id(self)} user {user} does not exist, will add it")
         self.users[user] = UserInbox(actor_dto, listener)
         self.actor_listener = actor_dto
 
@@ -144,7 +144,7 @@ class BaseSocial(SocialProvider):
         if user not in self.users:
             raise AdelphosException(AdErrno.USER_DOES_NOT_EXIST)
 
-        gCon.log(f"instance {id(self)} user {user} delisted")
+        #gCon.log(f"instance {id(self)} user {user} delisted")
         del self.users[user]
         self.actor_listener = None
  
@@ -180,8 +180,8 @@ class BaseSocial(SocialProvider):
  
     def local_user_get(self, user_name):
         user_local = self.users.get(user_name)
-        if user_local is None:
-            gCon.log(f"{id(self)} user {user_name} not present")
+        #if user_local is None:
+        #    #gCon.log(f"{id(self)} user {user_name} not present")
         return user_local
 
 
@@ -201,7 +201,7 @@ class BaseSocial(SocialProvider):
         self.social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
         soc_cnf  = config.get_social_config()
         host = config.get_host()
-        gCon.log(f"{id(self)} This is the conf {soc_cnf} [red]{id(self)}[/red] for host {host}")
+        #gCon.log(f"{id(self)} This is the conf {soc_cnf} [red]{id(self)}[/red] for host {host}")
         self.host = host
 
         users = soc_cnf['users']

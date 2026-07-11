@@ -37,12 +37,7 @@ class BaseSocialGateway(SocialGateway):
     async def in_inbox(self, user, request):
 
         headers = request.headers
-        gCon.log(f"here are the headers {headers}")
-        gCon.log(f"here is the url {request.url} type {type(request.url)}")
-        gCon.log(f"here is the client {request.client} type {type(request.client)}")
-
         body = await request.body()
-        gCon.log(f"body {body} request type {type(request)}")
         body_str = body.decode()
         body_ob = await request.json()
 
@@ -64,13 +59,11 @@ class BaseSocialGateway(SocialGateway):
         content_split = clean_content.split(" ", 1)
         if len(content_split) == 1:
             msg = f"Expecting a message with a mention, got {content_split}"
-            gCon.log(f"[red]{msg}[/msg]")
             raise HTTPException(400, msg)
 
         (mention, rest_of_line) = content_split
         if mention[0] != '@':
             msg = f"Malformed mention {mention}"
-            gCon.log(msg)
             raise HTTPException(400, msg)
 
         mention = mention[1:]
@@ -80,7 +73,6 @@ class BaseSocialGateway(SocialGateway):
 
         if local_user is None:
             msg = f"User not found {mention}"
-            gCon.log(msg)
             raise HTTPException(404, msg)
 
         asyncio.create_task(social.incoming_message(
@@ -96,10 +88,8 @@ class BaseSocialGateway(SocialGateway):
     async def out_outbox_dtos(self, actor_from_dto, actor_to_dto, message):
         message = f"@{actor_to_dto.act.preferred_username} {message}"
         (headers, payload) = self._do_envelope(actor_from_dto, actor_to_dto, message)
-        gCon.log(f"[red]will send the envelope {payload} with headers {headers}[/red]")
         actor_uri = f"https://{actor_to_dto.srv.host_name}\
 {actor_to_dto.act.inbox_path}"
-        gCon.log(f"sending to {actor_uri}")
         transport = self.vhost.get_dep(Dependencies.TRANSPORT)
         await transport.post_json(actor_uri, payload, headers)
         
@@ -125,7 +115,6 @@ class BaseSocialGateway(SocialGateway):
 
 
     async def _actor_get_or_discover_from_handle(self, handle):
-        gCon.log(f"asking the user {handle}")
         (first_char, actor_instance) = (handle[0], handle[1:])
 
         if (first_char != '@'):
@@ -143,14 +132,11 @@ class BaseSocialGateway(SocialGateway):
 
         actor_query = f"https://{rem_instance}/.well-known/webfinger?\
 resource=acct:{actor_instance}"
-        gCon.log(f"actor query {actor_query}")
 
         transport = self.vhost.get_dep(Dependencies.TRANSPORT)
         actor_def_str = await transport.get_json_safe(actor_query, 
                     AdErrno.USER_DOES_NOT_EXIST)
-        #gCon.log(f"the actor string is {actor_def_str}")
         actor_def_ob = json.loads(actor_def_str)
-        #gCon.log(f"the actor is {actor_def_ob}")
 
         subject = actor_def_ob['subject']
         if ( subject != f"acct:{actor_instance}"):
@@ -174,9 +160,7 @@ resource=acct:{actor_instance}"
 
         actor_uri = urlsplit(href_user)
         #key_parsed = key_parsed._replace(fragment = "main-key")
-        #gCon.log(f"This is the key for this actor {key_parsed}")
 
-        gCon.log(f"Discovering actor {handle} got me {href_user}")
         actor = await self._actor_discover_from_actor_uri(actor_uri)
         return actor
 
@@ -200,19 +184,15 @@ resource=acct:{actor_instance}"
     async def _actor_discover_from_actor_uri(self, actor_uri_p):
 
         #actor_uri_p = key_parsed._replace(fragment = "")
-        gCon.log(f"[blue]discovering actor {actor_uri_p}[/blue]")
         actor_uri = actor_uri_p.geturl()
         key_parsed = actor_uri_p._replace(fragment = "main-key")
-        #gCon.log(f"actor_uri {actor_uri}")
 
         transport = self.vhost.get_dep(Dependencies.TRANSPORT)
         actor_ob = await transport.get_json_safe(actor_uri,
                 AdErrno.USER_DOES_NOT_EXIST)
-        gCon.log(f"actor is {actor_ob}, type {type(actor_ob)}")
 
         key_ob = json.loads(actor_ob)
 
-        gCon.log(f"The object requested is {key_ob}")
 
         pub_key_ob = key_ob['publicKey']
         pub_key_ob_id = pub_key_ob['id']
@@ -235,7 +215,6 @@ exp {actor_uri}")
                         key_parsed.path, inbox_parsed.path, preferred_username,
                         pub_key_ob['publicKeyPem'])
         social_dao.actor_store(actor_dto)
-        gCon.log(f"New actor {actor_dto}")
         return actor_dto
 
 

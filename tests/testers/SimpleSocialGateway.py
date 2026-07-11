@@ -36,7 +36,6 @@ class SimpleSocialGateway(BaseSocialGateway):
 
     async def _parse_message(self, user, request, actor_str, body_str, body_ob):
         msg = body_ob['msg']
-        gCon.log(f"message is {msg}")
         return msg
 
 
@@ -47,14 +46,9 @@ class SimpleSocialGateway(BaseSocialGateway):
         
         signature = headers.get('x-simple-signature')
         if signature is None:
-            gCon.log("NO signature")
             raise AdelphosException(AdErrno.EINVALID_SIGNATURE)
 
-        gCon.log(f"checking signature for {actor_str}, signature {signature}")
-        gCon.log(f"body_str {body_str}")
-
         if actor_dto is None:
-            gCon.log(f"No actor! {actor_str}")
             return (None, False)
         return (actor_dto, True)
 

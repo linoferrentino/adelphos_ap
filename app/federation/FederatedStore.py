@@ -146,7 +146,7 @@ class FederatedTransaction:
         #if self.deleted_uris.get(key_uri) is not None:
         #    raise FdbException(EFdbErrors.EFDB_URI_DELETED)
         
-        gCon.log(f"storing key {key_uri} in local db")
+        #gCon.log(f"storing key {key_uri} in local db")
         self.created_uris[key_uri] = fob
 
 
@@ -297,9 +297,7 @@ class FederatedStore(Dependency, LifespanAware):
         exists_trx = t_ob.exists_ob(key_uri)
 
         if exists_trx is None:
-            gCon.log(f"Searching key {key_uri}")
             exists_trx = self.db.has_key(key_uri)
-            gCon.log(f"key is present {exists_trx}")
 
         return exists_trx
 
@@ -327,7 +325,6 @@ class FederatedStore(Dependency, LifespanAware):
 
         registrar = self.fact.get_registrar(ob_type)
         if registrar is None:
-            gCon.log(f"Unknown type {ob_type}")
             raise FdbException(EFdbErrors.EFDB_UNKNOWN_TYPE, ob_type)
 
         uri = self.fact.uri_constructor(ob_type, name, **kwargs)

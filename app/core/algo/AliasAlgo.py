@@ -56,16 +56,13 @@ class AliasAlgo:
  
 
     async def _alias_create_impl(kernel, actor_id, name, family, password, t_id):
-        gCon.log(f"//////////////////////////////////// transaction {t_id}")
 
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
 
-        gCon.log(f"//////// family uri {family_uri}")
         is_present_family = await fdb.is_present_uri_str(t_id, family_uri)
 
         if is_present_family is True:
-            gCon.log("Present the URI! duplicated family")
             raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY)
 
         family_ob = await fdb.new_ob_uri(t_id, family_uri)

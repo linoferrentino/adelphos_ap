@@ -65,8 +65,6 @@ class ApActorDao(BaseDao):
     # the local db using the hostname and 
     def get_local_from_parsed_uri_XX(self, server_dto, key_parsed):
         # I have to query the view.
-        #gCon.log(f"this actor's Activity Pub host is {key_parsed.netloc}")
-        #gCon.log(f"his path is  is {key_parsed.path}")
 
         table_name = "ap_actor"
 
@@ -115,7 +113,6 @@ class ApActorDao(BaseDao):
         fields_stored = ('server_fk', 'user_path', 'inbox_path',
                          'preferred_username', 'private_key', 'public_key')
 
-        gCon.log(f"These are the fields {fields_stored}")
 
         newid = self.db.insert_dto_fields(table_name, fields_stored, actor_as_dict)
 

@@ -27,9 +27,7 @@ def test_query_info(app, aroutable):
 
     with app:
         url_query = f"/api/users/t1"
-        gCon.log("---------------------------------- test_query_info start")
         response = app.get(url_query)
-        gCon.log("---------------------------------- test_query_info end")
         assert response.status_code == 200 
         if hasattr(response, 'body'):
             content = response.body
@@ -39,12 +37,10 @@ def test_query_info(app, aroutable):
         cont_ob = json.loads(content_str)
         assert cont_ob['publicKey']['publicKeyPem'] is not None
         public_key = cont_ob['publicKey']['publicKeyPem']
-        gCon.log(f"public_key {public_key}")
 
         remote_public_key = crypto_serialization.load_pem_public_key(
                 public_key.encode(), backend=crypto_default_backend())
 
-        gCon.log(f"public_key {remote_public_key}")
 
 
 def test_query_info_ko(app, aroutable):

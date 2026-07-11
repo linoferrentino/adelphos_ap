@@ -73,7 +73,6 @@ class SysCallGateway(Dependency, SyncLifespanAware):
     @staticmethod
     def _create_params_dict_from_cmd_line(cp, syscall):
         kwargs = dict()
-        #gCon.log(f"I have the syscall {syscall}")
         for par in syscall.pars:
             try:
                 kwargs[par.name] = cp.get_param_safe(par.name)
@@ -84,14 +83,12 @@ class SysCallGateway(Dependency, SyncLifespanAware):
                     default_value = par.def_value
                     kwargs[par.name] = default_value
 
-        gCon.log(f"the dictionary is now {kwargs}")
         return kwargs
 
 
     @staticmethod
     def _get_pars(provider):
         par_list = list()
-        #gCon.log(f"provider {provider}")
         for par_name, value in provider['pars'].items():
             required = value['required']
             default_value = None
@@ -129,17 +126,14 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         config = kernel.conf()
         syscalls_providers = config.get_conf(realm)
 
-        gCon.log(f"my providers are {syscalls_providers}")
 
         syscalls = list()
 
         for context, provider in syscalls_providers.items():
-            #gCon.log(f"adding {provider} for context {context}")
 
             provider_class_str = provider['class']
             provider_class = misc.import_string(provider_class_str)
             syscalls = SysCallGateway._create_syscalls_list(provider_class, provider)
-            #gCon.log(f"here are the syscalls {syscalls}")
             self._add_syscalls(context, syscalls)
 
 
@@ -150,7 +144,6 @@ class SysCallGateway(Dependency, SyncLifespanAware):
     def _add_syscalls(self, context, syscalls):
         if self.contexts.get(context) is not None:
             raise Exception(f"Context {context} already existing")
-        #gCon.log(f"Adding the context {context}")
         syscall_map = self._transform_list(syscalls)
         self.contexts[context] = syscall_map
 

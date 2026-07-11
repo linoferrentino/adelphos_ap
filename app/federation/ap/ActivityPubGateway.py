@@ -43,13 +43,10 @@ class ActivityPubGateway(BaseSocialGateway):
     def _filter_message_type(self, body_ob):
         req_type = body_ob.get('type')
         if req_type == 'Follow':
-            gCon.log("Following request.")
             raise HTTPException(202, "No op.")
         elif req_type == 'Delete':
-            gCon.log("Delete request.")
             raise HTTPException(202, "No op.")
         elif req_type != 'Create':
-            gCon.log(f"unkown activity {req_type}")
             raise HTTPException(405, "No op.")
 
 
@@ -68,11 +65,9 @@ class ActivityPubGateway(BaseSocialGateway):
 
         algo_id_val = algorithm.split("=")[1][1:-1]
         if (algo_id_val != "rsa-sha256"):
-            gCon.log(f"unsupported algo {algo_id_val}")
             return (None, False)
 
         key_id_val = keyId.split("=")[1][1:-1]
-        gCon.log(f"fetching the actor {key_id_val}")
 
         actor_dto = await self._actor_get_or_discover(key_id_val) 
 
@@ -83,7 +78,6 @@ class ActivityPubGateway(BaseSocialGateway):
         digest_sign = headers['digest']
 
         if (digest_body_total != digest_sign):
-            gCon.log("digest mismatch, go away")
             return (None, False)
 
         date_str = headers['date']
@@ -93,7 +87,6 @@ class ActivityPubGateway(BaseSocialGateway):
         total_secs = abs(time_diff.total_seconds())
 
         if (total_secs > 30):
-            gCon.log(f"Too much drift in time! {total_secs}")
             return (None, False)
 
         host_hdr = headers['host']
@@ -136,25 +129,20 @@ class ActivityPubGateway(BaseSocialGateway):
                     padding.PKCS1v15(),
                     hashes.SHA256()
                     )
-            gCon.log("[green]The signature is valid.[/green]")
 
         except Exception as err:
-            gCon.log(f"[red]The signature is invalid.[/red]\n{err}")
             return (None, False)
 
         return (actor_dto, True)
 
     
     async def _parse_message(self, user, request, actor_str, body_str, body_ob):
-        gCon.log(f"Message from actor {actor_str}")
-        gCon.log(f"Message is {body_str}")
 
         object_body = body_ob.get('object')
         if object_body is None:
             raise HTTPException(401, "Malformed json, no body")
 
         if (isinstance(object_body, str)):
-            gCon.log(f"Received str {object_body}")
             raise HTTPException(401, "Malformed json, no body")
 
         content = object_body.get('content')
@@ -162,13 +150,11 @@ class ActivityPubGateway(BaseSocialGateway):
             raise HTTPException(401, "No content in object {object_body}")
 
         clean_content = re.sub('<[^<]+?>', '', content) 
-        gCon.log(f"message is {clean_content}")
 
         return clean_content
 
 
     def _do_envelope(self, actor_from_dto, actor_to_dto, msg):
-        gCon.log(f"sign the message {msg}")
 
         msg = re.sub("\n", "<p>", msg)
 

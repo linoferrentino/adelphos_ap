@@ -29,7 +29,6 @@ class SyncTransport(AbstractTransport):
 
     def _check_gateway_local(self, url):
         urls = urlsplit(url)
-        gCon.log(f"gateway url {urls} self host {self.host}")
         if urls.netloc == self.host:
             return (True, urls)
         if self.gateway is None:
@@ -60,7 +59,6 @@ class SyncTransport(AbstractTransport):
             return await self._get_json_try(url)
         except Exception as exc:
             traceback.print_exc()
-            gCon.log(f"exception in get {exc}")
             raise HTTPException(401)
         
 
@@ -86,7 +84,6 @@ class SyncTransport(AbstractTransport):
             raise Exception("Invalid host")
         if self.in_app is None:
             raise HTTPException(500)
-        gCon.log(f">>>> {urlp} in app {self.in_app}")
         return self.in_app.in_get_json(urlp)
 
 

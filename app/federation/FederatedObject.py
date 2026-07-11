@@ -203,7 +203,6 @@ class FederatedObject:
     
     def to_store_str(self):
         store_str = json.dumps(asdict(self.ob))
-        gCon.log(f"store str {store_str}")
         return store_str
 
 

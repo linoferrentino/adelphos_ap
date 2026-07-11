@@ -10,7 +10,7 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
 
 from app.transport.AbstractGateway import AbstractGateway
 
@@ -37,13 +37,9 @@ class SyncGateway(AbstractGateway):
  
     def route_message(self, method, urlp, json = None, headers = None):
 
-        #gCon.log(f"route message ========= {urlp}")
-
         transport = self.hosts.get(urlp.netloc)
         if transport is None:
             raise Exception(f"No route to host {urlp}")
-
-        gCon.log(f"method {method} and {urlp} json {json}")
 
         match method:
             case 'GET':

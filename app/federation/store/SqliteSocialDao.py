@@ -68,7 +68,6 @@ class SqliteSocialDao(BaseSocialDao):
 
    
     def actor_get_from_parsed_url(self, parsed_url):
-        gCon.log(f"asking user server {parsed_url.netloc} path {parsed_url.path}")
         server_dto = self.server_dao.get_from_hostname(parsed_url.netloc)
         if server_dto is None:
             return None
@@ -110,7 +109,6 @@ class SqliteSocialDao(BaseSocialDao):
         if actor_impl is None:
             return None
         actor_dto = ApActorDto(server_dto, actor_impl)
-        #gCon.log(f"actor_get returns {actor_dto}")
         BaseSocialDao._fill_public_key(actor_dto)
         return actor_dto
 
@@ -121,7 +119,6 @@ class SqliteSocialDao(BaseSocialDao):
         my_conf = config.get_social_dao_cnf()
         db_name = my_conf['db_name']
 
-        gCon.log(f"start sync sqlite store with dbname {db_name} {id(self)}")
 
         self.create_schema = False
 
@@ -146,7 +143,6 @@ class SqliteSocialDao(BaseSocialDao):
 
 
     def _store_actor_impl(self, actor_dto):
-        #gCon.log(f"storing {actor_dto}")
         new_id = self.actor_dao.store(actor_dto.act)
         #BaseSocialDao._fill_public_key(actor_dto)
         return new_id
@@ -168,7 +164,6 @@ class SqliteSocialDao(BaseSocialDao):
     def stop_sync(self):
         #if (self.mem_db == True):
         #    self.dump_database()
-        gCon.log(f"[red]CLOSING DB {id(self)}[/red]")
         self._conn.close()
 
 
@@ -183,7 +178,6 @@ class SqliteSocialDao(BaseSocialDao):
             condition.append(f" {field_to_seek} = ? ")
 
         condition_str = " and ". join(condition)
-        #gCon.log(f"the condition is {condition_str}")
         return condition_str
 
 
@@ -200,7 +194,6 @@ select * from {table_name} where {condition_str}
         cur.close()
 
         if (row is None):
-            #gCon.log(f"No row in {table_name} for |{condition_str}| {values_to_seek}")
             return None
 
         return constructor_dto(*row)
@@ -220,7 +213,6 @@ select * from {table_name} where {field_to_seek} = ?
         cur.close()
 
         if (row is None):
-            #gCon.log(f"No row in {table_name} for {field_to_seek} = {value_to_seek}")
             return None
 
         return constructor_dto(*row)
@@ -238,7 +230,6 @@ select * from {table_name} where {field_to_seek} = ?
 insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
 
         """
-        #gCon.log(f"Insert sql {sql_insert} with dict {dto_as_dict}")
         cur = self._conn.cursor()
         cur.execute(sql_insert, dto_as_dict)
         newid = cur.lastrowid

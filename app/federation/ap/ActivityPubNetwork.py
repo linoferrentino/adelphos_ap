@@ -41,13 +41,11 @@ class ActivityPubNetwork(SocialNetwork):
 
     async def in_webfinger(self, request):
         resource = request.query_params.get('resource')
-        #gCon.log(f"resource {resource}")
         if resource is None:
             return Response(status_code = 401)
 
         ap_user_match = re.match('acct:(.*?)@(.*)$', resource)
         if (ap_user_match is None):
-            gCon.log(f"resource not valid {resource}")
             return Response(status_code=401)
 
         ap_user_rex = ap_user_match.group(1)
@@ -57,14 +55,12 @@ class ActivityPubNetwork(SocialNetwork):
         host = config.get_host()
 
         if ap_host_rex != host:
-            gCon.log(f"host not valid! {host}")
             return Response(status_code=404)
 
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         user = social.local_user_get(ap_user_rex)
 
         if user is None:
-            gCon.log(f"user not found! {ap_user_rex}")
             return Response(status_code=404)
 
         host_api = f"{host}{CNST.API_POINT}"
@@ -90,7 +86,6 @@ class ActivityPubNetwork(SocialNetwork):
         username = request.path_params['username']
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         userob = social.local_user_get(username)
-        gCon.log(f"Ask user {username} got {userob}")
         if userob is None:
             return Response(status_code=404)
 
@@ -98,7 +93,6 @@ class ActivityPubNetwork(SocialNetwork):
         host = config.get_host()
         host_api = f"{host}{CNST.API_POINT}"
 
-        #gCon.log(f"user is {userob.actor_dto}")
 
         info_user = {
             "@context": [
@@ -123,14 +117,12 @@ class ActivityPubNetwork(SocialNetwork):
         assert userob.actor_dto.act.public_key is not None
         response = JSONResponse(content = info_user)
         response.headers['Content-Type'] = 'application/activity+json'
-        #gCon.log(f"info {info_user}")
         return response
     
 
     async def in_inbox(self, request):
         social_gw = self.vhost.get_dep(Dependencies.SOCIAL_GATEWAY)
         user = request.path_params['username']
-        #gCon.log(f">>>>>>>> user {user} request {request}")
         response = await social_gw.in_inbox(user, request)
         return response
 

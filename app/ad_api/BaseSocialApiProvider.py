@@ -49,14 +49,12 @@ class AsyncCtx:
 
 
     async def daemon_query_task(self):
-        gCon.log(f"sending message {self.query_txt}")
         try:
             remote_user = f"@{self.social_user}@{self.host}"
             await self.social.outgoing_message(self.social_user,
                     remote_user, self.query_txt)
         except AdelphosException as adex:
             traceback.print_exc()
-            gCon.log(f"adex {adex}")
             self.answer = {
                 'errno' : AdErrno.EGENERIC_USER_ERROR,
                 'res' : adex,
@@ -66,7 +64,6 @@ class AsyncCtx:
                 self.async_cond.notify_all()
         except Exception as exc:
             traceback.print_exc()
-            gCon.log(f"generic ex {exc}")
             self.answer = {
                 'errno' : AdErrno.EGENERIC_SERVER,
                 'res' : exc,
@@ -76,7 +73,6 @@ class AsyncCtx:
  
 
     async def wait_until_done(self):
-        gCon.log("wait!")
         while self.answer is None:
             async with self.async_cond:
                 await self.async_cond.wait()
@@ -116,10 +112,8 @@ class BaseSocialApiProvider(SocialApiProvider):
 
         await async_ctx.wait_until_done()
 
-        gCon.log(f"Waited! got {async_ctx.answer}")
         remote_errno = async_ctx.answer['errno'] 
         if remote_errno != AdErrno.DONE_OK:
-            gCon.log("[red]Remote error {remote_errno}[/red]")
             raise AdelphosException(remote_errno, async_ctx.answer['res'])
         
         if async_ctx.answer['res'] is None:
@@ -160,7 +154,6 @@ class BaseSocialApiProvider(SocialApiProvider):
 
 
     def _check_params(self, rpc, kwargs):
-        gCon.log(f"get params from {kwargs}")
 
         for param in rpc.pars:
             if param.name not in kwargs:
@@ -178,7 +171,6 @@ class BaseSocialApiProvider(SocialApiProvider):
     def _add_context_rpcs(self, context, rpcs):
         if self.contexts.get(context) is not None:
             raise Exception(f"Context {context} already existing")
-        gCon.log(f"Adding the context {context}")
         rpc_map = self._transform_list(rpcs)
         self.contexts[context] = rpc_map
 
@@ -190,7 +182,6 @@ class BaseSocialApiProvider(SocialApiProvider):
 
     
     async def stop_async(self):
-        gCon.log(f"{id(self)} ============================= STOP ASYNC")
         social_user = self.get_social_user()
         social = self.vhost.get_dep(Dependencies.SOCIAL)
         social.remove_listener(social_user)
@@ -205,7 +196,6 @@ class BaseSocialApiProvider(SocialApiProvider):
 
 
     async def _sys_call_q(kernel, envelope, pars):
-        gCon.log(f"received the _sys_call_q with {pars}")
         actor_from = envelope.actor_from
 
         self = kernel.get_dep(Dependencies.SOCIAL_API)
@@ -226,17 +216,11 @@ class BaseSocialApiProvider(SocialApiProvider):
         payload_ans = self._pack_response_message(remote_errno, res)
         answer_msg = f"{SOCIAL_API_ANSWER} api_id {api_id} payload {payload_ans}"
         return answer_msg
-        #gCon.log(f"------- Will return {answer_msg}")
-        #social = self.vhost.get_dep(Dependencies.SOCIAL)
-        #await social.outgoing_message(self.get_social_user(),
-        #      actor_from.get_social_handle(), answer_msg)
-
 
     async def _sys_call_q_try(self, actor_from, pars):
         payload_str = pars['payload']
         payload_decoded = self._decode_daemon_message(payload_str)
         req_json = json.loads(payload_decoded)
-        gCon.log(f"request {req_json}")
         cmd = req_json['cmd']
         context = req_json['context']
 
@@ -248,7 +232,6 @@ class BaseSocialApiProvider(SocialApiProvider):
 
 
     async def _sys_call_a(kernel, envelope, pars):
-        gCon.log(f"received the _sys_call_a with {pars}")
         actor_from = envelope.actor_from
 
         self = kernel.get_dep(Dependencies.SOCIAL_API)
@@ -260,7 +243,6 @@ class BaseSocialApiProvider(SocialApiProvider):
             raise AdelphosException(EAdErrno.EGENERIC_SERVER)
         payload_decoded = self._decode_daemon_message(payload_str)
         remote_json = json.loads(payload_decoded)
-        gCon.log(f"[green]--> ANS_GOT for apiid {api_id} {payload_decoded}[/green]")
         async_ctx.answer = remote_json
         async with async_ctx.async_cond:
            async_ctx.async_cond.notify()
@@ -281,18 +263,15 @@ class BaseSocialApiProvider(SocialApiProvider):
             traceback.print_exc()
             out_msg = f"Server Error in syscall {ex}"
     
-        gCon.log(f"Now message is {out_msg}")
         if out_msg is None:
             return
 
-        gCon.log(f"=== sending to {envelope.actor_from}")
         social_gw = self.vhost.get_dep(Dependencies.SOCIAL_GATEWAY)
         await social_gw.out_outbox_dtos(envelope.myself,
                                         envelope.actor_from, out_msg)
 
 
     async def new_post_try(self, envelope):
-        gCon.log(f"got msg from {envelope.actor_from} {envelope.content}")
         inbox_api = self.vhost.get_dep(Dependencies.INBOX_API)
         return await inbox_api.sys_call_gateway_msg(envelope, envelope.content)
 

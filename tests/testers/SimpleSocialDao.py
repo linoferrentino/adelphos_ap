@@ -55,7 +55,6 @@ class SimpleSocialDao(BaseSocialDao):
                     'srv' : json.dumps(asdict(server_dto)),
                     'users' : {},
                     }
-            gCon.log(f"this is server info {srv_info}")
             self.servers[host_name] = srv_info
             return server_dto.server_id
         server_dto_ob = json.loads(server_dto_dict['srv'])
@@ -69,7 +68,6 @@ class SimpleSocialDao(BaseSocialDao):
         else:
             host = parsed_url.netloc
     
-        gCon.log(f"Searching actor @{parsed_url.path}@{host}")
         actor = self._actor_get_host(host, parsed_url.path)
         return actor
 
@@ -80,30 +78,23 @@ class SimpleSocialDao(BaseSocialDao):
 
 
     def _actor_get_host(self, host, user_name):
-        #gCon.log(f"searching {host} and user {user_name}")
 
         srv_info = self.servers.get(host)
         if srv_info is None:
-            #gCon.log("Not found the host")
             return None
         users = srv_info['users']
-        #gCon.log(f"The users for host {host} are {users}")
         actor_dto_dict = users.get(user_name)
         if actor_dto_dict is None:
-            #gCon.log("Not found the actor")
             return None
         actor_dto = ApActorDto(**json.loads(actor_dto_dict))
-        gCon.log(f"server {actor_dto.srv}")
         actor_dto.srv = ApServerDto(**actor_dto.srv)
         actor_dto.act = ApActorImpl(**actor_dto.act)
-        gCon.log(f"FOUND THE ACTOR! {user_name}")
         return actor_dto
 
 
     def _store_actor_impl(self, actor_dto):
 
         #BaseSocialDao._fill_public_key(actor_dto)
-        #gCon.log(f"store {actor_dto}")
 
         found = False
         for k, server_inf in self.servers.items():
@@ -119,7 +110,6 @@ class SimpleSocialDao(BaseSocialDao):
         actor_dto.act.actor_id = self.next_act_id
         self.next_act_id += 1
 
-        #gCon.log(f"Now the server inf is {server_inf}")
 
         server_inf['users'][actor_dto.act.preferred_username] = \
                 json.dumps(asdict(actor_dto))

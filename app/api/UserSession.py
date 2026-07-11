@@ -41,11 +41,11 @@ class EUserState(IntEnum):
 # ensures that an alias is logged and has an active session
 def active_login(inner_syscall):
 
-    async def check_logged(self, session, pars):
+    async def check_logged(kernel, session, pars):
         if not session.is_login_valid():
             gCon.log("NO LOGIN")
             raise AdelphosCoreException(ECoreErrno.ENOLOGIN)
-        return await inner_syscall(self, session, pars)
+        return await inner_syscall(kernel, session, pars)
 
     return check_logged
 
