@@ -12,6 +12,7 @@
 ######################################################
 
 
+import re
 import httpx
 import pytest
 import httpx
@@ -177,6 +178,23 @@ def test_real_alias_create_sync(get_routable_app):
             data = websocket.receive_text()
             assert data == "Login OK, check your Mastodon inbox to get the token."
 
+            count_msg = user_ob.count_msg()
+            assert count_msg == 1
+
+            msg = user_ob.pop_lst_msg()
+            gCon.log(f"GOT {msg.content}")
+            match_tk = re.match('Copy this command to finalize', msg.content)
+            assert match_tk is not None
+
+            token_tk = re.search(r"tk (.*)$", msg.content)
+            assert token_tk is not None
+            token = token_tk.group(1)
+            token = token[:-1]
+
+            websocket.send_text(f"alias.put_token tk {token}")
+            data = websocket.receive_text()
+            assert data == f"Login OK, welcome to adelphos, lino.ferre."
+ 
 
 def Xtest_real_remote_add_simple(get_routable_app):
     test1 = get_routable_app('test100', tconf.adelphos_stub, 

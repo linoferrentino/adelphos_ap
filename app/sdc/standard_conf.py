@@ -128,12 +128,18 @@ syscalls_suffix = """
       alias:
         class: app.core.sys.AliasCalls.AliasCalls
         syscalls:
-            - name: login
-              pars:
-                login:
-                  required: true
-                password:
-                  required: true
+
+          - name: login
+            pars:
+              login:
+                required: true
+              password:
+                required: true
+
+          - name: put_token
+            pars:
+              tk:
+                required: true
 
       dbg:
           class: app.core.sys.DebugModule.DebugModule

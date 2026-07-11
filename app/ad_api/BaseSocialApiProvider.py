@@ -82,25 +82,12 @@ class AsyncCtx:
                 await self.async_cond.wait()
 
 
-#class BaseSocialApiProvider(SocialApiProvider, SysCallGateway):
 class BaseSocialApiProvider(SocialApiProvider):
 
     def __init__(self, vhost):
         super().__init__(vhost)
-        #self.contexts = dict()
         self.remote_api_id = WrapInt()
         self.async_contexts = dict()
-        #self.rpc_gateway = SysCallGateway('rpc_providers')
-
-
-    #def _get_syscall(self, context, cmd):
-    #    rpcs = self.contexts.get(context)
-    #    if rpcs is None:
-    #        raise Exception(f"unknonw context to run {context}")
-    #    rpc = rpcs.get(cmd)
-    #    if rpc is None:
-    #        raise Exception(f"No such remote call {context}/{rpc}")
-    #    return rpc
 
 
     async def remote_req(self, context, cmd, host, **kwargs):

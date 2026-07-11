@@ -25,8 +25,11 @@ from app.logging import gCon
 #from app.api.AdelphosException import AdelphosException
 #from app.api.AdelphosException import EAdelhposErrno
 
-from app.exc.AdelphosException import AdelphosException
-from app.exc.AdelphosException import AdErrno
+#from app.exc.AdelphosException import AdelphosException
+#from app.exc.AdelphosException import AdErrno
+from app.core.AdelphosCoreException import AdelphosCoreException
+from app.core.ECoreErrno import ECoreErrno
+
 
 # these are the states for the user.
 class EUserState(IntEnum):
@@ -41,7 +44,7 @@ def active_login(inner_syscall):
     async def check_logged(self, session, pars):
         if not session.is_login_valid():
             gCon.log("NO LOGIN")
-            raise AdelphosException(AdErrno.ENOLOGIN)
+            raise AdelphosCoreException(ECoreErrno.ENOLOGIN)
         return await inner_syscall(self, session, pars)
 
     return check_logged
@@ -49,18 +52,42 @@ def active_login(inner_syscall):
 
 class UserSession:
 
-    def __init__(self, gateway):
-        self.gateway = gateway
-        self.user = None
+    def __init__(self, kernel):
+        self.kernel = kernel
+        #self.user = None
+        self.user_state = EUserState.NOT_LOGGED
+
+    #def get_user(self):
+    #    return self.user
 
 
-    def get_user(self):
-        return self.user
+    #def is_login_valid(self):
+    #    return False
+
+    def login_start(self, alias, family, actor_dto):
+
+        self.alias = alias
+        self.family = family
+        self.token = secrets.token_urlsafe()
+        self.session_age = datetime.now()
+        self.user_state = EUserState.LOGGED_WITHOUT_TOKEN
+        return self.token
 
 
-    def is_login_valid(self):
-        return False
+    @property
+    def alias_family(self):
+        return f"{self.alias}.{self.family}"
 
+
+    def accept_token(self, token):
+        if (self.user_state == EUserState.LOGGED_AND_TOKEN):
+            raise AdelphosCoreException(ECoreErrno.ELOGGED, 
+                                        f"Alread logged {self.alias}")
+        if (self.user_state != EUserState.LOGGED_WITHOUT_TOKEN):
+            raise AdelphosCoreException(ECoreErrno.ENOLOGIN, "Please login first.")
+        if (self.token != token):
+            raise AdelphosCoreException(ECoreErrno.EWRONG_TOKEN)
+        self.user_state = EUserState.LOGGED_AND_TOKEN
 
 
 # the user session stores all the data that is accumulating during the

@@ -20,6 +20,8 @@ from app.dao.ApActorDao import ApActorDao
 from app.dao.ApActorDto import ApActorDto
 from app.dao.ApActorDto import ApActorImpl
 from app.logging import gCon
+from app.core.AdelphosCoreException import AdelphosCoreException
+from app.core.ECoreErrno import ECoreErrno
 
 
 create_schema_sql = \
@@ -79,7 +81,16 @@ class SqliteSocialDao(BaseSocialDao):
         return actor_dto
 
 
-    def actor_get_from_id(self, actor_id):
+    def actor_get_from_id(self, actor_id, maybe = False):
+        actor_dto = self.actor_get_from_id_try(actor_id)
+        if actor_dto is not None:
+            return actor_dto
+        if maybe == True:
+            return None 
+        raise AdelphosCoreException(ECoreErrno.ESYS, f"{actor_id} actor_id not found")
+
+
+    def actor_get_from_id_try(self, actor_id):
         actor_impl = self.actor_dao.get_from_id(actor_id)
         if actor_impl is None:
             return None

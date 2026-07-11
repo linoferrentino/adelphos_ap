@@ -20,6 +20,9 @@ class ECoreErrno(IntEnum):
     EDUPLICATED_FAMILY = 1
     EINVALID_USER_OR_PASSWORD = 2
     EINVALID_ALIAS_SYNTAX = 3
+    ENOLOGIN = 4
+    EWRONG_TOKEN = 5
+    ELOGGED = 6
     
 
     EFDB = 998

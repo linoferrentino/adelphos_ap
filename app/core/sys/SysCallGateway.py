@@ -164,7 +164,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
             raise Exception(f"unknonw context to run {context}")
         rpc = rpcs.get(cmd)
         if rpc is None:
-            raise Exception(f"No such remote call {context}/{rpc}")
+            raise Exception(f"No such remote call {context}.{cmd}")
         return rpc
 
 

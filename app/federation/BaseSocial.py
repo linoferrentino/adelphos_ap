@@ -132,6 +132,7 @@ class BaseSocial(SocialProvider):
             raise AdelphosException(AdErrno.USER_ALREADY_EXISTING)
         gCon.log(f"Instance {id(self)} user {user} does not exist, will add it")
         self.users[user] = UserInbox(actor_dto, listener)
+        self.actor_listener = actor_dto
 
 
     def remove_listener(self, user):
@@ -145,6 +146,7 @@ class BaseSocial(SocialProvider):
 
         gCon.log(f"instance {id(self)} user {user} delisted")
         del self.users[user]
+        self.actor_listener = None
  
 
     def login_user(self, user):
@@ -158,6 +160,11 @@ class BaseSocial(SocialProvider):
             raise Exception(f"No user {from_user}")
         social_gw = self.vhost.get_dep(Dependencies.SOCIAL_GATEWAY)
         await social_gw.out_outbox(user.actor_dto, recipient, message)
+
+
+    async def out_msg_listener_to_actor(self, actor_dto, message):
+        social_gw = self.vhost.get_dep(Dependencies.SOCIAL_GATEWAY)
+        await social_gw.out_outbox_dtos(self.actor_listener, actor_dto, message)
 
 
     async def incoming_message(self, actor_from, recipient, message):

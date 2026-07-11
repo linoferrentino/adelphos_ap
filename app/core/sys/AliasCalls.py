@@ -35,9 +35,20 @@ class AliasCalls:
         social_dao = kernel.get_dep(Dependencies.SOCIAL_DAO)
         actor_dto = social_dao.actor_get_from_id(actor_id)
         gCon.log(f"login OK for {actor_dto}")
+        token = session.login_start(alias, family, actor_dto)
+        social = kernel.get_dep(Dependencies.SOCIAL)
+        await social.out_msg_listener_to_actor(actor_dto,
+                f"Copy this command to finalize login 'alias.put_token tk {token}'")
         return "Login OK, check your Mastodon inbox to get the token."
 
 
+    @staticmethod
+    async def _sys_call_put_token(kernel, session, pars):
+        token = pars['tk']
+        session.accept_token(token)
+        return f"Login OK, welcome to adelphos, {session.alias_family}."
+
+ 
     @staticmethod
     @federated_transaction(raise_if_fail = False)
     async def login(kernel, alias, family, password, t_id):

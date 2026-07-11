@@ -52,6 +52,11 @@ class SocialProvider(Dependency, SyncLifespanAware):
 
 
     @abstractmethod
+    async def out_msg_listener_to_actor(self, actor_dto, message):
+        pass
+
+
+    @abstractmethod
     def add_listener(self, user, listener):
         pass
 
