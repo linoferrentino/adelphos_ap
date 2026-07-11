@@ -63,9 +63,6 @@ class SysCallGateway(Dependency, SyncLifespanAware):
                                     f"{cp.cmd} not understood.")
         (context, cmd) = ctx_cmd
         syscall = self.get_syscall(context, cmd)
-        if syscall is None:
-            raise AdelphosException(AdErrno.ENOSUCH_SYSCALL,
-                                    f"{context}.{cmd}, no such command.")
         kernel = self.vhost
         kwargs = self._create_params_dict_from_cmd_line(cp, syscall)
 
@@ -161,10 +158,12 @@ class SysCallGateway(Dependency, SyncLifespanAware):
     def get_syscall(self, context, cmd):
         rpcs = self.contexts.get(context)
         if rpcs is None:
-            raise Exception(f"unknonw context to run {context}")
+            raise AdelphosException(AdErrno.ENOSUCH_SYSCALL,
+                                    f"unknonw context to run {context}")
         rpc = rpcs.get(cmd)
         if rpc is None:
-            raise Exception(f"No such remote call {context}.{cmd}")
+            raise AdelphosException(AdErrno.ENOSUCH_SYSCALL, 
+                                    f"No such remote call {context}.{cmd}")
         return rpc
 
 

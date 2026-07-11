@@ -11,7 +11,7 @@
 #
 ######################################################
 
-#from app.core.EAdErrno import ECoreErrno
+from app.core.ECoreErrno import ECoreErrno
 from app.core.AdelphosCoreException import AdelphosCoreException
 from argon2 import PasswordHasher
 import app.misc.alias_utils as au
@@ -80,7 +80,7 @@ class AliasCalls:
         try:
             res = ph.verify(password_hashed, password)
         except:
-            raise AdelphosException(ECoreErrno.EINVALID_USER_OR_PASSWORD,
+            raise AdelphosCoreException(ECoreErrno.EINVALID_USER_OR_PASSWORD,
                                     f"{alias}.{family}")
         return alias_ob().val('actor_id')
 

@@ -19,6 +19,7 @@ from app.logging import gCon
 from starlette.websockets import WebSocket
 from starlette.routing import Route
 from starlette.routing import WebSocketRoute
+from starlette.responses import HTMLResponse
 
 #import app.sdc.s_utils as sdc
 from app.sdc.Dependencies import Dependencies
@@ -29,8 +30,9 @@ class AdelphosCliRouter(CliRouter):
     def __init__(self, vhost):
        self.vhost = vhost 
 
+
     async def in_daemon_cli(self, request):
-        config = self.vhost.get_dep(Dependencies.CONFIG)
+        config = self.vhost.conf()
 
         #host = self.vhost.config['General']['host']
         host = config.get_host()

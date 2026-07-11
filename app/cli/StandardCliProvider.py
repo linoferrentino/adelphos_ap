@@ -19,6 +19,7 @@ from app.logging import gCon
 from app.cli.CliParser import CliParser
 from app.sdc.Dependencies import Dependencies
 from app.exc.AdelphosException import AdelphosException
+from app.core.AdelphosCoreException import AdelphosCoreException
 from app.api.UserSession import UserSession
 
 import app.sdc.s_utils as sdc
@@ -65,6 +66,8 @@ class StandardCliClient:
             await self._internal_serve()
         except AdelphosException as err:
             await self.websocket.send_text(f"User Error: {err.out_str}")
+        except AdelphosCoreException as errcore:
+            await self.websocket.send_text(f"Core Error: {errcore.out_str}")
 
 
 class StandardCliProvider(CliProvider):

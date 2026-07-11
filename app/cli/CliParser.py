@@ -12,6 +12,8 @@
 ######################################################
 
 
+from app.exc.AdelphosException import AdelphosException
+from app.exc.AdelphosException import AdErrno
 import shlex
 
 class CliParser:
@@ -42,8 +44,7 @@ class CliParser:
         if (default is not None):
             return default
 
-        raise Exception(f"Required parameter {param} not found \
-and default not given")
+        raise AdelphosException(AdErrno.EREQUIRED_PARAMETER_MISSING, param)
 
 
     def get_bool_param_safe(self, param, default = None):
