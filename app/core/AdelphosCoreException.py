@@ -18,13 +18,13 @@ class AdelphosBaseException(Exception):
 
     def __init__(self, realm, errno, detail = None):
         self.realm = realm
-        self.errno = errno
+        self._errno = errno
         self.detail = detail
 
 
     @property
     def out_str(self):
-        out_str = f"Adelphos {self.realm} error #{self.errno}#"
+        out_str = f"Adelphos {self.realm} error #{self._errno}#"
         if self.detail is not None:
             out_str += f">: {self.detail}"
         return out_str
@@ -36,6 +36,11 @@ class AdelphosBaseException(Exception):
         if re_match is None:
             return -1
         return int(re_match.group(1))
+
+
+    @property
+    def errno(self):
+        return int(self._errno)
 
 
     @staticmethod

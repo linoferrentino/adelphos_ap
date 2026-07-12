@@ -31,10 +31,8 @@ class AliasCalls:
         password = pars['password']
         (alias, family) = au.split_alias(login)
         actor_id = await AliasCalls.login_safe(kernel, alias, family, password)
-        gCon.log(f"login ok for actor {actor_id}")
         social_dao = kernel.get_dep(Dependencies.SOCIAL_DAO)
         actor_dto = social_dao.actor_get_from_id(actor_id)
-        gCon.log(f"login OK for {actor_dto}")
         token = session.login_start(alias, family, actor_dto)
         social = kernel.get_dep(Dependencies.SOCIAL)
         await social.out_msg_listener_to_actor(actor_dto,
@@ -65,7 +63,6 @@ class AliasCalls:
 
         alias_uri = AdelphosUri(EAdelphosType.ALIAS_TYPE, alias, family = family)
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-        gCon.log(f"checking uri {alias_uri}")
 
         alias_ob = await fdb.uri_read_no_lock(t_id, alias_uri, True)
 
@@ -73,8 +70,7 @@ class AliasCalls:
             raise AdelphosCoreException(ECoreErrno.EINVALID_USER_OR_PASSWORD,
                                         f"{alias}.{family}")
 
-        gCon.log(f"checking login for {alias_ob()}")
-        password_hashed = alias_ob().get_primitive_value('password')
+        password_hashed = alias_ob().get_scalar('password')
 
         ph = PasswordHasher()
         try:
@@ -82,5 +78,5 @@ class AliasCalls:
         except:
             raise AdelphosCoreException(ECoreErrno.EINVALID_USER_OR_PASSWORD,
                                     f"{alias}.{family}")
-        return alias_ob().val('actor_id')
+        return alias_ob().get_scalar('actor_id')
 

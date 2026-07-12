@@ -58,6 +58,16 @@ classes:
           cardinality: array
           required: false
 
+        - name: boss
+          type: str
+          cardinality: scalar
+          required: true
+
+        - name: members
+          type: str
+          cardinality: array
+          required: true
+
 """
 
 

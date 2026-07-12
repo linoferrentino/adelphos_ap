@@ -33,7 +33,6 @@ class DebugModule:
         recipient = pars['to']
         msg = pars['msg']
         from_user = pars['from']
-        gCon.log(f"sending message {msg} to {recipient} from {from_user}")
         social = kernel.get_dep(Dependencies.SOCIAL)
         await social.outgoing_message(from_user, recipient, msg)
         return 'DONE!'

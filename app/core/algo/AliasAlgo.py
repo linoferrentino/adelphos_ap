@@ -65,7 +65,10 @@ class AliasAlgo:
         if is_present_family is True:
             raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY)
 
-        family_ob = await fdb.new_ob_uri(t_id, family_uri)
+        family_ob = await fdb.new_ob_uri(t_id, family_uri, fields = {
+            'boss' : name,
+            'members' : [ name, ],
+            })
         family_ob().add_phantom_link()
 
         ph = PasswordHasher()

@@ -12,15 +12,16 @@
 ######################################################
 
 
+import json
+import dataclasses
+
+from enum import IntEnum
 from dataclasses import dataclass
 from dataclasses import asdict
 from dataclasses import field
-import dataclasses
 from datetime import datetime
-import json
-from app.logging import gCon
-from enum import IntEnum
 
+from app.logging import gCon
 from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
 
@@ -42,16 +43,6 @@ def ensure_lock(func):
     return _locked_or_croak
 
 
-def ensure_val_type(atype):
-    def ensure_this_type(func):
-        def is_val_type_or_die(self, key, val):
-            if isinstance(val, atype) == False:
-                raise FdbException(EFdbErrors.EFDB_INVALID_VAL_TYPE)
-            return func(self, key, val)
-        return is_val_type_or_die
-    return ensure_this_type
-
-
 def enforce_schema(func):
     def _inner_enforce(self, key, val):
         schema = self.registrar.pars
@@ -59,8 +50,10 @@ def enforce_schema(func):
         if par is None:
             raise FdbException(EFdbErrors.EFDB_UNKNOWN_COLUMN, key)
         if par.cardinality != FObCardType.SCALAR:
-            raise FdbException(EFdbErrors.EFDB_SCALAR_NOT_EXPECTED, key)
-        gCon.log(f"enforcing {par}")
+            raise FdbException(EFdbErrors.EFDB_SCALAR_EXPECTED, key)
+
+        FederatedObject.enforce_scalar(val, par.typecol)
+
         return func(self, key, val)
 
     return _inner_enforce
@@ -89,8 +82,8 @@ class FObCardType(IntEnum):
 
     SCALAR = 0
     ARRAY = 1
-    LIST = 2
-    STACK = 3
+    #LIST = 2
+    #STACK = 3
 
 
 class FObReqType(IntEnum):
@@ -138,8 +131,23 @@ class FederatedObject:
 
 
     @staticmethod
-    def _enforce_type(col_val, col_type):
+    def enforce_def(col_val, col_def):
+        if col_def.cardinality == FObCardType.SCALAR:
+            FederatedObject.enforce_scalar(col_val, col_def.typecol)
+        else:
+            if isinstance(col_val, list) == False:
+                raise FdbException(EFdbErrors.EFDB_ITEARABLE_EXPECTED)
+            for val in col_val:
+                FederatedObject.enforce_scalar(val, col_def.typecol)
+
+
+    @staticmethod
+    def enforce_scalar(col_val, col_type):
         match col_type:
+            case FObColType.DATETIME:
+                exp_type = datetime
+            case FObColType.JSON:
+                exp_type = dict
             case FObColType.INTEGER:
                 exp_type = int
             case FObColType.STRING:
@@ -148,21 +156,20 @@ class FederatedObject:
                 exp_type = float
             case FObColType.BOOL:
                 exp_type = bool
+            case FObColType.LOCAL_URI:
+                exp_type = str
             case _:
-                exp_type = None
+                raise FdbException(EFdbErrors.EFDB_INVALID_VAL_TYPE)
 
-        if exp_type is not None:
-            if isinstance(col_val, exp_type) == False:
-                raise FdbException(EFdbErrors.INVALID_COLUMN_TYPE, 
-                f"exp {exp_type} found {type(col_val)}")
-            return col_val
+        if isinstance(col_val, exp_type) == False:
+            raise FdbException(EFdbErrors.INVALID_COLUMN_TYPE, 
+            f"exp {exp_type} found {type(col_val)}")
 
-        assert col_type == FObColType.DATETIME
 
 
     @staticmethod
-    def _enforce_not_uri(cold_def):
-        if cold_def != FObColType.URI:
+    def _enforce_not_uri(col_def):
+        if col_def != FObColType.URI:
             return
         raise FdbException(EFdbErrors.EFDB_URIS_MUST_BE_NULLS)
 
@@ -177,23 +184,21 @@ class FederatedObject:
 
         for col_name, col_def in schema.items():
 
-            if col_def.cardinality != FObCardType.SCALAR:
-                self.ob.fields[col_name] = []
-                continue
-
-            col_val = None
+            col_field = fields.get(col_name)
             match col_def.required:
                 case FObReqType.REQUIRED:
+
                     FederatedObject._enforce_not_uri(col_def.typecol)
                     col_val = fields.get(col_name)
                     if col_val is None:
                         raise FdbException(EFdbErrors.EFDB_REQUIRED_FIELD_MISSING, col_name) 
-                    col_val = FederatedObject._enforce_type(col_val, col_def.typecol)
+                    FederatedObject.enforce_def(col_val, col_def)
                 case FObReqType.NO_REQUIRED_DEFAULT_NULL:
-                    pass
+                    col_val = col_field
                 case FObReqType.NO_REQUIRED_DEFAULT_VALUE:
                     FederatedObject._enforce_not_uri(col_def.typecol)
-                    col_val = col_def.default_value
+                    col_val = col_def.default_value if col_field is None else col_field
+
             self.ob.fields[col_name] = col_val
 
     
@@ -202,11 +207,7 @@ class FederatedObject:
         return store_str
 
 
-    def get_primitive_value(self, key, maybe = False):
-        return self.ob.fields[key]
-
-
-    def val(self, key, maybe = False):
+    def get_scalar(self, key, maybe = False):
         if maybe == False:
             return self.ob.fields[key]
         val = self.ob.fields.get(key)
@@ -215,10 +216,6 @@ class FederatedObject:
         if maybe == True:
             return None
         raise AttributeError(key)
-
-
-    def get_link(self, key):
-        prev_link = self.ob.fields.get(key)
 
 
     def add_phantom_link(self):
@@ -265,16 +262,14 @@ class FederatedObject:
 
     @ensure_lock
     def _inc_ref_ob(self):
-        # 0 is valid, it might be created in this transaction.
         assert self.ob.ref_count >= 0
         self.ob.ref_count += 1
         self.modified = True
 
 
     @ensure_lock
-    @ensure_val_type(str)
     @enforce_schema
-    def set_primitive_value(self, key, val):
+    def set_scalar(self, key, val):
         if self.ob.fields.get(key) != val:
             self.ob.fields[key] = val
             self.modified = True

@@ -82,7 +82,17 @@ classes:
         - name: ob_json
           type: json
           cardinality: scalar
-          required: false
+          required: true
+
+
+    - uri_prefix: t_str_array
+      can_be_root: false
+      columns:
+        - name: members
+          type: local_uri 
+          cardinality: array
+          required: true
+
 
     - uri_prefix: al
       can_be_root: true

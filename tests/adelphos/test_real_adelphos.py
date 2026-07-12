@@ -182,7 +182,6 @@ def test_real_alias_create_sync(get_routable_app):
             assert count_msg == 1
 
             msg = user_ob.pop_lst_msg()
-            gCon.log(f"GOT {msg.content}")
             match_tk = re.match('Copy this command to finalize', msg.content)
             assert match_tk is not None
 

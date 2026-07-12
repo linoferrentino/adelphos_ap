@@ -13,6 +13,8 @@
 
 
 from enum import IntEnum
+from app.core.AdelphosCoreException import AdelphosBaseException
+
 
 class EFdbErrors(IntEnum):
     FDB_OK = 0
@@ -31,18 +33,13 @@ class EFdbErrors(IntEnum):
     EFDB_URIS_MUST_BE_NULLS = 13
     EFDB_EXTRA_FIELD = 14
     EFDB_UNKNOWN_COLUMN = 15
-    EFDB_SCALAR_NOT_EXPECTED = 16
+    EFDB_ITEARABLE_EXPECTED = 16
+    EFDB_SCALAR_EXPECTED = 17
 
 
-class FdbException(Exception):
+class FdbException(AdelphosBaseException):
 
     def __init__(self, error: EFdbErrors, msg = None):
-        super().__init__(msg)
-        self.errno = error
-
-    def __str__(self):
-        out_str = f"Federated Db Error #{self.errno}#. Details: "
-        out_str += super().__str__()
-        return out_str
+        super().__init__("Federated Db", error, msg)
 
 
