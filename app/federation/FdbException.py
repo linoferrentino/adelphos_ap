@@ -10,7 +10,7 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
 
 from enum import IntEnum
 
@@ -30,9 +30,10 @@ class EFdbErrors(IntEnum):
     EFDB_REQUIRED_FIELD_MISSING = 12
     EFDB_URIS_MUST_BE_NULLS = 13
     EFDB_EXTRA_FIELD = 14
+    EFDB_UNKNOWN_COLUMN = 15
+    EFDB_SCALAR_NOT_EXPECTED = 16
 
 
-# I have a FdbException
 class FdbException(Exception):
 
     def __init__(self, error: EFdbErrors, msg = None):

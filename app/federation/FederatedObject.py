@@ -10,7 +10,7 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
 
 from dataclasses import dataclass
 from dataclasses import asdict
@@ -23,15 +23,6 @@ from enum import IntEnum
 
 from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
-
-# this is the basic class that holds a federated object,
-# the federated db is responsible for its life cycle
-
-# a federated object is an object which is identified by a federated uri.
-
-
-# the federated object can be built from a string and serialize itself
-# to a string: 
 
 
 def str_to_fob(uri_ob, registrar, str_ob, locked = False):
@@ -63,9 +54,13 @@ def ensure_val_type(atype):
 
 def enforce_schema(func):
     def _inner_enforce(self, key, val):
-        #schema = self.get_schema()
-        #if schema is not None:
-        gCon.log(f"enforcing!!!!! {key} - {val}")
+        schema = self.registrar.pars
+        par = schema.get(key)
+        if par is None:
+            raise FdbException(EFdbErrors.EFDB_UNKNOWN_COLUMN, key)
+        if par.cardinality != FObCardType.SCALAR:
+            raise FdbException(EFdbErrors.EFDB_SCALAR_NOT_EXPECTED, key)
+        gCon.log(f"enforcing {par}")
         return func(self, key, val)
 
     return _inner_enforce
@@ -87,6 +82,7 @@ class FObColType(IntEnum):
     BOOL = 4
     URI = 5
     LOCAL_URI = 6
+    JSON = 7
 
 
 class FObCardType(IntEnum):

@@ -135,6 +135,12 @@ syscalls_suffix = """
               user:
                 required: true
 
+          - name: set_equity
+            pars:
+              equity:
+                required: true
+
+
       alias:
         class: app.core.sys.AliasCalls.AliasCalls
         syscalls:

@@ -12,8 +12,6 @@
 ######################################################
 
 
-# the base class that can create the objects in a federated store:
-
 from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
 from app.federation.FederatedObject import FObColumnDefinition, FObColType, \
@@ -28,7 +26,6 @@ from app.logging import gCon
 class FederatedFactoryRegistrar:
     
     can_be_root : bool
-    #needs_family : bool
     pars: dict = field(default_factory = dict)
 
 
@@ -59,6 +56,8 @@ class FederatedFactory:
                 return FObColType.REAL
             case 'local_uri':
                 return FObColType.LOCAL_URI
+            case 'json':
+                return FObColType.JSON
             case _:
                 raise Exception(f"Invalid col type {col_type_str}")
 
@@ -68,6 +67,8 @@ class FederatedFactory:
         match cardinality_str:
             case 'scalar':
                 return FObCardType.SCALAR
+            case 'array':
+                return FObCardType.ARRAY
             case _:
                 raise Exception(f"Invalid cardinality {cardinality_str}")
 

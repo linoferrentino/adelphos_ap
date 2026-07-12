@@ -67,10 +67,22 @@ classes:
           cardinality: scalar
           required: false
           default: 101
+        - name: key1
+          type: str
+          cardinality: scalar
+          required: false
 
     - uri_prefix: '{TYPE_T2}'
       can_be_root: false
       columns: []
+
+    - uri_prefix: t_json
+      can_be_root: false
+      columns:
+        - name: ob_json
+          type: json
+          cardinality: scalar
+          required: false
 
     - uri_prefix: al
       can_be_root: true

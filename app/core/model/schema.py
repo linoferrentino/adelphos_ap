@@ -38,6 +38,11 @@ classes:
           cardinality: scalar
           required: true
 
+        - name: tasks
+          type: json 
+          cardinality: array
+          required: false
+
     - uri_prefix: {EAdelphosType.FAMILY_TYPE}
       can_be_root: false
 
@@ -46,6 +51,11 @@ classes:
         - name: equity
           type: real
           cardinality: scalar
+          required: false
+
+        - name: invites
+          type: json 
+          cardinality: array
           required: false
 
 """

@@ -72,7 +72,6 @@ async def a_test_new_object_f(fdb1_loc):
     assert val_int == 99
 
 
-#@pytest.fixture
 async def a_fdb1_loc_a(fdb1_loc):
 
     t_id = await fdb1_loc.begin_transaction()
@@ -81,10 +80,8 @@ async def a_fdb1_loc_a(fdb1_loc):
         })
     fob().set_primitive_value('key1', 'val1')
     await fdb1_loc.commit_transaction(t_id)
-    #return fdb1_loc
 
 
-#@pytest.fixture
 async def a_fdb1_link_a(fdb1_loc):
 
     await a_fdb1_loc_a(fdb1_loc)
@@ -269,6 +266,17 @@ async def a_test_create_alias(fdb1_loc):
             'equity' : 99.2
             })
     gCon.log(f"exception {fex.value}")
+
+
+
+def test_json_field(fdb1_loc):
+    run_coro_in_loop(a_test_json_field, (fdb1_loc,))
+
+
+async def a_test_json_field(fdb1_loc):
+
+    t1uri = FederatedUriTest('t_json', 'tj1')
+    t_id = await fdb1_loc.begin_transaction()
 
 
 def test_set_uri_local(fdb1_loc):
