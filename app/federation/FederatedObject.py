@@ -169,9 +169,15 @@ class FederatedObject:
 
     @staticmethod
     def _enforce_not_uri(col_def):
-        if col_def != FObColType.URI:
-            return
-        raise FdbException(EFdbErrors.EFDB_URIS_MUST_BE_NULLS)
+        if ((col_def == FObColType.URI) or (col_def == FObColType.LOCAL_URI)):
+            raise FdbException(EFdbErrors.EFDB_URIS_MUST_BE_NULLS)
+
+
+    @staticmethod
+    def is_uri(col_def):
+        if ((col_def == FObColType.URI) or (col_def == FObColType.LOCAL_URI)):
+            return True
+        return False
 
 
     def _enforce_schema_init(self, fields):
@@ -187,12 +193,14 @@ class FederatedObject:
             col_field = fields.get(col_name)
             match col_def.required:
                 case FObReqType.REQUIRED:
-
-                    FederatedObject._enforce_not_uri(col_def.typecol)
-                    col_val = fields.get(col_name)
-                    if col_val is None:
-                        raise FdbException(EFdbErrors.EFDB_REQUIRED_FIELD_MISSING, col_name) 
-                    FederatedObject.enforce_def(col_val, col_def)
+                    if col_field is None:
+                        if FederatedObject.is_uri(col_def.typecol) == False:
+                            raise FdbException(EFdbErrors.EFDB_REQUIRED_FIELD_MISSING,
+                                           col_name) 
+                    else:
+                        FederatedObject._enforce_not_uri(col_def.typecol)
+                        FederatedObject.enforce_def(col_field, col_def)
+                    col_val = col_field
                 case FObReqType.NO_REQUIRED_DEFAULT_NULL:
                     col_val = col_field
                 case FObReqType.NO_REQUIRED_DEFAULT_VALUE:
@@ -220,6 +228,11 @@ class FederatedObject:
 
     def add_phantom_link(self):
         self._inc_ref_ob()
+
+
+    @ensure_lock
+    def set_link(self, key, new_ob):
+        self.compare_and_swap_link(self, key, None, new_ob)
 
 
     @ensure_lock

@@ -263,11 +263,16 @@ def test_create_alias(fdb1_loc):
 async def a_test_create_alias(fdb1_loc):
     t1uri = FederatedUriTest('al', 'a')
     t_id = await fdb1_loc.begin_transaction()
+
     with pytest.raises(FdbException) as fex:
-        fob = await fdb1_loc.new_ob_uri(t_id, t1uri, fields = {
-            'equity' : 99.2
-            })
-    gCon.log(f"exception {fex.value}")
+        fob = await fdb1_loc.new_ob_uri(t_id, t1uri)
+
+    assert fex.value.errno == EFdbErrors.EFDB_REQUIRED_FIELD_MISSING
+
+    fob = await fdb1_loc.new_ob_uri(t_id, t1uri, fields = { 'equity' : 99.2 })
+
+    assert fob().get_scalar('equity') == 99.2
+
 
 
 
@@ -278,14 +283,14 @@ def test_str_array(fdb1_loc):
 async def a_test_str_array(fdb1_loc):
     t1uri = FederatedUriTest('t_str_array', 'tj1')
     t_id = await fdb1_loc.begin_transaction()
-    with pytest.raises(FdbException) as fex:
-        fob = await fdb1_loc.new_ob_uri(t_id, t1uri)
-    assert fex.value.errno == EFdbErrors.EFDB_REQUIRED_FIELD_MISSING
-    fields = {
-            'members': [ 'al1', ],
-            }
+    fob = await fdb1_loc.new_ob_uri(t_id, t1uri)
+    #with pytest.raises(FdbException) as fex:
+    #assert fex.value.errno == EFdbErrors.EFDB_REQUIRED_FIELD_MISSING
+    #fields = {
+    #        'members': [ 'al1', ],
+    #        }
 
-    fob = await fdb1_loc.new_ob_uri(t_id, t1uri, fields = fields)
+    #fob = await fdb1_loc.new_ob_uri(t_id, t1uri, fields = fields)
 
 
 def test_json_field(fdb1_loc):

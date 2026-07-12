@@ -59,12 +59,12 @@ classes:
           required: false
 
         - name: boss
-          type: str
+          type: local_uri 
           cardinality: scalar
           required: true
 
         - name: members
-          type: str
+          type: local_uri 
           cardinality: array
           required: true
 
