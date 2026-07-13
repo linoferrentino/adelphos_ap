@@ -295,9 +295,11 @@ class FederatedObject:
         cur_value = self.ob.fields[key]
         if par.cardinality == FObCardType.SET:
             if cur_value is None:
-                cur_value = { ob().uri.unparse() }
+                cur_set = { ob().uri.unparse() }
             else:
-                temp_set = set()
+                cur_set = set(cur_value)
+                cur_set.add(ob.uri.unparse())
+            self.ob.fields[key] = list(cur_set)
         elif par.cardinality == FObCardType.ARRAY:
             raise Exception("TO DO")
         else:

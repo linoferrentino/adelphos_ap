@@ -65,7 +65,7 @@ classes:
 
         - name: members
           type: local_uri 
-          cardinality: array
+          cardinality: set
           required: true
 
 """

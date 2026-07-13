@@ -13,6 +13,7 @@
 
 
 import pytest
+import re
 from app.federation.FederatedStore import FederatedStore
 from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
@@ -296,14 +297,16 @@ async def a_test_str_array(fdb1_loc):
     
     with pytest.raises(FdbException) as fex:
         fob().set_link('members', fob_dep)
-    gCon.log(f"this is the ex {fex.value}")
-
-    fob().add_link('members', fob_dep)
-    gCon.log(f"HERE!")
+    assert fex.value.errno == EFdbErrors.EFDB_SCALAR_UNEXPECTED
 
     with pytest.raises(FdbException) as fex:
         await fdb1_loc.commit_transaction(t_id)
-    gCon.log(f"this is the ex {fex.value}")
+    assert fex.value.errno == EFdbErrors.EFDB_REQUIRED_FIELD_MISSING
+    assert re.search('members$', fex.value.out_str)
+
+    fob().add_link('members', fob_dep)
+
+    await fdb1_loc.commit_transaction(t_id)
 
     
 def test_json_field(fdb1_loc):
