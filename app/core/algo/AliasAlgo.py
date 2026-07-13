@@ -79,4 +79,7 @@ class AliasAlgo:
         alias_ob = await fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
                                       name, family = family, fields = fields)
 
+        family_ob().set_link('boss', alias_ob)
+        family_ob().add_link('members', alias_ob)
+        
 

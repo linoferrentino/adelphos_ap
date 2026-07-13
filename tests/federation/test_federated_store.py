@@ -274,8 +274,6 @@ async def a_test_create_alias(fdb1_loc):
     assert fob().get_scalar('equity') == 99.2
 
 
-
-
 def test_str_array(fdb1_loc):
     run_coro_in_loop(a_test_str_array, (fdb1_loc,))
 
@@ -284,15 +282,30 @@ async def a_test_str_array(fdb1_loc):
     t1uri = FederatedUriTest('t_str_array', 'tj1')
     t_id = await fdb1_loc.begin_transaction()
     fob = await fdb1_loc.new_ob_uri(t_id, t1uri)
-    #with pytest.raises(FdbException) as fex:
-    #assert fex.value.errno == EFdbErrors.EFDB_REQUIRED_FIELD_MISSING
-    #fields = {
-    #        'members': [ 'al1', ],
-    #        }
+    fob().add_phantom_link()
 
-    #fob = await fdb1_loc.new_ob_uri(t_id, t1uri, fields = fields)
+    with pytest.raises(FdbException) as fex:
+        await fdb1_loc.commit_transaction(t_id)
 
+    assert fex.value.errno == EFdbErrors.EFDB_REQUIRED_FIELD_MISSING
 
+    tlink_uri = FederatedUriTest(TYPE_T1, 'a', host = LOCALHOST)
+    fob_dep = await fdb1_loc.new_ob_uri(t_id, tlink_uri, fields = {
+        'key_int' : 1032
+        })
+    
+    with pytest.raises(FdbException) as fex:
+        fob().set_link('members', fob_dep)
+    gCon.log(f"this is the ex {fex.value}")
+
+    fob().add_link('members', fob_dep)
+    gCon.log(f"HERE!")
+
+    with pytest.raises(FdbException) as fex:
+        await fdb1_loc.commit_transaction(t_id)
+    gCon.log(f"this is the ex {fex.value}")
+
+    
 def test_json_field(fdb1_loc):
     run_coro_in_loop(a_test_json_field, (fdb1_loc,))
 

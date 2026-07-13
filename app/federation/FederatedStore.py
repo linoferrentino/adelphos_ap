@@ -100,6 +100,7 @@ class FederatedTransaction:
 
 
     def _update_uri_str(self, key_str, fob):
+        fob.enforce_schema_before_commit()
         self.fdb.db.set(key_str, fob.to_store_str())
 
 
@@ -114,8 +115,6 @@ class FederatedTransaction:
 
     def t_commit(self):
 
-        # the commit in a federated transaction has become a local commit
-        # in the local db, because all federated objects have been locked.
         try:
 
             self._check_read_consistency()
@@ -126,16 +125,19 @@ class FederatedTransaction:
 
             self._do_creates()
 
-            # If I am here I can commit the result
             self.fdb.db.commit()
 
+            return
+
         except FdbException as fdbex:
-            self.fdb.db.rollback()
+            fdex = fdbex
 
         except Exception as ex:
             traceback.print_exc()
-            raise
+            fdex = FdbException(EFdbErrors.EFDB_INTERNAL_ERROR, str(ex)) 
 
+        self.fdb.db.rollback()
+        raise fdex
 
     def new_ob(self, fob):
         key_uri = fob.uri.unparse()

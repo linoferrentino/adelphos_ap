@@ -15,8 +15,7 @@
 
 from app.federation.FederatedFactory import FederatedFactory
 from app.federation.FederatedObject import FederatedObject
-from app.federation.FederatedObject import FObColumnDefinition, FObColType, \
-        FObCardType, FObReqType
+from app.federation.FederatedObject import FObColumnDefinition, FObColType, FObCardType 
 from app.federation.FederatedUri import FederatedUri
 from app.federation.FederatedFactory import FederatedFactoryRegistrar
 
@@ -71,6 +70,10 @@ classes:
           type: str
           cardinality: scalar
           required: false
+        - name: uses
+          type: local_uri
+          cardinality: scalar
+          required: false
 
     - uri_prefix: '{TYPE_T2}'
       can_be_root: false
@@ -90,8 +93,9 @@ classes:
       columns:
         - name: members
           type: local_uri 
-          cardinality: array
+          cardinality: set
           required: true
+          minimum_cardinality: 1
 
 
     - uri_prefix: al

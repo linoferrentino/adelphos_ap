@@ -14,8 +14,7 @@
 
 from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
-from app.federation.FederatedObject import FObColumnDefinition, FObColType, \
-        FObCardType, FObReqType
+from app.federation.FederatedObject import FObColumnDefinition, FObColType, FObCardType
 from dataclasses import dataclass
 from dataclasses import field
 import app.misc.utils as misc
@@ -69,6 +68,8 @@ class FederatedFactory:
                 return FObCardType.SCALAR
             case 'array':
                 return FObCardType.ARRAY
+            case 'set':
+                return FObCardType.SET
             case _:
                 raise Exception(f"Invalid cardinality {cardinality_str}")
 
@@ -81,19 +82,19 @@ class FederatedFactory:
         col_type_id = FederatedFactory.translate_type(col_type_str)
         cardinality_str = col['cardinality']
         cardinality_id = FederatedFactory.translate_cardinality(cardinality_str)
-        required = col['required']
-        def_value = None
-        if required == False:
-            def_value = col.get('default') 
-            if def_value is None:
-                required_type = FObReqType.NO_REQUIRED_DEFAULT_NULL
-            else:
-                required_type = FObReqType.NO_REQUIRED_DEFAULT_VALUE
-        else:
-            required_type = FObReqType.REQUIRED
+        required = col.get('required', True)
+        def_value = col.get('default') 
+        minimum_cardinality = col.get('minimum_cardinality', 0)
+        #if required == False:
+        #    if def_value is None:
+        #        required_type = FObReqType.NO_REQUIRED_DEFAULT_NULL
+        #    else:
+        #        required_type = FObReqType.NO_REQUIRED_DEFAULT_VALUE
+        #else:
+        #    required_type = FObReqType.REQUIRED
 
         col_def = FObColumnDefinition(col_type_id, cardinality_id,
-                                      required_type, def_value)
+                                      required, def_value, minimum_cardinality)
 
         registrar.pars[col_name] = col_def
 
