@@ -85,7 +85,9 @@ class FederatedTransaction:
 
     def _do_updates(self):
         for k,v in self.locked_uris.items():
+            gCon.log(f"check {k} -> {v}")
             if v.ob.ref_count == 0:
+                gCon.log(f"will delete {v}")
                 self._delete_uri_str(k)
                 continue
             if v.modified == False:
@@ -376,6 +378,7 @@ class FederatedStore(Dependency, LifespanAware):
         rctx.uri_str = rctx.uri_ob.unparse()
         rctx.fob = rctx.tob.get_ob(rctx.uri_str)
         if rctx.fob is not None:
+            gCon.log(f"Found object {rctx.fob}")
             return
 
         #gCon.log(f"searching {rctx.uri_str}")

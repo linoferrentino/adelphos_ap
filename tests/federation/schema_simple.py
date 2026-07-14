@@ -10,8 +10,10 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
 
+
+
+import re
 
 from app.federation.FederatedFactory import FederatedFactory
 from app.federation.FederatedObject import FederatedObject
@@ -19,6 +21,8 @@ from app.federation.FederatedObject import FObColumnDefinition, FObColType, FObC
 from app.federation.FederatedUri import FederatedUri
 from app.federation.FederatedFactory import FederatedFactoryRegistrar
 
+from app.exc.AdelphosException import AdelphosException
+from app.exc.AdelphosException import AdErrno
 
 TYPE_T1 = "TYPE_T1"
 TYPE_T2 = "TYPE_T2"
@@ -37,8 +41,26 @@ class FederatedUriTest(FederatedUri):
         return base_name
 
 
-    def parse(self, uri_str):
-        pass
+    @staticmethod
+    def create_uri(uri_type, object_part, *, host_part = None, fragment = None):
+        uri = FederatedUriTest(uri_type, object_part, host = host_part,
+                               fragment = fragment)
+        return uri
+
+
+    @classmethod
+    def divide_type_name(cls, object_part):
+        type_name_match = re.match(
+r"XX_test_type_(\w*?)/name=(\w*)$", object_part)
+
+        if (type_name_match is None):
+            raise AdelphosException(AdErrno.EINVALID_URI, 
+f"Illegal URI {object_part} I was expecting something like #<type>#<name>")
+
+        uri_type = type_name_match.group(1)
+        name_part= type_name_match.group(2)
+
+        return (uri_type, name_part)
 
 
 schema_simple_yaml = f"""

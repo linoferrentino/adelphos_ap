@@ -173,6 +173,11 @@ class FederatedObject:
             self.ts_locked = None
 
 
+    def enforce_lock(self):
+        if self.ts_locked is None:
+            raise FdbException(EFdbErrors.EFDB_NO_LOCK_ON_OB)
+ 
+
     @staticmethod
     def enforce_def(col_name, col_val, col_def, before_commit = False):
         gCon.log(f"enforcing {col_name} value {col_val} with {col_def} commit {before_commit}")
@@ -192,6 +197,11 @@ class FederatedObject:
             if isinstance(col_val, list) == False:
                 gCon.log(f"col_val {col_val} is {type(col_val)}")
                 raise FdbException(EFdbErrors.EFDB_ITEARABLE_EXPECTED, col_val)
+
+            if col_def.minimum_cardinality is not None:
+                if len(col_val) < col_def.minimum_cardinality:
+                    raise FdbException(EFdbErrors.EFDB_CARDINALITY_LOWER,
+           f"{col_name} len {len(col_val)} < {col_def.minimum_cardinality}")
 
             for val in col_val:
                 FederatedObject.enforce_scalar(col_name, val, col_def, before_commit)
@@ -314,11 +324,34 @@ class FederatedObject:
         self._compare_and_swap_link_impl(key, None, new_ob)
 
 
-    @enforce_schema_not_scalar
+    @enforce_set
     def get_set(self, key):
         cur_value = self.ob.fields[key]
+        gCon.log(f"get_set {key} return {cur_value}")
         return set(cur_value)
 
+
+    @enforce_set
+    @ensure_lock
+    def remove_set(self, key, ob):
+        ob().enforce_lock()
+        schema = self.registrar.pars
+        par = schema.get(key)
+        cur_value = self.ob.fields[key]
+        gCon.log(f"cur_value {key} {cur_value}")
+        if cur_value is None:
+            raise FdbException(EFdbErrors.EFDB_VALUE_NOT_PRESENT, key)
+        uri_str = ob().uri.unparse()
+        uri_set = set(cur_value)
+        if uri_str not in uri_set:
+            raise FdbException(EFdbErrors.EFDB_VALUE_NOT_PRESENT, key)
+        uri_set.remove(uri_str)
+        uri_list = list(uri_set)
+        gCon.log(f"new value {uri_list}")
+        self.ob.fields[key] = uri_list
+        ob()._dec_ref_ob()
+        self.modified = True
+        
 
     @ensure_lock
     @enforce_schema_not_scalar
@@ -383,6 +416,7 @@ class FederatedObject:
         assert self.ob.ref_count > 0
         self.ob.ref_count -= 1
         self.modified = True
+        gCon.log(f"dec ref {self.ob.ref_count}")
 
 
     @ensure_lock

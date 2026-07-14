@@ -61,10 +61,7 @@ f"Illegal adelphos uri {uri} more than one '@'")
 
 
     @classmethod
-    def parse(cls, uri):
-
-        (object_part, host_part) = FederatedUri._divide_local_host_part(uri)
-
+    def divide_type_name(cls, object_part):
         type_name_match = re.match(
 r"#([a-z0-9\.-_]{2})#([^#]*)$", object_part)
 
@@ -74,6 +71,16 @@ f"Illegal URI {object_part} I was expecting something like #<type>#<name>")
 
         uri_type = type_name_match.group(1)
         name_part= type_name_match.group(2)
+
+        return (uri_type, name_part)
+
+
+    @classmethod
+    def parse(cls, uri):
+
+        (object_part, host_part) = FederatedUri._divide_local_host_part(uri)
+
+        (uri_type, name_part) = cls.divide_type_name(object_part)
 
         uri_ob = cls.create_uri(uri_type, name_part, host_part = host_part)
 

@@ -325,10 +325,34 @@ async def a_test_uri_set(fdb1_loc):
     set_members = fob_set().get_set('members')
     assert len(set_members) == 1
     member = list(set_members)[0]
-    gCon.log(f"Deleting uri {member}")
+    gCon.log(f"Deleting uri {member} from {set_members}")
 
-    fob_member = await fdb1_loc.uri_read_lock(t_id, member)
+    uri_ob = FederatedUriTest.parse(member)
+
+    fob_member = await fdb1_loc.uri_read_no_lock(t_id, uri_ob)
     assert fob_member() is not None
+
+    set_members = fob_set().get_set('members')
+    assert len(set_members) == 1
+ 
+    with pytest.raises(FdbException) as fex:
+        fob_set().remove_set('members', fob_member)
+    assert fex.value.errno == EFdbErrors.EFDB_NO_LOCK_ON_OB
+
+    set_members = fob_set().get_set('members')
+    assert len(set_members) == 1
+
+    fob_lock = await fdb1_loc.uri_read_lock(t_id, uri_ob)
+    assert fob_lock() is not None
+    assert fob_lock() != fob_member()
+
+    fob_set_lock = await fdb1_loc.uri_read_lock(t_id, t1uri)
+
+    fob_set_lock().remove_set('members', fob_lock)
+
+    with pytest.raises(FdbException) as fex:
+        await fdb1_loc.commit_transaction(t_id)
+    assert fex.value.errno == EFdbErrors.EFDB_CARDINALITY_LOWER
 
     
 def test_json_field(fdb1_loc):
