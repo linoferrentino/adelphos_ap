@@ -101,7 +101,9 @@ class FederatedTransaction:
 
     def _update_uri_str(self, key_str, fob):
         fob.enforce_schema_before_commit()
-        self.fdb.db.set(key_str, fob.to_store_str())
+        ob_str = fob.to_store_str()
+        gCon.log(f"storing {key_str} = {ob_str}")
+        self.fdb.db.set(key_str, ob_str)
 
 
     def _release_all_locks(self):
@@ -323,8 +325,6 @@ class FederatedStore(Dependency, LifespanAware):
 
     async def new_ob(self, t_id, ob_type, name, *, fields = {} , **kwargs):
 
-        #gCon.log(f"new ob in {threading.current_thread().native_id}")
-
         registrar = self.fact.get_registrar(ob_type)
         if registrar is None:
             raise FdbException(EFdbErrors.EFDB_UNKNOWN_TYPE, ob_type)
@@ -402,11 +402,7 @@ class FederatedStore(Dependency, LifespanAware):
         raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB, rctx.uri_str)
 
 
-    def uri_read_lock(self, t_id, uri_ob):
-        return run_coro_in_loop(self.uri_read_lock_coro, (t_id, uri_ob))
-
-
-    async def uri_read_lock_coro(self, t_id, uri_ob):
+    async def uri_read_lock(self, t_id, uri_ob):
         rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = True) 
         await self._read_ctx(rctx)
         return weakref.ref(rctx.fob)

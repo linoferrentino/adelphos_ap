@@ -10,7 +10,7 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
 
 
 # Every object in adelphos is identified by this URI
@@ -18,6 +18,10 @@
 from enum import StrEnum
 from app.federation.FederatedUri import FederatedUri
 from dataclasses import dataclass
+from app.exc.AdelphosException import AdelphosException
+from app.exc.AdelphosException import AdErrno
+from app.logging import gCon
+import app.misc.alias_utils as au
 
 
 class EAdelphosType(StrEnum):
@@ -47,8 +51,11 @@ class AdelphosUri(FederatedUri):
 
         uri_local += f"@{self.host}"
         return uri_local
-
      
-    def parse(self, uri_str):
-        raise Exception("TODO")
-        pass
+
+    def create_uri(uri_type, name_part, *, host_part = None, fragment = None):
+        (alias, family) = au.split_alias(name_part, True)
+        uri = AdelphosUri(uri_type, alias, family = family,
+                          host = host_part, fragment = fragment)
+        return uri
+     

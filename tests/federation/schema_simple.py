@@ -47,7 +47,7 @@ uri_constructor: 'tests.federation.schema_simple.FederatedUriTest'
 
 classes:
     - uri_prefix: '{TYPE_T1}'
-      can_be_root: true
+      can_be_root: true 
       columns:
         - name: 'key_int'
           type: 'int'
@@ -88,14 +88,23 @@ classes:
           required: true
 
 
-    - uri_prefix: t_str_array
-      can_be_root: false
+    - uri_prefix: t_uri_set
+      can_be_root: true
       columns:
         - name: members
           type: local_uri 
           cardinality: set
           required: true
           minimum_cardinality: 1
+
+
+    - uri_prefix: t_member
+      can_be_root: false
+      columns:
+        - name: name 
+          type: str
+          cardinality: scalar
+          required: true
 
 
     - uri_prefix: al

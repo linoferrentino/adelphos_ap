@@ -46,7 +46,7 @@ async def a_test_new_object_f(fdb1_loc):
             }
 
     fob1 = await fdb1_loc.new_ob(t_id, TYPE_T1, "ob1", fields = fields)
-    assert fob1 != None
+    assert fob1() is not None
     val_int = fob1().get_scalar('key_int')
     assert val_int == 99
     val_str = fob1().get_scalar('key_str')
@@ -56,8 +56,11 @@ async def a_test_new_object_f(fdb1_loc):
     val_int = fob1().get_scalar('int_def')
     assert val_int == 101
 
-    with pytest.raises(KeyError):
+    with pytest.raises(FdbException) as fex:
+        #with pytest.raises(KeyError) as fex:
         val_str = fob1().get_scalar('key_str111')
+    assert fex.value.errno == EFdbErrors.EFDB_UNKNOWN_COLUMN
+    del fex
 
     await fdb1_loc.commit_transaction(t_id)
 
@@ -275,24 +278,23 @@ async def a_test_create_alias(fdb1_loc):
     assert fob().get_scalar('equity') == 99.2
 
 
-def test_str_array(fdb1_loc):
-    run_coro_in_loop(a_test_str_array, (fdb1_loc,))
+def test_uri_set(fdb1_loc):
+    run_coro_in_loop(a_test_uri_set, (fdb1_loc,))
 
 
-async def a_test_str_array(fdb1_loc):
-    t1uri = FederatedUriTest('t_str_array', 'tj1')
+async def a_test_uri_set(fdb1_loc):
+    t1uri = FederatedUriTest('t_uri_set', 'tj1')
     t_id = await fdb1_loc.begin_transaction()
     fob = await fdb1_loc.new_ob_uri(t_id, t1uri)
-    fob().add_phantom_link()
 
     with pytest.raises(FdbException) as fex:
         await fdb1_loc.commit_transaction(t_id)
 
     assert fex.value.errno == EFdbErrors.EFDB_REQUIRED_FIELD_MISSING
 
-    tlink_uri = FederatedUriTest(TYPE_T1, 'a', host = LOCALHOST)
-    fob_dep = await fdb1_loc.new_ob_uri(t_id, tlink_uri, fields = {
-        'key_int' : 1032
+    tmember_uri = FederatedUriTest('t_member', 'member_lino', host = LOCALHOST)
+    fob_dep = await fdb1_loc.new_ob_uri(t_id, tmember_uri, fields = {
+        'name' : 'lino'
         })
     
     with pytest.raises(FdbException) as fex:
@@ -307,6 +309,26 @@ async def a_test_str_array(fdb1_loc):
     fob().add_link('members', fob_dep)
 
     await fdb1_loc.commit_transaction(t_id)
+
+    t_id = await fdb1_loc.begin_transaction()
+
+    fob = await fdb1_loc.uri_read_no_lock(t_id, tmember_uri)
+    assert fob() is not None
+    assert fob().get_scalar('name') == 'lino'
+
+    fob_set = await fdb1_loc.uri_read_no_lock(t_id, t1uri)
+
+    with pytest.raises(FdbException) as fex:
+        set_members = fob_set().get_scalar('members')
+    assert fex.value.errno == EFdbErrors.EFDB_SCALAR_EXPECTED
+
+    set_members = fob_set().get_set('members')
+    assert len(set_members) == 1
+    member = list(set_members)[0]
+    gCon.log(f"Deleting uri {member}")
+
+    fob_member = await fdb1_loc.uri_read_lock(t_id, member)
+    assert fob_member() is not None
 
     
 def test_json_field(fdb1_loc):

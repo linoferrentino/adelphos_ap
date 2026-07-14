@@ -34,6 +34,7 @@ class AdErrno(IntEnum):
     EREQUIRED_PARAMETER_MISSING = 11
     EGENERIC_USER_ERROR = 12
     EINVALID_SYNTAX = 13
+    EINVALID_URI = 14
 
 
 class AdelphosException(AdelphosBaseException):

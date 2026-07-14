@@ -45,14 +45,40 @@ def ensure_lock(func):
     return _locked_or_croak
 
 
+def enforce_schema_scalar(func):
+    def _inner_enforce(self, key, *args):
+        schema = self.registrar.pars
+        par = schema.get(key)
+        if par is None:
+            raise FdbException(EFdbErrors.EFDB_UNKNOWN_COLUMN, key)
+        if par.cardinality != FObCardType.SCALAR:
+            raise FdbException(EFdbErrors.EFDB_SCALAR_EXPECTED, key)
+
+        return func(self, key, *args)
+
+    return _inner_enforce
+
+
 def enforce_schema_not_scalar(func):
-    def _inner_enforce(self, key, val, *args):
+    def _inner_enforce(self, key, *args):
         schema = self.registrar.pars
         par = schema.get(key)
         if par.cardinality == FObCardType.SCALAR:
-            raise FdbException(EFdbErrors.EFDB_SCALAR_EXPECTED, key)
+            raise FdbException(EFdbErrors.EFDB_SCALAR_UNEXPECTED, key)
 
-        return func(self, key, val, *args)
+        return func(self, key, *args)
+
+    return _inner_enforce
+
+
+def enforce_set(func):
+    def _inner_enforce(self, key, *args):
+        schema = self.registrar.pars
+        par = schema.get(key)
+        if par.cardinality != FObCardType.SET:
+            raise FdbException(EFdbErrors.EFDB_SET_EXPECTED, key)
+
+        return func(self, key, *args)
 
     return _inner_enforce
 
@@ -266,6 +292,7 @@ class FederatedObject:
         return store_str
 
 
+    @enforce_schema_scalar
     def get_scalar(self, key, maybe = False):
         if maybe == False:
             return self.ob.fields[key]
@@ -287,18 +314,28 @@ class FederatedObject:
         self._compare_and_swap_link_impl(key, None, new_ob)
 
 
+    @enforce_schema_not_scalar
+    def get_set(self, key):
+        cur_value = self.ob.fields[key]
+        return set(cur_value)
+
+
     @ensure_lock
     @enforce_schema_not_scalar
     def add_link(self, key, ob):
         schema = self.registrar.pars
         par = schema.get(key)
         cur_value = self.ob.fields[key]
+        uri_str = ob().uri.unparse()
         if par.cardinality == FObCardType.SET:
             if cur_value is None:
-                cur_set = { ob().uri.unparse() }
+                cur_set = { uri_str }
+                ob()._inc_ref_ob()
             else:
                 cur_set = set(cur_value)
-                cur_set.add(ob.uri.unparse())
+                if uri_str not in cur_set:
+                    cur_set.add(uri_str)
+                    ob()._inc_ref_ob()
             self.ob.fields[key] = list(cur_set)
         elif par.cardinality == FObCardType.ARRAY:
             raise Exception("TO DO")
