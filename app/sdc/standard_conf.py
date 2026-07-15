@@ -193,6 +193,9 @@ syscalls_suffix = """
                     required: true
                 password:
                     required: true
+                equity:
+                    required: true
+                    par_type: float
 
       sapi:
           class: app.ad_api.BaseSocialApiProvider.BaseSocialApiProvider

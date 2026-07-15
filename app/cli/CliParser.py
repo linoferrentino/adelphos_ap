@@ -15,6 +15,7 @@
 from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
 import shlex
+from app.logging import gCon
 
 class CliParser:
 
@@ -33,6 +34,10 @@ class CliParser:
                 continue
             self.cmd_dict[cur_key] = tk
             cur_key = None
+
+
+    def get_par(self, param):
+        return self.cmd_dict[param]
 
 
     def get_param_safe(self, param, default = None):

@@ -24,7 +24,7 @@ uri_constructor: app.core.model.AdelphosUri.AdelphosUri
 classes:
 
     - uri_prefix: {EAdelphosType.ALIAS_TYPE}
-      can_be_root: true
+      can_be_root: false 
 
       columns:
 
@@ -44,14 +44,14 @@ classes:
           required: false
 
     - uri_prefix: {EAdelphosType.FAMILY_TYPE}
-      can_be_root: false
+      can_be_root: true
 
       columns:
 
         - name: equity
           type: real
           cardinality: scalar
-          required: false
+          required: true
 
         - name: invites
           type: json 

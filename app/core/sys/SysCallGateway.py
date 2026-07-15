@@ -71,7 +71,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
 
     @staticmethod
-    def _create_params_dict_from_cmd_line(cp, syscall):
+    def OLD_create_params_dict_from_cmd_line(cp, syscall):
         kwargs = dict()
         for par in syscall.pars:
             try:
@@ -85,6 +85,31 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
         return kwargs
 
+    @staticmethod
+    def _create_params_dict_from_cmd_line(cp, syscall):
+        kwargs = dict()
+        for par in syscall.pars:
+            try:
+                val_str = cp.get_par(par.name)
+                match par.par_type:
+                    case 'str':
+                        val_final = val_str
+                    case 'bool':
+                        val_final = bool(val_str)
+                    case 'float':
+                        val_final = float(val_str)
+                    case 'int':
+                        val_final = int(val_str)
+            except Exception as ex:
+                if par.required:
+                    raise AdelphosException(
+                        AdErrno.EREQUIRED_PARAMETER_MISSING, par.name) from ex
+                else:
+                    val_final = par.def_value
+            kwargs[par.name] = val_final
+
+        return kwargs
+
 
     @staticmethod
     def _get_pars(provider):
@@ -94,7 +119,12 @@ class SysCallGateway(Dependency, SyncLifespanAware):
             default_value = None
             if required == False:
                 default_value = value.get('default_value')
-            par = SysCallPar(par_name, required, default_value)
+            par_type = value.get('par_type', 'str')
+            if ((par_type != 'str') and (par_type != 'int') and
+                (par_type != 'bool') and (par_type != 'float')):
+                raise AdelphosException(AdErrno.EINVALID_SYSCALL_PARAM_TYPE,
+                                        f"{par_name}, type {par_type} unknown")
+            par = SysCallPar(par_name, required, par_type, default_value)
             par_list.append(par)
         return par_list
 
@@ -125,7 +155,6 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
         config = kernel.conf()
         syscalls_providers = config.get_conf(realm)
-
 
         syscalls = list()
 

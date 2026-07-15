@@ -33,29 +33,33 @@ class AliasAlgo:
     async def _sys_call_create(kernel, envelope, pars):
         alias_name = pars['name']
         password = pars['password']
+        equity = pars['equity']
 
         (alias, family) = au.split_alias(alias_name, True)
 
         await AliasAlgo.alias_create_safe(kernel, envelope.actor_from.act.actor_id,
-                                     alias, family, password)
+                                     alias, family, password, equity)
         return "Alias created, you can login, now."
 
 
     @staticmethod
     @federated_transaction(raise_if_fail = False)
-    async def alias_create(kernel, actor_id, name, family, password, t_id):
+    async def alias_create(kernel, actor_id, name, family, password,
+                           equity, t_id):
         return await AliasAlgo._alias_create_impl(kernel, actor_id, 
-                                            name, family, password, t_id)
+                        name, family, password, equity, t_id)
  
 
     @staticmethod
     @federated_transaction(raise_if_fail = True)
-    async def alias_create_safe(kernel, actor_id, name, family, password, t_id):
+    async def alias_create_safe(kernel, actor_id, name, family, password,
+                                equity, t_id):
         return await AliasAlgo._alias_create_impl(kernel, actor_id, 
-                                            name, family, password, t_id)
+                        name, family, password, equity, t_id)
  
 
-    async def _alias_create_impl(kernel, actor_id, name, family, password, t_id):
+    async def _alias_create_impl(kernel, actor_id, name,
+                                 family, password, equity, t_id):
 
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
@@ -65,7 +69,9 @@ class AliasAlgo:
         if is_present_family is True:
             raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY)
 
-        family_ob = await fdb.new_ob_uri(t_id, family_uri)
+        family_ob = await fdb.new_ob_uri(t_id, family_uri, fields = {
+            'equity' : equity
+            })
         family_ob().add_phantom_link()
 
         ph = PasswordHasher()

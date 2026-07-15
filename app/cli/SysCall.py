@@ -20,7 +20,8 @@ from dataclasses import field
 class SysCallPar:
     name: str
     required: bool
-    def_value: str = None
+    par_type: str
+    def_value: str
 
 
 @dataclass

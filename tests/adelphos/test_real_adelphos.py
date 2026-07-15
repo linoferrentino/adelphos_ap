@@ -144,7 +144,7 @@ def test_real_alias_create_sync(get_routable_app):
                 Dependencies.SOCIAL).login_user(user_ok)
 
         stests.send_to_daemon_ctx(test1, test2, host2,
-            "alias.create name linoxferre password secret", user_ok)
+            "alias.create name linoxferre password secret equity 10", user_ok)
 
         count_msg = user_ob.count_msg()
         assert count_msg == 1
@@ -155,7 +155,7 @@ def test_real_alias_create_sync(get_routable_app):
         assert "linoxferre" == AdelphosBaseException.parse_detail(msg.content)
 
         stests.send_to_daemon_ctx(test1, test2, host2,
-            "alias.create name lino.ferre password secret", user_ok)
+            "alias.create name lino.ferre password secret equity 10", user_ok)
 
         count_msg = user_ob.count_msg()
         assert count_msg == 1
@@ -164,7 +164,7 @@ def test_real_alias_create_sync(get_routable_app):
         assert msg.content == 'Alias created, you can login, now.'
 
         stests.send_to_daemon_ctx(test1, test2, host2,
-            "alias.create name basso.ferre password secret99", user_ok)
+            "alias.create name basso.ferre password secret99 equity 10", user_ok)
 
         count_msg = user_ob.count_msg()
         assert count_msg == 1
