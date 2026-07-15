@@ -34,7 +34,6 @@ from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
 from app.federation.FederatedUri import FederatedUri
 from app.federation.FederatedFactory import FederatedFactory
-from app.federation.Kernel import Kernel
 
 from app.transport.bridge.loop import run_coro_in_loop
 from app.store.MemoryStore import MemoryStore

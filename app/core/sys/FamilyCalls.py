@@ -26,10 +26,9 @@ class FamilyCalls:
 
     @staticmethod
     @active_login
-    async def _sys_call_set_equity(kernel, session, pars):
+    async def _sys_call_increase_equity(kernel, session, pars):
         pass
  
-
 
     @federated_transaction
     async def family_invite():

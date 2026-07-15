@@ -62,29 +62,7 @@ from app.logging import gCon
 from app.core.sys.DebugModule import DebugModule
 
 
-#SOCIAL_USER = 'adelphos'
 
-
-class Adelphos(Kernel):
-
-    def __init__(self, vhost):
-        super().__init__(vhost)
-        gCon.log(f"[yellow]Creating Adelphos instance {id(self)}[/yellow]")
-
-
-    def get_cli_syscalls(self):
-        syscalls = []
-        if self.vhost.conf().is_test_instance():
-            syscalls.extend(DebugModule.get_syscalls(self))
-        return syscalls
-
-
-    #def get_social_syscalls(self):
-    #    return []
-
-
-    #def get_social_api_calls(self):
-    #    return []
 
    
 # Adelphos is the main object which orchestrates all the messages.

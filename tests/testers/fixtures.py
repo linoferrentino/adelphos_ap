@@ -16,7 +16,6 @@ import pytest
 import json
 
 from app.federation.SocialProvider import SocialProvider
-from app.federation.Kernel import Kernel
 
 from tests.testers.SyncGateway import SyncGateway
 from app.transport.bridge.loop import stop_loop, get_loop

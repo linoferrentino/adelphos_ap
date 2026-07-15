@@ -41,10 +41,8 @@ class BackdoorNet(BackdoorRouter):
         match cliparser.cmd:
             case 'discover_uri':
                 uri = cliparser.get_param_safe('uri')
-                #gCon.log(f"get uri {uri}")
                 transport = self.vhost.get_dep(Dependencies.TRANSPORT)
                 answer = await transport.get_json(uri)
-                gCon.log(f"answer {answer} type {type(answer)}")
                 return Response(status_code=202, content = answer)
             case _:
                 return Response(status_code=405)

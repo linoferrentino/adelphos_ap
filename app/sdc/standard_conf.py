@@ -88,6 +88,8 @@ testable_kernel_suffix_template = """
       port: {_port_}
       host: localhost:{_port_} 
       api_point: null
+      root: {_root_handle_}
+      root_password: {_root_password_}
 
     social_dao:
       db_name: ':memory:'
@@ -135,7 +137,7 @@ syscalls_suffix = """
               user:
                 required: true
 
-          - name: set_equity
+          - name: increase_equity 
             pars:
               equity:
                 required: true

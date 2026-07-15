@@ -43,6 +43,7 @@ classes:
           cardinality: array
           required: false
 
+
     - uri_prefix: {EAdelphosType.FAMILY_TYPE}
       can_be_root: true
 

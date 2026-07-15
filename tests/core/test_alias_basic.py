@@ -46,7 +46,7 @@ def test_add_alias(w_local):
 async def a_test_add_alias(w_local):
 
     kernel = w_local.kernel
-    res = await AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre', 'pass')
+    res = await AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre', 'pass', 1.0)
     assert (res == ECoreErrno.DONE_OK)
 
 
@@ -57,18 +57,18 @@ def test_add_dup_family(w_local):
 async def a_test_add_dup_family(w_local):
 
     kernel = w_local.kernel
-    res = await AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre', 'pass')
+    res = await AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre', 'pass', 1.0)
     assert (res == ECoreErrno.DONE_OK)
-    res = await AliasAlgo.alias_create(kernel, 0, 'alice', 'famal', 'pass99')
+    res = await AliasAlgo.alias_create(kernel, 0, 'alice', 'famal', 'pass99', 1.0)
     assert (res == ECoreErrno.DONE_OK)
-    res = await AliasAlgo.alias_create(kernel, 0, 'bob', 'ferre', 'pass')
+    res = await AliasAlgo.alias_create(kernel, 0, 'bob', 'ferre', 'pass', 1.0)
     assert res == -ECoreErrno.EDUPLICATED_FAMILY
 
 
 def OLDAP_test_login_pass(w_local):
 
 
-    lino_id = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass')
+    lino_id = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass', 1.0)
     res = w_local.alias_algo.login('lino', 'ferre', 'pass')
     assert res == lino_id
 

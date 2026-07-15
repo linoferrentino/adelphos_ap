@@ -17,31 +17,22 @@ import httpx
 import pytest
 import httpx
 import time
-
-import app.consts as CNST
-from app.sdc.Dependencies import Dependencies
-import tests.adelphoi_test_config as tconf
-import tests.adelphoi_build_config as bconf
-
-#from app.sdc.standard_conf import adelphos_standard_configuration
-from app.logging import gCon
-from tests.testers.fixtures import get_standalone_app
-from tests.testers.fixtures import get_routable_app
-#from tests.testers.fixtures import get_routable_app_TEST
-
 from httpx_ws import aconnect_ws
-#from httpx_ws.transport import ASGIWebSocketTransport
-import tests.social.social_tests as stests
-import tests.daemon.daemon_tests as dtests
-#from app.exc.AdelphosException import parse_exc_str
-from app.exc.AdelphosException import AdErrno
 
+from app.core.AdelphosCoreException import AdelphosBaseException
 from app.core.AdelphosCoreException import AdelphosCoreException
 from app.core.ECoreErrno import ECoreErrno
+from app.exc.AdelphosException import AdErrno
+from app.logging import gCon
+from app.sdc.Dependencies import Dependencies
+from tests.testers.fixtures import get_routable_app
+from tests.testers.fixtures import get_standalone_app
 
+import app.consts as CNST
 import app.sdc.standard_conf as stdcnf
-from app.core.AdelphosCoreException import AdelphosBaseException
-
+import tests.adelphoi_test_config as tconf
+import tests.daemon.daemon_tests as dtests
+import tests.social.social_tests as stests
 
 def test_real1(get_standalone_app):
     ad1 = get_standalone_app('adelphos1', stdcnf.release_kernel_template,

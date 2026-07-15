@@ -66,6 +66,8 @@ adelphos_toy_1_conf = {
         '_demo_1_complete_name_': 'demo user 1',
         '_demo_2_nick_': 't2',
         '_demo_2_complete_name_': 'demo user 2',
+        '_root_handle_' : ':local:t1',
+        '_root_password_' : 'super_secret',
 }
 
 adelphos_toy_2_conf = {
@@ -76,6 +78,8 @@ adelphos_toy_2_conf = {
         '_demo_1_complete_name_': 'demo user 99',
         '_demo_2_nick_': 't100',
         '_demo_2_complete_name_': 'demo user 100',
+        '_root_handle_' : ':local:t99',
+        '_root_password_' : 'super_secret',
 }
 
 
@@ -87,6 +91,9 @@ adelphos_testable_1_conf = {
         '_demo_1_complete_name_': 'John Demo1',
         '_demo_2_nick_': 'demo2',
         '_demo_2_complete_name_': 'Mary Demo2',
+        '_root_handle_' : ':local:demo1',
+        '_root_password_' : 'tiger11',
+
 }
 
 
@@ -98,6 +105,8 @@ adelphos_testable_2_conf = {
         '_demo_1_complete_name_': 'demo77 alt',
         '_demo_2_nick_': 'demo88',
         '_demo_2_complete_name_': 'demo88 alt',
+        '_root_handle_' : ':local:demo77',
+        '_root_password_' : 'tiger12',
 }
 
 

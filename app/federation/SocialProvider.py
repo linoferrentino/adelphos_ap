@@ -75,6 +75,4 @@ class SocialProvider(Dependency, SyncLifespanAware):
     def set_user_tag(self, user, tag):
         pass
 
-    #@abstractmethod
-    #def is_allowed_rpc_host(self, user, context, is_query):
-    #    pass
+

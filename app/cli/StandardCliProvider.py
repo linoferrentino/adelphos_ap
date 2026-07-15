@@ -39,7 +39,6 @@ class StandardCliClient:
 
         while True:
             data = await self.websocket.receive_text()
-            #cp = CliParser(data)
             response = await self.cli_api.sys_call_gateway_msg(self.session, data)
             await self.websocket.send_text(response)
 
