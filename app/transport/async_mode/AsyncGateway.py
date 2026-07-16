@@ -19,6 +19,7 @@ import aiohttp
 import asyncio
 from app.logging import gCon
 from starlette.exceptions import HTTPException
+from app.transport.bridge.loop import get_loop
 
 
 class AsyncGateway(AbstractGateway):
@@ -26,7 +27,8 @@ class AsyncGateway(AbstractGateway):
 
     def __init__(self):
         try:
-            loop = asyncio.get_running_loop() 
+            #loop = asyncio.get_running_loop() 
+            loop = get_loop()
             self.loop = loop
         except RuntimeError:
             raise Exception("Async Gateway must be used with a running loop")

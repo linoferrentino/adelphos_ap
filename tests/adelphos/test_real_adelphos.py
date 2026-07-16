@@ -115,6 +115,13 @@ def test_get_daemon_cli(get_routable_app):
         assert match_instance is not None
 
 
+def test_create_root_user(get_routable_app):
+    test1 = get_routable_app('test100', stdcnf.release_kernel_template,
+                             tconf.adelphos_testable_1_conf)
+    with test1:
+        pass
+ 
+
 def test_real_remote_add(get_routable_app):
     test1 = get_routable_app('test100', stdcnf.release_kernel_template,
                              tconf.adelphos_testable_1_conf)

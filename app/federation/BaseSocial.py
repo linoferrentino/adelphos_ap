@@ -79,20 +79,25 @@ class BaseSocial(SocialProvider):
     def create_users(self, users):
 
         for user in users:
-            actor_dto = self.create_if_not_exists(user)
+
+            self.create_user(user)
+
+
+    def create_user(self, user):
+
+            actor_dto = self.get_or_create_actor(user)
 
             if user['login_shell'] == False:
-                #gCon.log(f"skipping non/login user: {user['preferredusername']}")
-                continue
-            #gCon.log(f"[red]create user {user['preferredusername']}[/red]")
-            self.users[user['preferredusername']] = \
-                    UserInbox(actor_dto)
+                return None
+
+            user_inbox = UserInbox(actor_dto)
+            self.users[user['preferredusername']] = user_inbox
+            return user_inbox
 
 
-    def _create_user(self, user):
+    def _create_actor(self, user):
         
         preferredusername = user['preferredusername']
-        #gCon.log(f"creating user {user}")
 
         user_path = API_POINT + f"/users/{preferredusername}"
         user_inbox = user_path + "/inbox"
@@ -118,7 +123,6 @@ class BaseSocial(SocialProvider):
         social_dao = self.kernel.get_dep(Dependencies.SOCIAL_DAO)
         social_dao.actor_store(actor)
         assert actor.act.public_key is not None
-        #gCon.log(f"this is the actor {actor}")
         return actor
 
 
@@ -178,17 +182,24 @@ class BaseSocial(SocialProvider):
         return user_stub
 
  
-    def local_user_get(self, user_name):
+    def local_user_get(self, user_name, *, create_if_not_exists = False):
         user_local = self.users.get(user_name)
-        #if user_local is None:
-        #    #gCon.log(f"{id(self)} user {user_name} not present")
+        if user_local is None:
+            if create_if_not_exists == False:
+                return None
+            user = {
+                    'preferredusername': user_name,
+                    'login_shell' : True,
+                    'name' : f"User {user_name} automatically created.",
+            }
+            user_local = self.create_user(user)
         return user_local
 
 
-    def create_if_not_exists(self, user):
+    def get_or_create_actor(self, user):
         actor_dto = self.social_dao.actor_get(self.host, user['preferredusername'])
         if actor_dto is None:
-            actor_dto = self._create_user(user)
+            actor_dto = self._create_actor(user)
         return actor_dto
 
 

@@ -13,6 +13,7 @@
 
 
 import pytest
+import time
 
 from starlette.testclient import TestClient
 from starlette.websockets import WebSocket
@@ -116,6 +117,8 @@ def test_post_inbox_ok(app, aroutable):
 
         social = aroutable.get_dep(Dependencies.SOCIAL)
         user_ob = social.login_user(user_in)
+
+        time.sleep(0.2)
 
         count_msg = user_ob.count_msg()
         assert count_msg == 1

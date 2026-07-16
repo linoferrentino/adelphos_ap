@@ -37,7 +37,7 @@ class SocialProvider(Dependency, SyncLifespanAware):
 
 
     @abstractmethod
-    def local_user_get(self, user_name):
+    def local_user_get(self, user_name, *, create_if_not_exists = False):
         pass
 
  

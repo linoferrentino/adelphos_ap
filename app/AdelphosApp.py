@@ -272,7 +272,7 @@ class AdelphosApp_deprecated:
 
 
     # Ugly! But it should be safe, we simply inject a task into the main loop
-    def get_json(self, url):
+    def get_json_UGLY(self, url):
 
         get_req = AsyncGetReq(url)
         loop = asyncio.get_running_loop()

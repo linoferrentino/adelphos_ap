@@ -91,7 +91,7 @@ adelphos_testable_1_conf = {
         '_demo_1_complete_name_': 'John Demo1',
         '_demo_2_nick_': 'demo2',
         '_demo_2_complete_name_': 'Mary Demo2',
-        '_root_handle_' : ':local:demo1',
+        '_root_handle_' : ':local:root8',
         '_root_password_' : 'tiger11',
 
 }

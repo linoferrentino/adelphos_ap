@@ -58,8 +58,8 @@ class Config:
         return self.config['conf']['social']
 
 
-    def get_social_gw_config(self):
-        return self.config['sdc']['social_gateway']
+    #def get_social_gw_config(self):
+    #    return self.config['sdc']['social_gateway']
 
 
     def get_social_dao_cnf(self):
@@ -70,16 +70,16 @@ class Config:
         return self.config['conf'].get(section)
 
 
-    def get_social_dao_build(self):
-        return self.config['sdc']['social_dao']
+    #def get_social_dao_build(self):
+    #    return self.config['sdc']['social_dao']
 
-    
-    def get_social_api_build(self):
-        return self.config['sdc']['social_api']
+    #
+    #def get_social_api_build(self):
+    #    return self.config['sdc']['social_api']
 
 
-    def get_social_type(self):
-        return self.config['sdc']['social']['type']
+    #def get_social_type(self):
+    #    return self.config['sdc']['social']['type']
 
 
     def is_test_instance(self):
