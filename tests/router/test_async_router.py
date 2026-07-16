@@ -127,6 +127,19 @@ def test_post_inbox_ok(app, aroutable):
         assert count_msg == 0
 
 
+def test_toy_daemon(app, aroutable):
+
+    with app:
+        daemon = aroutable.kernel.get_daemon('toy_init')
+        assert daemon.is_running
+
+    assert daemon.is_running == False
+
+    #with app:
+    #    assert daemon.is_running
+    #    assert daemon.cycles == 2
+
+
 def test_webfinger(app, aroutable):
     test1 = app
     with test1:

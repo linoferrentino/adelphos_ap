@@ -40,14 +40,6 @@ class AdelphosRouter(Routable):
     def __init__(self, kernel):
         super().__init__(kernel)
   
-        
-    #def get_dep(self, dep):
-    #    return self.vhost.get_dep(dep)
-
-
-    #def conf(self):
-    #    return self.vhost.conf()
-
 
     def set_transport(self, transport):
         self.kernel.set_dep(Dependencies.TRANSPORT, transport)

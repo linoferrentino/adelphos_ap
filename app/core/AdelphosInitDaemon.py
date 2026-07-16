@@ -12,8 +12,20 @@
 ######################################################
 
 
-class AdelphosInitDaemon(AdelphosDaemon)
+from app.core.Daemon import Daemon
+
+
+class AdelphosInitDaemon(Daemon):
 
     def __init__(self, kernel):
         super().__init__(kernel)
+
+
+    async def start_impl(self):
+        pass
+
+
+    async def stop_impl(self):
+        pass
+
 

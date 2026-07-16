@@ -11,27 +11,22 @@
 #
 ######################################################
 
-from abc import abstractmethod
-from app.sdc.Dependency import Dependency
 
-class AdelphosDaemon(Dependency):
+from app.core.Daemon import Daemon
+
+
+class ToyDaemon(Daemon):
 
     def __init__(self, kernel):
         super().__init__(kernel)
 
 
-    @abstractmethod
-    async def start(self):
+    async def start_impl(self):
         pass
 
 
-    @abstractmethod
-    async def stop(self):
+    async def stop_impl(self):
         pass
 
-
-    @abstractmethod
-    async def reload(self):
-        pass
 
 

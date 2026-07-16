@@ -24,10 +24,10 @@ import app.misc.utils as misc
 
 
 @dataclass
-class PriorityModule:
+class PriorityOb:
 
     priority: int
-    module: object
+    ob: object
 
     def __lt__(self, other):
         return self.priority < other.priority
@@ -46,11 +46,14 @@ class Kernel(LifespanAware):
         self.routable_modules = list()
         self.daemons = list()
 
+        self.daemons_dict = dict()
+        self.mods = dict()
+
         self._build_modules()
         self._build_daemons()
 
 
-    def _create_module(self, module_name, module):
+    def _create_dyn_object(self, module):
         module_builder_str = module['constructor']
         module_builder = misc.import_string(module_builder_str)
         kwargs = module.get('args')
@@ -59,24 +62,37 @@ class Kernel(LifespanAware):
             module_ob = module_builder(self)
         else:
             module_ob = module_builder(self, **kwargs)
-        self.mods[module_name] = module_ob
 
-        if (isinstance(module_ob, LifespanAware)):
-            prio_mod = Kernel.get_priority_mod(module, module_ob)
+        prio_mod = Kernel._get_priority_mod(module, module_ob)
+        return prio_mod
+
+
+    def _create_daemon(self, daemon_name, daemon):
+        prio_mod = self._create_dyn_object(daemon)
+        self.daemons.append(prio_mod)
+        self.daemons_dict[daemon_name] = prio_mod.ob
+
+
+    def _create_module(self, module_name, module):
+
+        prio_mod = self._create_dyn_object(module)
+
+        self.mods[module_name] = prio_mod.ob
+
+        if (isinstance(prio_mod.ob, LifespanAware)):
             self.async_modules.append(prio_mod)
 
-        elif (isinstance(module_ob, SyncLifespanAware)):
-            prio_mod = Kernel.get_priority_mod(module, module_ob)
+        elif (isinstance(prio_mod.ob, SyncLifespanAware)):
             self.sync_modules.append(prio_mod)
 
 
     @staticmethod
-    def get_priority_mod(module, module_ob):
+    def _get_priority_mod(module, module_ob):
         if module.get('priority') is not None:
             priority = int(module.get('priority'))
         else:
             priority = 0
-        prio_mod = PriorityModule(priority, module_ob)
+        prio_mod = PriorityOb(priority, module_ob)
         return prio_mod
 
 
@@ -86,11 +102,12 @@ class Kernel(LifespanAware):
             return
 
         for daemon_name, daemon in daemons.items():
-            gCon.log(f"create module name {daemon_name}")
+            self._create_daemon(daemon_name, daemon)
+
+        self.daemons.sort()
 
 
     def _build_modules(self):
-        self.mods = dict()
 
         for module_name, module in self.config.modules().items():
             self._create_module(module_name, module)
@@ -120,24 +137,40 @@ class Kernel(LifespanAware):
         return dep_mod
 
 
+    def get_daemon(self, daemon):
+        return self.daemons_dict.get(daemon)
+
+
     def start_sync(self):
         for module in self.sync_modules:
-            module.module.start_sync()
+            module.ob.start_sync()
 
 
     def stop_sync(self):
         for module in reversed(self.sync_modules):
-            module.module.stop_sync()
+            module.ob.stop_sync()
 
 
     async def start_async(self):
         for module in self.async_modules:
-            await module.module.start_async()
+            await module.ob.start_async()
+        await self.start_daemons()
+
+
+    async def start_daemons(self):
+        for daemon in self.daemons:
+            await daemon.ob.start()
+
+
+    async def stop_daemons(self):
+        for daemon in reversed(self.daemons):
+            await daemon.ob.stop()
 
     
     async def stop_async(self):
+        await self.stop_daemons()
         for module in reversed(self.async_modules):
-            await module.module.stop_async()
+            await module.ob.stop_async()
 
 
 
