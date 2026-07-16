@@ -105,6 +105,15 @@ def test_post_real_kernel(get_routable_app):
     stests._test_sndpost_to_host(test1, test2, host2, 'demo1', 'demo77', 'demo1')
 
 
+def test_get_daemon_cli(get_routable_app):
+    test1 = get_routable_app('clitest', stdcnf.release_kernel_template,
+                             tconf.adelphos_testable_1_conf)
+    with test1:
+        res = test1.get('/daemon_cli')
+        assert (res.status_code == 200)
+        match_instance = re.search('sync-clitest', res.body.decode())
+        assert match_instance is not None
+
 
 def test_real_remote_add(get_routable_app):
     test1 = get_routable_app('test100', stdcnf.release_kernel_template,

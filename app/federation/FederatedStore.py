@@ -254,7 +254,7 @@ class FederatedStore(Dependency, LifespanAware):
 
         #gCon.log(f"Start db in {threading.current_thread().native_id}")
 
-        config = self.conf().get_conf(Dependencies.FEDERATED_DB)
+        config = self.conf.get_conf(Dependencies.FEDERATED_DB)
 
         if self.db_type is None:
             if config is None:

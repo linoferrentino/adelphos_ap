@@ -38,7 +38,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
 
     def init_syscalls(self, syscall_type):
-        kernel = self.vhost.get_dep(Dependencies.KERNEL)
+        kernel = self.kernel.get_dep(Dependencies.KERNEL)
         if kernel is None:
             raise Exception("No kernel to run.")
         syscalls_list = kernel.get_syscalls(syscall_type)
@@ -63,7 +63,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
                                     f"{cp.cmd} not understood.")
         (context, cmd) = ctx_cmd
         syscall = self.get_syscall(context, cmd)
-        kernel = self.vhost
+        kernel = self.kernel
         kwargs = self._create_params_dict_from_cmd_line(cp, syscall)
 
         msg_out = await syscall.handler(kernel, param, kwargs)
@@ -190,7 +190,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
 
     def start_sync(self):
-        self.register_syscalls(self.vhost, self.realm)
+        self.register_syscalls(self.kernel, self.realm)
 
 
     def stop_sync(self):

@@ -80,8 +80,8 @@ class AsyncCtx:
 
 class BaseSocialApiProvider(SocialApiProvider):
 
-    def __init__(self, vhost):
-        super().__init__(vhost)
+    def __init__(self, kernel):
+        super().__init__(kernel)
         self.remote_api_id = WrapInt()
         self.async_contexts = dict()
 
@@ -93,7 +93,7 @@ class BaseSocialApiProvider(SocialApiProvider):
             raise AdelphosException(AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED, 
             f"{host} not allowed")
 
-        rpc_api = self.vhost.get_dep(Dependencies.RPC_API)
+        rpc_api = self.kernel.get_dep(Dependencies.RPC_API)
         rpc = rpc_api.get_syscall(context, cmd)
 
         self._check_params(rpc, kwargs)
@@ -105,7 +105,7 @@ class BaseSocialApiProvider(SocialApiProvider):
     async def _make_rpc_request(self, host, msg):
         cur_api_id = self.remote_api_id.get_and_inc()
         query_txt = f"{SOCIAL_API_QUERY} api_id {cur_api_id} payload {msg}"
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        social = self.kernel.get_dep(Dependencies.SOCIAL)
 
         async_ctx = AsyncCtx(social, self.get_social_user(), host, query_txt)
         self.async_contexts[int(cur_api_id)] = async_ctx
@@ -177,13 +177,13 @@ class BaseSocialApiProvider(SocialApiProvider):
 
     async def start_async(self):
         social_user = self.get_social_user()
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        social = self.kernel.get_dep(Dependencies.SOCIAL)
         social.add_listener(social_user, self)
 
     
     async def stop_async(self):
         social_user = self.get_social_user()
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        social = self.kernel.get_dep(Dependencies.SOCIAL)
         social.remove_listener(social_user)
 
 
@@ -224,10 +224,10 @@ class BaseSocialApiProvider(SocialApiProvider):
         cmd = req_json['cmd']
         context = req_json['context']
 
-        rpc_api = self.vhost.get_dep(Dependencies.RPC_API)
+        rpc_api = self.kernel.get_dep(Dependencies.RPC_API)
         rpc = rpc_api.get_syscall(context, cmd)
 
-        res = await rpc.handler(self.vhost, req_json['params'])
+        res = await rpc.handler(self.kernel, req_json['params'])
         return res 
 
 
@@ -266,12 +266,12 @@ class BaseSocialApiProvider(SocialApiProvider):
         if out_msg is None:
             return
 
-        social_gw = self.vhost.get_dep(Dependencies.SOCIAL_GATEWAY)
+        social_gw = self.kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
         await social_gw.out_outbox_dtos(envelope.myself,
                                         envelope.actor_from, out_msg)
 
 
     async def new_post_try(self, envelope):
-        inbox_api = self.vhost.get_dep(Dependencies.INBOX_API)
+        inbox_api = self.kernel.get_dep(Dependencies.INBOX_API)
         return await inbox_api.sys_call_gateway_msg(envelope, envelope.content)
 

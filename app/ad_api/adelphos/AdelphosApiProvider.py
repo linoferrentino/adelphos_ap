@@ -18,8 +18,8 @@ from app.sdc.Dependencies import Dependencies
 
 class AdelphosApiProvider(BaseSocialApiProvider):
 
-    def __init__(self, vhost):
-        super().__init__(vhost)
+    def __init__(self, kernel):
+        super().__init__(kernel)
 
 
     def get_social_user(self):
@@ -27,7 +27,7 @@ class AdelphosApiProvider(BaseSocialApiProvider):
 
 
     def _is_allowed_remote_rpc_host(self, host, mode):
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        social = self.kernel.get_dep(Dependencies.SOCIAL)
         user_tag = social.get_user_tag(self.get_social_user())
         if user_tag is None:
             return False

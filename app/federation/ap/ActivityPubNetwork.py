@@ -35,8 +35,8 @@ from app.sdc.Dependencies import Dependencies
 
 class ActivityPubNetwork(SocialNetwork):
 
-    def __init__(self, vhost):
-        super().__init__(vhost)
+    def __init__(self, kernel):
+        super().__init__(kernel)
 
 
     async def in_webfinger(self, request):
@@ -51,13 +51,13 @@ class ActivityPubNetwork(SocialNetwork):
         ap_user_rex = ap_user_match.group(1)
         ap_host_rex = ap_user_match.group(2)
 
-        config = self.vhost.conf()
+        config = self.conf
         host = config.get_host()
 
         if ap_host_rex != host:
             return Response(status_code=404)
 
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        social = self.kernel.get_dep(Dependencies.SOCIAL)
         user = social.local_user_get(ap_user_rex)
 
         if user is None:
@@ -84,12 +84,12 @@ class ActivityPubNetwork(SocialNetwork):
 
     async def in_infouser(self, request):
         username = request.path_params['username']
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        social = self.kernel.get_dep(Dependencies.SOCIAL)
         userob = social.local_user_get(username)
         if userob is None:
             return Response(status_code=404)
 
-        config = self.vhost.conf()
+        config = self.conf
         host = config.get_host()
         host_api = f"{host}{CNST.API_POINT}"
 
@@ -121,7 +121,7 @@ class ActivityPubNetwork(SocialNetwork):
     
 
     async def in_inbox(self, request):
-        social_gw = self.vhost.get_dep(Dependencies.SOCIAL_GATEWAY)
+        social_gw = self.kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
         user = request.path_params['username']
         response = await social_gw.in_inbox(user, request)
         return response

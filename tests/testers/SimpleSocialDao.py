@@ -25,8 +25,8 @@ import json
 
 class SimpleSocialDao(BaseSocialDao):
 
-    def __init__(self, vhost):
-        super().__init__(vhost)
+    def __init__(self, kernel):
+        super().__init__(kernel)
 
         self.servers = {}
         self.next_srv_id = 1
@@ -64,7 +64,7 @@ class SimpleSocialDao(BaseSocialDao):
 
     def actor_get_from_parsed_url(self, parsed_url):
         if len(parsed_url.netloc) == 0:
-            host = self.vhost.conf().get_host()
+            host = self.conf.get_host()
         else:
             host = parsed_url.netloc
     

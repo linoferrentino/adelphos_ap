@@ -11,17 +11,7 @@
 #
 ######################################################
 
-from abc import ABC, abstractmethod
-from app.sdc.Dependency import Dependency
 
+class AdelphosInitDaemon:
 
-class CliRouter(Dependency):
-
-    def __init__(self, kernel):
-        super().__init__(kernel)
-
-
-    @abstractmethod
-    def get_cli_routes(self):
-        pass
-
+    pass

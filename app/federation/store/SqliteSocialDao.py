@@ -59,8 +59,8 @@ create table ap_actor (
 
 class SqliteSocialDao(BaseSocialDao):
 
-    def __init__(self, vhost):
-        super().__init__(vhost)
+    def __init__(self, kernel):
+        super().__init__(kernel)
 
 
     def _srv_get_or_create(self, host_name):
@@ -115,8 +115,8 @@ class SqliteSocialDao(BaseSocialDao):
     
     def start_sync(self):
 
-        config = self.vhost.conf()
-        my_conf = config.get_social_dao_cnf()
+        #config = self..conf
+        my_conf = self.conf.get_social_dao_cnf()
         db_name = my_conf['db_name']
 
 

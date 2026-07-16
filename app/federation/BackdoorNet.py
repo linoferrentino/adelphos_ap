@@ -27,8 +27,8 @@ from app.sdc.Dependencies import Dependencies
 class BackdoorNet(BackdoorRouter):
     
 
-    def __init__(self, vhost):
-        super().__init__(vhost)
+    def __init__(self, kernel):
+        super().__init__(kernel)
 
 
     async def _backdoor_post(self, request):
@@ -41,7 +41,7 @@ class BackdoorNet(BackdoorRouter):
         match cliparser.cmd:
             case 'discover_uri':
                 uri = cliparser.get_param_safe('uri')
-                transport = self.vhost.get_dep(Dependencies.TRANSPORT)
+                transport = self.kernel.get_dep(Dependencies.TRANSPORT)
                 answer = await transport.get_json(uri)
                 return Response(status_code=202, content = answer)
             case _:

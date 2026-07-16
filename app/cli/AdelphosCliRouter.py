@@ -27,18 +27,16 @@ from app.sdc.Dependencies import Dependencies
 
 class AdelphosCliRouter(CliRouter):
 
-    def __init__(self, vhost):
-       self.vhost = vhost 
+    def __init__(self, kernel):
+        super().__init__(kernel)
 
 
     async def in_daemon_cli(self, request):
-        config = self.vhost.conf()
+        config = self.conf
 
-        #host = self.vhost.config['General']['host']
         host = config.get_host()
         host_api = host + CNST.API_POINT
 
-        #instance = self.vhost.instance_name
         instance = config.get_instance()
 
         html_string = """
@@ -160,13 +158,13 @@ class AdelphosCliRouter(CliRouter):
         <p>
         If you haven't yet created an alias send a message to me from your
         Mastodon account to create one. The message should be a private mention
-        to the @daemon user at this instance. Like this:
+        to the @adelphos user at this instance. Like this:
 
         <p>
-        @daemon@{host} alias_create alias ##<name>.<family> password <password>
+        @adelphos@{host} alias_create alias name.family password _password_ equity number
 
         <p>
-        After that come here to login.
+        You will receive a messange and you can come back here to login.
         <p>
 
         </div>
@@ -228,7 +226,7 @@ class AdelphosCliRouter(CliRouter):
 
 
     async def in_websocket(self, websocket: WebSocket):
-        cli_handler = self.vhost.get_dep(Dependencies.CLI_HANDLER)
+        cli_handler = self.get_dep(Dependencies.CLI_HANDLER)
         if cli_handler is not None:
             await cli_handler.serve_forever(websocket)
         else:

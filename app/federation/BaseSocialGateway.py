@@ -30,8 +30,8 @@ from app.dao.ApActorDto import create_remote_actor
 
 class BaseSocialGateway(SocialGateway):
 
-    def __init__(self, vhost):
-        super().__init__(vhost)
+    def __init__(self, kernel):
+        super().__init__(kernel)
 
 
     async def in_inbox(self, user, request):
@@ -68,7 +68,7 @@ class BaseSocialGateway(SocialGateway):
 
         mention = mention[1:]
 
-        social = self.vhost.get_dep(Dependencies.SOCIAL)
+        social = self.kernel.get_dep(Dependencies.SOCIAL)
         local_user= social.local_user_get(mention)
 
         if local_user is None:
@@ -90,7 +90,7 @@ class BaseSocialGateway(SocialGateway):
         (headers, payload) = self._do_envelope(actor_from_dto, actor_to_dto, message)
         actor_uri = f"https://{actor_to_dto.srv.host_name}\
 {actor_to_dto.act.inbox_path}"
-        transport = self.vhost.get_dep(Dependencies.TRANSPORT)
+        transport = self.kernel.get_dep(Dependencies.TRANSPORT)
         await transport.post_json(actor_uri, payload, headers)
         
 
@@ -125,7 +125,7 @@ class BaseSocialGateway(SocialGateway):
             raise AdelphosException(AdErrno.EINVALID_HANDLE)
         (preferred_username, rem_instance) = user_host
 
-        social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
+        social_dao = self.kernel.get_dep(Dependencies.SOCIAL_DAO)
         actor = social_dao.actor_get(rem_instance, preferred_username)
         if actor is not None:
             return actor
@@ -133,7 +133,7 @@ class BaseSocialGateway(SocialGateway):
         actor_query = f"https://{rem_instance}/.well-known/webfinger?\
 resource=acct:{actor_instance}"
 
-        transport = self.vhost.get_dep(Dependencies.TRANSPORT)
+        transport = self.kernel.get_dep(Dependencies.TRANSPORT)
         actor_def_str = await transport.get_json_safe(actor_query, 
                     AdErrno.USER_DOES_NOT_EXIST)
         actor_def_ob = json.loads(actor_def_str)
@@ -173,7 +173,7 @@ resource=acct:{actor_instance}"
     async def _actor_get_or_discover(self, uri):
         actor_uri = urlsplit(uri)
         actor_uri = actor_uri._replace(fragment = "")
-        social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
+        social_dao = self.kernel.get_dep(Dependencies.SOCIAL_DAO)
         actor_dto = social_dao.actor_get_from_parsed_url(actor_uri)
         if actor_dto is not None:
             return actor_dto
@@ -187,7 +187,7 @@ resource=acct:{actor_instance}"
         actor_uri = actor_uri_p.geturl()
         key_parsed = actor_uri_p._replace(fragment = "main-key")
 
-        transport = self.vhost.get_dep(Dependencies.TRANSPORT)
+        transport = self.kernel.get_dep(Dependencies.TRANSPORT)
         actor_ob = await transport.get_json_safe(actor_uri,
                 AdErrno.USER_DOES_NOT_EXIST)
 
@@ -209,7 +209,7 @@ exp {actor_uri}")
         preferred_username = key_ob['preferredUsername']
         inbox_parsed = urlsplit(inbox_uri)
 
-        social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
+        social_dao = self.kernel.get_dep(Dependencies.SOCIAL_DAO)
 
         actor_dto = create_remote_actor(key_parsed.netloc,
                         key_parsed.path, inbox_parsed.path, preferred_username,

@@ -112,6 +112,18 @@ testable_kernel_suffix_template = """
 
 """
 
+release_daemons = """
+    
+    daemons:
+        
+      init:
+        constructor: app.core.AdelphosInitDaemon.AdelphosInitDaemon
+            
+        
+
+
+"""
+
 syscalls_suffix = """
 
     rpc_api:

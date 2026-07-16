@@ -36,8 +36,8 @@ from cryptography.hazmat.primitives import hashes
 class ActivityPubGateway(BaseSocialGateway):
 
 
-    def __init__(self, vhost):
-        super().__init__(vhost)
+    def __init__(self, kernel):
+        super().__init__(kernel)
 
 
     def _filter_message_type(self, body_ob):

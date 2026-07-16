@@ -17,19 +17,20 @@ from abc import ABC, abstractmethod
 
 class Dependency(ABC):
 
-    def __init__(self, vhost):
-        self.vhost = vhost
+    def __init__(self, kernel):
+        self._kernel = kernel 
 
 
     def get_dep(self, dep):
-        return self.vhost.get_dep(dep)
+        return self._kernel.get_dep(dep)
 
 
     @property 
     def kernel(self):
-        return self.vhost
+        return self._kernel
 
 
+    @property 
     def conf(self):
-        return self.vhost.conf()
+        return self._kernel.conf()
 

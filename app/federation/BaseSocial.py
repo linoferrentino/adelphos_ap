@@ -67,8 +67,8 @@ class UserInbox(SocialUser):
     
 class BaseSocial(SocialProvider):
 
-    def __init__(self, vhost):
-        super().__init__(vhost)
+    def __init__(self, kernel):
+        super().__init__(kernel)
         self.users = {}
 
 
@@ -115,7 +115,7 @@ class BaseSocial(SocialProvider):
                                    user_inbox, preferredusername,
                                 content.decode('utf-8'))
 
-        social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
+        social_dao = self.kernel.get_dep(Dependencies.SOCIAL_DAO)
         social_dao.actor_store(actor)
         assert actor.act.public_key is not None
         #gCon.log(f"this is the actor {actor}")
@@ -158,12 +158,12 @@ class BaseSocial(SocialProvider):
         user = self.local_user_get(from_user)
         if user is None:
             raise Exception(f"No user {from_user}")
-        social_gw = self.vhost.get_dep(Dependencies.SOCIAL_GATEWAY)
+        social_gw = self.kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
         await social_gw.out_outbox(user.actor_dto, recipient, message)
 
 
     async def out_msg_listener_to_actor(self, actor_dto, message):
-        social_gw = self.vhost.get_dep(Dependencies.SOCIAL_GATEWAY)
+        social_gw = self.kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
         await social_gw.out_outbox_dtos(self.actor_listener, actor_dto, message)
 
 
@@ -197,8 +197,8 @@ class BaseSocial(SocialProvider):
 
 
     def start_sync(self):
-        config = self.vhost.conf()
-        self.social_dao = self.vhost.get_dep(Dependencies.SOCIAL_DAO)
+        config = self.kernel.conf()
+        self.social_dao = self.kernel.get_dep(Dependencies.SOCIAL_DAO)
         soc_cnf  = config.get_social_config()
         host = config.get_host()
         #gCon.log(f"{id(self)} This is the conf {soc_cnf} [red]{id(self)}[/red] for host {host}")
