@@ -15,36 +15,34 @@ import hashlib
 import base64
 
 from app.logging import gCon
-
-from app.sdc.SimpleDependencyContainer import SimpleDependencyContainer
+from app.sdc.Kernel import Kernel
 import app.sdc.Dependencies as dep
-#from app.sdc.standard_conf import adelphos_standard_configuration
 
 
-_conts = dict()
+_kernels = dict()
 
 
 def boot_kernel(instance, config, *, use_cache = True):
 
-    global _conts
+    global _kernels
 
     if use_cache == True:
         hash_conf = base64.b64encode(hashlib.sha256(
             (instance + str(config)).encode('utf-8')).digest())
 
-        cont = _conts.get(hash_conf)
+        cont = _kernels.get(hash_conf)
 
         if cont is not None:
             gCon.log(f"[red]Returning already booted kernel {instance} {id(cont)}[/red]")
             return cont
 
-    cont = SimpleDependencyContainer(instance, config)
-    gCon.log(f"[red]Booting kernel {instance} {id(cont)}[/red]")
+    kern = Kernel(instance, config)
+    gCon.log(f"[red]Booting kernel {instance} {id(kern)}[/red]")
 
     if use_cache == True:
-        _conts[hash_conf] = cont
+        _kernels[hash_conf] = kern 
 
-    return cont
+    return kern
 
 
 def boot_new_kernel(instance, config):

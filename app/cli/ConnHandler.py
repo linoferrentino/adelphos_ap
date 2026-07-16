@@ -225,46 +225,4 @@ class WebSocketSyncRouter(SyncRouter):
 
 
 
-# this object will accept the web sockets and do a garbage collect when
-# they are dead or inactive for a certain period of time
-class ConnHandler_XX(CliProvider, RouterProvider):
-
-
-    # TODO remove the dependency on the app
-    def __init__(self, kernel, transport):
-        self.clients = []
-        self.kernel = kernel
-        self.transport = transport
-
-
-    # gets the router relative to the web sockets.
-    def get_async_router(self):
-        router = WebSocketRouter(self)
-        return router
-
-
-    def register_sync_routes(self, router):
-        pass
-
-
-    async def accept(self, websocket):
-
-        await websocket.accept()
-        client = ClientWs(self.kernel, websocket)
-        self.clients.append(client)
-        return client
-
-    
-    async def stop(self):
-        pass
-
-        #gCon.log("I will close the connections")
-        #wslist = [ ws.websocket for ws in self.clients]
-        #broadcast(wslist, "The server is going dow NOW!")
-
-        #for ws in self.clients:
-            #await ws.websocket.send_text(f"System is going down!")
-            #await ws.stop()
-
-
 

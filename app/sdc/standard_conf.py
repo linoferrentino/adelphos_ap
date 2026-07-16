@@ -114,12 +114,10 @@ testable_kernel_suffix_template = """
 
 release_daemons = """
     
-    daemons:
+daemons:
         
-      init:
-        constructor: app.core.AdelphosInitDaemon.AdelphosInitDaemon
-            
-        
+  init:
+    constructor: app.core.AdelphosInitDaemon.AdelphosInitDaemon
 
 
 """
@@ -239,12 +237,14 @@ release_kernel_template = (testable_kernel_prefix
                 + common_adelphos_modules
                 + real_adelphos_chunk_modules 
                 + testable_kernel_suffix_template
-                + syscalls_suffix)
+                + syscalls_suffix
+                + release_daemons)
 
 
 release_kernel_conf = (testable_kernel_prefix
                 + common_adelphos_modules
                 + real_adelphos_chunk_modules 
-                + syscalls_suffix)
+                + syscalls_suffix
+                + release_daemons)
 
 

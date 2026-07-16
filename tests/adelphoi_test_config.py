@@ -149,11 +149,21 @@ hybrid_common_adelphos_modules = """
 """
 
 
+toy_daemons = """
+
+daemons:
+  toy_init:
+    constructor: tests.testers.ToyDaemon.ToyDaemon
+
+"""
+
+
 testable_toy_kernel_template = (stdcnf.testable_kernel_prefix
                 + toy_common_adelphos_modules
                 + debug_adelphos_chunk_modules 
                 + stdcnf.testable_kernel_suffix_template
-                + stdcnf.syscalls_suffix)
+                + stdcnf.syscalls_suffix
+                + toy_daemons)
 
 
 testable_debug_kernel_template = (stdcnf.testable_kernel_prefix

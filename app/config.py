@@ -1,8 +1,17 @@
-# this file will load the configuration.
+######################################################
+#
+# Adelphos AP: the fractal trust network
+#
+# Activity Pub implementation
+#
+# © 2025-26 Lino Ferrentino
+# lino.ferrentino@gmail.com
+#
+# This is free software. Licensed with GPL version 3
+#
+######################################################
 
 
-
-#import tomllib
 import yaml
 from .logging import gCon
 import os
@@ -35,6 +44,10 @@ class Config:
 
     def modules(self):
         return self.config['modules']
+
+
+    def daemons_maybe(self):
+        return self.config.get('daemons')
 
 
     def get_instance(self):
@@ -77,23 +90,23 @@ class Config:
         return self.config['conf'][dependency]
 
 
-def load_conf_deprecated(instance_name, toml_file):
-
-    if (toml_file is None):
-        toml_file = f"adelphos_ap_{instance_name}.toml"
-
-    gCon.log(f"Loading configuration file {toml_file}")
-
-    if (os.path.exists(toml_file) == False):
-        exit_err(f"Configuration file {toml_file} not found")
-
-    with open(toml_file, "rb") as f:
-        config = tomllib.load(f)
-
-    gCon.rule("Read the configuration:")
-    gCon.log(f"{json.dumps(config)}")
-
-    return config
+#def load_conf_deprecated(instance_name, toml_file):
+#
+#    if (toml_file is None):
+#        toml_file = f"adelphos_ap_{instance_name}.toml"
+#
+#    gCon.log(f"Loading configuration file {toml_file}")
+#
+#    if (os.path.exists(toml_file) == False):
+#        exit_err(f"Configuration file {toml_file} not found")
+#
+#    with open(toml_file, "rb") as f:
+#        config = tomllib.load(f)
+#
+#    gCon.rule("Read the configuration:")
+#    gCon.log(f"{json.dumps(config)}")
+#
+#    return config
     
 
 def load_conf(instance_name, yaml_file):

@@ -110,45 +110,47 @@ def test_post_inbox_ok(app, aroutable):
     headers = {
             'x-simple-signature' : "BACKDOOR_GO"
             }
-    response = app.post(url_post, json = jsonmsg, headers = headers)
-    assert response.status_code == 202
+    with app:
+        response = app.post(url_post, json = jsonmsg, headers = headers)
+        assert response.status_code == 202
 
-    social = aroutable.get_dep(Dependencies.SOCIAL)
-    user_ob = social.login_user(user_in)
+        social = aroutable.get_dep(Dependencies.SOCIAL)
+        user_ob = social.login_user(user_in)
 
-    count_msg = user_ob.count_msg()
-    assert count_msg == 1
+        count_msg = user_ob.count_msg()
+        assert count_msg == 1
 
-    msg = user_ob.pop_lst_msg()
-    assert msg.content == 'hello1 demo1 secret X8a9'
+        msg = user_ob.pop_lst_msg()
+        assert msg.content == 'hello1 demo1 secret X8a9'
 
-    count_msg = user_ob.count_msg()
-    assert count_msg == 0
+        count_msg = user_ob.count_msg()
+        assert count_msg == 0
 
 
 def test_webfinger(app, aroutable):
     test1 = app
-    url_query = f"{CNST.WEBFINGER_ROUTE}?val=wrong"
-    response = test1.get(url_query)
-    assert response.status_code == 401
+    with test1:
+        url_query = f"{CNST.WEBFINGER_ROUTE}?val=wrong"
+        response = test1.get(url_query)
+        assert response.status_code == 401
 
-    url_query = f"{CNST.WEBFINGER_ROUTE}?resource=malformed"
-    response = test1.get(url_query)
-    assert response.status_code == 401
+        url_query = f"{CNST.WEBFINGER_ROUTE}?resource=malformed"
+        response = test1.get(url_query)
+        assert response.status_code == 401
 
-    url_query = f"{CNST.WEBFINGER_ROUTE}?resource=acct:daemon@{tc.HOST_1}"
-    response = test1.get(url_query)
-    assert response.status_code == 404
+        url_query = f"{CNST.WEBFINGER_ROUTE}?resource=acct:daemon@{tc.HOST_1}"
+        response = test1.get(url_query)
+        assert response.status_code == 404
 
-    url_query = f"{CNST.WEBFINGER_ROUTE}?resource=acct:demo1@www.external.it"
-    response = test1.get(url_query)
-    assert response.status_code == 404
+        url_query = f"{CNST.WEBFINGER_ROUTE}?resource=acct:demo1@www.external.it"
+        response = test1.get(url_query)
+        assert response.status_code == 404
 
-    config = aroutable.conf
-    host = config.get_host()
+        config = aroutable.conf
+        host = config.get_host()
 
-    url_query = f"{CNST.WEBFINGER_ROUTE}?resource=acct:t1@{host}"
-    response = test1.get(url_query)
-    assert response.status_code == 200
+        url_query = f"{CNST.WEBFINGER_ROUTE}?resource=acct:t1@{host}"
+        response = test1.get(url_query)
+        assert response.status_code == 200
 
 

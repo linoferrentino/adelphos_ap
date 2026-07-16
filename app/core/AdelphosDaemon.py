@@ -11,9 +11,27 @@
 #
 ######################################################
 
+from abc import abstractmethod
+from app.sdc.Dependency import Dependency
 
-class AdelphosInitDaemon(AdelphosDaemon)
+class AdelphosDaemon(Dependency):
 
     def __init__(self, kernel):
         super().__init__(kernel)
+
+
+    @abstractmethod
+    async def start(self):
+        pass
+
+
+    @abstractmethod
+    async def stop(self):
+        pass
+
+
+    @abstractmethod
+    async def reload(self):
+        pass
+
 

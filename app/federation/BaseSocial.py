@@ -201,7 +201,6 @@ class BaseSocial(SocialProvider):
         self.social_dao = self.kernel.get_dep(Dependencies.SOCIAL_DAO)
         soc_cnf  = config.get_social_config()
         host = config.get_host()
-        #gCon.log(f"{id(self)} This is the conf {soc_cnf} [red]{id(self)}[/red] for host {host}")
         self.host = host
 
         users = soc_cnf['users']
@@ -218,3 +217,9 @@ class BaseSocial(SocialProvider):
 
     def set_user_tag(self, user, tag):
         pass
+
+
+    def create_local_user(self, user):
+        pass
+
+

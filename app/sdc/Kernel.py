@@ -11,30 +11,16 @@
 #
 ######################################################
 
-from app.federation.ap.ActivityPubNetwork import ActivityPubNetwork
-from app.federation.ap.ActivityPubGateway import ActivityPubGateway
-from tests.testers.CliHandlerStub import CliHandlerStub
-from tests.testers.SimpleSocialGateway import SimpleSocialGateway
-from tests.testers.SimpleSocialDao import SimpleSocialDao
-from app.cli.StandardCliProvider import StandardCliProvider
-from app.cli.AdelphosCliRouter import AdelphosCliRouter
-from app.sdc.Dependencies import Dependencies
-from app.federation.BaseSocial import BaseSocial
-from app.federation.LifespanAware import LifespanAware
-from app.federation.store.SqliteSocialDao import SqliteSocialDao
-#from app.core.Adelphos import Adelphos
-from app.config import Config
-from app.federation.BackdoorNet import BackdoorNet
-from app.federation.NullNet import NullNet
-from app.ad_api.adelphos.AdelphosApiProvider import AdelphosApiProvider
-from tests.testers.SimpleSocialApiProvider import SimpleSocialApiProvider
-from app.logging import gCon
-from app.core.sys.SysCallGateway import SysCallGateway
-from app.AdelphosRouter import AdelphosRouter
-from app.federation.SyncLifespanAware import SyncLifespanAware
-import app.misc.utils as misc
 
 from dataclasses import dataclass
+
+from app.config import Config
+from app.federation.LifespanAware import LifespanAware
+from app.federation.SyncLifespanAware import SyncLifespanAware
+from app.logging import gCon
+from app.sdc.Dependencies import Dependencies
+
+import app.misc.utils as misc
 
 
 @dataclass
@@ -47,7 +33,7 @@ class PriorityModule:
         return self.priority < other.priority
 
 
-class SimpleDependencyContainer(LifespanAware):
+class Kernel(LifespanAware):
 
     def __init__(self, instance, config):
                  
@@ -58,8 +44,10 @@ class SimpleDependencyContainer(LifespanAware):
         self.async_modules = list()
         self.sync_modules = list()
         self.routable_modules = list()
+        self.daemons = list()
 
         self._build_modules()
+        self._build_daemons()
 
 
     def _create_module(self, module_name, module):
@@ -74,11 +62,11 @@ class SimpleDependencyContainer(LifespanAware):
         self.mods[module_name] = module_ob
 
         if (isinstance(module_ob, LifespanAware)):
-            prio_mod = SimpleDependencyContainer.get_priority_mod(module, module_ob)
+            prio_mod = Kernel.get_priority_mod(module, module_ob)
             self.async_modules.append(prio_mod)
 
         elif (isinstance(module_ob, SyncLifespanAware)):
-            prio_mod = SimpleDependencyContainer.get_priority_mod(module, module_ob)
+            prio_mod = Kernel.get_priority_mod(module, module_ob)
             self.sync_modules.append(prio_mod)
 
 
@@ -90,6 +78,15 @@ class SimpleDependencyContainer(LifespanAware):
             priority = 0
         prio_mod = PriorityModule(priority, module_ob)
         return prio_mod
+
+
+    def _build_daemons(self):
+        daemons = self.config.daemons_maybe()
+        if (daemons is None):
+            return
+
+        for daemon_name, daemon in daemons.items():
+            gCon.log(f"create module name {daemon_name}")
 
 
     def _build_modules(self):

@@ -101,25 +101,25 @@ def get_standalone_app():
     return _get_standalone_app
 
 
-@pytest.fixture(scope = "session")
+#@pytest.fixture(scope = "session")
+@pytest.fixture
 def aroutable(request):
 
     if hasattr(request, 'param'):
-        gCon.log(f"Got the conf {request.param}")
         conf = request.param
     else:
-        gCon.log(f"Use the default")
         conf = tconf.adelphos_toy_1_conf
 
     build_complete = tconf.testable_toy_kernel_template.format(**conf)
     kernel_conf = yaml.safe_load(build_complete)
 
-    kernel = su.boot_kernel("test", kernel_conf)
+    kernel = su.boot_new_kernel("test", kernel_conf)
     aroutable = kernel.get_dep(Dependencies.ROUTER)
     return aroutable 
 
 
-@pytest.fixture(scope = "session", params = ['sync', 'async'])
+#@pytest.fixture(scope = "session", params = ['sync', 'async'])
+@pytest.fixture(params = ['sync', 'async'])
 def app(aroutable, request):
 
     if request.param == 'sync':
