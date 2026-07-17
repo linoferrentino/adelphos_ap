@@ -129,7 +129,6 @@ class SyncApp:
 
     def _translate_sync_route(self, route):
         path = route.path
-        #gCon.log(f"Matching {path} for {route}")
         match_path_param = re.search(r"\{(.*)\}", path)
         if match_path_param is None:
             return route

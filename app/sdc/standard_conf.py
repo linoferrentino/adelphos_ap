@@ -137,6 +137,14 @@ syscalls_suffix = """
 
     cli_api:
 
+      root:
+        class: app.core.sys.RootApi.RootApi
+        syscalls:
+          - name: push_user
+            pars:
+              user:
+                required: true
+
       family:
         class: app.core.sys.FamilyCalls.FamilyCalls
         syscalls:

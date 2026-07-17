@@ -171,6 +171,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
 
     def _add_syscalls(self, context, syscalls):
+        #gCon.log(f"adding syscalls {syscalls} for ctx {context}")
         if self.contexts.get(context) is not None:
             raise Exception(f"Context {context} already existing")
         syscall_map = self._transform_list(syscalls)

@@ -142,6 +142,7 @@ class Kernel(LifespanAware):
 
 
     def start_sync(self):
+        gCon.log("Start sync")
         for module in self.sync_modules:
             module.ob.start_sync()
 
@@ -158,6 +159,7 @@ class Kernel(LifespanAware):
 
 
     async def start_daemons(self):
+        gCon.log("Starting daemons")
         for daemon in self.daemons:
             await daemon.ob.start()
 

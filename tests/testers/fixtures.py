@@ -14,6 +14,8 @@
 
 import pytest
 import json
+import threading
+import asyncio
 
 from app.federation.SocialProvider import SocialProvider
 
@@ -122,12 +124,28 @@ def aroutable(request):
 @pytest.fixture(params = ['sync', 'async'])
 def app(aroutable, request):
 
+    gCon.log(f"START FIXTURE APP {request.param}")
+
+    try:
+        loop = asyncio.get_running_loop()
+        gCon.log(f"There is a loop! {id(loop)}")
+    except RuntimeError:
+        loop = get_loop()
+        gCon.log(f"there is NO loop!, the external loop is {loop}")
+        asyncio.set_event_loop(loop)
+        #loop = asyncio.get_running_loop()
+        #gCon.log(f"Now the async loop is {loop}")
+ 
+
     if request.param == 'sync':
+        gCon.log("SYNC TEST")
         config = aroutable.conf
         host = config.get_host()
         app = SyncApp(host, aroutable, API_POINT)
         wrappedapp = SyncTester(app)
     else:
+        gCon.log(f"ASYNC TEST in thread {threading.current_thread().native_id}")
+
         app = StarletteWrap(routable = aroutable)
         wrappedapp = TestClient(app)
 

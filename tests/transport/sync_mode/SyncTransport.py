@@ -39,7 +39,7 @@ class SyncTransport(AbstractTransport):
     async def post_json(self, url, json, headers = None):
         (is_local, urls) = self._check_gateway_local(url)
         if is_local == True:
-            res = self.in_post_json(self, urls, json, headers)
+            res = await self.in_post_json(urls, json, headers)
         else:
             res = await self.gateway.route_message("POST", urls, json, headers)
 

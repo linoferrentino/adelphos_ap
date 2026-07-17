@@ -138,9 +138,9 @@ def test_toy_daemon(app, aroutable):
 
     assert daemon.is_running == False
 
-    #with app:
-    #    assert daemon.is_running
-    #    assert daemon.cycles == 2
+    with app:
+        assert daemon.is_running
+        assert daemon.cycles == 2
 
 
 def test_webfinger(app, aroutable):

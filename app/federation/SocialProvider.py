@@ -76,8 +76,4 @@ class SocialProvider(Dependency, SyncLifespanAware):
         pass
 
 
-    @abstractmethod
-    def create_local_user(self, user):
-        pass
-
 

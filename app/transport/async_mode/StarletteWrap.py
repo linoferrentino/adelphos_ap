@@ -10,10 +10,11 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
 
 
 import asyncio
+import threading
 
 from app.transport.async_mode.AsyncGateway import AsyncGateway
 from contextlib import asynccontextmanager
@@ -57,8 +58,17 @@ async def async_lifespan_gw(app):
 
     await out_gateway.start(app)
     await app.routable.init_up()
-
+    gCon.log(f"=====> running on thread {threading.current_thread().native_id}")
+    try:
+        loop = asyncio.get_running_loop()
+        gCon.log(f"There is a loop! {id(loop)}")
+    except RuntimeError:
+        gCon.log("there is NO loop!")
+ 
+    app.cond = asyncio.Condition()  
     yield
+
+    gCon.log(f"====> stopping on thread {threading.current_thread().native_id}")
 
     app.running = False
 
@@ -83,7 +93,8 @@ class StarletteWrap(Starlette):
 
         self.transport = transport
         self.running = False
-        self.cond = asyncio.Condition()  
+        gCon.log(f"create condition for {self} in thread {threading.current_thread().native_id}")
+        #self.cond = asyncio.Condition()  
         self.routable = routable
 
         self.root_path = root_path

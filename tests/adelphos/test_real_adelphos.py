@@ -118,8 +118,13 @@ def test_get_daemon_cli(get_routable_app):
 def test_create_root_user(get_routable_app):
     test1 = get_routable_app('test100', stdcnf.release_kernel_template,
                              tconf.adelphos_testable_1_conf)
-    with test1:
-        pass
+
+    root_pass = tconf.adelphos_testable_1_conf['_root_password_']
+
+    with test1, test1.websocket_connect(CNST.WS_ROUTE) as websocket:
+        websocket.send_text(f"alias.login login root.admins password {root_pass}")
+        data = websocket.receive_text()
+        assert data == "Login OK, check your Mastodon inbox to get the token."
  
 
 def test_real_remote_add(get_routable_app):

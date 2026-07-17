@@ -230,7 +230,3 @@ class BaseSocial(SocialProvider):
         pass
 
 
-    def create_local_user(self, user):
-        pass
-
-

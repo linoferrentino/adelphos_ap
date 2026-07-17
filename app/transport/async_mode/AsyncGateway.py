@@ -10,13 +10,14 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
 
 from app.transport.AbstractGateway import AbstractGateway
 from app.ap_api.AsyncRequest import AsyncGetReq
 from app.ap_api.AsyncRequest import AsyncPostReq
 import aiohttp
 import asyncio
+import threading
 from app.logging import gCon
 from starlette.exceptions import HTTPException
 from app.transport.bridge.loop import get_loop
@@ -39,6 +40,7 @@ class AsyncGateway(AbstractGateway):
         while (len(self.requests) != 0):
             req = self.requests.pop()
             asyncio.create_task(req.async_req(session))
+        gCon.log(f"WAITING COND {self.app} on thread {threading.current_thread().native_id}")
         await self.app.cond.wait()
 
 

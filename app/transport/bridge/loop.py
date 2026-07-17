@@ -33,11 +33,18 @@ def in_saecula_saeculorum():
         loop = asyncio.get_running_loop()
     except RuntimeError:
         loop = asyncio.new_event_loop()
+        gCon.log(f"There was not a loop, created {id(loop)}")
+        asyncio.set_event_loop(loop)
     
     loop.set_debug(True)
+    gCon.log(f"XXXXXXXXXXXXXXXX 1")
     loop_started.set()
+    gCon.log(f"XXXXXXXXXXXXXXXX 2")
     loop.set_exception_handler(my_handler)
+    gCon.log(f"XXXXXXXXXXXXXXXX 3")
+    gCon.log(f"XXXXXXXXXXXXXXXX created a loop {id(loop)}")
     loop.run_forever()
+    gCon.log(f"XXXXXXXXXXXXXXXX 4")
 
 
 def _create_loop():
@@ -45,6 +52,7 @@ def _create_loop():
     run_loop_th = threading.Thread(target = in_saecula_saeculorum)
     run_loop_th.daemon = True
     run_loop_th.start()
+    gCon.log(f"created a loop in thread {run_loop_th.native_id}")
 
 
 def get_loop():

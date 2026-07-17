@@ -15,7 +15,9 @@
 import re
 from app.core.Daemon import Daemon
 from app.logging import gCon
+from app.core.ECoreErrno import ECoreErrno
 from app.sdc.Dependencies import Dependencies
+from app.core.algo.AliasAlgo import AliasAlgo
 
 LOCAL_REX = r":local:(\w*)"
 
@@ -29,13 +31,17 @@ class AdelphosInitDaemon(Daemon):
     async def _create_local_root(self, local_user, root_password):
         social = self.get_dep(Dependencies.SOCIAL)
         local_user = social.local_user_get(local_user, create_if_not_exists = True)
-        gCon.log(f"local user {local_user}")
+        gCon.log(f"local user {local_user.actor_dto}")
+        res = await AliasAlgo.alias_create(self.kernel,
+                local_user.actor_dto.act.actor_id, 'root', 'admins', root_password, 
+                                           0.0)
+        if res != ECoreErrno.DONE_OK:
+            gCon.log(f"res error {res} creating root alias")
 
 
     async def start_impl(self):
         root_handle = self.conf.get_conf('general')['root']
         root_password = self.conf.get_conf('general')['root_password']
-        gCon.log(f"creating root {root_handle}")
         local_user_mt = re.match(LOCAL_REX, root_handle)
         if local_user_mt is not None:
             local_user = local_user_mt.group(1)
