@@ -27,28 +27,89 @@ def my_handler(loop, context):
     gCon.log(f"Exception in loop! {context}")
 
 
+class GlobalLoopPolicy(asyncio.DefaultEventLoopPolicy):
+
+
+    def get_event_loop(self):
+
+        global loop
+        if loop is not None:
+            gCon.log(f"returning the global loop {loop}")
+            return loop
+
+        gCon.log(f"get_event_loop called in policy")
+        try:
+            loop = super().get_event_loop()
+        except RuntimeError:
+
+            loop = asyncio.new_event_loop()
+            gCon.log(f"There was not a loop, created {id(loop)}")
+            asyncio.set_event_loop(loop)
+            #loop = asyncio.get_running_loop()
+            gCon.log(f"the loop in async io is {id(loop)}")
+     
+        loop.set_debug(True)
+        loop.set_exception_handler(my_handler)
+        gCon.log(f"get_event_loop called in policy returns {loop}")
+        return loop
+
+
 def in_saecula_saeculorum():
     global loop
+
+    policy = asyncio.get_event_loop_policy()
+    gCon.log(f"policy is {policy}")
     try:
-        loop = asyncio.get_running_loop()
+        loop = asyncio.get_event_loop()
     except RuntimeError:
         loop = asyncio.new_event_loop()
         gCon.log(f"There was not a loop, created {id(loop)}")
         asyncio.set_event_loop(loop)
+        #loop = asyncio.get_running_loop()
+        gCon.log(f"the loop in async io is {id(loop)}")
     
-    loop.set_debug(True)
+    #loop.set_debug(True)
     gCon.log(f"XXXXXXXXXXXXXXXX 1")
     loop_started.set()
     gCon.log(f"XXXXXXXXXXXXXXXX 2")
-    loop.set_exception_handler(my_handler)
+    #loop.set_exception_handler(my_handler)
     gCon.log(f"XXXXXXXXXXXXXXXX 3")
-    gCon.log(f"XXXXXXXXXXXXXXXX created a loop {id(loop)}")
+    gCon.log(f"XXXXXXXXXXXXXXXX created a loop {id(loop)} RUN NOW!")
     loop.run_forever()
     gCon.log(f"XXXXXXXXXXXXXXXX 4")
 
 
+
+#def in_saecula_saeculorum():
+#    global loop
+#
+#    policy = asyncio.get_event_loop_policy()
+#    gCon.log(f"policy is {policy}")
+#    try:
+#        loop = asyncio.get_event_loop()
+#    except RuntimeError:
+#        loop = asyncio.new_event_loop()
+#        gCon.log(f"There was not a loop, created {id(loop)}")
+#        asyncio.set_event_loop(loop)
+#        loop = asyncio.get_running_loop()
+#        gCon.log(f"the loop in async io is {id(loop)}")
+#    
+#    loop.set_debug(True)
+#    gCon.log(f"XXXXXXXXXXXXXXXX 1")
+#    loop_started.set()
+#    gCon.log(f"XXXXXXXXXXXXXXXX 2")
+#    loop.set_exception_handler(my_handler)
+#    gCon.log(f"XXXXXXXXXXXXXXXX 3")
+#    gCon.log(f"XXXXXXXXXXXXXXXX created a loop {id(loop)}")
+#    loop.run_forever()
+#    gCon.log(f"XXXXXXXXXXXXXXXX 4")
+
+
 def _create_loop():
     global run_loop_th
+
+    asyncio.set_event_loop_policy(GlobalLoopPolicy())
+
     run_loop_th = threading.Thread(target = in_saecula_saeculorum)
     run_loop_th.daemon = True
     run_loop_th.start()

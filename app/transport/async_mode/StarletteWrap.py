@@ -61,7 +61,7 @@ async def async_lifespan_gw(app):
     gCon.log(f"=====> running on thread {threading.current_thread().native_id}")
     try:
         loop = asyncio.get_running_loop()
-        gCon.log(f"There is a loop! {id(loop)}")
+        gCon.log(f"There is a loop! {id(loop)} = {loop}")
     except RuntimeError:
         gCon.log("there is NO loop!")
  

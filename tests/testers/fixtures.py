@@ -131,8 +131,10 @@ def app(aroutable, request):
         gCon.log(f"There is a loop! {id(loop)}")
     except RuntimeError:
         loop = get_loop()
-        gCon.log(f"there is NO loop!, the external loop is {loop}")
-        asyncio.set_event_loop(loop)
+        #loop = "NO loop"
+        gCon.log(f"there was NO loop!, the external loop is {loop}")
+        res = asyncio.set_event_loop(loop)
+        #gCon.log(f"res {res}")
         #loop = asyncio.get_running_loop()
         #gCon.log(f"Now the async loop is {loop}")
  
