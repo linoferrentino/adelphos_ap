@@ -102,6 +102,11 @@ def get_standalone_app():
 
     return _get_standalone_app
 
+#@pytest.fixture(scope = "session")
+#def my_loop():
+#    loop = get_loop()
+#    return loop
+
 
 #@pytest.fixture(scope = "session")
 @pytest.fixture
@@ -124,15 +129,20 @@ def aroutable(request):
 @pytest.fixture(params = ['sync', 'async'])
 def app(aroutable, request):
 
-    gCon.log(f"START FIXTURE APP {request.param}")
+    loop = get_loop()
+
+    gCon.log(f"START FIXTURE APP {request.param} with loop {id(loop)} in thread {threading.current_thread().native_id}")
+
+    policy = asyncio.get_event_loop_policy()
+    gCon.log(f"policy in app is {policy}")
 
     try:
-        loop = asyncio.get_running_loop()
+        loop = asyncio.get_event_loop()
         gCon.log(f"There is a loop! {id(loop)}")
     except RuntimeError:
         loop = get_loop()
         #loop = "NO loop"
-        gCon.log(f"there was NO loop!, the external loop is {loop}")
+        gCon.log(f"there was NO loop!, the external loop is {id(loop)}")
         res = asyncio.set_event_loop(loop)
         #gCon.log(f"res {res}")
         #loop = asyncio.get_running_loop()

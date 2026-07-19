@@ -33,6 +33,7 @@ from app.exc.AdelphosException import AdErrno
 from starlette.middleware import Middleware
 from app.sdc.Dependencies import Dependencies
 
+from app.transport.bridge.loop import stop_loop, get_loop
 
 class AdelphosExcMiddleware:
 
@@ -51,6 +52,9 @@ class AdelphosExcMiddleware:
 
 @asynccontextmanager
 async def async_lifespan_gw(app):
+
+    loop = get_loop()
+    gCon.log(f"loop in lifespan is {loop}")
 
     app.running = True
     out_gateway = AsyncGateway()
