@@ -58,10 +58,6 @@ class Config:
         return self.config['conf']['social']
 
 
-    #def get_social_gw_config(self):
-    #    return self.config['sdc']['social_gateway']
-
-
     def get_social_dao_cnf(self):
         return self.config['conf']['social_dao']
 
@@ -70,44 +66,18 @@ class Config:
         return self.config['conf'].get(section)
 
 
-    #def get_social_dao_build(self):
-    #    return self.config['sdc']['social_dao']
-
-    #
-    #def get_social_api_build(self):
-    #    return self.config['sdc']['social_api']
-
-
-    #def get_social_type(self):
-    #    return self.config['sdc']['social']['type']
-
-
     def is_test_instance(self):
         return self.config['conf'][CNF_GENERAL_SECTION]['debug']
+
+
+    def is_human_output(self):
+        return self.config['conf'][CNF_GENERAL_SECTION].get('human_output',
+                                                            True)
 
 
     def conf_mod(self, dependency):
         return self.config['conf'][dependency]
 
-
-#def load_conf_deprecated(instance_name, toml_file):
-#
-#    if (toml_file is None):
-#        toml_file = f"adelphos_ap_{instance_name}.toml"
-#
-#    gCon.log(f"Loading configuration file {toml_file}")
-#
-#    if (os.path.exists(toml_file) == False):
-#        exit_err(f"Configuration file {toml_file} not found")
-#
-#    with open(toml_file, "rb") as f:
-#        config = tomllib.load(f)
-#
-#    gCon.rule("Read the configuration:")
-#    gCon.log(f"{json.dumps(config)}")
-#
-#    return config
-    
 
 def load_conf(instance_name, yaml_file):
 

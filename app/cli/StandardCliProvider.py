@@ -12,6 +12,8 @@
 ######################################################
 
 
+import json
+
 from app.cli.CliProvider import CliProvider
 
 from starlette.websockets import WebSocketDisconnect
@@ -26,6 +28,7 @@ import app.sdc.s_utils as sdc
 import app.consts as CNST
 import traceback
 from app.core.sys.SysCallGateway import SysCallGateway
+from app.core.ECoreErrno import ECoreErrno
 
 class StandardCliClient:
 
@@ -33,6 +36,21 @@ class StandardCliClient:
         self.cli_api = kernel.get_dep(Dependencies.CLI_API)
         self.websocket = websocket
         self.session = UserSession(kernel)
+        self.kernel = kernel
+
+
+    async def _send_output(self, errno, response):
+        if self.kernel.conf().is_human_output() == False:
+            res_dict = {
+                    'errno' : errno,
+                    'response' : response,
+            }
+            response_str = json.dumps(res_dict)
+        else:
+            response_str = response
+            
+        await self.websocket.send_text(response_str)
+
 
 
     async def _internal_serve(self):
@@ -40,7 +58,7 @@ class StandardCliClient:
         while True:
             data = await self.websocket.receive_text()
             response = await self.cli_api.sys_call_gateway_msg(self.session, data)
-            await self.websocket.send_text(response)
+            await self._send_output(ECoreErrno.DONE_OK, response)
 
 
     async def serve_forever(self):
