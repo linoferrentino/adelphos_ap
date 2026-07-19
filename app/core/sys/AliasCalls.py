@@ -23,6 +23,8 @@ from app.core.model.AdelphosUri import AdelphosUri
 from app.core.algo.utils import federated_transaction
 from app.logging import gCon
 
+from app.cli.SysCall import SysCallAns
+
 class AliasCalls:
 
     @staticmethod

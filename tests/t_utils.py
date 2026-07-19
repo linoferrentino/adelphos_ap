@@ -49,7 +49,7 @@ def websocket_get_next_msg(websocket):
     return _parse_data(datas)
 
 
-async def ws_get_next_msg_async(ws):
+async def ws_get_next_msg(ws):
     datas = await ws.receive_text()
     return _parse_data(datas)
 
@@ -70,9 +70,9 @@ async def  ws_assert_payload_async(ws, payload_expected):
 
 
 def _ws_assert_code(data, code_expected):
-    code_got = data['res']
+    code_got = data['errno']
+    assert isinstance(code_got, int)
     assert code_got == code_expected
-    return data
 
 
 def websocket_assert_code(websocket, code_expected):
@@ -80,9 +80,20 @@ def websocket_assert_code(websocket, code_expected):
     return _ws_assert_code(data, code_expected)
 
 
-async def ws_assert_code_async(ws, code_expected):
-    data = await ws_get_next_msg_async(ws)
-    return _ws_assert_code(data, code_expected)
+async def ws_assert_code(ws, code_expected):
+    data = await ws_get_next_msg(ws)
+    _ws_assert_code(data, code_expected)
+    return data
+
+
+async def _ws_assert_human_output(data, human_output_exp):
+    assert data['human_output'] == human_output_exp
+
+
+async def ws_assert_human_output(ws, human_output_exp):
+    data = await ws_get_next_msg(ws)
+    await _ws_assert_human_output(data, human_output_exp)
+    return data
 
 
 def websocket_assert_payload_success(websocket, payload_expected):

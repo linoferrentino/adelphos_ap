@@ -17,6 +17,13 @@ from dataclasses import field
 
 
 @dataclass
+class SysCallAns:
+    errno: int
+    human_output: str
+    res: dict = field(default_factory = dict)
+
+
+@dataclass
 class SysCallPar:
     name: str
     required: bool

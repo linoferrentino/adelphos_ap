@@ -33,6 +33,7 @@ import app.sdc.standard_conf as stdcnf
 import tests.adelphoi_test_config as tconf
 import tests.daemon.daemon_tests as dtests
 import tests.social.social_tests as stests
+import tests.t_utils as tu
 
 def test_real1(get_standalone_app):
     ad1 = get_standalone_app('adelphos1', stdcnf.release_kernel_template,
@@ -61,14 +62,15 @@ async def test_real_sndmsg(get_standalone_app):
         async with httpx.AsyncClient() as client:
             async with aconnect_ws(f"http://localhost:{port}/api/ws", client) as ws:
                 await ws.send_text("WHAT")
-                datas = await ws.receive_text()
-                #assert AdErrno.EINVALID_SYNTAX == parse_exc_str(datas)
-                assert AdErrno.EINVALID_SYNTAX == \
-                        AdelphosBaseException.parse_exc_str(datas)
+                await tu.ws_assert_code(ws, AdErrno.EINVALID_SYNTAX)
+                #datas = await ws.receive_text()
+                #assert AdErrno.EINVALID_SYNTAX == \
+                #        AdelphosBaseException.parse_exc_str(datas)
 
                 await ws.send_text("dbg.echo msg lino")
-                datas = await ws.receive_text()
-                assert datas == "hello lino!"
+                #datas = await ws.receive_text()
+                #assert datas == "hello lino!"
+                await tu.ws_assert_human_output(ws, "hello lino!")
 
 
 @pytest.mark.anyio
