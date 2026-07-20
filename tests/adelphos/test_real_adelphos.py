@@ -34,6 +34,8 @@ import tests.adelphoi_test_config as tconf
 import tests.daemon.daemon_tests as dtests
 import tests.social.social_tests as stests
 import tests.t_utils as tu
+import tests.alias_helpers as ah
+import app.misc.alias_utils as au
 
 def test_real1(get_standalone_app):
     ad1 = get_standalone_app('adelphos1', stdcnf.release_kernel_template,
@@ -117,12 +119,14 @@ def test_create_root_user(get_routable_app):
                              tconf.adelphos_testable_1_conf)
 
     root_pass = tconf.adelphos_testable_1_conf['_root_password_']
+    local_root = au.get_local_alias(tconf.adelphos_testable_1_conf['_root_handle_'])
 
     with test1, test1.websocket_connect(CNST.WS_ROUTE) as websocket:
         websocket.send_text(f"alias.login login root.admins password {root_pass}")
         data = tu.ws_assert_code(websocket, AdErrno.DONE_OK)
-        #data = websocket.receive_text()
-        #assert data == "Login OK, check your Mastodon inbox to get the token."
+        gCon.log(f"now I will login as {local_root}")
+        ah.ws_alias_login_in_app(test1, local_root, websocket, 
+                                 'root.admins', root_pass)
  
 
 def test_real_remote_add(get_routable_app):
@@ -185,26 +189,24 @@ def test_real_alias_create_sync(get_routable_app):
 
 
         with test2.websocket_connect(CNST.WS_ROUTE) as websocket:
-            websocket.send_text(f"alias.login login lino.ferre password secret")
-            #data = websocket.receive_text()
-            tu.ws_assert_code(websocket, AdErrno.DONE_OK)
+            ah.ws_alias_login(user_ob, websocket, 'lino.ferre', 'secret')
+            #websocket.send_text(f"alias.login login lino.ferre password secret")
+            #tu.ws_assert_code(websocket, AdErrno.DONE_OK)
 
-            count_msg = user_ob.count_msg()
-            assert count_msg == 1
+            #count_msg = user_ob.count_msg()
+            #assert count_msg == 1
 
-            msg = user_ob.pop_lst_msg()
-            match_tk = re.match('Copy this command to finalize', msg.content)
-            assert match_tk is not None
+            #msg = user_ob.pop_lst_msg()
+            #match_tk = re.match('Copy this command to finalize', msg.content)
+            #assert match_tk is not None
 
-            token_tk = re.search(r"tk (.*)$", msg.content)
-            assert token_tk is not None
-            token = token_tk.group(1)
-            token = token[:-1]
+            #token_tk = re.search(r"tk (.*)$", msg.content)
+            #assert token_tk is not None
+            #token = token_tk.group(1)
+            #token = token[:-1]
 
-            websocket.send_text(f"alias.put_token tk {token}")
-            #data = websocket.receive_text()
-            tu.ws_assert_code(websocket, AdErrno.DONE_OK)
-            #assert data == f"Login OK, welcome to adelphos, lino.ferre."
+            #websocket.send_text(f"alias.put_token tk {token}")
+            #tu.ws_assert_code(websocket, AdErrno.DONE_OK)
  
 
 def Xtest_real_remote_add_simple(get_routable_app):

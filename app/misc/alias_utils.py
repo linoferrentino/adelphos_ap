@@ -15,6 +15,18 @@ import re
 from app.core.AdelphosCoreException import AdelphosCoreException
 from app.core.ECoreErrno import ECoreErrno
 
+LOCAL_REX = r":local:(\w*)"
+
+
+def get_local_alias(alias_handle):
+
+    local_user_mt = re.match(LOCAL_REX, alias_handle)
+    if local_user_mt is not None:
+        local_user = local_user_mt.group(1)
+    else:
+        local_user = None
+    return local_user
+
 
 def split_alias(alias_name, check = False):
 

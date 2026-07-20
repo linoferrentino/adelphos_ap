@@ -60,6 +60,10 @@ class UserInbox(SocialUser):
         return len(self.messages)
 
 
+    def clear(self):
+        self.messages.clear()
+
+
     def pop_lst_msg(self):
         (self.messages, msg) = (self.messages[:-1], self.messages[-1])
         return msg

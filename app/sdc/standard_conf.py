@@ -166,6 +166,8 @@ syscalls_suffix = """
         class: app.core.sys.AliasCalls.AliasCalls
         syscalls:
 
+          - name: whoami
+
           - name: login
             pars:
               login:

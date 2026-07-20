@@ -10,23 +10,14 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
 
-# this is the session that holds data of the current user.
-# this is used by the WebSocket, as the ActivityPub Gateway is stateless.
-# the session for now is not persistent.
 
-# if you logout it is recreated.
 import secrets
+
 from datetime import datetime
 from enum import IntEnum
 from enum import auto
 from app.logging import gCon
-#from app.api.AdelphosException import AdelphosException
-#from app.api.AdelphosException import EAdelhposErrno
-
-#from app.exc.AdelphosException import AdelphosException
-#from app.exc.AdelphosException import AdErrno
 from app.core.AdelphosCoreException import AdelphosCoreException
 from app.core.ECoreErrno import ECoreErrno
 
@@ -54,18 +45,10 @@ class UserSession:
 
     def __init__(self, kernel):
         self.kernel = kernel
-        #self.user = None
         self.user_state = EUserState.NOT_LOGGED
 
-    #def get_user(self):
-    #    return self.user
-
-
-    #def is_login_valid(self):
-    #    return False
 
     def login_start(self, alias, family, actor_dto):
-
         self.alias = alias
         self.family = family
         self.token = secrets.token_urlsafe()
@@ -77,6 +60,25 @@ class UserSession:
     @property
     def alias_family(self):
         return f"{self.alias}.{self.family}"
+
+
+    def is_login_valid(self):
+        if (self.user_state != EUserState.LOGGED_AND_TOKEN):
+            return False
+
+        # let's get the age
+        time_now = datetime.now()
+        diff_time = time_now - self.session_age
+
+        # 10 minutes session expiry
+        if (diff_time.total_seconds() > 600):
+            gCon.log("Session expiration")
+            self.user_state = EUserState.NOT_LOGGED
+            return False
+
+        # I refresh the time
+        self.session_age = time_now
+        return True
 
 
     def accept_token(self, token):

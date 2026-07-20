@@ -114,6 +114,8 @@ class SysCallGateway(Dependency, SyncLifespanAware):
     @staticmethod
     def _get_pars(provider):
         par_list = list()
+        if provider.get('pars') is None:
+            return par_list
         for par_name, value in provider['pars'].items():
             required = value['required']
             default_value = None

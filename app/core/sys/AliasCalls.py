@@ -25,6 +25,8 @@ from app.logging import gCon
 
 from app.cli.SysCall import SysCallAns
 
+from app.api.UserSession import active_login
+
 class AliasCalls:
 
     @staticmethod
@@ -47,6 +49,15 @@ class AliasCalls:
         token = pars['tk']
         session.accept_token(token)
         return f"Login OK, welcome to adelphos, {session.alias_family}."
+
+
+    @staticmethod
+    @active_login
+    async def _sys_call_whoami(kernel, session, pars):
+        res = {
+                'active_login' : session.alias_family
+              }
+        return res
 
  
     @staticmethod

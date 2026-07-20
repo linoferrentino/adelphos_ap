@@ -55,8 +55,8 @@ class StandardCliClient:
         await self._out_final_str(response)
 
 
-    async def _send_output_ans_obj(self, resojb):
-        response_str = json.dumps(asdict(resojb))
+    async def _send_output_ans_obj(self, resobj):
+        response_str = json.dumps(asdict(resobj))
         await self._out_final_str(response_str)
 
 
@@ -65,8 +65,9 @@ class StandardCliClient:
 
 
     async def _send_out_success(self, output):
-        if isinstance(output, SysCallAns):
-            await self._send_output_ans_obj(output)
+        if isinstance(output, dict):
+            outobj = SysCallAns(ECoreErrno.DONE_OK, None, output)
+            await self._send_output_ans_obj(outobj)
         else:
             await self._send_simple_success(str(output))
 

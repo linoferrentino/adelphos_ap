@@ -10,7 +10,6 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
 
 
 from app.logging import gCon
@@ -95,6 +94,10 @@ def ws_assert_code(ws, code_expected):
 
 def data_assert_human_output(data, human_output_exp):
     assert data['human_output'] == human_output_exp
+
+
+def data_assert_key_value(data, key, value_expected):
+    assert data['res'][key] == value_expected
 
 
 async def ws_assert_human_output_async(ws, human_output_exp):
