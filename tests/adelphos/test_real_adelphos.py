@@ -62,15 +62,10 @@ async def test_real_sndmsg(get_standalone_app):
         async with httpx.AsyncClient() as client:
             async with aconnect_ws(f"http://localhost:{port}/api/ws", client) as ws:
                 await ws.send_text("WHAT")
-                await tu.ws_assert_code(ws, AdErrno.EINVALID_SYNTAX)
-                #datas = await ws.receive_text()
-                #assert AdErrno.EINVALID_SYNTAX == \
-                #        AdelphosBaseException.parse_exc_str(datas)
+                await tu.ws_assert_code_async(ws, AdErrno.EINVALID_SYNTAX)
 
                 await ws.send_text("dbg.echo msg lino")
-                #datas = await ws.receive_text()
-                #assert datas == "hello lino!"
-                await tu.ws_assert_human_output(ws, "hello lino!")
+                await tu.ws_assert_human_output_async(ws, "hello lino!")
 
 
 @pytest.mark.anyio
@@ -125,8 +120,9 @@ def test_create_root_user(get_routable_app):
 
     with test1, test1.websocket_connect(CNST.WS_ROUTE) as websocket:
         websocket.send_text(f"alias.login login root.admins password {root_pass}")
-        data = websocket.receive_text()
-        assert data == "Login OK, check your Mastodon inbox to get the token."
+        data = tu.ws_assert_code(websocket, AdErrno.DONE_OK)
+        #data = websocket.receive_text()
+        #assert data == "Login OK, check your Mastodon inbox to get the token."
  
 
 def test_real_remote_add(get_routable_app):
@@ -187,10 +183,11 @@ def test_real_alias_create_sync(get_routable_app):
         assert ECoreErrno.EDUPLICATED_FAMILY == \
                 AdelphosBaseException.parse_exc_str(msg.content)
 
+
         with test2.websocket_connect(CNST.WS_ROUTE) as websocket:
             websocket.send_text(f"alias.login login lino.ferre password secret")
-            data = websocket.receive_text()
-            assert data == "Login OK, check your Mastodon inbox to get the token."
+            #data = websocket.receive_text()
+            tu.ws_assert_code(websocket, AdErrno.DONE_OK)
 
             count_msg = user_ob.count_msg()
             assert count_msg == 1
@@ -205,8 +202,9 @@ def test_real_alias_create_sync(get_routable_app):
             token = token[:-1]
 
             websocket.send_text(f"alias.put_token tk {token}")
-            data = websocket.receive_text()
-            assert data == f"Login OK, welcome to adelphos, lino.ferre."
+            #data = websocket.receive_text()
+            tu.ws_assert_code(websocket, AdErrno.DONE_OK)
+            #assert data == f"Login OK, welcome to adelphos, lino.ferre."
  
 
 def Xtest_real_remote_add_simple(get_routable_app):

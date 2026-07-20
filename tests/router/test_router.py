@@ -22,6 +22,8 @@ from app.logging import gCon
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 from starlette.testclient import TestClient
 from tests.testers.fixtures import get_routable_app
+from app.exc.AdelphosException import AdErrno
+import tests.t_utils as tu
 
 
 def test_simple_router(get_routable_app):
@@ -32,7 +34,8 @@ def test_simple_router(get_routable_app):
     with app:
         with app.websocket_connect(CNST.WS_ROUTE) as websocket:
             websocket.send_text("dbg.echo msg lino99")
-            data = websocket.receive_text()
-            assert data == 'hello lino99!'
-
+            #data = websocket.receive_text()
+            #assert data == 'hello lino99!'
+            data = tu.ws_assert_code(websocket, AdErrno.DONE_OK)
+            tu.data_assert_human_output(data, 'hello lino99!')
 

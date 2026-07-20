@@ -44,12 +44,12 @@ def _parse_data(datas):
     return data_parsed
 
 
-def websocket_get_next_msg(websocket):
+def ws_get_next_msg(websocket):
     datas = websocket.receive_text()
     return _parse_data(datas)
 
 
-async def ws_get_next_msg(ws):
+async def ws_get_next_msg_async(ws):
     datas = await ws.receive_text()
     return _parse_data(datas)
 
@@ -60,7 +60,7 @@ def _ws_assert_payload(data, payload_expected):
 
 
 def websocket_assert_payload(websocket, payload_expected):
-    data = websocket_get_next_msg(websocket)
+    data = ws_get_next_msg(websocket)
     return _ws_assert_payload(data, payload_expected)
 
 
@@ -75,24 +75,37 @@ def _ws_assert_code(data, code_expected):
     assert code_got == code_expected
 
 
-def websocket_assert_code(websocket, code_expected):
-    data = websocket_get_next_msg(websocket)
-    return _ws_assert_code(data, code_expected)
-
-
-async def ws_assert_code(ws, code_expected):
-    data = await ws_get_next_msg(ws)
+def ws_assert_code(websocket, code_expected):
+    data = ws_get_next_msg(websocket)
     _ws_assert_code(data, code_expected)
     return data
 
 
-async def _ws_assert_human_output(data, human_output_exp):
+async def ws_assert_code_async(ws, code_expected):
+    data = await ws_get_next_msg_async(ws)
+    _ws_assert_code(data, code_expected)
+    return data
+
+
+def ws_assert_code(ws, code_expected):
+    data = ws_get_next_msg(ws)
+    _ws_assert_code(data, code_expected)
+    return data
+
+
+def data_assert_human_output(data, human_output_exp):
     assert data['human_output'] == human_output_exp
 
 
-async def ws_assert_human_output(ws, human_output_exp):
-    data = await ws_get_next_msg(ws)
-    await _ws_assert_human_output(data, human_output_exp)
+async def ws_assert_human_output_async(ws, human_output_exp):
+    data = await ws_get_next_msg_async(ws)
+    data_assert_human_output(data, human_output_exp)
+    return data
+
+
+def ws_assert_human_output(ws, human_output_exp):
+    data = ws_get_next_msg(ws)
+    data_assert_human_output(data, human_output_exp)
     return data
 
 
