@@ -67,7 +67,7 @@ async def test_real_sndmsg(get_standalone_app):
                 await tu.ws_assert_code_async(ws, AdErrno.EINVALID_SYNTAX)
 
                 await ws.send_text("dbg.echo msg lino")
-                await tu.ws_assert_human_output_async(ws, "hello lino!")
+                await tu.ws_assert_res_str_async(ws, "hello lino!")
 
 
 @pytest.mark.anyio

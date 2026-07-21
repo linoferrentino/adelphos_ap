@@ -38,38 +38,39 @@ class StandardCliClient:
 
     def __init__(self, kernel, websocket):
         self.cli_api = kernel.get_dep(Dependencies.CLI_API)
+        self.cli_presenter = kernel.get_dep(Dependencies.CLI_PRESENTER)
         self.websocket = websocket
         self.session = UserSession(kernel)
         self.kernel = kernel
 
 
-    async def _send_simple_success(self, response):
-        await self._send_errno_str(ECoreErrno.DONE_OK, response)
+    #async def _send_simple_success(self, response):
+    #    await self._send_errno_str(ECoreErrno.DONE_OK, response)
 
 
-    async def _send_errno_str(self, errno, response):
-        if self.kernel.conf().is_human_output() == False:
-            resobj = SysCallAns(errno, response)
-            await self._send_output_ans_obj(resobj)
-            return
-        await self._out_final_str(response)
+    #async def _send_errno_str(self, errno, response):
+    #    if self.kernel.conf().is_human_output() == False:
+    #        resobj = SysCallAns(errno, response)
+    #        await self._send_output_ans_obj(resobj)
+    #        return
+    #    await self._out_final_str(response)
 
 
-    async def _send_output_ans_obj(self, resobj):
-        response_str = json.dumps(asdict(resobj))
-        await self._out_final_str(response_str)
+    #async def _send_output_ans_obj(self, resobj):
+    #    response_str = json.dumps(asdict(resobj))
+    #    await self._out_final_str(response_str)
 
 
     async def _out_final_str(self, response_str):
         await self.websocket.send_text(response_str)
 
 
-    async def _send_out_success(self, output):
-        if isinstance(output, dict):
-            outobj = SysCallAns(ECoreErrno.DONE_OK, None, output)
-            await self._send_output_ans_obj(outobj)
-        else:
-            await self._send_simple_success(str(output))
+    #async def _send_out_success(self, output):
+    #    if isinstance(output, dict):
+    #        outobj = SysCallAns(ECoreErrno.DONE_OK, None, output)
+    #        await self._send_output_ans_obj(outobj)
+    #    else:
+    #        await self._send_simple_success(str(output))
 
 
     async def _internal_serve(self):
@@ -77,7 +78,8 @@ class StandardCliClient:
         while True:
             data = await self.websocket.receive_text()
             response = await self.cli_api.sys_call_gateway_msg(self.session, data)
-            await self._send_out_success(response)
+            response_str = self.cli_presenter.present_to_user_ok(response)
+            await self._out_final_str(response_str)
 
 
     async def serve_forever(self):
@@ -90,8 +92,7 @@ class StandardCliClient:
                 pass
             except Exception as ex:
                 traceback.print_exc()
-                await self._send_errno_str(ECoreErrno.ESYS, 
-                                        f"Server error {ex} we apologize.")
+                await self._process_exception(ex)
             break
         self.running = False
 
@@ -101,11 +102,14 @@ class StandardCliClient:
         try:
             await self._internal_serve()
         except AdelphosException as err:
-            await self._send_errno_str(err.errno,
-                                           f"User Error: {err.out_str}")
+            await self._process_exception(err)
         except AdelphosCoreException as errcore:
-            await self._send_errno_str(errcore.errno,
-                                           f"Core Error: {errcore.out_str}")
+            await self._process_exception(errcore)
+
+
+    async def _process_exception(self, exc):
+        response_str = self.cli_presenter.present_to_user_exc(exc)
+        await self._out_final_str(response_str)
 
 
 class StandardCliProvider(CliProvider):

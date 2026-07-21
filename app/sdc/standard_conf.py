@@ -15,7 +15,7 @@
 from app.sdc.Dependencies import Dependencies
 
 
-testable_kernel_prefix = """
+common_kernel_prefix = """
 
 modules:
 
@@ -49,6 +49,17 @@ modules:
 
 """
 
+testable_kernel_prefix = common_kernel_prefix + """
+    cli_presenter:
+      constructor: tests.testers.RawPresenter.RawPresenter
+
+"""
+
+release_kernel_prefix = common_kernel_prefix + """
+    cli_presenter:
+      constructor: app.cli.AdelphosSimplePresenter.AdelphosSimplePresenter
+
+"""
 
 common_adelphos_modules = """
 
@@ -252,7 +263,7 @@ release_kernel_template = (testable_kernel_prefix
                 + release_daemons)
 
 
-release_kernel_conf = (testable_kernel_prefix
+release_kernel_conf = (release_kernel_prefix
                 + common_adelphos_modules
                 + real_adelphos_chunk_modules 
                 + syscalls_suffix

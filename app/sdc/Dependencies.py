@@ -31,4 +31,5 @@ class Dependencies(StrEnum):
     CLI_API = auto()
     FEDERATED_DB = 'fed_db'
     ROUTER = auto()
+    CLI_PRESENTER = auto()
 

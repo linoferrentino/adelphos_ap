@@ -11,18 +11,22 @@
 #
 ######################################################
 
+
 from abc import ABC, abstractmethod
 from app.sdc.Dependency import Dependency
 
 
-class CliProvider(Dependency):
+class CliPresenter(Dependency):
 
     def __init__(self, kernel):
         super().__init__(kernel)
 
-    
+
     @abstractmethod
-    async def serve_forever(self, websocket):
+    def present_to_user_ok(self, sys_call_out):
         pass
 
 
+    @abstractmethod
+    def present_to_user_exc(self, exc):
+        pass

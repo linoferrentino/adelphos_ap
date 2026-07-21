@@ -217,6 +217,7 @@ class BaseSocialApiProvider(SocialApiProvider):
         answer_msg = f"{SOCIAL_API_ANSWER} api_id {api_id} payload {payload_ans}"
         return answer_msg
 
+
     async def _sys_call_q_try(self, actor_from, pars):
         payload_str = pars['payload']
         payload_decoded = self._decode_daemon_message(payload_str)
@@ -273,5 +274,6 @@ class BaseSocialApiProvider(SocialApiProvider):
 
     async def new_post_try(self, envelope):
         inbox_api = self.kernel.get_dep(Dependencies.INBOX_API)
-        return await inbox_api.sys_call_gateway_msg(envelope, envelope.content)
+        out_dict = await inbox_api.sys_call_gateway_msg(envelope, envelope.content)
+        out_msg = out_dict['res']
 

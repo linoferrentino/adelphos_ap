@@ -67,23 +67,13 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         kwargs = self._create_params_dict_from_cmd_line(cp, syscall)
 
         msg_out = await syscall.handler(kernel, param, kwargs)
-        return msg_out
+        dict_out = {
+                'errno' : AdErrno.DONE_OK,
+                'res' : msg_out,
+                'syscall' : ctx_cmd,
+                }
+        return dict_out
 
-
-    @staticmethod
-    def OLD_create_params_dict_from_cmd_line(cp, syscall):
-        kwargs = dict()
-        for par in syscall.pars:
-            try:
-                kwargs[par.name] = cp.get_param_safe(par.name)
-            except:
-                if par.required:
-                    raise
-                else:
-                    default_value = par.def_value
-                    kwargs[par.name] = default_value
-
-        return kwargs
 
     @staticmethod
     def _create_params_dict_from_cmd_line(cp, syscall):

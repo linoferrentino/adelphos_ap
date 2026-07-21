@@ -96,6 +96,10 @@ def data_assert_human_output(data, human_output_exp):
     assert data['human_output'] == human_output_exp
 
 
+def data_assert_res_str(data, res_output_exp):
+    assert data['res'] == res_output_exp
+
+
 def data_assert_key_value(data, key, value_expected):
     assert data['res'][key] == value_expected
 
@@ -103,6 +107,18 @@ def data_assert_key_value(data, key, value_expected):
 async def ws_assert_human_output_async(ws, human_output_exp):
     data = await ws_get_next_msg_async(ws)
     data_assert_human_output(data, human_output_exp)
+    return data
+
+
+async def ws_assert_res_str_async(ws, res_output_exp):
+    data = await ws_get_next_msg_async(ws)
+    data_assert_res_str(data, res_output_exp)
+    return data
+
+
+def ws_assert_res_str(ws, res_output_exp):
+    data = ws_get_next_msg(ws)
+    data_assert_res_str(data, res_output_exp)
     return data
 
 

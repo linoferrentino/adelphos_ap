@@ -51,7 +51,7 @@ def _test_sndpost_to_host(test1, test2, host2, userKO, userOK, user_from):
             #data = websocket.receive_text()
             #assert data == "DONE!"
             data = tu.ws_assert_code(websocket, AdErrno.DONE_OK)
-            tu.data_assert_human_output(data, "DONE!")
+            tu.data_assert_res_str(data, "DONE!")
 
             #websocket.close()
             
@@ -67,7 +67,7 @@ def _test_sndpost_to_host(test1, test2, host2, userKO, userOK, user_from):
     f"dbg.sndpost to @{userOK}@{host2} msg echo_test_x911 from {user_from}")
             #data = websocket.receive_text()
             #assert data == "DONE!"
-            tu.ws_assert_human_output(websocket, 'DONE!')
+            tu.ws_assert_res_str(websocket, 'DONE!')
             
             user_ob = test2.app.routable.get_dep(
                     Dependencies.SOCIAL).login_user(userOK)
