@@ -276,4 +276,5 @@ class BaseSocialApiProvider(SocialApiProvider):
         inbox_api = self.kernel.get_dep(Dependencies.INBOX_API)
         out_dict = await inbox_api.sys_call_gateway_msg(envelope, envelope.content)
         out_msg = out_dict['res']
+        return out_msg
 

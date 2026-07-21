@@ -27,7 +27,7 @@ def _test_remote_add(test1, test2, host2, exp_errno_code = None):
 
             if exp_errno_code is None:
                 data = tu.ws_assert_code(websocket, AdErrno.DONE_OK)
-                tu.data_assert_human_output(data, '33')
+                tu.data_assert_res_str(data, '33')
             else:
                 tu.ws_assert_code(websocket, exp_errno_code)
 

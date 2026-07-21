@@ -37,5 +37,5 @@ def test_simple_router(get_routable_app):
             #data = websocket.receive_text()
             #assert data == 'hello lino99!'
             data = tu.ws_assert_code(websocket, AdErrno.DONE_OK)
-            tu.data_assert_human_output(data, 'hello lino99!')
+            tu.data_assert_res_str(data, 'hello lino99!')
 

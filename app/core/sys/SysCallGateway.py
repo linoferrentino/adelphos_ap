@@ -68,7 +68,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
         msg_out = await syscall.handler(kernel, param, kwargs)
         dict_out = {
-                'errno' : AdErrno.DONE_OK,
+                'errno' : int(AdErrno.DONE_OK),
                 'res' : msg_out,
                 'syscall' : ctx_cmd,
                 }
