@@ -39,7 +39,7 @@ class RawPresenter(CliPresenter):
         else:
             dict_out = {
                     'errno' : ECoreErrno.ESYS,
-                    'errmsg' : exc.out_str,
+                    'errmsg' : str(exc),
             }
         return json.dumps(dict_out)
 

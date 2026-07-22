@@ -127,6 +127,8 @@ def test_create_root_user(get_routable_app):
         gCon.log(f"now I will login as {local_root}")
         ah.ws_alias_login_in_app(test1, local_root, websocket, 
                                  'root.admins', root_pass)
+
+        ah.ws_create_user_alias(test1, websocket, 'john', 'john.smith', 'john11')
  
 
 def test_real_remote_add(get_routable_app):

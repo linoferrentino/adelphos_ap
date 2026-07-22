@@ -36,6 +36,7 @@ class AdErrno(IntEnum):
     EINVALID_SYNTAX = 13
     EINVALID_URI = 14
     EINVALID_SYSCALL_PARAM_TYPE = 15
+    EPERM = 16
 
 
 class AdelphosException(AdelphosBaseException):

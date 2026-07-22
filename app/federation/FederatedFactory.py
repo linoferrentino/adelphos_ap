@@ -85,14 +85,6 @@ class FederatedFactory:
         required = col.get('required', True)
         def_value = col.get('default') 
         minimum_cardinality = col.get('minimum_cardinality', 0)
-        #if required == False:
-        #    if def_value is None:
-        #        required_type = FObReqType.NO_REQUIRED_DEFAULT_NULL
-        #    else:
-        #        required_type = FObReqType.NO_REQUIRED_DEFAULT_VALUE
-        #else:
-        #    required_type = FObReqType.REQUIRED
-
         col_def = FObColumnDefinition(col_type_id, cardinality_id,
                                       required, def_value, minimum_cardinality)
 

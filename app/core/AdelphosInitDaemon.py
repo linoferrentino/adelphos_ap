@@ -32,7 +32,6 @@ class AdelphosInitDaemon(Daemon):
     async def _create_local_root(self, local_user, root_password):
         social = self.get_dep(Dependencies.SOCIAL)
         local_user = social.local_user_get(local_user, create_if_not_exists = True)
-        gCon.log(f"local user {local_user.actor_dto}")
         res = await AliasAlgo.alias_create(self.kernel,
                 local_user.actor_dto.act.actor_id, 'root', 'admins', root_password, 
                                            0.0)

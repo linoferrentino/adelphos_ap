@@ -69,7 +69,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         msg_out = await syscall.handler(kernel, param, kwargs)
         dict_out = {
                 'errno' : int(AdErrno.DONE_OK),
-                'res' : msg_out,
+                'res' : msg_out if msg_out is not None else "",
                 'syscall' : ctx_cmd,
                 }
         return dict_out
@@ -110,7 +110,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
             required = value['required']
             default_value = None
             if required == False:
-                default_value = value.get('default_value')
+                default_value = value.get('default')
             par_type = value.get('par_type', 'str')
             if ((par_type != 'str') and (par_type != 'int') and
                 (par_type != 'bool') and (par_type != 'float')):

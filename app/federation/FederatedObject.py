@@ -180,7 +180,7 @@ class FederatedObject:
 
     @staticmethod
     def enforce_def(col_name, col_val, col_def, before_commit = False):
-        gCon.log(f"enforcing {col_name} value {col_val} with {col_def} commit {before_commit}")
+        #gCon.log(f"enforcing {col_name} value {col_val} with {col_def} commit {before_commit}")
         if col_def.cardinality == FObCardType.SCALAR:
             FederatedObject.enforce_scalar(col_name, col_val, col_def, before_commit)
         else:
@@ -195,7 +195,7 @@ class FederatedObject:
                     return
                
             if isinstance(col_val, list) == False:
-                gCon.log(f"col_val {col_val} is {type(col_val)}")
+                #gCon.log(f"col_val {col_val} is {type(col_val)}")
                 raise FdbException(EFdbErrors.EFDB_ITEARABLE_EXPECTED, col_val)
 
             if col_def.minimum_cardinality is not None:

@@ -44,33 +44,8 @@ class StandardCliClient:
         self.kernel = kernel
 
 
-    #async def _send_simple_success(self, response):
-    #    await self._send_errno_str(ECoreErrno.DONE_OK, response)
-
-
-    #async def _send_errno_str(self, errno, response):
-    #    if self.kernel.conf().is_human_output() == False:
-    #        resobj = SysCallAns(errno, response)
-    #        await self._send_output_ans_obj(resobj)
-    #        return
-    #    await self._out_final_str(response)
-
-
-    #async def _send_output_ans_obj(self, resobj):
-    #    response_str = json.dumps(asdict(resobj))
-    #    await self._out_final_str(response_str)
-
-
     async def _out_final_str(self, response_str):
         await self.websocket.send_text(response_str)
-
-
-    #async def _send_out_success(self, output):
-    #    if isinstance(output, dict):
-    #        outobj = SysCallAns(ECoreErrno.DONE_OK, None, output)
-    #        await self._send_output_ans_obj(outobj)
-    #    else:
-    #        await self._send_simple_success(str(output))
 
 
     async def _internal_serve(self):
@@ -91,7 +66,7 @@ class StandardCliClient:
             except WebSocketDisconnect as wds:
                 pass
             except Exception as ex:
-                traceback.print_exc()
+                #traceback.print_exc()
                 await self._process_exception(ex)
             break
         self.running = False

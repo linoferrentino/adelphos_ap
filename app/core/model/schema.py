@@ -52,7 +52,14 @@ classes:
         - name: equity
           type: real
           cardinality: scalar
-          required: true
+          required: false
+          default: 0.0
+
+        - name: trust
+          type: real
+          cardinality: scalar
+          required: false
+          default: 0.0
 
         - name: invites
           type: json 

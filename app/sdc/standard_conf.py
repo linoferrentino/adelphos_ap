@@ -156,6 +156,10 @@ syscalls_suffix = """
             pars:
               user:
                 required: true
+          - name: add_user 
+            pars:
+              user:
+                required: true
 
       family:
         class: app.core.sys.FamilyCalls.FamilyCalls
@@ -227,9 +231,10 @@ syscalls_suffix = """
                     required: true
                 password:
                     required: true
-                equity:
-                    required: true
+                trust:
+                    required: false 
                     par_type: float
+                    default: 25.0 
 
       sapi:
           class: app.ad_api.BaseSocialApiProvider.BaseSocialApiProvider
