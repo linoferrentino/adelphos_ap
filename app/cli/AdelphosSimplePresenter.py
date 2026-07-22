@@ -11,21 +11,14 @@
 #
 ######################################################
 
-import json
 from app.cli.CliPresenter import CliPresenter
-from app.logging import gCon
 
-
-class RawPresenter(CliPresenter):
+class AdelphosSimplePresenter(CliPresenter):
 
     def __init__(self, kernel):
         super().__init__(kernel)
 
 
     def present_to_user_ok(self, sys_call_out):
-        sys_call_str = json.dumps(sys_call_out)
-        gCon.log(f"....> exit >{sys_call_str}<")
-        return sys_call_str
-
-
+        return str(sys_call_out['res'])
 

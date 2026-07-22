@@ -115,7 +115,7 @@ class StarletteWrap(Starlette):
 
 
     def get_config(self):
-        return self.routable.conf()
+        return self.routable.conf
 
 
     def set_out_gateway(self, gw):

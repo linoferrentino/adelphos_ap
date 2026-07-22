@@ -28,7 +28,6 @@ class AsyncGateway(AbstractGateway):
 
     def __init__(self):
         try:
-            #loop = asyncio.get_running_loop() 
             loop = get_loop()
             self.loop = loop
         except RuntimeError:
@@ -40,7 +39,6 @@ class AsyncGateway(AbstractGateway):
         while (len(self.requests) != 0):
             req = self.requests.pop()
             asyncio.create_task(req.async_req(session))
-        gCon.log(f"WAITING COND {self.app} on thread {threading.current_thread().native_id}")
         await self.app.cond.wait()
 
 

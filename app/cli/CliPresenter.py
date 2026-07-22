@@ -12,8 +12,11 @@
 ######################################################
 
 
+import json
 from abc import ABC, abstractmethod
 from app.sdc.Dependency import Dependency
+from app.core.AdelphosCoreException import AdelphosBaseException
+from app.core.ECoreErrno import ECoreErrno
 
 
 class CliPresenter(Dependency):
@@ -27,6 +30,16 @@ class CliPresenter(Dependency):
         pass
 
 
-    @abstractmethod
     def present_to_user_exc(self, exc):
-        pass
+        if isinstance(exc, AdelphosBaseException):
+            dict_out = {
+                    'errno' : exc.errno,
+                    'errmsg' : exc.out_str,
+            }
+        else:
+            dict_out = {
+                    'errno' : ECoreErrno.ESYS,
+                    'errmsg' : str(exc),
+            }
+        return json.dumps(dict_out)
+
