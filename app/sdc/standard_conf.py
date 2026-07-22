@@ -195,6 +195,13 @@ syscalls_suffix = """
               tk:
                 required: true
 
+          - name: send_msg
+            pars:
+              alias:
+                required: true
+              msg:
+                required: true
+
       dbg:
           class: app.core.sys.DebugModule.DebugModule
           syscalls:

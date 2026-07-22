@@ -55,7 +55,7 @@ def remote_app1():
     kernel_conf = yaml.safe_load(kernel_build)
     with server.run_in_subprocess(su.boot_kernel, ("rem1", 
                           kernel_conf), PORT1):
-        time.sleep(2)
+        time.sleep(2.5)
         yield
 
 

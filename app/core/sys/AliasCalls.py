@@ -29,6 +29,13 @@ from app.api.UserSession import active_login
 
 class AliasCalls:
 
+
+    @staticmethod
+    async def _sys_call_send_msg(kernel, session, pars):
+        pass
+
+
+
     @staticmethod
     async def _sys_call_login(kernel, session, pars):
         login = pars['login']
