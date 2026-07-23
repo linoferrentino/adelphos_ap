@@ -124,7 +124,6 @@ def test_create_root_user(get_routable_app):
     with test1, test1.websocket_connect(CNST.WS_ROUTE) as websocket:
         websocket.send_text(f"alias.login login root.admins password {root_pass}")
         data = tu.ws_assert_code(websocket, AdErrno.DONE_OK)
-        gCon.log(f"now I will login as {local_root}")
         ah.ws_alias_login_in_app(test1, local_root, websocket, 
                                  'root.admins', root_pass)
 
@@ -134,6 +133,12 @@ def test_create_root_user(get_routable_app):
                                  'john.smith', 'john11')
         websocket.send_text('root.add_user user xxo alias cannot.work password zzz')
         tu.ws_assert_code(websocket, AdErrno.EPERM)
+        ah.ws_alias_logout(websocket)
+        ah.ws_alias_login_in_app(test1, local_root, websocket, 
+                                 'root.admins', root_pass)
+
+        ah.ws_sudo_push_alias(websocket, 'john.smith')
+
 
 
 def test_real_remote_add(get_routable_app):

@@ -53,6 +53,7 @@ class UserSession:
         self.token = secrets.token_urlsafe()
         self.session_age = datetime.now()
         self.user_state = EUserState.LOGGED_WITHOUT_TOKEN
+        self.actor_dto = actor_dto
         return self.token
 
 

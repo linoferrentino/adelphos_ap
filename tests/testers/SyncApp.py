@@ -147,12 +147,10 @@ class SyncApp:
 
 
     def _get_matched_route(self, parsed_url, routes):
-        gCon.log(f"routing {parsed_url}")
         for route in routes:
             match_route = re.match(route.path, parsed_url.path)
             if match_route is not None:
                 return (route, match_route)
-        gCon.log("NO ROUTE")
         return (None, None)
 
 

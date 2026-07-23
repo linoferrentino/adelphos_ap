@@ -34,8 +34,9 @@ def sudo_cmd(func):
 
 class RootApi:
 
+    @sudo_cmd
     @staticmethod
-    async def _sys_call_push_user(kernel, session, pars):
+    async def _sys_call_push_alias(kernel, session, pars):
         pass
  
 

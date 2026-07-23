@@ -38,6 +38,14 @@ def ws_alias_logout(ws):
     tu.ws_assert_code(ws, AdErrno.ENOLOGIN)
 
 
+def ws_sudo_push_alias(ws, alias):
+    ws.send_text(f"root.push_alias alias {alias}")
+    tu.ws_assert_code(ws, AdErrno.DONE_OK)
+    ws.send_text(f"alias.whoami")
+    data = tu.ws_assert_code(ws, AdErrno.DONE_OK)
+    tu.data_assert_key_value(data, 'active_login', alias)
+
+
 def ws_alias_login(user_inbox, ws, alias, password):
 
     ws.send_text(f"alias.login login {alias} password {password}")

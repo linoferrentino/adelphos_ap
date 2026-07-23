@@ -151,10 +151,12 @@ syscalls_suffix = """
       root:
         class: app.core.sys.RootApi.RootApi
         syscalls:
-          - name: push_user
+
+          - name: push_alias
             pars:
-              user:
+              alias:
                 required: true
+
           - name: add_user 
             pars:
               user:
