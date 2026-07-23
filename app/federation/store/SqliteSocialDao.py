@@ -12,6 +12,7 @@
 ######################################################
 
 import sqlite3
+import os
 
 from app.federation.BaseSocialDao import BaseSocialDao
 from app.sdc.Dependencies import Dependencies
@@ -127,7 +128,8 @@ class SqliteSocialDao(BaseSocialDao):
             self.create_schema = True
             self.mem_db = True
         else:
-            db_name_complete = f"{db_name}.sqlite"
+            #db_name_complete = f"{db_name}.sqlite"
+            db_name_complete = db_name
             if (os.path.exists(db_name_complete) == False):
                 self.create_schema = True
             self.mem_db = False
