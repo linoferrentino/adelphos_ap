@@ -10,14 +10,11 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
 
 
 import sqlite3
 
 from app.store.SimpleKvStore import SimpleKvStore
-#from app.dao.AdelphosDb import AdelphosDb
-
 
 # Source - https://stackoverflow.com/a/47240886
 # Posted by Basj, modified by community. See post 'Timeline' for change history

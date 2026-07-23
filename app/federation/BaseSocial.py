@@ -17,7 +17,6 @@ from app.sdc.Dependencies import Dependencies
 from abc import ABC, abstractmethod
 from app.federation.SocialProvider import SocialProvider
 from app.logging import gCon
-from app.consts import API_POINT
 from app.keys import generate_key
 from app.dao.ApActorDto import create_local_actor
 from app.dao.ApServerDto import create_ap_server
@@ -103,7 +102,9 @@ class BaseSocial(SocialProvider):
         
         preferredusername = user['preferredusername']
 
-        user_path = API_POINT + f"/users/{preferredusername}"
+        root_path = self.conf.get_root_path()
+
+        user_path = root_path + f"/users/{preferredusername}"
         user_inbox = user_path + "/inbox"
 
         private_key =  user.get('private_key')

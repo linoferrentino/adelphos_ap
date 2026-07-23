@@ -33,7 +33,7 @@ from app.sdc.Dependencies import Dependencies
 
 from contextlib import contextmanager
 from app.transport.Routable import Routable
-from app.consts import API_POINT
+#from app.consts import API_POINT
 
 
 def exception_sync_middleware(func):
@@ -78,6 +78,8 @@ class SyncApp:
 
 
     def __init__(self, host, kernel, root_path = ""):
+
+        gCon.log(f"[red]xxxxxxxxxxxxxxxxxxxxx root_path >{root_path}<[/red]")
 
         transport = SyncTransport(host, self)
         self.transport = transport
@@ -135,6 +137,7 @@ class SyncApp:
         path_trans = re.sub("{" + match_path_param.group(1) + "}", 
             f"(?P<{match_path_param.group(1)}>[^/]*)", path)
         route.path = self.root_path + path_trans
+        gCon.log(f"Created the route {route}")
         return route
 
 
@@ -144,10 +147,12 @@ class SyncApp:
 
 
     def _get_matched_route(self, parsed_url, routes):
+        gCon.log(f"routing {parsed_url}")
         for route in routes:
             match_route = re.match(route.path, parsed_url.path)
             if match_route is not None:
                 return (route, match_route)
+        gCon.log("NO ROUTE")
         return (None, None)
 
 

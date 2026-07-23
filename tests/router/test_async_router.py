@@ -58,7 +58,7 @@ def test_post_inbox_KO(app, aroutable):
     with app:
         user_in = 'demo_WHAT'
         url_post=CNST.USER_INBOX_ROUTE.format(username = user_in)
-        url_post=CNST.API_POINT + url_post
+        url_post=CNST.ROOT_PATH_DEFAULT + url_post
         jsonmsg = {
                 'msg' : f'hello1 {user_in} secret X8a9',
                 'actor' : 't1',
@@ -68,7 +68,7 @@ def test_post_inbox_KO(app, aroutable):
 
         user_in = 'demo1'
         url_post=CNST.USER_INBOX_ROUTE.format(username = user_in)
-        url_post=CNST.API_POINT + url_post
+        url_post=CNST.ROOT_PATH_DEFAULT + url_post
         jsonmsg = {
                 'msg' : f'hello1 {user_in} secret X8a9',
                 'actor' : 'demo99',
@@ -103,7 +103,7 @@ def test_remote_add(get_routable_app):
 def test_post_inbox_ok(app, aroutable):
     user_in = 't1'
     url_post=CNST.USER_INBOX_ROUTE.format(username = user_in)
-    url_post=CNST.API_POINT + url_post
+    url_post=CNST.ROOT_PATH_DEFAULT + url_post
     jsonmsg = {
             'msg' : '@t1 hello1 demo1 secret X8a9',
             'actor' : 't2'

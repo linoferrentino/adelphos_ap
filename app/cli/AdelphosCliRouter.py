@@ -35,7 +35,7 @@ class AdelphosCliRouter(CliRouter):
         config = self.conf
 
         host = config.get_host()
-        host_api = host + CNST.API_POINT
+        host_api = host + config.get_root_path() 
 
         instance = config.get_instance()
 

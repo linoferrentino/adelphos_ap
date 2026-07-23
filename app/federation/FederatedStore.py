@@ -230,6 +230,7 @@ class FederatedStore(Dependency, LifespanAware):
         super().__init__(kernel)
 
         self.db_type = db_type
+        self.db_name = ':memory:' 
 
         if isinstance(schema, str):
             schema_dict = yaml.safe_load(schema)
@@ -242,30 +243,30 @@ class FederatedStore(Dependency, LifespanAware):
         self.hostname = kernel.conf().get_host()
 
 
-    def _create_db(self, db_type):
+    def _create_db(self, db_type, db_name):
         if db_type == 'mem':
             db = MemoryStore()
         else:
-            db = SqliteStore()
+            db = SqliteStore(db_name)
         return db
 
 
     async def start_async(self):
-
-        #gCon.log(f"Start db in {threading.current_thread().native_id}")
 
         config = self.conf.get_conf(Dependencies.FEDERATED_DB)
 
         if self.db_type is None:
             if config is None:
                 self.db_type = 'mem'
+                self.db_name = ':memory:'
             else:
                 self.db_type = config.get('db_type', 'mem')
+                self.db_name = config.get('db_name', ':memory:')
 
         if self.schema is None:
             raise Exception('loading of schema not yet supported')
 
-        self.db = self._create_db(self.db_type)
+        self.db = self._create_db(self.db_type, self.db_name)
         self.fact.parse_schema(self.schema)
         self.db.open()
 

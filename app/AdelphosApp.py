@@ -377,31 +377,6 @@ async def session_worker(app):
         #gCon.log("Session worker quit.")
                 
 
-# I create here the main application object, singleton
-def get_app_deprecated(instance_name, config_file, config):
-    global app
-
-    if (app is not None):
-        return app
-
-    if (instance_name is None):
-        instance_name = os.getenv(ADELPHOS_AP_ENV_KEY)
-
-    if (instance_name is None):
-        exit_err(f"No instance given on command line and {ADELPHOS_AP_ENV_KEY} variable not defined")
-
-    #gCon.log(f"Starting Adelphos' instance {instance_name}")
-    app = AdelphosApp(instance_name, root_path = API_POINT, lifespan = lifespan)
-
-    #router = make_router(app)
-
-    #app.conn_hndl = ConnHandler(app)
-    #app.include_router(app.conn_hndl.get_router())
-
-    app.init_instance(config_file, config)
-
-    return app
-
 
 def get_app(instance_name = None, config_file = None, config = None):
     global app
@@ -422,17 +397,8 @@ variable not defined")
     if config is None:
         config = load_conf(instance_name, config_file)
 
-    #if instance_name != config['name']
 
     gCon.log(f"Starting adelphos instance {instance_name}")
-
-    #if ((config_file is None) and (config is None)):
-    #    exit_err(f"At least config_file or config must be not None")
-
-    #transport = AsyncTransport()
-    #adelphos.init_instance(config_file, config)
-
-    #social_provider = ActivityPubMockup()
 
     build_kernel = yaml.safe_load(stdcnf.release_kernel_conf)
 

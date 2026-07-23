@@ -10,7 +10,6 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
 
 
 from app.transport.async_mode.StarletteWrap import StarletteWrap
@@ -21,8 +20,9 @@ from app.sdc.Dependencies import Dependencies
 
 def starlette_app_creator(kernel):
     routable = kernel.get_dep(Dependencies.ROUTER)
-    app = StarletteWrap(routable = routable)
+    root_path = kernel.conf().conf_general().get('root_path')
+    gCon.log(f"==================================== starting with root {root_path}")
+    app = StarletteWrap(routable = routable, root_path = root_path)
     return app
-
 
  

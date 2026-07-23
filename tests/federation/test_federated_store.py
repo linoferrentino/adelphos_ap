@@ -379,7 +379,7 @@ async def a_test_json_field(fdb1_loc):
     obj_get = fob().get_scalar('ob_json')
     assert id(obj_get) == id(obj)
 
-    fob().add_phantom_link()
+    fob().add_ref()
 
     await fdb1_loc.commit_transaction(t_id)
     t_id = await fdb1_loc.begin_transaction()

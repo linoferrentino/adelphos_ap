@@ -24,7 +24,7 @@ from starlette.types import Receive, Scope, Send
 from starlette.responses import Response
 from starlette.responses import PlainTextResponse
 
-from app.consts import API_POINT
+#from app.consts import API_POINT
 from app.logging import gCon
 
 from app.exc.AdelphosException import AdelphosException 
@@ -82,8 +82,7 @@ async def async_lifespan_gw(app):
 
 class StarletteWrap(Starlette):
 
-
-    def __init__(self, routable, root_path = API_POINT):
+    def __init__(self, routable, *, root_path = None):
         transport = AsyncTransport()
         routable.set_transport(transport)
         routes = routable.get_routes()
@@ -98,7 +97,6 @@ class StarletteWrap(Starlette):
         self.transport = transport
         self.running = False
         gCon.log(f"create condition for {self} in thread {threading.current_thread().native_id}")
-        #self.cond = asyncio.Condition()  
         self.routable = routable
 
         self.root_path = root_path

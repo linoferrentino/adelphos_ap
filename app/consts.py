@@ -5,8 +5,7 @@ LOCALHOST = '127.0.0.1'
 
 ADELPHOS_AP_ENV_KEY = "ADELPHOS_AP_INSTANCE"
 
-API_POINT = "/api"
-
+ROOT_PATH_DEFAULT = "/api"
 
 WEBFINGER_ROUTE = "/.well-known/webfinger"
 USER_DISCOVER_ROUTE = "/users/{username}"

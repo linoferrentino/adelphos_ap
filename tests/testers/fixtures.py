@@ -37,7 +37,7 @@ import tests.adelphoi_test_config as tconf
 import app.consts as CNST
 from app.transport.async_mode.StarletteWrap import StarletteWrap
 from starlette.testclient import TestClient
-from app.consts import API_POINT
+from app.consts import ROOT_PATH_DEFAULT
 import app.sdc.s_utils as su
 #import copy
 import yaml
@@ -55,7 +55,7 @@ def _build_routable_config_impl(instance_name, build_template, conf, mode):
     if mode == 'sync':
         config = aroutable.conf
         host = config.get_host()
-        app = SyncApp(host, aroutable, API_POINT)
+        app = SyncApp(host, aroutable, ROOT_PATH_DEFAULT)
         wrappedapp = SyncTester(app)
     else:
         app = StarletteWrap(routable = aroutable)
@@ -153,12 +153,12 @@ def app(aroutable, request):
         gCon.log("SYNC TEST")
         config = aroutable.conf
         host = config.get_host()
-        app = SyncApp(host, aroutable, API_POINT)
+        app = SyncApp(host, aroutable, ROOT_PATH_DEFAULT)
         wrappedapp = SyncTester(app)
     else:
         gCon.log(f"ASYNC TEST in thread {threading.current_thread().native_id}")
 
-        app = StarletteWrap(routable = aroutable)
+        app = StarletteWrap(routable = aroutable, root_path = ROOT_PATH_DEFAULT)
         wrappedapp = TestClient(app)
 
     return wrappedapp

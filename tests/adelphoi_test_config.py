@@ -49,7 +49,7 @@ conf:
     general:
       debug: true 
       host:  {_hostname_}
-      api_point: null
+      root_path: /api
 
     fed_db:
       db_name: ':memory:'

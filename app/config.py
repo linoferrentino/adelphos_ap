@@ -17,6 +17,7 @@ from .logging import gCon
 import os
 from .logging import exit_err
 import json
+import app.consts as CNST
 
 
 CNF_GENERAL_SECTION = "general"
@@ -40,6 +41,15 @@ class Config:
     def get_port(self):
         port = self.config['conf'][CNF_GENERAL_SECTION][CNF_PORT_KEY]
         return port
+
+
+    def conf_general(self):
+        return self.config['conf'][CNF_GENERAL_SECTION]
+
+
+    def get_root_path(self):
+        return self.config['conf'][CNF_GENERAL_SECTION].get('root_path',
+                                CNST.ROOT_PATH_DEFAULT)
 
 
     def modules(self):
@@ -73,7 +83,6 @@ class Config:
     def is_human_output(self):
         return self.config['conf'][CNF_GENERAL_SECTION].get('human_output',
                                                             True)
-
 
     def conf_mod(self, dependency):
         return self.config['conf'][dependency]
