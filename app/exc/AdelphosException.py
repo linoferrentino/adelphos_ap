@@ -37,6 +37,8 @@ class AdErrno(IntEnum):
     EINVALID_URI = 14
     EINVALID_SYSCALL_PARAM_TYPE = 15
     EPERM = 16
+    EWRONG_TOKEN = 17
+    ELOGGED = 18
 
 
 class AdelphosException(AdelphosBaseException):

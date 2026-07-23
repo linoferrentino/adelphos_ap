@@ -27,13 +27,26 @@ from app.cli.SysCall import SysCallAns
 
 from app.api.UserSession import active_login
 
+from app.exc.AdelphosException import AdErrno
+from app.exc.AdelphosException import AdelphosException
+
+
+
+
 class AliasCalls:
 
 
     @staticmethod
+    @active_login
     async def _sys_call_send_msg(kernel, session, pars):
         pass
 
+
+
+    @staticmethod
+    @active_login
+    async def _sys_call_logout(kernel, session, pars):
+        session.logout()
 
 
     @staticmethod
@@ -79,6 +92,7 @@ class AliasCalls:
         return await AliasCalls._login_impl(kernel, alias, family, password, t_id)
 
 
+    @staticmethod
     async def _login_impl(kernel, alias, family, password, t_id):
 
         alias_uri = AdelphosUri(EAdelphosType.ALIAS_TYPE, alias, family = family)

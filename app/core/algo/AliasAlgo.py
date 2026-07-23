@@ -24,6 +24,7 @@ from app.sdc.Dependencies import Dependencies
 import weakref
 import sys
 import app.misc.alias_utils as au
+import app.misc.trust_utils as tutils
 
 
 class AliasAlgo:
@@ -61,6 +62,9 @@ class AliasAlgo:
     async def _alias_create_impl(kernel, actor_id, name,
                                  family, password, trust, t_id):
 
+        if trust <= 0:
+            raise AdelphosCoreException(ECoreErrno.EINVALID_TRUST, trust)
+
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
 
@@ -70,9 +74,8 @@ class AliasAlgo:
             raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY)
 
         family_ob = await fdb.new_ob_uri(t_id, family_uri, fields = {
-            'trust' : trust
+            'trust' : tutils.abs_to_db(trust)
             })
-        family_ob().add_phantom_link()
 
         ph = PasswordHasher()
         pass_hashed = ph.hash(password)

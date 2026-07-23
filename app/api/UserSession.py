@@ -18,8 +18,10 @@ from datetime import datetime
 from enum import IntEnum
 from enum import auto
 from app.logging import gCon
-from app.core.AdelphosCoreException import AdelphosCoreException
-from app.core.ECoreErrno import ECoreErrno
+#from app.core.AdelphosCoreException import AdelphosCoreException
+#from app.core.ECoreErrno import ECoreErrno
+from app.exc.AdelphosException import AdErrno
+from app.exc.AdelphosException import AdelphosException
 
 
 class EUserState(IntEnum):
@@ -32,8 +34,7 @@ def active_login(inner_syscall):
 
     async def check_logged(kernel, session, pars):
         if not session.is_login_valid():
-            gCon.log("NO LOGIN")
-            raise AdelphosCoreException(ECoreErrno.ENOLOGIN)
+            raise AdelphosException(AdErrno.ENOLOGIN)
         return await inner_syscall(kernel, session, pars)
 
     return check_logged
@@ -53,6 +54,10 @@ class UserSession:
         self.session_age = datetime.now()
         self.user_state = EUserState.LOGGED_WITHOUT_TOKEN
         return self.token
+
+
+    def logout(self):
+        self.user_state = EUserState.NOT_LOGGED
 
 
     def is_logged_root(self):
@@ -88,59 +93,13 @@ class UserSession:
 
     def accept_token(self, token):
         if (self.user_state == EUserState.LOGGED_AND_TOKEN):
-            raise AdelphosCoreException(ECoreErrno.ELOGGED, 
+            raise AdelphosException(AdErrno.ELOGGED, 
                                         f"Alread logged {self.alias}")
         if (self.user_state != EUserState.LOGGED_WITHOUT_TOKEN):
-            raise AdelphosCoreException(ECoreErrno.ENOLOGIN, "Please login first.")
+            raise AdelphosException(AdErrno.ENOLOGIN, "Please login first.")
         if (self.token != token):
-            raise AdelphosCoreException(ECoreErrno.EWRONG_TOKEN)
+            raise AdelphosException(AdErrno.EWRONG_TOKEN)
         self.user_state = EUserState.LOGGED_AND_TOKEN
-
-
-# the user session stores all the data that is accumulating during the
-# conversation with the user.
-class UserSession_OLD:
-
-
-    def __init__(self, gateway):
-
-        self.gateway = gateway
-
-        # the data relative to the logged user
-        self.uri = None
-        self.family_dto = None
-        self.alias_dto  = None
-        self.actor_dto = None
-        self.server_dto = None
-
-        # this is the data relative to the session.
-        self.session_age = None
-        self.token = None
-
-        self.user_state = EUserState.NOT_LOGGED
-
-
-    def whoami(self):
-        return self.alias_dto.name
-
-
-    def accept_token(self, token):
-        # Am I in the right state?
-        if (self.user_state != EUserState.LOGGED_WITHOUT_TOKEN):
-            return False
-        if (self.token != token):
-            return False
-        self.user_state = EUserState.LOGGED_AND_TOKEN
-        return True
-
-
-    def force_token(self):
-        self.user_state = EUserState.LOGGED_AND_TOKEN
-
-
-    def post_login_data(self):
-        # here
-        pass
 
 
 

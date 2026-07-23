@@ -160,6 +160,15 @@ syscalls_suffix = """
             pars:
               user:
                 required: true
+              trust:
+                required: false
+                default: 50.0
+                par_type: float
+              alias:
+                required: true
+              password:
+                required: true
+                
 
       family:
         class: app.core.sys.FamilyCalls.FamilyCalls
@@ -182,6 +191,8 @@ syscalls_suffix = """
         syscalls:
 
           - name: whoami
+
+          - name: logout
 
           - name: login
             pars:

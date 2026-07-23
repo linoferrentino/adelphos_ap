@@ -16,6 +16,8 @@ from app.logging import gCon
 from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
 from app.sdc.Dependencies import Dependencies
+from app.core.algo.AliasAlgo import AliasAlgo
+import app.misc.alias_utils as au
 
 
 def sudo_cmd(func):
@@ -47,6 +49,13 @@ class RootApi:
         if local_user is not None:
             raise AdelphosException(AdErrno.USER_ALREADY_EXISTING, user)
         local_user = social.local_user_get(user, create_if_not_exists = True)
+        password = pars['password']
+        trust = pars['trust']
+        alias_name = pars['alias']
+
+        (alias, family) = au.split_alias(alias_name, True)
+        await AliasAlgo.alias_create(kernel,
+                local_user.actor_dto.act.actor_id, alias, family, password, trust) 
 
 
     @sudo_cmd

@@ -26,9 +26,16 @@ def ws_alias_login_in_app(wrapper, social_user, ws, alias, password):
     ws_alias_login(user_inbox, ws, alias, password)
 
 
-def ws_create_user_alias(wrapper, ws, user, alias, password):
-    ws.send_text(f"root.add_user user {user}")
+def ws_create_user_alias(ws, user, alias, password):
+    ws.send_text(f"root.add_user user {user} alias {alias} password {password}")
     tu.ws_assert_code(ws, AdErrno.DONE_OK)
+
+
+def ws_alias_logout(ws):
+    ws.send_text(f"alias.logout")
+    tu.ws_assert_code(ws, AdErrno.DONE_OK)
+    ws.send_text(f"alias.whoami")
+    tu.ws_assert_code(ws, AdErrno.ENOLOGIN)
 
 
 def ws_alias_login(user_inbox, ws, alias, password):

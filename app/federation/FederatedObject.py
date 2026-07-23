@@ -314,8 +314,8 @@ class FederatedObject:
         raise AttributeError(key)
 
 
-    def add_phantom_link(self):
-        self._inc_ref_ob()
+    #def add_phantom_link(self):
+    #    self._inc_ref_ob()
 
 
     @ensure_lock

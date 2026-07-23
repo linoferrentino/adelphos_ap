@@ -34,7 +34,7 @@ class AdelphosInitDaemon(Daemon):
         local_user = social.local_user_get(local_user, create_if_not_exists = True)
         res = await AliasAlgo.alias_create(self.kernel,
                 local_user.actor_dto.act.actor_id, 'root', 'admins', root_password, 
-                                           0.0)
+                                           5.0)
         if res != ECoreErrno.DONE_OK:
             gCon.log(f"res error {res} creating root alias")
 

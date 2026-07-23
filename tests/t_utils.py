@@ -71,7 +71,7 @@ async def  ws_assert_payload_async(ws, payload_expected):
 def _ws_assert_code(data, code_expected):
     code_got = data['errno']
     assert isinstance(code_got, int)
-    assert code_got == code_expected
+    assert code_got == int(code_expected)
 
 
 def ws_assert_code(websocket, code_expected):

@@ -128,8 +128,12 @@ def test_create_root_user(get_routable_app):
         ah.ws_alias_login_in_app(test1, local_root, websocket, 
                                  'root.admins', root_pass)
 
-        ah.ws_create_user_alias(test1, websocket, 'john', 'john.smith', 'john11')
- 
+        ah.ws_create_user_alias(websocket, 'john', 'john.smith', 'john11')
+        ah.ws_alias_logout(websocket)
+        ah.ws_alias_login_in_app(test1, 'john', websocket, 
+                                 'john.smith', 'john11')
+
+
 
 def test_real_remote_add(get_routable_app):
     test1 = get_routable_app('test100', stdcnf.release_kernel_template,

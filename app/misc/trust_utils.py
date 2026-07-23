@@ -12,17 +12,12 @@
 ######################################################
 
 
-from enum import IntEnum
+import math
 
 
-class ECoreErrno(IntEnum):
-    DONE_OK = 0
-    EDUPLICATED_FAMILY = 1
-    EINVALID_ALIAS_SYNTAX = 3
-    EINVALID_USER_OR_PASSWORD = 4
-    EINVALID_TRUST = 5
-    
-    EFDB = 998
-    ESYS = 999
+def abs_to_db(val_abs):
+    return 10.0 * math.log10(val_abs)
 
 
+def db_to_abs(val_db):
+    return math.pow(10.0, val_db / 10.0)
