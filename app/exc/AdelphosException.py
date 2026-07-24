@@ -39,6 +39,7 @@ class AdErrno(IntEnum):
     EPERM = 16
     EWRONG_TOKEN = 17
     ELOGGED = 18
+    ESESSION_ALREADY_PUSHED = 19
 
 
 class AdelphosException(AdelphosBaseException):

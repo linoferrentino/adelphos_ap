@@ -21,6 +21,7 @@ from app.logging import gCon
 from app.cli.CliParser import CliParser
 from app.sdc.Dependencies import Dependencies
 from app.exc.AdelphosException import AdelphosException
+from app.exc.AdelphosException import AdErrno
 from app.core.AdelphosCoreException import AdelphosCoreException
 from app.api.UserSession import UserSession
 
@@ -40,8 +41,24 @@ class StandardCliClient:
         self.cli_api = kernel.get_dep(Dependencies.CLI_API)
         self.cli_presenter = kernel.get_dep(Dependencies.CLI_PRESENTER)
         self.websocket = websocket
-        self.session = UserSession(kernel)
+        self.session = UserSession(self)
         self.kernel = kernel
+        self.sessions = dict()
+        self.save_session = None
+
+
+    def push_session(self, alias):
+        if self.save_session is not None:
+            raise AdelphosException(AdErrno.ESESSION_ALREADY_PUSHED)
+
+        alias_session = self.sessions.get(alias)
+        if alias_session is None:
+            alias_session = UserSession(self)
+            self.sessions[alias] = alias_session
+
+        self.save_session = self.session
+        self.session = alias_session
+        return alias_session
 
 
     async def _out_final_str(self, response_str):
@@ -66,7 +83,7 @@ class StandardCliClient:
             except WebSocketDisconnect as wds:
                 pass
             except Exception as ex:
-                #traceback.print_exc()
+                traceback.print_exc()
                 await self._process_exception(ex)
             break
         self.running = False

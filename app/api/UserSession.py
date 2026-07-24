@@ -42,17 +42,20 @@ def active_login(inner_syscall):
 
 class UserSession:
 
-    def __init__(self, kernel):
-        self.kernel = kernel
+    def __init__(self, client):
+        self.client = client
         self.user_state = EUserState.NOT_LOGGED
 
 
-    def login_start(self, alias, family, actor_dto):
+    def login_start(self, alias, family, actor_dto, force = False):
         self.alias = alias
         self.family = family
         self.token = secrets.token_urlsafe()
         self.session_age = datetime.now()
-        self.user_state = EUserState.LOGGED_WITHOUT_TOKEN
+        if force == False:
+            self.user_state = EUserState.LOGGED_WITHOUT_TOKEN
+        else:
+            self.user_state = EUserState.LOGGED_AND_TOKEN
         self.actor_dto = actor_dto
         return self.token
 

@@ -31,16 +31,12 @@ from app.exc.AdelphosException import AdErrno
 from app.exc.AdelphosException import AdelphosException
 
 
-
-
 class AliasCalls:
-
 
     @staticmethod
     @active_login
     async def _sys_call_send_msg(kernel, session, pars):
         pass
-
 
 
     @staticmethod
@@ -53,15 +49,26 @@ class AliasCalls:
     async def _sys_call_login(kernel, session, pars):
         login = pars['login']
         password = pars['password']
+
+        await AliasCalls._session_login(kernel, session, login, password)
+
+        return "Login OK, check your Mastodon inbox to get the token."
+
+
+    @staticmethod
+    async def _session_login(kernel, session, login, password, force = False):
         (alias, family) = au.split_alias(login)
-        actor_id = await AliasCalls.login_safe(kernel, alias, family, password)
+        actor_id = await AliasCalls.login_safe(kernel, alias, family, password, force)
         social_dao = kernel.get_dep(Dependencies.SOCIAL_DAO)
         actor_dto = social_dao.actor_get_from_id(actor_id)
-        token = session.login_start(alias, family, actor_dto)
+        token = session.login_start(alias, family, actor_dto, force)
+
+        if force == True:
+            return
+
         social = kernel.get_dep(Dependencies.SOCIAL)
         await social.out_msg_listener_to_actor(actor_dto,
                 f"Copy this command to finalize login 'alias.put_token tk {token}'")
-        return "Login OK, check your Mastodon inbox to get the token."
 
 
     @staticmethod
@@ -82,18 +89,20 @@ class AliasCalls:
  
     @staticmethod
     @federated_transaction(raise_if_fail = False)
-    async def login(kernel, alias, family, password, t_id):
-        return await AliasCalls._login_impl(kernel, alias, family, password, t_id)
+    async def login(kernel, alias, family, password, force, t_id):
+        return await AliasCalls._login_impl(kernel, alias, family, password,
+                            force, t_id)
 
 
     @staticmethod
     @federated_transaction(raise_if_fail = True)
-    async def login_safe(kernel, alias, family, password, t_id):
-        return await AliasCalls._login_impl(kernel, alias, family, password, t_id)
+    async def login_safe(kernel, alias, family, password, force, t_id):
+        return await AliasCalls._login_impl(kernel, alias, family, password,
+                            force, t_id)
 
 
     @staticmethod
-    async def _login_impl(kernel, alias, family, password, t_id):
+    async def _login_impl(kernel, alias, family, password, force, t_id):
 
         alias_uri = AdelphosUri(EAdelphosType.ALIAS_TYPE, alias, family = family)
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
@@ -104,13 +113,15 @@ class AliasCalls:
             raise AdelphosCoreException(ECoreErrno.EINVALID_USER_OR_PASSWORD,
                                         f"{alias}.{family}")
 
-        password_hashed = alias_ob().get_scalar('password')
+        if force == False:
+            password_hashed = alias_ob().get_scalar('password')
 
-        ph = PasswordHasher()
-        try:
-            res = ph.verify(password_hashed, password)
-        except:
-            raise AdelphosCoreException(ECoreErrno.EINVALID_USER_OR_PASSWORD,
-                                    f"{alias}.{family}")
+            ph = PasswordHasher()
+            try:
+                res = ph.verify(password_hashed, password)
+            except:
+                raise AdelphosCoreException(ECoreErrno.EINVALID_USER_OR_PASSWORD,
+                                        f"{alias}.{family}")
+
         return alias_ob().get_scalar('actor_id')
 

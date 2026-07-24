@@ -17,6 +17,7 @@ from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
 from app.sdc.Dependencies import Dependencies
 from app.core.algo.AliasAlgo import AliasAlgo
+from app.core.sys.AliasCalls import AliasCalls
 import app.misc.alias_utils as au
 
 
@@ -37,7 +38,11 @@ class RootApi:
     @sudo_cmd
     @staticmethod
     async def _sys_call_push_alias(kernel, session, pars):
-        pass
+        alias = pars['alias']
+        alias_session = session.client.push_session(alias)
+        if alias_session.is_login_valid() == False:
+            await AliasCalls._session_login(kernel, alias_session, alias, None, True)
+
  
 
     @sudo_cmd
