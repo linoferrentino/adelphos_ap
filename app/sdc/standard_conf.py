@@ -157,6 +157,8 @@ syscalls_suffix = """
               alias:
                 required: true
 
+          - name: pop_alias
+
           - name: add_user 
             pars:
               user:

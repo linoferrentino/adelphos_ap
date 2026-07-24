@@ -35,6 +35,11 @@ def sudo_cmd(func):
 
 class RootApi:
 
+
+    async def _sys_call_pop_alias(kernel, session, pars):
+        session.client.pop_session()
+
+
     @sudo_cmd
     @staticmethod
     async def _sys_call_push_alias(kernel, session, pars):

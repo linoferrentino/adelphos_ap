@@ -54,7 +54,6 @@ class AdelphosExcMiddleware:
 async def async_lifespan_gw(app):
 
     loop = get_loop()
-    gCon.log(f"loop in lifespan is {loop}")
 
     app.running = True
     out_gateway = AsyncGateway()
@@ -62,17 +61,9 @@ async def async_lifespan_gw(app):
 
     await out_gateway.start(app)
     await app.routable.init_up()
-    gCon.log(f"=====> running on thread {threading.current_thread().native_id}")
-    try:
-        loop = asyncio.get_running_loop()
-        gCon.log(f"There is a loop! {id(loop)} = {loop}")
-    except RuntimeError:
-        gCon.log("there is NO loop!")
  
     app.cond = asyncio.Condition()  
     yield
-
-    gCon.log(f"====> stopping on thread {threading.current_thread().native_id}")
 
     app.running = False
 
@@ -96,7 +87,6 @@ class StarletteWrap(Starlette):
 
         self.transport = transport
         self.running = False
-        gCon.log(f"create condition for {self} in thread {threading.current_thread().native_id}")
         self.routable = routable
 
         self.root_path = root_path

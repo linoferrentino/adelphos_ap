@@ -138,7 +138,9 @@ def test_create_root_user(get_routable_app):
                                  'root.admins', root_pass)
 
         ah.ws_sudo_push_alias(websocket, 'john.smith')
+        ah.ws_pop_alias(websocket)
 
+        #ah.ws_sudo_push_alias(websocket, 'cannot_work.what')
 
 
 def test_real_remote_add(get_routable_app):

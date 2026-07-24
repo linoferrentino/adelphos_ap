@@ -125,39 +125,15 @@ def aroutable(request):
     return aroutable 
 
 
-#@pytest.fixture(scope = "session", params = ['sync', 'async'])
 @pytest.fixture(params = ['sync', 'async'])
 def app(aroutable, request):
 
-    loop = get_loop()
-
-    gCon.log(f"START FIXTURE APP {request.param} with loop {id(loop)} in thread {threading.current_thread().native_id}")
-
-    policy = asyncio.get_event_loop_policy()
-    gCon.log(f"policy in app is {policy}")
-
-    try:
-        loop = asyncio.get_event_loop()
-        gCon.log(f"There is a loop! {id(loop)}")
-    except RuntimeError:
-        loop = get_loop()
-        #loop = "NO loop"
-        gCon.log(f"there was NO loop!, the external loop is {id(loop)}")
-        res = asyncio.set_event_loop(loop)
-        #gCon.log(f"res {res}")
-        #loop = asyncio.get_running_loop()
-        #gCon.log(f"Now the async loop is {loop}")
- 
-
     if request.param == 'sync':
-        gCon.log("SYNC TEST")
         config = aroutable.conf
         host = config.get_host()
         app = SyncApp(host, aroutable, ROOT_PATH_DEFAULT)
         wrappedapp = SyncTester(app)
     else:
-        gCon.log(f"ASYNC TEST in thread {threading.current_thread().native_id}")
-
         app = StarletteWrap(routable = aroutable, root_path = ROOT_PATH_DEFAULT)
         wrappedapp = TestClient(app)
 

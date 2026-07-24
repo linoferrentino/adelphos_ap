@@ -79,8 +79,6 @@ class SyncApp:
 
     def __init__(self, host, kernel, root_path = ""):
 
-        gCon.log(f"[red]xxxxxxxxxxxxxxxxxxxxx root_path >{root_path}<[/red]")
-
         transport = SyncTransport(host, self)
         self.transport = transport
 
@@ -137,7 +135,6 @@ class SyncApp:
         path_trans = re.sub("{" + match_path_param.group(1) + "}", 
             f"(?P<{match_path_param.group(1)}>[^/]*)", path)
         route.path = self.root_path + path_trans
-        gCon.log(f"Created the route {route}")
         return route
 
 

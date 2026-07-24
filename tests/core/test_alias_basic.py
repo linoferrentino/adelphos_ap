@@ -15,20 +15,13 @@
 import pytest
 import yaml
 
-from app.store.MemoryStore import MemoryStore
-from app.federation.FederatedStore import FederatedStore
 from app.core.model.schema import adelphos_schema_yaml
-import tests.adelphoi_test_config as tconf
 from app.logging import gCon
-import app.sdc.s_utils as su
-from tests.testers.SyncApp import SyncApp
-from tests.testers.SyncTester import SyncTester
-from app.sdc.Dependencies import Dependencies
 
 from tests.federation.fixtures import federated_db_local
 from app.core.ECoreErrno import ECoreErrno
-import threading
 from app.core.algo.AliasAlgo import AliasAlgo
+from app.core.sys.AliasCalls import AliasCalls
 from app.transport.bridge.loop import run_coro_in_loop
 
 
@@ -63,20 +56,11 @@ async def a_test_add_dup_family(w_local):
     assert (res == ECoreErrno.DONE_OK)
     res = await AliasAlgo.alias_create(kernel, 0, 'bob', 'ferre', 'pass', 1.0)
     assert res == -ECoreErrno.EDUPLICATED_FAMILY
-
-
-def OLDAP_test_login_pass(w_local):
-
-
-    lino_id = w_local.alias_algo.alias_create(0, 'lino', 'ferre', 'pass', 1.0)
-    res = w_local.alias_algo.login('lino', 'ferre', 'pass')
-    assert res == lino_id
-
-    res = w_local.alias_algo.login('lino', 'ferre', 'pass11')
+    res = await AliasCalls.login(kernel, 'lino', 'ferre', 'pass', False)
+    assert res == ECoreErrno.DONE_OK
+    res = await AliasCalls.login(kernel, 'lino', 'ferre', 'pass1', False)
     assert res == -ECoreErrno.EINVALID_USER_OR_PASSWORD
-    res = w_local.alias_algo.login('lino', 'ferre1', 'pass')
-    assert res == -ECoreErrno.EINVALID_USER_OR_PASSWORD
-    res = w_local.alias_algo.login('lino1', 'ferre', 'pass')
+    res = await AliasCalls.login(kernel, 'lino1', 'ferre', 'pass', False)
     assert res == -ECoreErrno.EINVALID_USER_OR_PASSWORD
 
 

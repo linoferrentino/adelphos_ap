@@ -120,18 +120,15 @@ class SyncTester(ContextDecorator):
 
 
     def __init__(self, app):
-        gCon.log(f"START TEST in thread {threading.current_thread().native_id}")
         self.app = app
 
 
     def __enter__(self):
-        gCon.log(f"ENTER in thread {threading.current_thread().native_id}")
         self.app.on_startup()
         return self
 
 
     def __exit__(self, *exc):
-        gCon.log(f"Exit in thread {threading.current_thread().native_id}")
         self.app.on_teardown()
         return False
 

@@ -147,81 +147,6 @@ class AdelphosApp_deprecated:
         return self.ap_mockup 
 
 
-    def ap_user_info(self, activity_pub_user):
-
-        if (activity_pub_user == USER_ID):
-            return ('bot', USER_ID, f"Adelphos' daemon for instance {self.instance}")
-        return self.ap_mockup.ap_user_info(activity_pub_user)
-
-
-    async def post_initialization(self):
-        # Now I have to discover the root actor.
-        #flag = self.dao.created_schema_flag()
-        ##del self._init_schema
-        #if (flag == False):
-        #    return
-
-        self.create_myself_as_actor()
-
-        # Now I want to create some other aliases, this MUST BE DONE before,
-        # because the root actor might be internal.
-        self.ap_mockup.create_test_users()
-
-        # when I return from this function the test users are created, so
-        # I can create the root.
-
-        # we have to discover the root actor
-        # in another task, because we might be the target!
-        root_user = self.config['General']['root_user']
-        #gCon.log(f"Creating root user {root_user} for {self.instance}")
-        if (root_user != ':local:'):
-            asyncio.create_task(self.create_root_actor(root_user))
-
-        #gCon.rule(f"COMMIT OF INITIAL DB (minus the root actor) for {self.instance}")
-        self.dao.commit()
-
-
-    # this will create the zero server, the zero actor and the zero instance.
-    def create_myself_as_actor(self):
-        
-        # create myself as a server, with a fixed id of zero
-        host = self.config['General']['host']
-        myself_server = create_ap_server(host)
-        myself_server.server_id = 0
-        my_server_id = self.dao.ap_server_dao.store_full_no_ts(myself_server)
-        #gCon.log("Created the server")
-
-        self.ap_mockup.create_app_actor(USER_ID, 0)
-
-        # now create the instance.
-        myself_instance = create_ad_instance(0, 1, "Local adelphos instance")
-        my_instance_id = self.dao.ad_instance_dao.store_full_no_ts(myself_instance)
-        #gCon.log("Created the instance")
-
-
-    async def create_root_actor(self, root_user):
-        
-        # here I will get the activity pub object and I will create the root alias
-        (root_server, root_actor) = await self.ap_api.get_or_discover_actor(root_user, True)
-
-        if (root_server is None):
-            exit_err(f"Misconfigured root user {root_user}, cannot resolve.")
-
-        self.create_root_actor_impl(root_actor.actor_id)
-
-
-    def create_root_actor_impl(self, actor_id):
-
-        # Now I have to create the alias
-        self.kernel.add_alias(actor_id,
-                         'admins', 0, 'root',
-                         self.config['General']['root_password'])
-        self.kernel.dao.commit()
-        #gCon.log(f"[red]DB for  {self.instance} START[/red]")
-        #self.dao.db.dump_database()
-        #gCon.log(f"[red]DB for  {self.instance} END[/red]")
-
-
     # this is used for the put request.
     # XXX maybe we have to schedule a repeat interval.
     async def async_req_push(self, ar):
@@ -259,80 +184,9 @@ class AdelphosApp_deprecated:
         return ar.status_code
 
 
-
-    def post_json(self, url, json):
-        
-        pass
-
-
-    def _get_json_th(self, loop, get_req):
-
-        future = asyncio.run_coroutine_threadsafe(self.async_req_wait(get_req), loop)
-        future.result()
-
-
-    # Ugly! But it should be safe, we simply inject a task into the main loop
-    def get_json_UGLY(self, url):
-
-        get_req = AsyncGetReq(url)
-        loop = asyncio.get_running_loop()
-        # I inject the call in another thread.
-        get_json_th = threading.Thread(target = AdelphosApp._get_json_th, 
-                                       args = (self, loop, get_req))
-        get_json_th.start()
-        get_json_th.join()
-        #loop = asyncio.get_running_loop()
-        #task = asyncio.create_task(self.async_req_wait(get_req))
-        #result = loop.run_until_complete(self.async_req_wait(get_req))
-        return TestResponse(get_req.status_code, get_req.text) 
-
-
     def register_routes(self, routable):
         router = routable.get_async_router()
         self.include_router(router)
-
-
-#@asynccontextmanager
-#async def lifespan_deprecated(app: AdelphosApp):
-async def lifespan_deprecated(app):
-    #gCon.rule(f"LIFESPAN START {app.instance}")
-
-    #db_name = app.config['General']['db_name']
-    #db = AdelphosDb(db_name)
-    db = MemoryStore()
-    #ap_mockup = ActivityPubMockup(app.config, db, True)
-    #conn_hndl = ConnHandler(app)
-    app.kernel = Adelphos(app.config, app.instance, db, app)
-
-
-    ses_worker = asyncio.create_task(session_worker(app))
-    daemon_worker = asyncio.create_task(daemon_bg_cycle(app))
-    #app.include_router(ap_mockup.get_async_router())
-    #app.include_router(conn_hndl.get_async_router())
-
-
-    #app.ap_api = ActivityPubApi(app)
-
-    # post init
-    #gCon.log("Application post initialization start.")
-    #await app.post_initialization()
-    #gCon.rule(f"App {app.instance} is ready.")
-    yield
-
-    # no more running, please.
-    app.running = False
-    # signal the workers to stop 
-    async with app.cond:
-        app.cond.notify_all()
-    #gCon.log("Please wait for adelphos shutdown")
-    #app.ap_api.close()
-    #await conn_hndl.stop()
-    await daemon_worker
-    await ses_worker
-    # the last to close is the DB, so that all the modules have a chance to save
-    # on DB their transient state.
-    #app.dao.close()
-    db.close()
 
 
 # this method is called with the app.cond taken.

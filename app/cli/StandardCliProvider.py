@@ -47,6 +47,13 @@ class StandardCliClient:
         self.save_session = None
 
 
+    def pop_session(self):
+        if self.save_session is None:
+            raise AdelphosException(AdErrno.ENOSESSION)
+        self.session = self.save_session
+        self.save_session = None
+
+
     def push_session(self, alias):
         if self.save_session is not None:
             raise AdelphosException(AdErrno.ESESSION_ALREADY_PUSHED)
