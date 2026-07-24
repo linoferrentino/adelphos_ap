@@ -29,4 +29,14 @@ class SocialApiProvider(Dependency, LifespanAware, SocialListener):
         pass
 
 
+    @abstractmethod
+    def remote_host_allow(self, host):
+        pass
+
+
+    @abstractmethod
+    def remote_host_deny(self, host):
+        pass
+
+
 

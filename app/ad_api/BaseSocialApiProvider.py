@@ -102,6 +102,34 @@ class BaseSocialApiProvider(SocialApiProvider):
         return res
 
 
+    def remote_host_allow(self, host):
+        social = self.kernel.get_dep(Dependencies.SOCIAL)
+        user_tag_str = social.get_user_tag(self.get_social_user())
+        if user_tag_str is None:
+            user_tag = {
+                    'social_api' : {
+                        'hosts_allow' : [host,],
+                    }
+            }
+        else:
+            user_tag = json.loads(user_tag_str)
+            social_api_cnf = user_tag.get('social_api')
+            if social_api_cnf is None:
+                hosts_allowed_list = [host,]
+            else:
+                hosts_allowed_set = set(user_tag['social_api']['hosts_allow'])
+                hosts_allowed_set.add(host)
+                hosts_allowed_list = list(hosts_allowed_set)
+            user_tag['social_api']['hosts_allow'] = hosts_allowed_list
+        new_tag_str = json.dumps(user_tag)
+        gCon.log(f"The new tag is {new_tag_str}")
+        social.set_user_tag(self.get_social_user(), new_tag_str)
+
+
+    def remote_host_deny(self, host):
+        pass
+
+
     async def _make_rpc_request(self, host, msg):
         cur_api_id = self.remote_api_id.get_and_inc()
         query_txt = f"{SOCIAL_API_QUERY} api_id {cur_api_id} payload {msg}"

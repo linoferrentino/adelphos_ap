@@ -87,7 +87,8 @@ class SqliteSocialDao(BaseSocialDao):
             return actor_dto
         if maybe == True:
             return None 
-        raise AdelphosCoreException(ECoreErrno.ESYS, f"{actor_id} actor_id not found")
+        raise AdelphosCoreException(ECoreErrno.EINVALID_USER_OR_PASSWORD,
+                                    f"{actor_id} actor_id not found")
 
 
     def actor_get_from_id_try(self, actor_id):
@@ -116,7 +117,6 @@ class SqliteSocialDao(BaseSocialDao):
     
     def start_sync(self):
 
-        #config = self..conf
         my_conf = self.conf.get_social_dao_cnf()
         db_name = my_conf['db_name']
 
@@ -128,12 +128,12 @@ class SqliteSocialDao(BaseSocialDao):
             self.create_schema = True
             self.mem_db = True
         else:
-            #db_name_complete = f"{db_name}.sqlite"
             db_name_complete = db_name
             if (os.path.exists(db_name_complete) == False):
                 self.create_schema = True
             self.mem_db = False
 
+        gCon.log(f"[green]Start social database {db_name_complete} [/green]")
         self._conn = sqlite3.connect(db_name_complete,
                                      autocommit=True)
       
@@ -146,7 +146,6 @@ class SqliteSocialDao(BaseSocialDao):
 
     def _store_actor_impl(self, actor_dto):
         new_id = self.actor_dao.store(actor_dto.act)
-        #BaseSocialDao._fill_public_key(actor_dto)
         return new_id
 
 
@@ -164,8 +163,6 @@ class SqliteSocialDao(BaseSocialDao):
 
 
     def stop_sync(self):
-        #if (self.mem_db == True):
-        #    self.dump_database()
         self._conn.close()
 
 
@@ -233,6 +230,7 @@ insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
 
         """
         cur = self._conn.cursor()
+        #gCon.log(f"INSERT {sql_insert} {dto_as_dict}")
         cur.execute(sql_insert, dto_as_dict)
         newid = cur.lastrowid
         cur.close()

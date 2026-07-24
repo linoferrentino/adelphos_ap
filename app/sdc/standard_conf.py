@@ -151,6 +151,10 @@ syscalls_suffix = """
       root:
         class: app.core.sys.RootApi.RootApi
         syscalls:
+          - name: allow_remote
+            pars:
+              host:
+                required: true
 
           - name: push_alias
             pars:

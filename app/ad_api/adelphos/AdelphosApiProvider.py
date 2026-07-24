@@ -14,6 +14,7 @@
 
 from app.ad_api.BaseSocialApiProvider import BaseSocialApiProvider
 from app.sdc.Dependencies import Dependencies
+from app.logging import gCon
 
 
 class AdelphosApiProvider(BaseSocialApiProvider):
@@ -27,8 +28,10 @@ class AdelphosApiProvider(BaseSocialApiProvider):
 
 
     def _is_allowed_remote_rpc_host(self, host, mode):
+        gCon.log(f"IS ALLOWED? {host}")
         social = self.kernel.get_dep(Dependencies.SOCIAL)
         user_tag = social.get_user_tag(self.get_social_user())
+        gCon.log(f"tag for user is {user_tag}")
         if user_tag is None:
             return False
         perms = user_tag.get('perms')

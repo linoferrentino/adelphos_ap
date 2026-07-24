@@ -18,23 +18,27 @@ from app.core.AdelphosCoreException import AdelphosBaseException
 from app.sdc.Dependencies import Dependencies
 import tests.t_utils as tu
 
+
+def ws_authorize_remote_adelphos(ws, host, exp_errno_code = None):
+    ws.send_text(f"root.allow_remote host {host}")
+    tu.ws_assert_code(ws, AdErrno.DONE_OK)
+
+
 def _test_remote_add(test1, test2, host2, exp_errno_code = None):
 
     with test1, test2:
         with test1.websocket_connect(CNST.WS_ROUTE) as websocket:
-            websocket.send_text(
-    f"dbg.radd host {host2} n1 11 n2 22")
+            ws_test_remote_add(websocket, host2, exp_errno_code)
 
-            if exp_errno_code is None:
-                data = tu.ws_assert_code(websocket, AdErrno.DONE_OK)
-                tu.data_assert_res_str(data, '33')
-            else:
-                tu.ws_assert_code(websocket, exp_errno_code)
 
-            #data = websocket.receive_text()
-            #if exp_errno_code == None:
-            #    assert data == "33"
-            #else:
-            #    assert exp_errno_code == AdelphosBaseException.parse_exc_str(data)
+def ws_test_remote_add(ws, host2, exp_errno_code = None):
+
+    ws.send_text(f"dbg.radd host {host2} n1 11 n2 22")
+
+    if exp_errno_code is None:
+        data = tu.ws_assert_code(ws, AdErrno.DONE_OK)
+        tu.data_assert_res_str(data, '33')
+    else:
+        tu.ws_assert_code(ws, exp_errno_code)
 
 

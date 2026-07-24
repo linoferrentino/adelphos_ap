@@ -35,7 +35,16 @@ def sudo_cmd(func):
 
 class RootApi:
 
+    @sudo_cmd
+    @staticmethod
+    async def _sys_call_allow_remote(kernel, session, pars):
+        host = pars['host']
+        gCon.log(f"Allowing remote host {host}")
+        social_api = kernel.get_dep(Dependencies.SOCIAL_API)
+        user_tag = social_api.remote_host_allow(host)
 
+
+    @staticmethod
     async def _sys_call_pop_alias(kernel, session, pars):
         session.client.pop_session()
 
@@ -47,7 +56,6 @@ class RootApi:
         alias_session = session.client.push_session(alias)
         if alias_session.is_login_valid() == False:
             await AliasCalls._session_login(kernel, alias_session, alias, None, True)
-
  
 
     @sudo_cmd

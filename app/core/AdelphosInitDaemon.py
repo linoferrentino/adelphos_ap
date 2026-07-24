@@ -37,6 +37,7 @@ class AdelphosInitDaemon(Daemon):
                                            5.0)
         if res != ECoreErrno.DONE_OK:
             gCon.log(f"res error {res} creating root alias")
+        gCon.log(f"created the root {local_user} with id {local_user.actor_dto.act.actor_id}")
 
 
     async def start_impl(self):

@@ -103,7 +103,6 @@ class FederatedTransaction:
     def _update_uri_str(self, key_str, fob):
         fob.enforce_schema_before_commit()
         ob_str = fob.to_store_str()
-        gCon.log(f"storing {key_str} = {ob_str}")
         self.fdb.db.set(key_str, ob_str)
 
 
@@ -112,7 +111,6 @@ class FederatedTransaction:
 
 
     def t_rollback(self):
-        """ the rollback will release all the locks """
         self._release_all_locks()
         
 
@@ -174,16 +172,12 @@ class FederatedTransaction:
 
     def get_ob(self, uri_str):
 
-        #gCon.log(f"[red]{id(self)}[/red] asking {uri_str}")
-
         if self.deleted_uris.get(uri_str) is not None:
             raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB)
 
         exist_val = self.locked_uris.get(uri_str)
         if exist_val is not None:
             return exist_val
-
-        #gCon.log(f"created uris {self.created_uris}")
 
         maybe_created = self.created_uris.get(uri_str)
         if maybe_created is not None:
@@ -205,20 +199,15 @@ class FederatedTransaction:
 
 @dataclass
 class FedStore_ReadCtx:
-    """
-    A simple structure used to store the reading context.
-    
-    This will take care also of the async context used to get the URI from the fediverse
 
-    """
     uri_ob : FederatedUri
     t_id : uuid
     maybe: bool  = False
     uri_str: str = None
     must_lock: bool = False 
-    only_local: bool = False
-    lock_resolution : ELockResolution = ELockResolution.FAIL_FAST
-    timeout_deadlock : int = 120
+    #only_local: bool = False
+    #lock_resolution : ELockResolution = ELockResolution.FAIL_FAST
+    #timeout_deadlock : int = 120
     tob : FederatedTransaction = None
     fob : FederatedObject = None
 
@@ -244,6 +233,7 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     def _create_db(self, db_type, db_name):
+        gCon.log(f"[yellow]Opening federated store {db_name} type {db_type}[/yellow]")
         if db_type == 'mem':
             db = MemoryStore()
         else:

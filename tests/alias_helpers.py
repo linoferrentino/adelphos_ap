@@ -16,6 +16,7 @@ import re
 import tests.t_utils as tu
 from app.sdc.Dependencies import Dependencies
 from app.exc.AdelphosException import AdErrno
+from app.core.ECoreErrno import ECoreErrno
 
 
 
@@ -38,9 +39,11 @@ def ws_alias_logout(ws):
     tu.ws_assert_code(ws, AdErrno.ENOLOGIN)
 
 
-def ws_sudo_push_alias(ws, alias):
+def ws_sudo_push_alias(ws, alias, exp_errno_code = ECoreErrno.DONE_OK):
     ws.send_text(f"root.push_alias alias {alias}")
-    tu.ws_assert_code(ws, AdErrno.DONE_OK)
+    tu.ws_assert_code(ws, exp_errno_code)
+    if exp_errno_code != ECoreErrno.DONE_OK:
+        return
     ws.send_text(f"alias.whoami")
     data = tu.ws_assert_code(ws, AdErrno.DONE_OK)
     tu.data_assert_key_value(data, 'active_login', alias)

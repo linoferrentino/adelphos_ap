@@ -224,7 +224,7 @@ class BaseSocial(SocialProvider):
 
 
     def stop_sync(self):
-        pass
+        self.users = {}
 
 
     def get_user_tag(self, user):

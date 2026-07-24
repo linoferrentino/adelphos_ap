@@ -125,11 +125,6 @@ class MemoryStore(SimpleKvStore):
         self.undos.rollback()
 
 
-    # the memory store is automatically updated.
-    #def update(self, ob):
-    #    pass
-
-
     # a close automatically rollbacks the last transaction
     def close(self):
         self.rollback()

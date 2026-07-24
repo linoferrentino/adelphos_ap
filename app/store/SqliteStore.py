@@ -15,6 +15,7 @@
 import sqlite3
 
 from app.store.SimpleKvStore import SimpleKvStore
+from app.logging import gCon
 
 # Source - https://stackoverflow.com/a/47240886
 # Posted by Basj, modified by community. See post 'Timeline' for change history
@@ -23,6 +24,7 @@ class KeyValueStore(dict):
 
 
     def __init__(self, filename):
+        gCon.log(f"[blue]opening federated db {filename}[/blue]")
         self.conn = sqlite3.connect(filename)
         self.conn.execute("CREATE TABLE IF NOT EXISTS kv (key text unique, value text)")
 

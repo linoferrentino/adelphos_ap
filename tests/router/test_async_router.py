@@ -96,7 +96,6 @@ def test_remote_add(get_routable_app):
 
     port2 = tconf.adelphos_toy_2_conf['_port_']
     host2 = f"localhost:{port2}"
-    #host2 = tconf.routable_test2_kernel['General']['host']
     dtests._test_remote_add(test1, test2, host2)
 
 

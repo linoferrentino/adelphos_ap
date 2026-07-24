@@ -10,17 +10,14 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
-# The DTOs relative to the Activity Pub Actor
+
 
 import json
 
 from dataclasses import dataclass
 from app.logging import gCon
 from app.ap_api.AsyncRequest import AsyncGetReq
-#from app.api.AdelphosException import AdelphosException
 from urllib.parse import urlparse
-#from app.dao.BaseDto import BaseDto
 from typing import NamedTuple
 from app.dao.ApServerDto import ApServerDto
 from app.dao.ApServerDto import create_ap_server
@@ -28,12 +25,8 @@ from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.backends import default_backend as crypto_default_backend
 
 
-# this is the base class for the activity pub actors.
-# the fields are in the same order as the columns in the db table
 @dataclass
 class ApActorImpl:
-    #class ApActorDto(BaseDto):
-
     actor_id: int
     server_fk: int
     user_path: str
@@ -43,21 +36,6 @@ class ApActorImpl:
     public_key: str
     timestamp: str
 
-    #def get_pk(self):
-    #    return self.actor_id
-
-
-#@dataclass
-#class ApActorDto_ex:
-#
-#    #actor_id: int
-#    #server_fk: int
-#    server_name: str
-#    user_path: str
-#    inbox_path: str
-#    preferred_username: str
-#    private_key: str
-#    public_key: str
 
 
 @dataclass

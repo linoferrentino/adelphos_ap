@@ -10,8 +10,7 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
-# The DAO relative to the Activity Pub Actor
+
 
 from urllib.parse import urlparse
 from app.logging import gCon
@@ -22,15 +21,10 @@ from app.dao.ApActorDto import create_remote_actor
 from app.ap_api.AsyncRequest import AsyncGetReq
 from dataclasses import asdict
 import json
-#from app.api.AdelphosException import AdelphosException
 
-# this is the class that holds the logic to query and to
-# instantiate actor DTOs
-# This Dao does not derive from AdelphosObjectDao because
-# the actors are not part of the adelphos federated DB
+
 class ApActorDao(BaseDao):
 
-    # I can set here the context.
     def __init__(self, dao):
         super().__init__(dao)
 
@@ -48,7 +42,6 @@ class ApActorDao(BaseDao):
                     ("actor_id",), (actor_id,), ApActorImpl)
 
 
-    # more than one user can have the same preferred_username in different servers.
     def get_from_preferred_username(self, server_fk, preferred_username):
         return self.db.get_full_dto_ex(self.table_name,
             ('server_fk', 'preferred_username'),
@@ -61,11 +54,7 @@ class ApActorDao(BaseDao):
             (server_fk, user_path), ApActorImpl)
 
 
-    # this function tries to get an actor from
-    # the local db using the hostname and 
     def get_local_from_parsed_uri_XX(self, server_dto, key_parsed):
-        # I have to query the view.
-
         table_name = "ap_actor"
 
         fields_to_seek = ('server_fk', 'user_path')
@@ -95,28 +84,15 @@ class ApActorDao(BaseDao):
 
         table_name = "ap_actor"
 
-        #public_key_save = actor.public_key
-
         if actor.private_key is not None:
             assert actor.public_key is not None
-            #actor.public_key = None
             actor_as_dict['public_key'] = None
 
-        #fields_stored = {
-        #                 'server_fk': actor.server_fk,
-        #                 'user_path': actor.user_path,
-        #                 'preferred_username': actor.preferred_username,
-        #                 'inbox_path': actor.inbox_path,
-        #                 'private_key': actor.private_key,
-        #                 'public_key': actor.public_key,
-        #                 }
         fields_stored = ('server_fk', 'user_path', 'inbox_path',
                          'preferred_username', 'private_key', 'public_key')
 
-
         newid = self.db.insert_dto_fields(table_name, fields_stored, actor_as_dict)
 
-        #actor.public_key = public_key_save
         actor.actor_id = newid
         return newid
 

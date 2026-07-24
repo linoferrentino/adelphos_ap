@@ -140,7 +140,8 @@ def test_create_root_user(get_routable_app):
         ah.ws_sudo_push_alias(websocket, 'john.smith')
         ah.ws_pop_alias(websocket)
 
-        #ah.ws_sudo_push_alias(websocket, 'cannot_work.what')
+        ah.ws_sudo_push_alias(websocket, 'cannot_work.what',
+                              ECoreErrno.EINVALID_USER_OR_PASSWORD)
 
 
 def test_real_remote_add(get_routable_app):
@@ -151,8 +152,18 @@ def test_real_remote_add(get_routable_app):
 
     port2 = tconf.adelphos_testable_2_conf['_port_']
     host2 = f'localhost:{port2}'
-    dtests._test_remote_add(test1, test2, host2,
+
+    root_pass = tconf.adelphos_testable_1_conf['_root_password_']
+    local_root = au.get_local_alias(tconf.adelphos_testable_1_conf['_root_handle_'])
+
+    with test1, test2:
+        with test1.websocket_connect(CNST.WS_ROUTE) as ws:
+            dtests.ws_test_remote_add(ws, host2,
                             AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
+            ah.ws_alias_login_in_app(test1, local_root, ws, 
+                                 'root.admins', root_pass)
+            dtests.ws_authorize_remote_adelphos(ws, host2)
+            #dtests.ws_test_remote_add(ws, host2)
 
 
 def test_real_alias_create_sync(get_routable_app):
@@ -204,24 +215,7 @@ def test_real_alias_create_sync(get_routable_app):
 
         with test2.websocket_connect(CNST.WS_ROUTE) as websocket:
             ah.ws_alias_login(user_ob, websocket, 'lino.ferre', 'secret')
-            #websocket.send_text(f"alias.login login lino.ferre password secret")
-            #tu.ws_assert_code(websocket, AdErrno.DONE_OK)
 
-            #count_msg = user_ob.count_msg()
-            #assert count_msg == 1
-
-            #msg = user_ob.pop_lst_msg()
-            #match_tk = re.match('Copy this command to finalize', msg.content)
-            #assert match_tk is not None
-
-            #token_tk = re.search(r"tk (.*)$", msg.content)
-            #assert token_tk is not None
-            #token = token_tk.group(1)
-            #token = token[:-1]
-
-            #websocket.send_text(f"alias.put_token tk {token}")
-            #tu.ws_assert_code(websocket, AdErrno.DONE_OK)
- 
 
 def Xtest_real_remote_add_simple(get_routable_app):
     test1 = get_routable_app('test100', tconf.adelphos_stub, 
