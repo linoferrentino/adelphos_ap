@@ -50,6 +50,7 @@ create table ap_actor (
         preferred_username text,
         private_key text,
         public_key text,
+        tag text,
         timestamp text default current_timestamp,
         unique (server_fk, user_path) on conflict abort
 );"""),

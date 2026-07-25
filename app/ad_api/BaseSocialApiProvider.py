@@ -104,7 +104,9 @@ class BaseSocialApiProvider(SocialApiProvider):
 
     def remote_host_allow(self, host):
         social = self.kernel.get_dep(Dependencies.SOCIAL)
-        user_tag_str = social.get_user_tag(self.get_social_user())
+        local_user = social.local_user_get(self.get_social_user())
+        user_tag_str = local_user.actor_dto.act.tag
+
         if user_tag_str is None:
             user_tag = {
                     'social_api' : {
@@ -123,7 +125,9 @@ class BaseSocialApiProvider(SocialApiProvider):
             user_tag['social_api']['hosts_allow'] = hosts_allowed_list
         new_tag_str = json.dumps(user_tag)
         gCon.log(f"The new tag is {new_tag_str}")
-        social.set_user_tag(self.get_social_user(), new_tag_str)
+        local_user.actor_dto.act.tag = new_tag_str
+        social_dao = self.kernel.get_dep(Dependencies.SOCIAL_DAO)
+        social_dao.actor_store(local_user.actor_dto)
 
 
     def remote_host_deny(self, host):

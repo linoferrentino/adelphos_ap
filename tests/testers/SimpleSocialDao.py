@@ -94,8 +94,6 @@ class SimpleSocialDao(BaseSocialDao):
 
     def _store_actor_impl(self, actor_dto):
 
-        #BaseSocialDao._fill_public_key(actor_dto)
-
         found = False
         for k, server_inf in self.servers.items():
             srv_dto_dict = json.loads(server_inf['srv'])

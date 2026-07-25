@@ -15,6 +15,7 @@
 from abc import abstractmethod
 from app.federation.SocialDao import SocialDao
 from cryptography.hazmat.primitives import serialization as crypto_serialization
+from app.logging import gCon
 
 
 class BaseSocialDao(SocialDao):
@@ -59,12 +60,18 @@ class BaseSocialDao(SocialDao):
 
     def actor_store(self, actor):
 
-        server_id = self._srv_get_or_create(actor.srv.host_name)
-        BaseSocialDao._fill_public_key(actor)
+        server_id = actor.srv.server_id
+        if server_id is None:
 
-        actor.srv.server_id = server_id
-        actor.act.server_fk = server_id
+            server_id = self._srv_get_or_create(actor.srv.host_name)
+            BaseSocialDao._fill_public_key(actor)
+
+            actor.srv.server_id = server_id
+            actor.act.server_fk = server_id
+        else:
+            gCon.log(f"Server {actor.srv.host_name} is already stored")
 
         actor_id = self._store_actor_impl(actor)
+        return actor_id
 
 

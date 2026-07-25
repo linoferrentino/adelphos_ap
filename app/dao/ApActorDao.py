@@ -28,13 +28,7 @@ class ApActorDao(BaseDao):
     def __init__(self, dao):
         super().__init__(dao)
 
-        self.ftbl_col_list = ( "server_fk", 
-                              "user_path", "preferred_username",
-                              "inbox_path", "private_key", "public_key",
-                              "actor_id", "local_fk", "timestamp"
-                              )
         self.table_name = "ap_actor"
-
 
 
     def get_from_id(self, actor_id):
@@ -54,16 +48,16 @@ class ApActorDao(BaseDao):
             (server_fk, user_path), ApActorImpl)
 
 
-    def get_local_from_parsed_uri_XX(self, server_dto, key_parsed):
-        table_name = "ap_actor"
+    #def get_local_from_parsed_uri_XX(self, server_dto, key_parsed):
+    #    table_name = "ap_actor"
 
-        fields_to_seek = ('server_fk', 'user_path')
-        values_to_seek = ( server_dto.server_id, key_parsed.path)
+    #    fields_to_seek = ('server_fk', 'user_path')
+    #    values_to_seek = ( server_dto.server_id, key_parsed.path)
 
-        dto = self.dao.db.get_full_dto_ex(table_name,  fields_to_seek, 
-                            values_to_seek, ApActorDto)
+    #    dto = self.dao.db.get_full_dto_ex(table_name,  fields_to_seek, 
+    #                        values_to_seek, ApActorDto)
  
-        return dto
+    #    return dto
 
     
     # this function will get from uri, the actor has been already taken.
@@ -89,7 +83,7 @@ class ApActorDao(BaseDao):
             actor_as_dict['public_key'] = None
 
         fields_stored = ('server_fk', 'user_path', 'inbox_path',
-                         'preferred_username', 'private_key', 'public_key')
+                         'preferred_username', 'private_key', 'public_key', 'tag')
 
         newid = self.db.insert_dto_fields(table_name, fields_stored, actor_as_dict)
 

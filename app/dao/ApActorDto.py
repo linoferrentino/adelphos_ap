@@ -16,17 +16,16 @@ import json
 
 from dataclasses import dataclass
 from app.logging import gCon
-from app.ap_api.AsyncRequest import AsyncGetReq
-from urllib.parse import urlparse
-from typing import NamedTuple
 from app.dao.ApServerDto import ApServerDto
 from app.dao.ApServerDto import create_ap_server
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.backends import default_backend as crypto_default_backend
+from app.dao.BaseDto import BaseDto
 
 
 @dataclass
-class ApActorImpl:
+class ApActorImpl(BaseDto):
+
     actor_id: int
     server_fk: int
     user_path: str
@@ -34,8 +33,16 @@ class ApActorImpl:
     preferred_username: str
     private_key: str
     public_key: str
+    tag: str
     timestamp: str
 
+
+    def get_pk(self):
+        return self.actor_id
+
+
+    def get_pk_name(self):
+        return 'actor_id'
 
 
 @dataclass
@@ -104,7 +111,7 @@ def create_local_actor(server_host, user_path,
 
     actor_impl = ApActorImpl(None, None, user_path,
                               inbox_path, preferred_username,
-                              private_key, None, None)
+                              private_key, None, None, None)
 
     actor = ApActorDto(server_dto, actor_impl)
     return actor
@@ -116,7 +123,7 @@ def create_remote_actor(server_host, user_path,
     server_dto = create_ap_server(server_host)
     actor_impl = ApActorImpl(None, None, user_path,
                               inbox_path, preferred_username,
-                              None, public_key, None)
+                              None, public_key, None, None)
     actor = ApActorDto(server_dto, actor_impl)
     return actor 
 

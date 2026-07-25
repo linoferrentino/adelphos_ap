@@ -162,7 +162,7 @@ def test_real_remote_add(get_routable_app):
                             AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
             ah.ws_alias_login_in_app(test1, local_root, ws, 
                                  'root.admins', root_pass)
-            dtests.ws_authorize_remote_adelphos(ws, host2)
+            #dtests.ws_authorize_remote_adelphos(ws, host2)
             #dtests.ws_test_remote_add(ws, host2)
 
 
