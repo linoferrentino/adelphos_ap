@@ -30,6 +30,17 @@ class AdelphosApiProvider(BaseSocialApiProvider):
     def _is_allowed_remote_rpc_host(self, host, mode):
         gCon.log(f"IS ALLOWED? {host}")
         social = self.kernel.get_dep(Dependencies.SOCIAL)
+        local_user = social.local_user_get(self.get_social_user())
+        if local_user.actor_dto.srv.rpc_enabled == True:
+            gCon.log("YES!")
+            return True
+        gCon.log("NO!")
+        return False
+
+
+    def _is_allowed_remote_rpc_host_bad(self, host, mode):
+        gCon.log(f"IS ALLOWED? {host}")
+        social = self.kernel.get_dep(Dependencies.SOCIAL)
         user_tag = social.get_user_tag(self.get_social_user())
         gCon.log(f"tag for user is {user_tag}")
         if user_tag is None:

@@ -28,8 +28,7 @@ class BaseDao(ABC):
         dto_as_dict = asdict(dto)
         if pk_id is not None:
             gCon.log(f"Updating...... {dto_as_dict}")
-            pk_name = self.get_pk_name()
-            self.update_dict(pk_name, pk_id, dto_as_dict)
+            self.update_dto_dict(pk_id, dto_as_dict)
             return pk_id
 
         new_id = self.store_dict(dto, dto_as_dict)
@@ -51,35 +50,44 @@ class BaseDao(ABC):
         self.update_dict(pk_name, pk_id, dto_as_dict)
 
 
-    # Update only one field
     def update_field(self, dto, field, value):
         pk_id = dto.get_pk()
         pk_name = self.get_pk_name()
         tbl = self.get_table_name();
-        #gCon.log(f"update {tbl} with  using primary key {pk_name} = {pk_id}")
-        self.dao.db.update_field(tbl, pk_name, pk_id, field, value)
+        self.db.update_field(tbl, pk_name, pk_id, field, value)
 
 
-    # basic implementation
     def update_dict(self, pk_name, pk_id, dto_as_dict):
         tbl = self.get_table_name();
         gCon.log(f"update {tbl} with  {dto_as_dict} using primary key {pk_name} = {pk_id}")
-        self.dao.db.update_dto(tbl, pk_name, pk_id, dto_as_dict)
+        self.db.update_dto(tbl, pk_name, pk_id, dto_as_dict)
 
 
-    # this is the abstract method that derived classes must implement
-    @abstractmethod
-    def store_dict(self, dto, dto_as_dict):
-        pass
+    def store_dict(self, ob, obdict):
+
+        newid = self.db.insert_dto_fields(self.get_table_name(),
+                                          self.get_table_data_fields(), obdict)
+        setattr(ob, self.get_pk_name(), newid)
+        return newid
 
 
-    # gets the name of the column that stores the private key.
+    def update_dto_dict(self, key_val, dto_as_dict):
+        tbl = self.get_table_name();
+        key_name = self.get_pk_name()
+        fields = self.get_table_data_fields()
+        self.db.update_dto_fields(tbl, key_name, key_val, fields, dto_as_dict)
+
+
     @abstractmethod
     def get_pk_name(self):
         pass
 
 
-    # We have a table name for each DAO (at least once)
     @abstractmethod
     def get_table_name(self):
+        pass
+
+
+    @abstractmethod
+    def get_table_data_fields(self):
         pass

@@ -103,6 +103,27 @@ class BaseSocialApiProvider(SocialApiProvider):
 
 
     def remote_host_allow(self, host):
+        self._remote_host_set_new_enabled(host, True)
+
+
+    def _remote_host_set_new_enabled(self, host, enabled_flag):
+
+        social = self.kernel.get_dep(Dependencies.SOCIAL)
+        local_user = social.local_user_get(self.get_social_user())
+        if local_user.actor_dto.srv.rpc_enabled == enabled_flag:
+            gCon.log(f"host {host} already with flag {enabled_flag}")
+            return
+        gCon.log(f"host {host} setting flag {enabled_flag}")
+        local_user.actor_dto.srv.rpc_enabled = enabled_flag
+        social_dao = self.kernel.get_dep(Dependencies.SOCIAL_DAO)
+        social_dao.actor_store(local_user.actor_dto)
+
+
+    def remote_host_deny(self, host):
+        self._remote_host_set_new_enabled(host, False)
+
+
+    def remote_host_allow_bad(self, host):
         social = self.kernel.get_dep(Dependencies.SOCIAL)
         local_user = social.local_user_get(self.get_social_user())
         user_tag_str = local_user.actor_dto.act.tag
@@ -222,9 +243,9 @@ class BaseSocialApiProvider(SocialApiProvider):
     def _check_actor_identity(self, actor_from, mode):
         allowed = self._is_allowed_remote_rpc_host(actor_from.srv.host_name, mode)
         if allowed == False:
-            raise AdelphosException(EAdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
+            raise AdelphosException(AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
         if actor_from.act.preferred_username != self.get_social_user():
-            raise AdelphosException(EAdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
+            raise AdelphosException(AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
 
 
     async def _sys_call_q(kernel, envelope, pars):

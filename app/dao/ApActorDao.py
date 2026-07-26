@@ -76,27 +76,34 @@ class ApActorDao(BaseDao):
 
     def store_dict(self, actor, actor_as_dict):
 
-        table_name = "ap_actor"
-
         if actor.private_key is not None:
             assert actor.public_key is not None
             actor_as_dict['public_key'] = None
+            gCon.log("REMOVING PUBLIC KEY")
 
-        fields_stored = ('server_fk', 'user_path', 'inbox_path',
-                         'preferred_username', 'private_key', 'public_key', 'tag')
+        return super().store_dict(actor, actor_as_dict)
 
-        newid = self.db.insert_dto_fields(table_name, fields_stored, actor_as_dict)
 
-        actor.actor_id = newid
-        return newid
+    def update_dto_dict(self, key_val, dto_as_dict):
+        if dto_as_dict['private_key'] is not None:
+            assert dto_as_dict['public_key'] is not None
+            dto_as_dict['public_key'] = None
+            gCon.log("REMOVING PUBLIC KEY before update")
+
+        return super().update_dto_dict(key_val, dto_as_dict)
 
     
-    # gets the name of the column that stores the private key.
     def get_pk_name(self):
         return 'actor_id'
 
 
-    # We have a table name for each DAO (at least once)
     def get_table_name(self):
         return 'ap_actor'
+
+
+    def get_table_data_fields(self):
+
+        return ('server_fk', 'user_path', 'inbox_path',
+                'preferred_username', 'private_key', 'public_key', 'tag')
+
 

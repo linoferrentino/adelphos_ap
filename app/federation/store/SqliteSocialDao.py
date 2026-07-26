@@ -33,6 +33,7 @@ create_schema_sql = \
 create table ap_server (
     server_id integer primary key,
     host_name text not null unique on conflict abort,
+    rpc_enabled integer not null default 0,
     timestamp text default current_timestamp
 );
 
@@ -146,6 +147,7 @@ class SqliteSocialDao(BaseSocialDao):
 
 
     def _store_actor_impl(self, actor_dto):
+        self.server_dao.store(actor_dto.srv)
         new_id = self.actor_dao.store(actor_dto.act)
         return new_id
 
@@ -238,5 +240,24 @@ insert into {table_name} ( {fields_list} ) values ( {place_holders_list} );
 
         return newid
 
+
+    def update_dto_fields(self, table_name, key_name, key_val, fields, dto_as_dict):
+
+        fields_colon = [ f":{field}" for field in fields ]
+        place_holders_list = ", ".join(fields_colon)
+        fields_list = ", ".join(fields)
+
+        sql_update = f"""
+
+update {table_name} set ( {fields_list} ) = ( {place_holders_list} ) 
+where {key_name} = {key_val};
+
+        """
+
+        gCon.log(f"The query to update is {sql_update} with dictionary")
+        gCon.log(dto_as_dict)
+        cur = self._conn.cursor()
+        cur.execute(sql_update, dto_as_dict)
+        cur.close()
 
 

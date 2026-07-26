@@ -10,10 +10,7 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
 
-# the DataAccessObject for the Server table
-# the Server here is synonymous for an ActivityPub server.
 
 from app.dao.ApServerDto import ApServerDto
 from app.dao.ApServerDto import create_ap_server
@@ -22,18 +19,13 @@ from dataclasses import asdict
 from app.dao.BaseDao import BaseDao
 
 
-# the server dao has the logic to query and store activity pub servers
 class ApServerDao(BaseDao):
 
-
-    # I can set here the context.
     def __init__(self, db):
         super().__init__(db)
         self.table_name = "ap_server"
 
 
-    # this function is only local: we do not create servers
-    # around.
     def get_or_create_from_host_name(self, host_name):
         server_dto = self.get_from_hostname(host_name)
 
@@ -44,11 +36,8 @@ class ApServerDao(BaseDao):
 
 
     def create_from_hostname(self, host_name):
-
-        # at this point I have to create it.
         server_dto = create_ap_server(host_name)
         self.store(server_dto)
-        #gCon.log(f"I return {server_dto}")
         return server_dto.server_id
 
 
@@ -62,7 +51,6 @@ class ApServerDao(BaseDao):
         return server_dto
 
 
-    # also this function is local
     def get_from_hostname(self, host_name):
         server_dto = self.db.get_full_dto(self.table_name,
                         "host_name", host_name, ApServerDto)
@@ -73,18 +61,17 @@ class ApServerDao(BaseDao):
 
         newid = self.db.insert_dto_fields(self.table_name,
                             ('host_name',), server_as_dict)
-
-        #gCon.log(f"stored {server.host_name} his id {newid}")
-
         server.server_id = newid
 
 
-    # gets the name of the column that stores the private key.
     def get_pk_name(self):
         return 'server_id'
 
 
-    # We have a table name for each DAO (at least once)
     def get_table_name(self):
         return 'ap_server'
+
+
+    def get_table_data_fields(self):
+        return ('host_name', 'rpc_enabled')
 

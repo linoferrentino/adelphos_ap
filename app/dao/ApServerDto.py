@@ -23,6 +23,8 @@ class ApServerDto(BaseDto):
 
     host_name: str
 
+    rpc_enabled: bool
+
     timestamp: str
 
     def get_pk(self):
@@ -34,7 +36,7 @@ class ApServerDto(BaseDto):
 
 def create_ap_server(host_name):
 
-    ap_server = ApServerDto(None, host_name, None)
+    ap_server = ApServerDto(None, host_name, False, None)
 
     return ap_server
 
