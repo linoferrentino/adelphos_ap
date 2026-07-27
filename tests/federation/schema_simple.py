@@ -67,6 +67,16 @@ schema_simple_yaml = f"""
 
 uri_constructor: 'tests.federation.schema_simple.FederatedUriTest'
 
+types:
+
+    enums:
+      
+      fruits:
+        - apple 
+        - banana 
+        - orange 
+
+
 classes:
     - uri_prefix: '{TYPE_T1}'
       can_be_root: true 
@@ -108,6 +118,27 @@ classes:
           type: json
           cardinality: scalar
           required: true
+
+    - uri_prefix: p_enum
+      can_be_root: true
+      columns:
+        - name: name
+          type: str
+          cardinality: scalar
+          required: true
+
+        - name: preferred_fruit
+          type: enum
+          sub_type: fruits
+          cardinality: scalar
+          required: true
+
+        - name: second_preferred_fruit
+          type: enum
+          sub_type: fruits
+          cardinality: scalar
+          required: false
+          default: banana
 
 
     - uri_prefix: t_uri_set

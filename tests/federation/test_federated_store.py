@@ -354,6 +354,52 @@ async def a_test_uri_set(fdb1_loc):
         await fdb1_loc.commit_transaction(t_id)
     assert fex.value.errno == EFdbErrors.EFDB_CARDINALITY_LOWER
 
+
+def test_enum_field(fdb1_loc):
+    run_coro_in_loop(a_test_enum_field, (fdb1_loc,))
+
+
+async def a_test_enum_field(fdb1_loc):
+    t1uri = FederatedUriTest('p_enum', 'e1')
+    t_id = await fdb1_loc.begin_transaction()
+
+    with pytest.raises(FdbException) as fex:
+        fob = await fdb1_loc.new_ob_uri(t_id, t1uri)
+    assert fex.value.errno == EFdbErrors.EFDB_REQUIRED_FIELD_MISSING
+
+    with pytest.raises(FdbException) as fex:
+        fob = await fdb1_loc.new_ob_uri(t_id, t1uri, fields = {
+            'name' : 'John',
+            'preferred_fruit' : 'strawberry',
+        })
+    assert fex.value.errno == EFdbErrors.EFDB_INVALID_ENUM_VALUE
+
+    fob = await fdb1_loc.new_ob_uri(t_id, t1uri, fields = {
+            'name' : 'John',
+            'preferred_fruit' : 'apple',
+        })
+
+    pref_fruit = fob().get_scalar('preferred_fruit')
+    assert pref_fruit == 'apple'
+
+    pref_fruit = fob().get_scalar('second_preferred_fruit')
+    assert pref_fruit == 'banana'
+
+    await fdb1_loc.commit_transaction(t_id)
+
+    t_id = await fdb1_loc.begin_transaction()
+    fob = await fdb1_loc.uri_read_no_lock(t_id, t1uri)
+    assert fob() is not None
+
+    pref_fruit = fob().get_scalar('preferred_fruit')
+    assert pref_fruit == 'apple'
+
+    pref_fruit = fob().get_scalar('second_preferred_fruit')
+    assert pref_fruit == 'banana'
+
+
+
+
     
 def test_json_field(fdb1_loc):
     run_coro_in_loop(a_test_json_field, (fdb1_loc,))

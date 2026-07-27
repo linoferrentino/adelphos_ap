@@ -21,6 +21,17 @@ adelphos_schema_yaml = f"""
 
 uri_constructor: app.core.model.AdelphosUri.AdelphosUri
 
+types:
+
+    enums:
+      currency:
+        - APH
+        - EUR
+        - USD
+        - GBP
+        - CHF
+        - JPY
+
 classes:
 
     - uri_prefix: {EAdelphosType.ALIAS_TYPE}
@@ -65,6 +76,13 @@ classes:
           cardinality: scalar
           required: false
           default: 0.0
+
+        - name: currency
+          type: enum
+          sub_type: currency
+          cardinality: scalar
+          required: false
+          default: EUR
 
         - name: invites
           type: json 

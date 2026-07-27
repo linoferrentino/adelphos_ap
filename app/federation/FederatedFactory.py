@@ -14,7 +14,8 @@
 
 from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
-from app.federation.FederatedObject import FObColumnDefinition, FObColType, FObCardType
+from app.federation.FederatedObject import FObColumnDefinition,\
+        FObColType, FObCardType, FederatedEnum
 from dataclasses import dataclass
 from dataclasses import field
 import app.misc.utils as misc
@@ -30,18 +31,10 @@ class FederatedFactoryRegistrar:
 
 class FederatedFactory:
 
-    registrars = dict()
-    uri_constructor = None
-
-    
-    @classmethod
-    def set_uri_constructor(cls, uri_const):
-        cls.uri_constructor = uri_const
-
-
     def __init__(self):
         self.registrars = dict()
         self.uri_constructor = None
+        self.enums = dict()
 
 
     @staticmethod
@@ -57,6 +50,8 @@ class FederatedFactory:
                 return FObColType.LOCAL_URI
             case 'json':
                 return FObColType.JSON
+            case 'enum':
+                return FObColType.ENUM
             case _:
                 raise Exception(f"Invalid col type {col_type_str}")
 
@@ -74,20 +69,27 @@ class FederatedFactory:
                 raise Exception(f"Invalid cardinality {cardinality_str}")
 
 
-    def _add_column(self, col, registrar):
+    def _get_subtype(self, col, col_type_id):
+        if col_type_id != FObColType.ENUM:
+            return None
+        sub_type = col['sub_type']
+        enum_val = self.enums[sub_type]
+        return enum_val
 
+
+    def _add_column(self, col, registrar):
         col_name = col['name']
 
         col_type_str = col['type']
         col_type_id = FederatedFactory.translate_type(col_type_str)
+        sub_type = self._get_subtype(col, col_type_id)
         cardinality_str = col['cardinality']
         cardinality_id = FederatedFactory.translate_cardinality(cardinality_str)
         required = col.get('required', True)
         def_value = col.get('default') 
         minimum_cardinality = col.get('minimum_cardinality', 0)
-        col_def = FObColumnDefinition(col_type_id, cardinality_id,
+        col_def = FObColumnDefinition(col_type_id, sub_type, cardinality_id,
                                       required, def_value, minimum_cardinality)
-
         registrar.pars[col_name] = col_def
 
 
@@ -103,25 +105,36 @@ class FederatedFactory:
         self._register_ob_type(uri_prefix, registrar)
 
 
-    def parse_schema(self, schema):
+    def _add_enums(self, enums):
+        for enum, fields in enums.items():
+            this_enum = FederatedEnum(fields)
+            self.enums[enum] = this_enum
 
+
+    def _add_types(self, types):
+        enums = types.get('enums')
+        self._add_enums(enums)
+
+
+    def parse_schema(self, schema):
         uri_constructor_str = schema['uri_constructor']
         self.uri_constructor = misc.import_string(uri_constructor_str)
+
+        types = schema.get('types')
+        if types is not None:
+            self._add_types(types)
 
         classes_arr = schema['classes']
         for class_ob in classes_arr:
             self._add_class(class_ob)
-            #gCon.log(f"I have added class {class_ob}")
 
 
-    @classmethod
-    def _register_ob_type(cls, type_str, registrar):
-        cls.registrars[type_str] = registrar
+    def _register_ob_type(self, type_str, registrar):
+        self.registrars[type_str] = registrar
 
 
-    @classmethod
-    def get_registrar(cls, uri_type):
-        registrar = cls.registrars.get(uri_type)
+    def get_registrar(self, uri_type):
+        registrar = self.registrars.get(uri_type)
         return registrar
 
 

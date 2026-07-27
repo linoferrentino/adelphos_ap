@@ -11,6 +11,8 @@
 #
 ######################################################
 
+from abc import ABC
+from abc import abstractmethod
 
 import json
 import dataclasses
@@ -117,6 +119,7 @@ class FObColType(IntEnum):
     URI = 5
     LOCAL_URI = 6
     JSON = 7
+    ENUM = 8
 
 
 class FObCardType(IntEnum):
@@ -124,21 +127,32 @@ class FObCardType(IntEnum):
     SCALAR = 0
     ARRAY = 1
     SET = 2
-    #LIST = 2
-    #STACK = 3
 
 
-#class FObReqType(IntEnum):
-#
-#    REQUIRED = 0
-#    NO_REQUIRED_DEFAULT_NULL = 1
-#    NO_REQUIRED_DEFAULT_VALUE = 2
+class FederatedType(ABC):
+
+    @abstractmethod
+    def enforce_type(self, value, before_commit):
+        pass
+
+
+class FederatedEnum(FederatedType):
+
+    def __init__(self, items):
+        self.items = set(items)
+
+
+    def enforce_type(self, value, before_commit):
+        if value not in self.items:
+            raise FdbException(EFdbErrors.EFDB_INVALID_ENUM_VALUE, value)
+        return value
 
 
 @dataclass
 class FObColumnDefinition:
 
     typecol : FObColType
+    sub_type : object
     cardinality : FObCardType
     required : bool
     default_value : object
@@ -208,6 +222,11 @@ class FederatedObject:
 
 
     @staticmethod
+    def _enforce_enum_value(col_name, col_val, col_def, before_commit):
+        pass
+
+
+    @staticmethod
     def enforce_scalar(col_name, col_val, col_def, before_commit):
 
         if col_val is None:
@@ -236,12 +255,21 @@ class FederatedObject:
                     exp_type = str
                 else:
                     exp_type = weakref.ReferenceType
+            case FObColType.ENUM:
+                exp_type = str
             case _:
-                raise FdbException(EFdbErrors.EFDB_INVALID_VAL_TYPE)
+                raise FdbException(EFdbErrors.EFDB_INVALID_VAL_TYPE, col_name)
 
         if isinstance(col_val, exp_type) == False:
             raise FdbException(EFdbErrors.EFDB_INVALID_VAL_TYPE, 
             f"exp {exp_type} found {type(col_val)} in {col_name}")
+
+        match col_type:
+            case FObColType.ENUM:
+                col_def.sub_type.enforce_type(col_val, before_commit)
+
+                #FederatedObject._enforce_enum_value(col_name, col_val, col_def,
+                #                         before_commit)
 
 
 
@@ -313,9 +341,6 @@ class FederatedObject:
             return None
         raise AttributeError(key)
 
-
-    #def add_phantom_link(self):
-    #    self._inc_ref_ob()
 
     def add_ref(self):
         self._inc_ref_ob()
@@ -418,7 +443,6 @@ class FederatedObject:
         assert self.ob.ref_count > 0
         self.ob.ref_count -= 1
         self.modified = True
-        gCon.log(f"dec ref {self.ob.ref_count}")
 
 
     @ensure_lock
