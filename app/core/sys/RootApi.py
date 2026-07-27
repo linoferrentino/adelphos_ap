@@ -39,9 +39,16 @@ class RootApi:
     @staticmethod
     async def _sys_call_allow_remote(kernel, session, pars):
         host = pars['host']
-        gCon.log(f"Allowing remote host {host}")
         social_api = kernel.get_dep(Dependencies.SOCIAL_API)
         user_tag = social_api.remote_host_allow(host)
+
+
+    @sudo_cmd
+    @staticmethod
+    async def _sys_call_deny_remote(kernel, session, pars):
+        host = pars['host']
+        social_api = kernel.get_dep(Dependencies.SOCIAL_API)
+        user_tag = social_api.remote_host_deny(host)
 
 
     @staticmethod

@@ -56,6 +56,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
 
     async def sys_call_gateway_msg(self, param, msg):
+        gCon.log(f"--> received {msg}")
         cp = CliParser(msg)
         ctx_cmd = cp.cmd.split('.')
         if len(ctx_cmd) != 2:
@@ -67,6 +68,9 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         kwargs = self._create_params_dict_from_cmd_line(cp, syscall)
 
         msg_out = await syscall.handler(kernel, param, kwargs)
+        if msg_out is None:
+            gCon.log(f"No answer given, I simply put success")
+            msg_out = f"Command {cp.cmd} completed successfully"
         dict_out = {
                 'errno' : int(AdErrno.DONE_OK),
                 'res' : msg_out if msg_out is not None else "",

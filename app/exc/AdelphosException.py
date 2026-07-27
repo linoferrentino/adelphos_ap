@@ -48,3 +48,8 @@ class AdelphosException(AdelphosBaseException):
     def __init__(self, errno, msg = None):
         super().__init__("app", errno, msg)
 
+
+class AdelphosContinueException(Exception):
+
+    pass
+

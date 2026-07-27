@@ -23,6 +23,7 @@ from app.cli.SysCall import SysCall
 from app.core.sys.SysCallGateway import SysCallGateway
 from app.exc.AdelphosException import AdErrno
 from app.exc.AdelphosException import AdelphosException
+from app.exc.AdelphosException import AdelphosContinueException
 from app.logging import gCon
 from app.sdc.Dependencies import Dependencies
 from app.core.AdelphosCoreException import AdelphosCoreException
@@ -123,38 +124,6 @@ class BaseSocialApiProvider(SocialApiProvider):
         self._remote_host_set_new_enabled(host, False)
 
 
-    def remote_host_allow_bad(self, host):
-        social = self.kernel.get_dep(Dependencies.SOCIAL)
-        local_user = social.local_user_get(self.get_social_user())
-        user_tag_str = local_user.actor_dto.act.tag
-
-        if user_tag_str is None:
-            user_tag = {
-                    'social_api' : {
-                        'hosts_allow' : [host,],
-                    }
-            }
-        else:
-            user_tag = json.loads(user_tag_str)
-            social_api_cnf = user_tag.get('social_api')
-            if social_api_cnf is None:
-                hosts_allowed_list = [host,]
-            else:
-                hosts_allowed_set = set(user_tag['social_api']['hosts_allow'])
-                hosts_allowed_set.add(host)
-                hosts_allowed_list = list(hosts_allowed_set)
-            user_tag['social_api']['hosts_allow'] = hosts_allowed_list
-        new_tag_str = json.dumps(user_tag)
-        gCon.log(f"The new tag is {new_tag_str}")
-        local_user.actor_dto.act.tag = new_tag_str
-        social_dao = self.kernel.get_dep(Dependencies.SOCIAL_DAO)
-        social_dao.actor_store(local_user.actor_dto)
-
-
-    def remote_host_deny(self, host):
-        pass
-
-
     async def _make_rpc_request(self, host, msg):
         cur_api_id = self.remote_api_id.get_and_inc()
         query_txt = f"{SOCIAL_API_QUERY} api_id {cur_api_id} payload {msg}"
@@ -249,13 +218,13 @@ class BaseSocialApiProvider(SocialApiProvider):
 
 
     async def _sys_call_q(kernel, envelope, pars):
-        actor_from = envelope.actor_from
 
         self = kernel.get_dep(Dependencies.SOCIAL_API)
-        self._check_actor_identity(actor_from, 'proc')
-
         api_id = pars['api_id']
+
         try:
+            actor_from = envelope.actor_from
+            self._check_actor_identity(actor_from, 'proc')
             res = await self._sys_call_q_try(actor_from, pars)
             remote_errno = AdErrno.DONE_OK
         except AdelphosException as adex:
@@ -268,6 +237,7 @@ class BaseSocialApiProvider(SocialApiProvider):
 
         payload_ans = self._pack_response_message(remote_errno, res)
         answer_msg = f"{SOCIAL_API_ANSWER} api_id {api_id} payload {payload_ans}"
+        gCon.log(f"sending {answer_msg}")
         return answer_msg
 
 
@@ -297,9 +267,12 @@ class BaseSocialApiProvider(SocialApiProvider):
             raise AdelphosException(EAdErrno.EGENERIC_SERVER)
         payload_decoded = self._decode_daemon_message(payload_str)
         remote_json = json.loads(payload_decoded)
+        gCon.log(f"Remote answer json is {remote_json}")
         async_ctx.answer = remote_json
         async with async_ctx.async_cond:
            async_ctx.async_cond.notify()
+
+        raise AdelphosContinueException()
 
 
     @abstractmethod
@@ -310,6 +283,10 @@ class BaseSocialApiProvider(SocialApiProvider):
     async def new_post(self, envelope):
         try:
             out_msg = await self.new_post_try(envelope)
+
+        except AdelphosContinueException as exce:
+            gCon.log(f"[red]========== continue ===========[/red]")
+            return
         except AdelphosCoreException as exce:
             traceback.print_exc()
             out_msg = exce.out_str
@@ -317,9 +294,6 @@ class BaseSocialApiProvider(SocialApiProvider):
             traceback.print_exc()
             out_msg = f"Server Error in syscall {ex}"
     
-        if out_msg is None:
-            return
-
         social_gw = self.kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
         await social_gw.out_outbox_dtos(envelope.myself,
                                         envelope.actor_from, out_msg)
@@ -327,7 +301,11 @@ class BaseSocialApiProvider(SocialApiProvider):
 
     async def new_post_try(self, envelope):
         inbox_api = self.kernel.get_dep(Dependencies.INBOX_API)
-        out_dict = await inbox_api.sys_call_gateway_msg(envelope, envelope.content)
+        out_dict = await inbox_api.sys_call_gateway_msg(envelope,
+                                                        envelope.content)
+        if out_dict is None:
+            gCon.log(f"No answer required.")
+            return
         out_msg = out_dict['res']
         return out_msg
 

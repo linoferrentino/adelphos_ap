@@ -254,8 +254,8 @@ where {key_name} = {key_val};
 
         """
 
-        gCon.log(f"The query to update is {sql_update} with dictionary")
-        gCon.log(dto_as_dict)
+        #gCon.log(f"The query to update is {sql_update} with dictionary")
+        #gCon.log(dto_as_dict)
         cur = self._conn.cursor()
         cur.execute(sql_update, dto_as_dict)
         cur.close()

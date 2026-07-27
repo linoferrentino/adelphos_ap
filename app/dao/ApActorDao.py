@@ -79,7 +79,7 @@ class ApActorDao(BaseDao):
         if actor.private_key is not None:
             assert actor.public_key is not None
             actor_as_dict['public_key'] = None
-            gCon.log("REMOVING PUBLIC KEY")
+            #gCon.log("REMOVING PUBLIC KEY")
 
         return super().store_dict(actor, actor_as_dict)
 
@@ -88,7 +88,7 @@ class ApActorDao(BaseDao):
         if dto_as_dict['private_key'] is not None:
             assert dto_as_dict['public_key'] is not None
             dto_as_dict['public_key'] = None
-            gCon.log("REMOVING PUBLIC KEY before update")
+            #gCon.log("REMOVING PUBLIC KEY before update")
 
         return super().update_dto_dict(key_val, dto_as_dict)
 

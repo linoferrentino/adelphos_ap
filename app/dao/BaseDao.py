@@ -27,7 +27,7 @@ class BaseDao(ABC):
         pk_id = dto.get_pk()
         dto_as_dict = asdict(dto)
         if pk_id is not None:
-            gCon.log(f"Updating...... {dto_as_dict}")
+            #gCon.log(f"Updating...... {dto_as_dict}")
             self.update_dto_dict(pk_id, dto_as_dict)
             return pk_id
 

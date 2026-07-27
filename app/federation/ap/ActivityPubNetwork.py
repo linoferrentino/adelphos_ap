@@ -85,13 +85,11 @@ class ActivityPubNetwork(SocialNetwork):
 
 
     async def in_infouser(self, request):
-        gCon.log(f"The request infouser is {request}")
         username = request.path_params['username']
-        gCon.log(f"user infouser is {username}")
         social = self.kernel.get_dep(Dependencies.SOCIAL)
         userob = social.local_user_get(username)
         if userob is None:
-            gCon.log("WHAT? Not found")
+            gCon.log(f"Not found user {username}")
             return Response(status_code=404)
 
         config = self.conf
@@ -122,7 +120,6 @@ class ActivityPubNetwork(SocialNetwork):
         assert userob.actor_dto.act.public_key is not None
         response = JSONResponse(content = info_user)
         response.headers['Content-Type'] = 'application/activity+json'
-        gCon.log(f"================ response {response.status_code}")
         return response
     
 

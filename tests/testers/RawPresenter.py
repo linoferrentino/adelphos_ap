@@ -28,4 +28,3 @@ class RawPresenter(CliPresenter):
         return sys_call_str
 
 
-

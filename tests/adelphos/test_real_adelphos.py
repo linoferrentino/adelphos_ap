@@ -151,20 +151,34 @@ def test_real_remote_add(get_routable_app):
                              tconf.adelphos_testable_2_conf)
 
     port2 = tconf.adelphos_testable_2_conf['_port_']
+    port1 = tconf.adelphos_testable_1_conf['_port_']
     host2 = f'localhost:{port2}'
+    host1 = f'localhost:{port1}'
 
     root_pass = tconf.adelphos_testable_1_conf['_root_password_']
     local_root = au.get_local_alias(tconf.adelphos_testable_1_conf['_root_handle_'])
 
+    local_root2 = au.get_local_alias(tconf.adelphos_testable_2_conf['_root_handle_'])
+    root_pass2 = tconf.adelphos_testable_2_conf['_root_password_']
     with test1, test2:
-        with test1.websocket_connect(CNST.WS_ROUTE) as ws:
+        with test1.websocket_connect(CNST.WS_ROUTE) as ws, \
+            test2.websocket_connect(CNST.WS_ROUTE) as ws2:
             dtests.ws_test_remote_add(ws, host2,
                             AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
             ah.ws_alias_login_in_app(test1, local_root, ws, 
                                  'root.admins', root_pass)
             dtests.ws_authorize_remote_adelphos(ws, host2)
+            dtests.ws_test_remote_add(ws, host2,
+                                     AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
+            ah.ws_alias_login_in_app(test2, local_root2, ws2, 
+                                 'root.admins', root_pass2)
+            dtests.ws_authorize_remote_adelphos(ws2, host1)
             dtests.ws_test_remote_add(ws, host2)
 
+            dtests.ws_deny_remote_adelphos(ws2, host1)
+            dtests.ws_test_remote_add(ws, host2,
+                                     AdErrno.EREMOTE_ADELPHOS_UNAUTHORIZED)
+ 
 
 def test_real_alias_create_sync(get_routable_app):
     test1 = get_routable_app('test101', stdcnf.release_kernel_template,

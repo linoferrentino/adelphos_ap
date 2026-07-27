@@ -151,6 +151,11 @@ syscalls_suffix = """
       root:
         class: app.core.sys.RootApi.RootApi
         syscalls:
+          - name: deny_remote
+            pars:
+              host:
+                required: true
+
           - name: allow_remote
             pars:
               host:
