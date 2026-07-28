@@ -35,4 +35,14 @@ class SocialGateway(Dependency):
     async def out_outbox(self, actor_dto, handle, message):
         pass
 
+    
+    @abstractmethod
+    async def out_outbox_dtos(self, actor_from_dto, actor_to_dto, message):
+        pass
+
+
+    @abstractmethod
+    async def discover_user(self, handle):
+        pass
+
 

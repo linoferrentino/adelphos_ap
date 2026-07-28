@@ -17,6 +17,7 @@ import tests.helpers.alias_helpers as ah
 import tests.helpers.family_helpers as fh
 import app.consts as CNST
 import app.sdc.standard_conf as stdcnf
+from app.exc.AdelphosException import AdErrno
 
 
 def test_invite_member(get_routable_app):
@@ -43,6 +44,10 @@ def test_invite_member(get_routable_app):
 
             ah.ws_sudo_push_alias(ws1, 'jh.fam1')
             
+            fh.ws_invite_user(ws1, f'@mari@{host2}', "X9aa",
+                              AdErrno.USER_DOES_NOT_EXIST)
+            fh.ws_invite_user(ws1, f'mari@{host2}@invalid', "X9aa",
+                              AdErrno.EINVALID_HANDLE)
             fh.ws_invite_user(ws1, f'@mary@{host2}', "X9aa")
 
   

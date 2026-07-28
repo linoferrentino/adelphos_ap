@@ -19,6 +19,8 @@ import json
 import httpx2
 from app.core.AdelphosCoreException import AdelphosBaseException
 
+from app.core.ECoreErrno import ECoreErrno
+
 
 def _parse_data(datas):
     data_parsed = json.loads(datas)
@@ -148,4 +150,6 @@ def assert_error_code_in_response(response, error_expt):
     assert int_code == error_expt 
 
 
-
+def ws_send_cmd(ws, text, exp_code = ECoreErrno.DONE_OK):
+    ws.send_text(text)
+    ws_assert_code(ws, exp_code)

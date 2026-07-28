@@ -92,7 +92,12 @@ class BaseSocialGateway(SocialGateway):
 {actor_to_dto.act.inbox_path}"
         transport = self.kernel.get_dep(Dependencies.TRANSPORT)
         await transport.post_json(actor_uri, payload, headers)
-        
+
+
+    async def discover_user(self, handle):
+        actor_dto = await self._actor_get_or_discover_from_handle(handle)
+        return actor_dto
+
 
     @abstractmethod
     def _do_envelope(self, actor_from_dto, actor_to_dto, message):
