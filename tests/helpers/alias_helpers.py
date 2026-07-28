@@ -38,6 +38,11 @@ def ws_create_user_alias(ws, user, alias, password):
     tu.ws_assert_code(ws, AdErrno.DONE_OK)
 
 
+def ws_create_user(ws, user):
+    ws.send_text(f"root.add_user user {user}")
+    tu.ws_assert_code(ws, AdErrno.DONE_OK)
+
+
 def ws_alias_logout(ws):
     ws.send_text(f"alias.logout")
     tu.ws_assert_code(ws, AdErrno.DONE_OK)

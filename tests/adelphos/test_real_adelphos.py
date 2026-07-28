@@ -34,7 +34,7 @@ import tests.adelphoi_test_config as tconf
 import tests.daemon.daemon_tests as dtests
 import tests.social.social_tests as stests
 import tests.t_utils as tu
-import tests.alias_helpers as ah
+import tests.helpers.alias_helpers as ah
 import app.misc.alias_utils as au
 
 def test_real1(get_standalone_app):

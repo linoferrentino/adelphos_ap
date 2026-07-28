@@ -17,7 +17,6 @@ import re
 from app.federation.FederatedStore import FederatedStore
 from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
-from app.transport.SyncRouter import SyncRouter
 from app.store.MemoryStore import MemoryStore
 from app.store.SqliteStore import SqliteStore
 from app.logging import gCon

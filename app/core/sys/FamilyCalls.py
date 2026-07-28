@@ -20,7 +20,7 @@ class FamilyCalls:
     @staticmethod
     @active_login
     async def _sys_call_invite(kernel, session, pars):
-        initial_password = pars['initial_password']
+        initial_password = pars['invite_code']
         user = pars['user']
 
 

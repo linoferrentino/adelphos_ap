@@ -159,7 +159,6 @@ resource=acct:{actor_instance}"
             raise Exception(f"Misconfigured actor {subject}")
 
         actor_uri = urlsplit(href_user)
-        #key_parsed = key_parsed._replace(fragment = "main-key")
 
         actor = await self._actor_discover_from_actor_uri(actor_uri)
         return actor
@@ -177,13 +176,11 @@ resource=acct:{actor_instance}"
         actor_dto = social_dao.actor_get_from_parsed_url(actor_uri)
         if actor_dto is not None:
             return actor_dto
-        #key_parsed = BaseSocialGateway.get_key_uri_from_actor(actor_uri)
         return await self._actor_discover_from_actor_uri(actor_uri)
 
 
     async def _actor_discover_from_actor_uri(self, actor_uri_p):
 
-        #actor_uri_p = key_parsed._replace(fragment = "")
         actor_uri = actor_uri_p.geturl()
         key_parsed = actor_uri_p._replace(fragment = "main-key")
 
@@ -192,7 +189,6 @@ resource=acct:{actor_instance}"
                 AdErrno.USER_DOES_NOT_EXIST)
 
         key_ob = json.loads(actor_ob)
-
 
         pub_key_ob = key_ob['publicKey']
         pub_key_ob_id = pub_key_ob['id']

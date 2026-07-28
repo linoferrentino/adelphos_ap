@@ -196,9 +196,9 @@ standard_cli_api = """
         syscalls:
           - name: invite
             pars:
-              initial_password:
+              invite_code:
                 required: true
-              user:
+              user_handle:
                 required: true
 
           - name: increase_equity 
