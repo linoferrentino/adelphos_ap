@@ -63,18 +63,28 @@ class RootApi:
         alias_session = session.client.push_session(alias)
         if alias_session.is_login_valid() == False:
             await AliasCalls._session_login(kernel, alias_session, alias, None, True)
- 
 
     @sudo_cmd
     @staticmethod
     async def _sys_call_add_user(kernel, session, pars):
+        await RootApi._add_user_impl(kernel, session, pars)
 
+
+    async def _add_user_impl(kernel, session, pars):
         social = kernel.get_dep(Dependencies.SOCIAL)
         user = pars['user']
         local_user = social.local_user_get(user, create_if_not_exists = False)
         if local_user is not None:
             raise AdelphosException(AdErrno.USER_ALREADY_EXISTING, user)
         local_user = social.local_user_get(user, create_if_not_exists = True)
+        return local_user
+ 
+
+    @sudo_cmd
+    @staticmethod
+    async def _sys_call_add_user_alias(kernel, session, pars):
+        local_user = await RootApi._add_user_impl(kernel, session, pars)
+
         password = pars['password']
         trust = pars['trust']
         alias_name = pars['alias']
@@ -83,8 +93,3 @@ class RootApi:
         await AliasAlgo.alias_create(kernel,
                 local_user.actor_dto.act.actor_id, alias, family, password, trust) 
 
-
-    @sudo_cmd
-    @staticmethod
-    async def _sys_call_add_alias(kernel, session, pars):
-        alias

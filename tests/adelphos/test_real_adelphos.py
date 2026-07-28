@@ -131,7 +131,7 @@ def test_create_root_user(get_routable_app):
         ah.ws_alias_logout(websocket)
         ah.ws_alias_login_in_app(test1, 'john', websocket, 
                                  'john.smith', 'john11')
-        websocket.send_text('root.add_user user xxo alias cannot.work password zzz')
+        websocket.send_text('root.add_user_alias user xxo alias cannot.work password zzz')
         tu.ws_assert_code(websocket, AdErrno.EPERM)
         ah.ws_alias_logout(websocket)
         ah.ws_alias_login_in_app(test1, local_root, websocket, 

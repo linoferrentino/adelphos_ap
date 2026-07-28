@@ -17,9 +17,15 @@ import tests.t_utils as tu
 from app.sdc.Dependencies import Dependencies
 from app.exc.AdelphosException import AdErrno
 from app.core.ECoreErrno import ECoreErrno
+import app.misc.alias_utils as au
 
 
+def ws_upgrade_socket_to_local_root(wrapper, ws, conf):
+    root_pass = conf['_root_password_']
+    local_root = au.get_local_alias(conf['_root_handle_'])
+    ws_alias_login_in_app(wrapper, local_root, ws, 'root.admins', root_pass)
 
+ 
 def ws_alias_login_in_app(wrapper, social_user, ws, alias, password):
     user_inbox = wrapper.app.routable.get_dep(
                 Dependencies.SOCIAL).login_user(social_user)
@@ -28,7 +34,7 @@ def ws_alias_login_in_app(wrapper, social_user, ws, alias, password):
 
 
 def ws_create_user_alias(ws, user, alias, password):
-    ws.send_text(f"root.add_user user {user} alias {alias} password {password}")
+    ws.send_text(f"root.add_user_alias user {user} alias {alias} password {password}")
     tu.ws_assert_code(ws, AdErrno.DONE_OK)
 
 

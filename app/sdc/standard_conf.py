@@ -133,7 +133,7 @@ daemons:
 
 """
 
-syscalls_suffix = """
+testable_rpc_conf = """
 
     rpc_api:
         math:
@@ -145,6 +145,10 @@ syscalls_suffix = """
                       required: true
                     n2:
                       required: true
+
+"""
+
+standard_cli_api = """
 
     cli_api:
 
@@ -168,7 +172,12 @@ syscalls_suffix = """
 
           - name: pop_alias
 
-          - name: add_user 
+          - name: add_user
+            pars:
+              user:
+                required: true
+ 
+          - name: add_user_alias
             pars:
               user:
                 required: true
@@ -225,6 +234,10 @@ syscalls_suffix = """
               msg:
                 required: true
 
+"""
+
+debug_cli_api = """
+
       dbg:
           class: app.core.sys.DebugModule.DebugModule
           syscalls:
@@ -249,6 +262,11 @@ syscalls_suffix = """
                   required: true
                 n2:
                   required: true
+
+"""
+
+
+standard_inbox_api = """
 
     inbox_api:
       alias:
@@ -294,14 +312,18 @@ release_kernel_template = (testable_kernel_prefix
                 + common_adelphos_modules
                 + real_adelphos_chunk_modules 
                 + testable_kernel_suffix_template
-                + syscalls_suffix
+                + testable_rpc_conf
+                + standard_cli_api
+                + debug_cli_api
+                + standard_inbox_api
                 + release_daemons)
 
 
 release_kernel_conf = (release_kernel_prefix
                 + common_adelphos_modules
                 + real_adelphos_chunk_modules 
-                + syscalls_suffix
+                + standard_cli_api 
+                + standard_inbox_api
                 + release_daemons)
 
 

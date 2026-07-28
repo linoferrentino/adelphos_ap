@@ -162,7 +162,10 @@ testable_toy_kernel_template = (stdcnf.testable_kernel_prefix
                 + toy_common_adelphos_modules
                 + debug_adelphos_chunk_modules 
                 + stdcnf.testable_kernel_suffix_template
-                + stdcnf.syscalls_suffix
+                + stdcnf.testable_rpc_conf
+                + stdcnf.standard_cli_api
+                + stdcnf.debug_cli_api
+                + stdcnf.standard_inbox_api
                 + toy_daemons)
 
 
@@ -170,14 +173,19 @@ testable_debug_kernel_template = (stdcnf.testable_kernel_prefix
                 + stdcnf.common_adelphos_modules 
                 + debug_adelphos_chunk_modules 
                 + stdcnf.testable_kernel_suffix_template
-                + stdcnf.syscalls_suffix)
+                + stdcnf.testable_rpc_conf
+                + stdcnf.standard_cli_api
+                + stdcnf.debug_cli_api
+                + stdcnf.standard_inbox_api)
 
 
 testable_hybrid_kernel_template = (stdcnf.testable_kernel_prefix
                 + hybrid_common_adelphos_modules 
                 + debug_adelphos_chunk_modules 
                 + stdcnf.testable_kernel_suffix_template
-                + stdcnf.syscalls_suffix)
-
+                + stdcnf.testable_rpc_conf
+                + stdcnf.standard_cli_api
+                + stdcnf.debug_cli_api
+                + stdcnf.standard_inbox_api)
 
 

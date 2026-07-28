@@ -99,6 +99,61 @@ classes:
           cardinality: set
           required: true
 
+        - name: board_ask
+          type: json 
+          cardinality: array
+          required: false
+
+        - name: board_bid
+          type: json 
+          cardinality: array
+          required: false
+
+
+
+    - uri_prefix: {EAdelphosType.GROUP_TYPE}
+      can_be_root: false
+
+      columns:
+
+        - name: multiplier
+          type: real
+          cardinality: scalar
+          required: false
+          default: 0.20
+
+        - name: level
+          type: int
+          cardinality: scalar
+          required: true
+
+        - name: members
+          type: uri 
+          cardinality: set
+          required: true
+
+        - name: boss
+          type: uri 
+          cardinality: scalar
+          required: true
+
+        - name: judge
+          type: uri 
+          cardinality: scalar
+          required: true
+
+        - name: vice
+          type: uri 
+          cardinality: scalar
+          required: true
+
+        - name: equity
+          type: real
+          cardinality: scalar
+          required: false
+          default: 0.0
+
+
 """
 
 

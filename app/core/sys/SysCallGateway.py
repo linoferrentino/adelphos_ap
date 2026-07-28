@@ -69,8 +69,8 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
         msg_out = await syscall.handler(kernel, param, kwargs)
         if msg_out is None:
-            gCon.log(f"No answer given, I simply put success")
-            msg_out = f"Command {cp.cmd} completed successfully"
+            msg_out = f"Command {cp.cmd} completed successfully."
+
         dict_out = {
                 'errno' : int(AdErrno.DONE_OK),
                 'res' : msg_out if msg_out is not None else "",
