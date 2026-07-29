@@ -32,6 +32,9 @@ def test_invite_member(get_routable_app):
     test2 = get_routable_app('test2', stdcnf.release_kernel_template,
                              tconf.adelphos_testable_2_conf)
 
+    port1 = tconf.adelphos_testable_1_conf['_port_']
+    host1 = f'localhost:{port1}'
+
     port2 = tconf.adelphos_testable_2_conf['_port_']
     host2 = f'localhost:{port2}'
 
@@ -70,6 +73,10 @@ def test_invite_member(get_routable_app):
             fh.ws_invite_user_macro(ws1, f'@mary@{host2}', code_mary,
                                     mary_inbox)
 
-            #fh.ws_accept_invite_raw(
+            remote_adelphos = f"@adelphos@{host1}"
+            alias_chosen = "mary"
+            family = "fam1"
+            fh.ws_accept_invite_raw(ws2, remote_adelphos, alias_chosen,
+                                    family, code_mary, 'mary',  mary_inbox)
 
 

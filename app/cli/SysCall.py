@@ -16,11 +16,11 @@ from dataclasses import dataclass
 from dataclasses import field
 
 
-@dataclass
-class SysCallAns:
-    errno: int
-    human_output: str
-    res: dict = field(default_factory = dict)
+#@dataclass
+#class SysCallAns:
+#    errno: int
+#    human_output: str
+#    res: dict = field(default_factory = dict)
 
 
 @dataclass

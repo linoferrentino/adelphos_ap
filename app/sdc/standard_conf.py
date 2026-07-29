@@ -287,6 +287,8 @@ standard_inbox_api = """
             pars:
                 alias:
                     required: true
+                family:
+                    required: true
                 invite_code:
                     required: true
 

@@ -26,12 +26,17 @@ import sys
 import app.misc.alias_utils as au
 import app.misc.trust_utils as tutils
 
+from app.logging import gCon
+
 
 class AliasAlgo:
 
     @staticmethod
     async def _sys_call_join_family(kernel, envelope, pars):
-        pass
+        alias = pars['alias']
+        family = pars['family']
+        invite_code = pars['invite_code']
+        gCon.log(f"received command to join family {family}")
  
 
     @staticmethod

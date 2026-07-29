@@ -251,8 +251,12 @@ class BaseSocialApiProvider(SocialApiProvider):
         rpc_api = self.kernel.get_dep(Dependencies.RPC_API)
         rpc = rpc_api.get_syscall(context, cmd)
 
-        res = await rpc.handler(self.kernel, req_json['params'])
-        return res 
+        res = await rpc_api.sys_call_handler_call(context, rpc,
+                                             actor_from, req_json['params'])
+        internal_res = res['res']
+        return internal_res
+    #gCon.log(f"res is {res}")
+    #    return res
 
 
     async def _sys_call_a(kernel, envelope, pars):
@@ -285,9 +289,14 @@ class BaseSocialApiProvider(SocialApiProvider):
         except AdelphosCoreException as exce:
             traceback.print_exc()
             out_msg = exce.out_str
+        except AdelphosException as exce:
+            traceback.print_exc()
+            out_msg = exce.out_str
         except Exception as ex:
             traceback.print_exc()
             out_msg = f"Server Error in syscall {ex}"
+
+        gCon.log(f"[red]out message is {out_msg}[/red]")
     
         social_gw = self.kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
         await social_gw.out_outbox_dtos(envelope.myself,
@@ -298,9 +307,9 @@ class BaseSocialApiProvider(SocialApiProvider):
         inbox_api = self.kernel.get_dep(Dependencies.INBOX_API)
         out_dict = await inbox_api.sys_call_gateway_msg(envelope,
                                                         envelope.content)
-        if out_dict is None:
-            gCon.log(f"No answer required.")
-            return
+        gCon.log(f"out msg {out_dict} type {type(out_dict)}")
         out_msg = out_dict['res']
         return out_msg
+        #gCon.log(f"out_dict {out_dict}")
+        #    return out_dict
 

@@ -12,8 +12,13 @@
 ######################################################
 
 
+import sys
+import traceback
+
 from app.sdc.Dependencies import Dependencies
 from app.exc.AdelphosException import AdelphosException
+from app.core.AdelphosCoreException import AdelphosCoreException
+from app.exc.AdelphosException import AdelphosContinueException
 from app.exc.AdelphosException import AdErrno
 from app.cli.CliParser import CliParser
 
@@ -60,6 +65,8 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         cp = CliParser(msg)
         ctx_cmd = cp.cmd.split('.')
         if len(ctx_cmd) != 2:
+            gCon.log(f"============== {cp.cmd} not understood.")
+            #sys.exit(1)
             raise AdelphosException(AdErrno.EINVALID_SYNTAX,
                                     f"{cp.cmd} not understood.")
         (context, cmd) = ctx_cmd
@@ -67,14 +74,46 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         kernel = self.kernel
         kwargs = self._create_params_dict_from_cmd_line(cp, syscall)
 
-        msg_out = await syscall.handler(kernel, param, kwargs)
+        return await self.sys_call_handler_call(context, syscall, param, kwargs)
+
+
+    async def sys_call_handler_call(self, context, syscall, param, kwargs):
+        presenter = self.kernel.get_dep(Dependencies.CLI_PRESENTER)
+        try:
+            dict_out = await self.sys_call_handler_call_try(
+                    context, syscall, param, kwargs)
+            response_str = presenter.present_to_user_ok(dict_out)
+        except AdelphosContinueException as exce:
+            gCon.log(f"[red]========== continue ===========[/red]")
+            raise
+        except AdelphosCoreException as exce:
+            traceback.print_exc()
+            #response_str = exce.out_str
+            response_str = presenter.present_to_user_exc(exce)
+        except AdelphosException as exce:
+            traceback.print_exc()
+            #response_str = exce.out_str
+            response_str = presenter.present_to_user_exc(exce)
+        except Exception as ex:
+            traceback.print_exc()
+            #response_str = f"Server Error in syscall {ex}"
+            response_str = presenter.present_to_user_exc(ex)
+
+        gCon.log(f"-------> response str {response_str}")
+        return response_str
+
+
+    async def sys_call_handler_call_try(self, context, syscall, param, kwargs):
+    #async def sys_call_handler_call(self, context, syscall, param, kwargs):
+        msg_out = await syscall.handler(self.kernel, param, kwargs)
         if msg_out is None:
-            msg_out = f"Command {cp.cmd} completed successfully."
+            msg_out = f"Command {syscall} completed successfully."
 
         dict_out = {
                 'errno' : int(AdErrno.DONE_OK),
                 'res' : msg_out if msg_out is not None else "",
-                'syscall' : ctx_cmd,
+                'context' : context,
+                'syscall' : syscall.name,
                 }
         return dict_out
 

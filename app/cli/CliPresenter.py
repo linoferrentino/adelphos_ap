@@ -34,12 +34,13 @@ class CliPresenter(Dependency):
         if isinstance(exc, AdelphosBaseException):
             dict_out = {
                     'errno' : exc.errno,
-                    'errmsg' : exc.out_str,
+                    'res' : exc.out_str,
             }
         else:
             dict_out = {
                     'errno' : ECoreErrno.ESYS,
-                    'errmsg' : str(exc),
+                    'res' : str(exc),
             }
-        return json.dumps(dict_out)
+        #return json.dumps(dict_out)
+        return dict_out
 
