@@ -275,11 +275,6 @@ class BaseSocialApiProvider(SocialApiProvider):
         raise AdelphosContinueException()
 
 
-    @abstractmethod
-    def get_social_user(self):
-        pass
-
-
     async def new_post(self, envelope):
         try:
             out_msg = await self.new_post_try(envelope)

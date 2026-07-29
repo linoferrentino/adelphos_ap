@@ -20,8 +20,8 @@ from app.federation.SocialListener import SocialListener
 
 class SocialApiProvider(Dependency, LifespanAware, SocialListener):
 
-    def __init__(self, vhost):
-        super().__init__(vhost)
+    def __init__(self, kernel):
+        super().__init__(kernel)
 
 
     @abstractmethod
@@ -38,5 +38,9 @@ class SocialApiProvider(Dependency, LifespanAware, SocialListener):
     def remote_host_deny(self, host):
         pass
 
+
+    @abstractmethod
+    def get_social_user(self):
+        pass
 
 

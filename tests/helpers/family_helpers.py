@@ -11,11 +11,37 @@
 #
 ######################################################
 
+import re
 import tests.t_utils as tu
 from app.exc.AdelphosException import AdErrno
+from app.logging import gCon
 
-def ws_invite_user(ws, user_handle, invite_code, code_exp = AdErrno.DONE_OK):
+
+def ws_invite_user_raw(ws, user_handle, invite_code, 
+                   code_exp = AdErrno.DONE_OK):
 
     tu.ws_send_cmd(ws, f"family.invite user_handle {user_handle} \
 invite_code {invite_code}", code_exp)
+
+
+def ws_invite_user_macro(ws, user_handle, invite_code, user_inbox):
+
+    ws_invite_user_raw(ws, user_handle, invite_code)
+    count_msg = user_inbox.count_msg()
+    assert count_msg == 1
+
+    msg = user_inbox.pop_lst_msg()
+
+    code_mt = re.search("invite_code (.*)$", msg.content)
+    assert code_mt is not None
+
+    code_got = code_mt.group(1)
+    assert code_got == invite_code
+
+    gCon.log(f"the msg is {msg.content}")
+
+
+def ws_accept_invite_raw(ws, alias_chosen, invite_code,
+                         code_exp = AdErrno.DONE_OK):
+    pass
 

@@ -26,11 +26,17 @@ class FamilyCalls:
         user_handle = pars['user_handle']
         social_gw = kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
         user_dto = await social_gw.discover_user(user_handle)
-        gCon.log(f"I will invite actor {user_dto}")
+        gCon.log(f"I will invite actor {user_dto.act.preferred_username}")
         social = kernel.get_dep(Dependencies.SOCIAL)
+        social_api = kernel.get_dep(Dependencies.SOCIAL_API)
+        social_user = social_api.get_social_user()
+        this_host = kernel.conf().get_host()
+        social_handle = f"@{social_user}@{this_host}"
+        
         await social.out_msg_listener_to_actor(user_dto,
-f"""You have been invited to join adelphos,
-use this invite code {invite_code}""")
+f"""You have been invited to join adelphos by @{session.alias_family}@{this_host}
+ to accept it do a private mention 
+ {social_handle} family.join alias $alias_chosen invite_code {invite_code}""")
 
 
 

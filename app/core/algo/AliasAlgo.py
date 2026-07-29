@@ -29,6 +29,10 @@ import app.misc.trust_utils as tutils
 
 class AliasAlgo:
 
+    @staticmethod
+    async def _sys_call_join_family(kernel, envelope, pars):
+        pass
+ 
 
     @staticmethod
     async def _sys_call_create(kernel, envelope, pars):

@@ -273,7 +273,6 @@ standard_inbox_api = """
         class: app.core.algo.AliasAlgo.AliasAlgo
         syscalls:
           - name: create
-            handler: _sys_call_create
             pars:
                 name:
                     required: true
@@ -283,6 +282,14 @@ standard_inbox_api = """
                     required: false 
                     par_type: float
                     default: 25.0 
+
+          - name: join_family
+            pars:
+                alias:
+                    required: true
+                invite_code:
+                    required: true
+
 
       sapi:
           class: app.ad_api.BaseSocialApiProvider.BaseSocialApiProvider
