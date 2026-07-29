@@ -80,25 +80,40 @@ class SysCallGateway(Dependency, SyncLifespanAware):
     async def sys_call_handler_call(self, context, syscall, param, kwargs):
         presenter = self.kernel.get_dep(Dependencies.CLI_PRESENTER)
         try:
-            dict_out = await self.sys_call_handler_call_try(
+            msg_out = await self.sys_call_handler_call_try(
                     context, syscall, param, kwargs)
-            response_str = presenter.present_to_user_ok(dict_out)
+            errno = int(AdErrno.DONE_OK)
         except AdelphosContinueException as exce:
             gCon.log(f"[red]========== continue ===========[/red]")
             raise
         except AdelphosCoreException as exce:
             traceback.print_exc()
+            msg_out = exce.out_str
+            errno = exce.errno
             #response_str = exce.out_str
-            response_str = presenter.present_to_user_exc(exce)
+            #response_str = presenter.present_to_user_exc(exce)
         except AdelphosException as exce:
             traceback.print_exc()
             #response_str = exce.out_str
-            response_str = presenter.present_to_user_exc(exce)
+            #response_str = presenter.present_to_user_exc(exce)
+            errno = exce.errno
+            msg_out = exce.out_str
         except Exception as ex:
             traceback.print_exc()
             #response_str = f"Server Error in syscall {ex}"
-            response_str = presenter.present_to_user_exc(ex)
+            #response_str = presenter.present_to_user_exc(ex)
+            errno = ECoreErrno.ESYS
+            msg_out = str(exc)
 
+        dict_out = {
+                'errno' : errno,
+                'res' : msg_out if msg_out is not None else "",
+                'realm' : self.realm,
+                'context' : context,
+                'syscall' : syscall.name,
+                }
+
+        response_str = presenter.present_to_user_ok(dict_out)
         gCon.log(f"-------> response str {response_str}")
         return response_str
 
@@ -106,16 +121,18 @@ class SysCallGateway(Dependency, SyncLifespanAware):
     async def sys_call_handler_call_try(self, context, syscall, param, kwargs):
     #async def sys_call_handler_call(self, context, syscall, param, kwargs):
         msg_out = await syscall.handler(self.kernel, param, kwargs)
-        if msg_out is None:
-            msg_out = f"Command {syscall} completed successfully."
+        #if msg_out is None:
+        #    msg_out = f"Command {syscall} completed successfully."
 
-        dict_out = {
-                'errno' : int(AdErrno.DONE_OK),
-                'res' : msg_out if msg_out is not None else "",
-                'context' : context,
-                'syscall' : syscall.name,
-                }
-        return dict_out
+        #dict_out = {
+        #        'errno' : int(AdErrno.DONE_OK),
+        #        'res' : msg_out if msg_out is not None else "",
+        #        'realm' : self.realm,
+        #        'context' : context,
+        #        'syscall' : syscall.name,
+        #        }
+        #return dict_out
+        return msg_out
 
 
     @staticmethod

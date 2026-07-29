@@ -284,7 +284,7 @@ class BaseSocialApiProvider(SocialApiProvider):
             out_msg = await self.new_post_try(envelope)
 
         except AdelphosContinueException as exce:
-            gCon.log(f"[red]========== continue ===========[/red]")
+            gCon.log(f"[red] got continuation, no-op [/red]")
             return
         except AdelphosCoreException as exce:
             traceback.print_exc()
