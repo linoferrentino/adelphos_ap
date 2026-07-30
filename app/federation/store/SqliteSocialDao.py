@@ -45,10 +45,10 @@ create table ap_server (
 """
 create table ap_actor (
         actor_id integer primary key,
-        server_fk integer references ap_server(server_id),
-        user_path text,
-        inbox_path text,
-        preferred_username text,
+        server_fk integer not null references ap_server(server_id),
+        user_path text not null,
+        inbox_path text not null,
+        preferred_username text not null,
         private_key text,
         public_key text,
         tag text,

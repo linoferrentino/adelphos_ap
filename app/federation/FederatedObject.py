@@ -384,6 +384,7 @@ class FederatedObject:
         par = schema.get(key)
         cur_value = self.ob.fields[key]
         uri_str = ob().uri.unparse()
+
         if par.cardinality == FObCardType.SET:
             if cur_value is None:
                 cur_set = { uri_str }

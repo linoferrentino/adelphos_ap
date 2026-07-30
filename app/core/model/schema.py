@@ -100,12 +100,12 @@ classes:
           required: true
 
         - name: board_ask
-          type: json 
+          type: uri
           cardinality: array
           required: false
 
         - name: board_bid
-          type: json 
+          type: uri
           cardinality: array
           required: false
 
