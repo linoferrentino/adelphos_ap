@@ -20,6 +20,7 @@ from app.exc.AdelphosException import AdelphosException
 from app.core.AdelphosCoreException import AdelphosCoreException
 from app.exc.AdelphosException import AdelphosContinueException
 from app.exc.AdelphosException import AdErrno
+from app.core.ECoreErrno import ECoreErrno
 from app.cli.CliParser import CliParser
 
 from app.logging import gCon
@@ -94,8 +95,8 @@ class SysCallGateway(Dependency, SyncLifespanAware):
             msg_out = exce.out_str
         except Exception as ex:
             traceback.print_exc()
-            errno = ECoreErrno.ESYS
-            msg_out = str(exc)
+            errno = int(ECoreErrno.ESYS)
+            msg_out = f"System exception {str(type(ex))} Details {str(ex)}"
 
         dict_out = {
                 'errno' : errno,

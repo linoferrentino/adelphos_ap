@@ -48,18 +48,6 @@ class ApActorDao(BaseDao):
             (server_fk, user_path), ApActorImpl)
 
 
-    #def get_local_from_parsed_uri_XX(self, server_dto, key_parsed):
-    #    table_name = "ap_actor"
-
-    #    fields_to_seek = ('server_fk', 'user_path')
-    #    values_to_seek = ( server_dto.server_id, key_parsed.path)
-
-    #    dto = self.dao.db.get_full_dto_ex(table_name,  fields_to_seek, 
-    #                        values_to_seek, ApActorDto)
- 
-    #    return dto
-
-    
     # this function will get from uri, the actor has been already taken.
     async def get_or_discover_from_uri_XX(self, server_dto, key_parsed):
 

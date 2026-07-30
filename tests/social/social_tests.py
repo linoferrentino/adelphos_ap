@@ -22,25 +22,33 @@ import tests.t_utils as tu
 def post_to_daemon_and_check(wrap, remote_host, msg, user_inbox,
                              exp_ans, exp_detail = None):
     with wrap.websocket_connect(CNST.WS_ROUTE) as ws:
-        count_msg = user_inbox.count_msg()
-        user_from = user_inbox.actor_dto.act.preferred_username
-        assert count_msg == 0
-        ws.send_text(
-    f"dbg.sndpost to @adelphos@{remote_host} msg '{msg}' from {user_from}")
-        tu.ws_assert_code(ws, AdErrno.DONE_OK)
-        count_msg = user_inbox.count_msg()
-        assert count_msg == 1
-        msg = user_inbox.pop_lst_msg()
 
-        if isinstance(exp_ans, str):
-            assert msg.content == exp_ans
-        else:
-            assert exp_ans == \
-                AdelphosBaseException.parse_exc_str(msg.content)
-            if exp_detail is None:
-                return
-            assert exp_detail == \
-                AdelphosBaseException.parse_detail(msg.content)
+        post_to_daemon_and_check_ws(ws, remote_host, msg, user_inbox,
+                             exp_ans, exp_detail)
+
+
+def post_to_daemon_and_check_ws(ws, remote_host, msg, user_inbox,
+                             exp_ans, exp_detail = None):
+
+    count_msg = user_inbox.count_msg()
+    user_from = user_inbox.actor_dto.act.preferred_username
+    assert count_msg == 0
+    ws.send_text(
+f"dbg.sndpost to @adelphos@{remote_host} msg '{msg}' from {user_from}")
+    tu.ws_assert_code(ws, AdErrno.DONE_OK)
+    count_msg = user_inbox.count_msg()
+    assert count_msg == 1
+    msg = user_inbox.pop_lst_msg()
+
+    if isinstance(exp_ans, str):
+        assert msg.content == exp_ans
+    else:
+        assert exp_ans == \
+            AdelphosBaseException.parse_exc_str(msg.content)
+        if exp_detail is None:
+            return
+        assert exp_detail == \
+            AdelphosBaseException.parse_detail(msg.content)
 
 
 def send_to_daemon_ctx(test1, test2, host2, msg, user_from):

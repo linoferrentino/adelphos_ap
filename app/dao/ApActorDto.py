@@ -73,6 +73,11 @@ class ApActorDto:
         return f"@{self.act.preferred_username}@{self.srv.host_name}"
 
 
+    @property
+    def actor_id(self):
+        return self.act.actor_id
+
+
     def get_private_key_bytes(self):
         if self.cached_private_key is not None:
             return self.cached_private_key

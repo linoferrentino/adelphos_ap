@@ -18,8 +18,6 @@ from datetime import datetime
 from enum import IntEnum
 from enum import auto
 from app.logging import gCon
-#from app.core.AdelphosCoreException import AdelphosCoreException
-#from app.core.ECoreErrno import ECoreErrno
 from app.exc.AdelphosException import AdErrno
 from app.exc.AdelphosException import AdelphosException
 

@@ -73,12 +73,13 @@ def test_invite_member(get_routable_app):
             fh.ws_invite_user_macro(ws1, f'@mary@{host2}', code_mary,
                                     mary_inbox)
 
-            remote_adelphos = f"@adelphos@{host1}"
+            #remote_adelphos = f"@adelphos@{host1}"
             alias_chosen = "mary"
             family = "fam1"
             pass_mary = "my_secret_pass"
-            fh.ws_accept_invite_raw(ws2, remote_adelphos, alias_chosen,
-                                    family, code_mary, pass_mary, 'mary',
-                                    mary_inbox)
+            fh.ws_accept_invite_raw(ws2, host1, alias_chosen,
+                                    family, code_mary, pass_mary, mary_inbox)
 
+            alias_family = f"{alias_chosen}.{family}"
+            ah.ws_alias_login(mary_inbox, ws1, alias_family, pass_mary)
 

@@ -15,6 +15,7 @@ import re
 import tests.t_utils as tu
 from app.exc.AdelphosException import AdErrno
 from app.logging import gCon
+import tests.social.social_tests as stests
 
 
 def ws_invite_user_raw(ws, user_handle, invite_code, 
@@ -42,16 +43,11 @@ def ws_invite_user_macro(ws, user_handle, invite_code, user_inbox):
 
 
 def ws_accept_invite_raw(ws, remote_adelphos, alias_chosen,
-                         family, invite_code, password, from_user, user_inbox,
-                         code_exp = AdErrno.DONE_OK):
+                         family, invite_code, password, user_inbox):
 
-    tu.ws_send_cmd(ws, f"dbg.sndpost to {remote_adelphos} msg \
-'alias {alias_chosen} family {family} invite_code {invite_code} password {password}' from {from_user}", code_exp)
+    join_msg = f"alias.join_family alias {alias_chosen} family {family} \
+invite_code {invite_code} password {password}"
 
-    count_msg = user_inbox.count_msg()
-    assert count_msg == 1
-
-    msg = user_inbox.pop_lst_msg()
-    gCon.log(f"the msg is {msg.content}")
-
+    stests.post_to_daemon_and_check_ws(ws, remote_adelphos,
+            join_msg, user_inbox, f'OK, You can join family {family}.')
 

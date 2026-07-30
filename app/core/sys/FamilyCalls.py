@@ -12,10 +12,17 @@
 ######################################################
 
 
+import json
 from app.api.UserSession import active_login
 from app.core.algo.utils import federated_transaction
-from app.logging import gCon
 from app.sdc.Dependencies import Dependencies
+from app.core.model.AdelphosUri import EAdelphosType
+from app.core.model.AdelphosUri import AdelphosUri
+from app.core.AdelphosCoreException import AdelphosCoreException
+from app.core.ECoreErrno import ECoreErrno
+
+from app.logging import gCon
+
 
 class FamilyCalls:
 
@@ -32,6 +39,9 @@ class FamilyCalls:
         social_user = social_api.get_social_user()
         this_host = kernel.conf().get_host()
         social_handle = f"@{social_user}@{this_host}"
+
+        await FamilyCalls._family_add_invite_safe(kernel,
+                session.family, user_handle, invite_code)
         
         await social.out_msg_listener_to_actor(user_dto,
 f"""You have been invited to join adelphos by @{session.alias_family}@{this_host}
@@ -41,11 +51,31 @@ f"""You have been invited to join adelphos by @{session.alias_family}@{this_host
 
 
     @staticmethod
-    @active_login
-    async def _sys_call_increase_equity(kernel, session, pars):
-        pass
- 
+    @federated_transaction(raise_if_fail = True)
+    async def _family_add_invite_safe(kernel, family, user_handle,
+                                      invite_code, t_id):
 
-    @federated_transaction
-    async def family_invite():
-        pass
+        await FamilyCalls._family_add_invite_impl(kernel, family, user_handle,
+                                      invite_code, t_id)
+
+
+    @staticmethod
+    async def _family_add_invite_impl(kernel, family, user_handle,
+                                      invite_code, t_id):
+
+        fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+        family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
+        family_ob = await fdb.uri_read_lock(t_id, family_uri)
+
+        invite_ob = family_ob().get_scalar('invite')
+        if invite_ob is not None:
+            raise AdelphosCoreException(ECoreErrno.EINVITE_ALREADY_PRESENT,
+                                        json.dumps(invite_ob))
+        invite_ob = {
+                'user_handle' : user_handle,
+                'invite_code' : invite_code,
+        }
+
+        family_ob().set_scalar('invite', invite_ob)
+
+

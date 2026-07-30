@@ -201,11 +201,6 @@ standard_cli_api = """
               user_handle:
                 required: true
 
-          - name: increase_equity 
-            pars:
-              equity:
-                required: true
-
 
       alias:
         class: app.core.sys.AliasCalls.AliasCalls
@@ -290,6 +285,8 @@ standard_inbox_api = """
                 family:
                     required: true
                 invite_code:
+                    required: true
+                password:
                     required: true
 
 

@@ -268,9 +268,6 @@ class FederatedObject:
             case FObColType.ENUM:
                 col_def.sub_type.enforce_type(col_val, before_commit)
 
-                #FederatedObject._enforce_enum_value(col_name, col_val, col_def,
-                #                         before_commit)
-
 
 
     @staticmethod

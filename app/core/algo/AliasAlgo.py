@@ -35,8 +35,14 @@ class AliasAlgo:
     async def _sys_call_join_family(kernel, envelope, pars):
         alias = pars['alias']
         family = pars['family']
+        password = pars['password']
         invite_code = pars['invite_code']
-        gCon.log(f"received command to join family {family}")
+        user_handle = envelope.actor_from.get_social_handle()
+        actor_id = envelope.actor_from.actor_id
+        gCon.log(f"received command to join family by {user_handle}")
+        await AliasAlgo.family_accept_invite_safe(kernel, actor_id,
+                user_handle, invite_code, alias, family, password)
+        return f"OK, You can join family {family}."
  
 
     @staticmethod
@@ -47,8 +53,8 @@ class AliasAlgo:
 
         (alias, family) = au.split_alias(alias_name, True)
 
-        await AliasAlgo.alias_create_safe(kernel, envelope.actor_from.act.actor_id,
-                                     alias, family, password, trust)
+        await AliasAlgo.alias_create_safe(kernel,
+                envelope.actor_from.act.actor_id, alias, family, password, trust)
         return "Alias created, you can login, now."
 
 
@@ -86,6 +92,15 @@ class AliasAlgo:
             'trust' : tutils.abs_to_db(trust)
             })
 
+        alias_ob = await AliasAlgo._alias_create_db(fdb, actor_id,
+                        name, family, password, t_id)
+
+        family_ob().set_link('boss', alias_ob)
+        family_ob().add_link('members', alias_ob)
+
+
+    @staticmethod
+    async def _alias_create_db(fdb, actor_id, name, family, password, t_id):
         ph = PasswordHasher()
         pass_hashed = ph.hash(password)
 
@@ -97,7 +112,42 @@ class AliasAlgo:
         alias_ob = await fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
                                       name, family = family, fields = fields)
 
-        family_ob().set_link('boss', alias_ob)
-        family_ob().add_link('members', alias_ob)
-        
+        return alias_ob
+       
 
+    @staticmethod
+    @federated_transaction(raise_if_fail = True)
+    async def family_accept_invite_safe(kernel, actor_id, user_handle,
+                    invite_code, alias, family, password, t_id):
+        await AliasAlgo._family_accept_invite_impl(kernel, actor_id,
+                    user_handle, invite_code, alias, family, password, t_id)
+
+
+    @staticmethod
+    async def _family_accept_invite_impl(kernel, actor_id,
+                                        user_handle, invite_code,
+                                        alias, family, password, t_id):
+
+        fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+        family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
+        family_ob = await fdb.uri_read_lock(t_id, family_uri)
+
+        invite_ob = family_ob().get_scalar('invite')
+        if invite_ob is None:
+             raise AdelphosCoreException(ECoreErrno.ECANNOT_FIND_INVITE,
+                                        family)
+
+        if invite_ob['invite_code'] != invite_code:
+             raise AdelphosCoreException(ECoreErrno.EWRONG_INVITE_CODE,
+                                        family)
+
+        if invite_ob['user_handle'] != user_handle:
+             raise AdelphosCoreException(ECoreErrno.EWRONG_USER_HANDLE,
+                                        family)
+
+        family_ob().set_scalar('invite', None)
+
+        alias_ob = await AliasAlgo._alias_create_db(fdb, actor_id,
+                            alias, family, password, t_id)
+
+        family_ob().add_link('members', alias_ob)

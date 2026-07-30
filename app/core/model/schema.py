@@ -84,9 +84,9 @@ classes:
           required: false
           default: EUR
 
-        - name: invites
+        - name: invite
           type: json 
-          cardinality: array
+          cardinality: scalar
           required: false
 
         - name: boss
