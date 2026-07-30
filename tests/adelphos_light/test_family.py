@@ -76,7 +76,9 @@ def test_invite_member(get_routable_app):
             remote_adelphos = f"@adelphos@{host1}"
             alias_chosen = "mary"
             family = "fam1"
+            pass_mary = "my_secret_pass"
             fh.ws_accept_invite_raw(ws2, remote_adelphos, alias_chosen,
-                                    family, code_mary, 'mary',  mary_inbox)
+                                    family, code_mary, pass_mary, 'mary',
+                                    mary_inbox)
 
 

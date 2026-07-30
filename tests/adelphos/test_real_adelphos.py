@@ -195,49 +195,24 @@ def test_real_alias_create_sync(get_routable_app):
 
         user_ob = test1.app.routable.get_dep(
                 Dependencies.SOCIAL).login_user(user_ok)
+        msg_bad1 = "alias.create name linoxferre password secret equity 10"
 
-        stests.send_to_daemon_ctx(test1, test2, host2,
-            "alias.create name linoxferre password secret equity 10", user_ok)
+        stests.post_to_daemon_and_check(test1, host2, msg_bad1, user_ob,
+            ECoreErrno.EINVALID_ALIAS_SYNTAX, 'linoxferre')
 
-        count_msg = user_ob.count_msg()
-        assert count_msg == 1
+        msg_bad_syn = "aliascreate name linoxferre password secret equity 10"
+        stests.post_to_daemon_and_check(test1, host2, msg_bad_syn, user_ob,
+            AdErrno.EINVALID_SYNTAX)
 
-        msg = user_ob.pop_lst_msg()
-        assert ECoreErrno.EINVALID_ALIAS_SYNTAX == \
-                AdelphosBaseException.parse_exc_str(msg.content)
-        assert "linoxferre" == AdelphosBaseException.parse_detail(msg.content)
+        msg_ok = "alias.create name lino.ferre password secret equity 10"
+        stests.post_to_daemon_and_check(test1, host2, msg_ok, user_ob,
+            "Alias created, you can login, now.")
 
-        stests.send_to_daemon_ctx(test1, test2, host2,
-            "alias.create name lino.ferre password secret equity 10", user_ok)
-
-        count_msg = user_ob.count_msg()
-        assert count_msg == 1
-
-        msg = user_ob.pop_lst_msg()
-        assert msg.content == 'Alias created, you can login, now.'
-
-        stests.send_to_daemon_ctx(test1, test2, host2,
-            "alias.create name basso.ferre password secret99 equity 10", user_ok)
-
-        count_msg = user_ob.count_msg()
-        assert count_msg == 1
-
-        msg = user_ob.pop_lst_msg()
-        assert ECoreErrno.EDUPLICATED_FAMILY == \
-                AdelphosBaseException.parse_exc_str(msg.content)
-
+        msg_duplicate_family = "alias.create name basso.ferre password secret99 equity 10"
+        stests.post_to_daemon_and_check(test1, host2, msg_duplicate_family,
+                user_ob, ECoreErrno.EDUPLICATED_FAMILY)
 
         with test2.websocket_connect(CNST.WS_ROUTE) as websocket:
             ah.ws_alias_login(user_ob, websocket, 'lino.ferre', 'secret')
-
-
-def Xtest_real_remote_add_simple(get_routable_app):
-    test1 = get_routable_app('test100', tconf.adelphos_stub, 
-                                adelphos_standard_configuration)
-    test2 = get_routable_app('test201', tconf.adelphos_t2_test,
-                                adelphos_standard_configuration)
-
-    host2 = tconf.adelphos_t2_test['General']['host']
-    dtests._test_remote_add(test1, test2, host2)
 
 

@@ -65,8 +65,6 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         cp = CliParser(msg)
         ctx_cmd = cp.cmd.split('.')
         if len(ctx_cmd) != 2:
-            gCon.log(f"============== {cp.cmd} not understood.")
-            #sys.exit(1)
             raise AdelphosException(AdErrno.EINVALID_SYNTAX,
                                     f"{cp.cmd} not understood.")
         (context, cmd) = ctx_cmd
@@ -90,18 +88,12 @@ class SysCallGateway(Dependency, SyncLifespanAware):
             traceback.print_exc()
             msg_out = exce.out_str
             errno = exce.errno
-            #response_str = exce.out_str
-            #response_str = presenter.present_to_user_exc(exce)
         except AdelphosException as exce:
             traceback.print_exc()
-            #response_str = exce.out_str
-            #response_str = presenter.present_to_user_exc(exce)
             errno = exce.errno
             msg_out = exce.out_str
         except Exception as ex:
             traceback.print_exc()
-            #response_str = f"Server Error in syscall {ex}"
-            #response_str = presenter.present_to_user_exc(ex)
             errno = ECoreErrno.ESYS
             msg_out = str(exc)
 

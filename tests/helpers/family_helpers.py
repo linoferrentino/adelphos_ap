@@ -42,11 +42,11 @@ def ws_invite_user_macro(ws, user_handle, invite_code, user_inbox):
 
 
 def ws_accept_invite_raw(ws, remote_adelphos, alias_chosen,
-                         family, invite_code, from_user, user_inbox,
+                         family, invite_code, password, from_user, user_inbox,
                          code_exp = AdErrno.DONE_OK):
 
     tu.ws_send_cmd(ws, f"dbg.sndpost to {remote_adelphos} msg \
-'alias {alias_chosen} family {family} invite_code {invite_code}' from {from_user}", code_exp)
+'alias {alias_chosen} family {family} invite_code {invite_code} password {password}' from {from_user}", code_exp)
 
     count_msg = user_inbox.count_msg()
     assert count_msg == 1
