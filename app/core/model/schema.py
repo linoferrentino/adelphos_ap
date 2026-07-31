@@ -25,12 +25,16 @@ types:
 
     enums:
       currency:
-        - APH
-        - EUR
-        - USD
-        - GBP
+        - APC
+        - AUD
+        - CAD
         - CHF
+        - CNY
+        - EUR
+        - GBP
         - JPY
+        - NZD
+        - USD
 
 classes:
 

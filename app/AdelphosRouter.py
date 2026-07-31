@@ -23,8 +23,6 @@ from starlette.websockets import WebSocket
 from app.logging import gCon
 
 from app.transport.Routable import Routable
-from app.endpoints.AdelphosDaemonCli import AdelphosDaemonCli
-from app.endpoints.AdelphosWebSocket import AdelphosWebSocket
 from app.federation.SocialProvider import SocialProvider
 from app.federation.ap.ActivityPubNetwork import ActivityPubNetwork
 
