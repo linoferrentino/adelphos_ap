@@ -16,32 +16,26 @@ import pytest
 import json
 import threading
 import asyncio
-
-from app.federation.SocialProvider import SocialProvider
-
-from tests.testers.SyncGateway import SyncGateway
-from app.transport.bridge.loop import stop_loop, get_loop
-from app.logging import gCon
-
-from app.exc.AdelphosException import AdelphosException
-from app.exc.AdelphosException import AdErrno
-
-from app.cli.CliProvider import CliProvider
-from app.sdc.Dependencies import Dependencies
-
-#from app.AdelphosRouter import AdelphosRouter
-from tests.testers.SyncApp import SyncApp
-from tests.testers.SyncTester import SyncTester
-from tests.testers.ProcessWrapper import ProcessWrapper
-import tests.adelphoi_test_config as tconf
-import app.consts as CNST
-from app.transport.async_mode.StarletteWrap import StarletteWrap
-from starlette.testclient import TestClient
-from app.consts import ROOT_PATH_DEFAULT
-import app.sdc.s_utils as su
-#import copy
 import yaml
 
+
+from app.cli.CliProvider import CliProvider
+from app.consts import ROOT_PATH_DEFAULT
+from app.exc.AdelphosException import AdErrno
+from app.exc.AdelphosException import AdelphosException
+from app.federation.SocialProvider import SocialProvider
+from app.logging import gCon
+from app.sdc.Dependencies import Dependencies
+from app.transport.async_mode.StarletteWrap import StarletteWrap
+from app.transport.bridge.loop import stop_loop, get_loop
+from starlette.testclient import TestClient
+from tests.testers.ProcessWrapper import ProcessWrapper
+from tests.testers.SyncApp import SyncApp
+from tests.testers.SyncGateway import SyncGateway
+from tests.testers.SyncTester import SyncTester
+import app.consts as CNST
+import app.sdc.s_utils as su
+import tests.adelphoi_test_config as tconf
 
 def _build_routable_config_impl(instance_name, build_template, conf, mode):
 
@@ -99,16 +93,9 @@ def get_standalone_app():
         return server.run_in_subprocess(su.boot_kernel, 
                                       (instance_name, kernel_build), 
                                       port)
-
     return _get_standalone_app
 
-#@pytest.fixture(scope = "session")
-#def my_loop():
-#    loop = get_loop()
-#    return loop
 
-
-#@pytest.fixture(scope = "session")
 @pytest.fixture
 def aroutable(request):
 

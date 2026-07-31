@@ -324,6 +324,12 @@ class FederatedStore(Dependency, LifespanAware):
         uri = self.fact.uri_constructor(ob_type, name, **kwargs)
 
         return await self.new_ob_from_uri_coro(t_id, registrar, uri, fields)
+
+
+    def parse_uri(self, uri_str):
+        parse_fn = getattr(self.fact.uri_constructor, 'parse')
+        uri_ob = parse_fn(uri_str)
+        return uri_ob
         
 
     async def new_ob_from_uri_coro(self, t_id, registrar, uri, fields):
@@ -344,6 +350,7 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     def remove_localhost(self, uriob):
+        gCon.log(f"removing localhost my host is {self.hostname}")
         if uriob.host is None:
             return uriob
         if ((uriob.host == self.hostname) or
@@ -357,7 +364,12 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     async def _read_remote_ctx(self, rctx):
-        remote_ob_str = None
+        host = rctx.uri_ob.host
+        social_api = self.kernel.get_dep(Dependencies.SOCIAL_API)
+        res = await social_api.remote_req('fdb', 'read', host, uri_str =
+                    rctx.uri_str)
+        gCon.log(f"got {res} as response")
+        remote_ob_str = res['obstr']
         return remote_ob_str
 
 
@@ -368,19 +380,17 @@ class FederatedStore(Dependency, LifespanAware):
         rctx.uri_str = rctx.uri_ob.unparse()
         rctx.fob = rctx.tob.get_ob(rctx.uri_str)
         if rctx.fob is not None:
-            gCon.log(f"Found object {rctx.fob}")
             return
-
-        #gCon.log(f"searching {rctx.uri_str}")
 
         first_pass = True
         while True:
             t_ob_str = self.db.get_maybe(rctx.uri_str) 
-            #gCon.log(f"got the string {t_ob_str}")
-            if (t_ob_str is None) and first_pass and (rctx.uri_ob.host is not None):
+            if ((t_ob_str is None) and first_pass 
+                and (rctx.uri_ob.host is not None)):
                 first_pass = False
                 t_ob_str = await self._read_remote_ctx(rctx)
-                continue
+                gCon.log(f"Got {t_ob_str} as the remote string")
+                break
             break
 
         if t_ob_str is not None:
@@ -395,8 +405,8 @@ class FederatedStore(Dependency, LifespanAware):
         raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB, rctx.uri_str)
 
 
-    async def uri_read_lock(self, t_id, uri_ob):
-        rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = True) 
+    async def uri_read_lock(self, t_id, uri_ob, maybe = False):
+        rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = True, maybe = maybe) 
         await self._read_ctx(rctx)
         return weakref.ref(rctx.fob)
 

@@ -15,7 +15,8 @@
 import yaml
 import pytest
 
-from tests.federation.schema_simple import LOCALHOST, LOCALHOST1, OTHERHOST
+from app.consts import ROOT_PATH_DEFAULT
+from tests.federation.schema_simple import FIRST_HOST, OTHERHOST
 from app.store.MemoryStore import MemoryStore
 from app.store.SqliteStore import SqliteStore
 from app.federation.FederatedStore import FederatedStore
@@ -51,7 +52,7 @@ def federated_db_local(request):
 
         kernel = su.boot_new_kernel('test1', kernel_conf)
 
-        app = SyncApp(LOCALHOST, kernel)
+        app = SyncApp(host, kernel)
         wrappedapp = SyncTester(app)
 
         with wrappedapp:
@@ -64,5 +65,50 @@ def federated_db_local(request):
 @pytest.fixture
 def fdb1_loc(federated_db_local):
 
-    yield from federated_db_local(LOCALHOST, schema_simple_yaml)
+    yield from federated_db_local(FIRST_HOST, schema_simple_yaml)
+
+
+@pytest.fixture
+def fdb_host(federated_db_local):
+
+    def get_db_in_host(host):
+        yield from federated_db_local(host, schema_simple_yaml)
+
+    return get_db_in_host
+
+
+
+@pytest.fixture(params = ['mem', 'sqlite'])
+def federated_db(request):
+
+    def _build_a_federated_db(host, conf_kernel, schema_yaml):
+
+        _inline_schema_ = "{}"
+        _db_type_ = request.param
+
+        gCon.log(f"db type {_db_type_}")
+
+        complete_conf = conf_kernel.format(
+            _inline_schema_ = _inline_schema_,
+            _db_type_ = _db_type_,
+            _hostname_ = host)
+
+        kernel_conf = yaml.safe_load(complete_conf)
+
+        schema_dict = yaml.safe_load(schema_yaml)
+
+        kernel_conf['modules']['fed_db']['args']['schema'] = schema_dict
+
+        kernel = su.boot_new_kernel('test1', kernel_conf)
+
+        app = SyncApp(host, kernel, ROOT_PATH_DEFAULT)
+        wrappedapp = SyncTester(app)
+
+        return wrappedapp
+
+
+    return _build_a_federated_db
+
+
+
 

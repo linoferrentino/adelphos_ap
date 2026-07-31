@@ -101,10 +101,12 @@ def stop_loop():
 def run_coro_in_loop(endpoint, pars, *, wait = True):
 
     if threading.current_thread() == run_loop_th:
+        gCon.log("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ CREATE A TASK")
         task = asyncio.create_task(endpoint(*pars))
         return task
 
     future = asyncio.run_coroutine_threadsafe(endpoint(*pars), get_loop())
+    gCon.log(f"CREATE A future {endpoint}, wait {wait}")
     if wait == False:
         return
 

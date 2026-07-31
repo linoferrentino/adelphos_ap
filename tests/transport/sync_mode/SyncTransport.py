@@ -12,6 +12,7 @@
 ######################################################
 
 import traceback
+import asyncio
 
 from app.transport.AbstractTransport import AbstractTransport
 from urllib.parse import urlsplit
@@ -65,9 +66,15 @@ class SyncTransport(AbstractTransport):
     async def _get_json_try(self, url):
         (is_local, urls) = self._check_gateway_local(url)
         if is_local == True:
-            val = await self.in_get_json(urls)
+            val_no_wait = self.in_get_json(urls)
         else:
-            val = await self.gateway.route_message("GET", urls)
+            gCon.log(f"{urls} I will route it!")
+            val_no_wait = self.gateway.route_message("GET", urls)
+
+        if (isinstance(val_no_wait, asyncio.Task)):
+            val = await val_no_wait
+        else:
+            val = val_no_wait
 
         if val.status_code != 200:
             raise HTTPException(val.status_code)
@@ -84,7 +91,9 @@ class SyncTransport(AbstractTransport):
             raise Exception("Invalid host")
         if self.in_app is None:
             raise HTTPException(500)
-        return self.in_app.in_get_json(urlp)
+        val_app = self.in_app.in_get_json(urlp)
+        gCon.log(f"App {self.in_app} get {urlp} got {val_app}")
+        return val_app
 
 
 

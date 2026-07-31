@@ -30,6 +30,103 @@ conf:
 
 """
 
+federated_store_network_template = """
+
+modules:
+
+    fed_db:
+      constructor: app.federation.FederatedStore.FederatedStore
+      args: 
+        schema:  {_inline_schema_}
+        db_type: {_db_type_}
+
+    router:
+      constructor: app.AdelphosRouter.AdelphosRouter
+
+    social_api:
+      constructor: tests.testers.SimpleSocialApiProvider.SimpleSocialApiProvider
+
+    social:
+      constructor: app.federation.BaseSocial.BaseSocial
+
+    social_dao:
+      constructor: tests.testers.SimpleSocialDao.SimpleSocialDao
+      priority: -100
+
+    rpc_api:
+      constructor: app.core.sys.SysCallGateway.SysCallGateway
+      args:
+        realm: rpc_api
+
+    social_gateway:
+      constructor: tests.testers.SimpleSocialGateway.SimpleSocialGateway
+
+    social_net:
+      constructor: app.federation.ap.ActivityPubNetwork.ActivityPubNetwork
+
+    inbox_api:
+      constructor: app.core.sys.SysCallGateway.SysCallGateway
+      args:
+        realm: inbox_api
+
+    cli_presenter:
+      constructor: tests.testers.RawPresenter.RawPresenter
+
+conf:
+
+    social:
+      users:
+
+        - preferredusername: test_kernel
+          name: Fed Daemon
+          login_shell: false
+
+
+    general:
+      debug: true 
+      host:  {_hostname_}
+      root_path: /api
+
+    fed_db:
+      db_name: ':memory:'
+      db_type: mem
+      
+
+    rpc_api:
+      fdb:
+        class: app.federation.FederatedRPCs.FederatedRPCs
+        syscalls:
+          - name: read
+            pars:
+              uri_str:
+                required: true
+
+    inbox_api:
+       sapi:
+          class: app.ad_api.BaseSocialApiProvider.BaseSocialApiProvider
+          syscalls:
+
+            - name: q
+              handler: _sys_call_q
+              pars: 
+                api_id: 
+                  required: true
+                payload:
+                  required: true
+
+            - name: a
+              handler: _sys_call_a
+              pars:
+                api_id:
+                  required: true
+                payload:
+                  required: true
+
+
+
+
+"""
+
 
 federated_store_kernel_template = """
 

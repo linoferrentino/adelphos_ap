@@ -24,6 +24,7 @@ class SyncGateway(AbstractGateway):
 
 
     def register_dns(self, transport, host):
+        assert host not in self.hosts
         self.hosts[host] = transport
 
 
@@ -32,7 +33,8 @@ class SyncGateway(AbstractGateway):
 
 
     def stop(self):
-        pass
+        if len(self.hosts) > 0:
+            self.hosts = dict()
 
  
     def route_message(self, method, urlp, json = None, headers = None):

@@ -67,45 +67,4 @@ class AdelphosRouter(Routable):
         self.kernel.stop_sync()
 
 
-# I initialize the router with the app.
-#class AdelphosRouter_deprecated(APIRouter):
-class AdelphosRouter_deprecated():
-
-
-    def __init__(self, app):
-        super().__init__()
-        self.app = app
-
-
-def make_router(app):
-
-    router = AdelphosRouter(app)
-
-    test_instance = app.is_test_instance()
-
-    if test_instance:
-        # I can add a backdoor to test the application (in testing).
-        @router.post('/_backdoor_api_/{cmd}')
-        async def _backdoor_api(cmd: str, request : Request):
-            body = await request.body()
-            body_str = body.decode()
-            body_ob = json.loads(body_str)
-            ap_mock = app.get_ap_mockup()
-            # the mock might as well do other async calls
-            res = await ap_mock.proc_cmd(cmd, body_ob)
-            #gCon.log(f"===================================== {res}")
-            return { 'res' : res }
-
-
-    @router.get("/daemon_cli")
-    async def daemon_cli_inner():
-        return await router.daemon_cli(app)
-   
-
-    @router.websocket("/ws")
-    async def websocket_endpoint(websocket: WebSocket):
-        client = await app.conn_hndl.accept(websocket)
-        await client.serve_forever()
-
-
 

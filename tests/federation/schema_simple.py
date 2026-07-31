@@ -32,12 +32,10 @@ class FederatedUriTest(FederatedUri):
 
     def unparse(self):
         base_name = "XX_test_type_" + self.ob_type + "/name=" + self.name
-        #if self.family is not None:
-        #    base_name += f"/fam=_f{self.family}"
         if self.host is not None:
-            base_name += f"_@f{self.host}"
+            base_name += f"@{self.host}"
         if self.fragment is not None:
-            base_name += f"_#f{self.fragment}"
+            base_name += f"#{self.fragment}"
         return base_name
 
 
@@ -159,6 +157,23 @@ classes:
           cardinality: scalar
           required: true
 
+    - uri_prefix: al_uri
+      can_be_root: true
+      columns:
+        - name: trust_lines
+          type: uri
+          cardinality: set
+          required: false
+
+    - uri_prefix: tline
+      can_be_root: false
+      columns:
+        - name: equity
+          type: real
+          cardinality: scalar
+          required: false
+          default: 10.0
+
 
     - uri_prefix: al
       can_be_root: true
@@ -176,10 +191,9 @@ classes:
 """
 
 
-LOCALHOST = "www.example.com"
+FIRST_HOST = "www.example.com"
 OTHERHOST = "www.faraway.org"
+LOCALHOST = 'localhost'
 LOCALHOST1 = "::1"
-LOCALHOST2 = "localhost"
-LOCALHOST3 = "127.0.0.1"
 
 

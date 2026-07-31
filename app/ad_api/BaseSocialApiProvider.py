@@ -55,19 +55,19 @@ class AsyncCtx:
             await self.social.outgoing_message(self.social_user,
                     remote_user, self.query_txt)
         except AdelphosException as adex:
+            gCon.log("[red]EXCEPTION in daemon[/red]")
             traceback.print_exc()
             self.answer = {
-                'errno' : AdErrno.EGENERIC_USER_ERROR,
-                'res' : adex,
+                'errno' : int(AdErrno.EGENERIC_USER_ERROR),
+                'res' : str(adex),
                 }
-            self.answer = str(adex)
             async with self.async_cond:
                 self.async_cond.notify_all()
         except Exception as exc:
             traceback.print_exc()
             self.answer = {
-                'errno' : AdErrno.EGENERIC_SERVER,
-                'res' : exc,
+                'errno' : int(AdErrno.EGENERIC_SERVER),
+                'res' : str(exc),
                 }
             async with self.async_cond:
                 self.async_cond.notify_all()
@@ -133,6 +133,8 @@ class BaseSocialApiProvider(SocialApiProvider):
         self.async_contexts[int(cur_api_id)] = async_ctx
 
         await async_ctx.wait_until_done()
+
+        gCon.log(f"[red]the answer is {async_ctx.answer}[/red]")
 
         remote_errno = async_ctx.answer['errno'] 
         if remote_errno != AdErrno.DONE_OK:
@@ -253,10 +255,9 @@ class BaseSocialApiProvider(SocialApiProvider):
 
         res = await rpc_api.sys_call_handler_call(context, rpc,
                                              actor_from, req_json['params'])
+        gCon.log(f"=====================   external res {res} type {type(res)}")
         internal_res = res['res']
         return internal_res
-    #gCon.log(f"res is {res}")
-    #    return res
 
 
     async def _sys_call_a(kernel, envelope, pars):

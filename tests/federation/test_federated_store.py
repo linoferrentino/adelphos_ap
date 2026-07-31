@@ -23,12 +23,17 @@ from app.logging import gCon
 
 
 from tests.federation.schema_simple import LOCALHOST, LOCALHOST1
+from tests.federation.schema_simple import FIRST_HOST, OTHERHOST
 from tests.federation.schema_simple import TYPE_T1, TYPE_T2
 from tests.federation.schema_simple import FederatedUriTest
 from app.sdc.Dependencies import Dependencies
 from tests.federation.fixtures import fdb1_loc
+from tests.federation.fixtures import fdb_host
 from tests.federation.fixtures import federated_db_local
+from tests.federation.fixtures import federated_db
 from app.transport.bridge.loop import run_coro_in_loop
+from tests.federation.schema_simple import schema_simple_yaml
+import tests.adelphoi_test_config as tconf
 
 
 def test_new_object_f(fdb1_loc):
@@ -442,6 +447,37 @@ async def a_test_json_field(fdb1_loc):
     with pytest.raises(FdbException) as fex:
         await fob().set_scalar('ob_json', obj)
     assert fex.value.errno == EFdbErrors.EFDB_NO_LOCK_ON_OB
+
+
+def test_remote_uri(federated_db):
+    wrap1 = federated_db(FIRST_HOST, tconf.federated_store_network_template,
+                         schema_simple_yaml)
+    wrap2 = federated_db(OTHERHOST, tconf.federated_store_network_template,
+                         schema_simple_yaml)
+
+    with wrap1, wrap2:
+        fdb1 = wrap1.app.routable.get_dep(Dependencies.FEDERATED_DB)
+        fdb2 = wrap2.app.routable.get_dep(Dependencies.FEDERATED_DB)
+        run_coro_in_loop(a_test_remote_uri, (fdb1, fdb2))
+
+
+async def _create_object_uri_in_transaction(fdb, uri, fields = {}):
+    tid = await fdb.begin_transaction()
+    fob = await fdb.new_ob_uri(tid, uri, fields)
+    await fdb.commit_transaction(tid)
+    return fob
+
+
+async def a_test_remote_uri(fdb1, fdb2):
+    t1uri = FederatedUriTest('al_uri', 'a1', host = FIRST_HOST)
+    t2uri = FederatedUriTest('al_uri', 'a2', host = OTHERHOST)
+
+    fob1 = await _create_object_uri_in_transaction(fdb1, t1uri)
+    fob2 = await _create_object_uri_in_transaction(fdb2, t2uri)
+
+    tid1 = await fdb1.begin_transaction()
+    fremote1 = await fdb1.uri_read_lock(tid1, t2uri)
+    assert fremote1 is not None
 
 
 def test_set_uri_local(fdb1_loc):
