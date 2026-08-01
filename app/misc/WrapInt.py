@@ -14,10 +14,10 @@
 
 import secrets
 
+
 class WrapInt:
 
     def __init__(self, nbits = 31, init_int = None):
-        
         if ((nbits < 2) or (nbits > 31)):
             raise Exception(f"nbits out of range {nbits}")
 
@@ -34,13 +34,18 @@ class WrapInt:
 
 
     def get_and_inc(self):
-
         val = self.val
-        if self.val == self.max_val:
-            self.val = 0
-        else:
-            self.val += 1
+        self.val = self.inc_and_get_val(val)
+
         return val
 
 
+    def inc_and_get_val(self, val):
+        if val == self.max_val:
+            val = 0
+        else:
+            val += 1
+        return val
 
+
+W32 = WrapInt(nbits = 31)

@@ -60,7 +60,24 @@ f"Illegal URI {object_part} I was expecting something like #<type>#<name>")
 
         return (uri_type, name_part)
 
+schema_reserved_error = f"""
 
+uri_constructor: 'tests.federation.schema_simple.FederatedUriTest'
+
+types:
+
+
+classes:
+    - uri_prefix: err_prefix
+      can_be_root: true 
+      columns:
+        - name: _fdb_impossible
+          type: int
+          cardinality: scalar
+          required: true
+
+"""
+  
 schema_simple_yaml = f"""
 
 uri_constructor: 'tests.federation.schema_simple.FederatedUriTest'
@@ -157,6 +174,7 @@ classes:
           cardinality: scalar
           required: true
 
+
     - uri_prefix: al_uri
       can_be_root: true
       columns:
@@ -164,6 +182,7 @@ classes:
           type: uri
           cardinality: set
           required: false
+
 
     - uri_prefix: tline
       can_be_root: false

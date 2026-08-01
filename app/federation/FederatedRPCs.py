@@ -19,25 +19,35 @@ from app.federation.FederatedUri import FederatedUri
 class FederatedRPCs:
 
     @staticmethod
-    async def _sys_call_read(kernel, actor_from, pars):
-        uri_str = pars['uri_str']
-        gCon.log(f"GOT the read for the {uri_str}")
+    async def _sys_call_return(kernel, actor_from, pars):
+        pass
+ 
 
+
+    @staticmethod
+    async def _sys_call_borrow(kernel, actor_from, pars):
+        uri_str = pars['uri_str']
+        lock = pars['lock']
+        social_handle = actor_from.get_social_handle()
+        gCon.log(f"Read for the {uri_str} with lock {lock} from {social_handle}")
 
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
-        uri_ob = fdb.parse_uri(uri_str)
-        gCon.log(f"the uri ob is {uri_ob}")
-
         t_id = await fdb.begin_transaction()
-        fob = await fdb.uri_read_lock(t_id, uri_ob, maybe = True)
-        if fob is not None:
-            fob_str = fob().to_store_str()
-            gCon.log(f"returning string {fob_str}")
-            return {
-                    'obstr' : fob_str
-            }
-        return None
+        fob = await fdb.uri_read_str(t_id, uri_str,
+                                     must_lock = lock, maybe = True)
+        if fob is None:
+            return None
 
+        fob_str = fob().to_store_str()
+        gCon.log(f"returning string {fob_str}")
 
- 
+        if lock == True:
+            fob().lent_to(social_handle)
+            await fdb.commit_transaction(t_id)
+        else:
+            await fdb.rollback_transaction(t_id)
+
+        return {
+                'obstr' : fob_str
+        }

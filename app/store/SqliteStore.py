@@ -119,6 +119,8 @@ class SqliteStore(SimpleKvStore):
 
 
     def close(self):
+        if self.__kv is None:
+            return
         self.__kv.close()
 
 

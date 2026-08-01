@@ -33,6 +33,7 @@ from tests.federation.fixtures import federated_db_local
 from tests.federation.fixtures import federated_db
 from app.transport.bridge.loop import run_coro_in_loop
 from tests.federation.schema_simple import schema_simple_yaml
+from tests.federation.schema_simple import schema_reserved_error
 import tests.adelphoi_test_config as tconf
 
 
@@ -447,6 +448,16 @@ async def a_test_json_field(fdb1_loc):
     with pytest.raises(FdbException) as fex:
         await fob().set_scalar('ob_json', obj)
     assert fex.value.errno == EFdbErrors.EFDB_NO_LOCK_ON_OB
+
+
+def test_impossibile_column(federated_db):
+    wrap1 = federated_db(FIRST_HOST, tconf.federated_store_kernel_template,
+                         schema_reserved_error)
+
+    with pytest.raises(FdbException) as fex:
+        with wrap1:
+            pass
+    assert fex.value.errno == EFdbErrors.EFDB_RESERVED
 
 
 def test_remote_uri(federated_db):

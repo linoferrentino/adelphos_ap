@@ -107,18 +107,24 @@ class EObState(IntEnum):
     LENT = 1
 
 
-@dataclass
-class FObDb:
-    state: EObState
-    borrower: str
-    date_borrow: datetime
+#@dataclass
+#class FObDb:
+#    state: EObState
+#    borrower: str
+#    date_borrow: datetime
+
+
+FDB_RESERVED_PREFIX = "_fdb_"
+
+REF_COUNT_COLUMN = f"{FDB_RESERVED_PREFIX}ref_count"
+VERSION_COLUMN   = f"{FDB_RESERVED_PREFIX}version"
 
 
 @dataclass
 class FObSerialized:
-    version: int
+    #version: int
     state: EObState
-    ref_count: int
+    #ref_count: int
     fields: dict = field(default_factory = dict)
 
 
@@ -186,7 +192,10 @@ class FederatedObject:
             else:
                 ref_count = 0
 
-            self.ob = FObSerialized(0, EObState.PRESENT, ref_count)
+            #self.ob = FObSerialized(0, EObState.PRESENT, ref_count)
+            self.ob = FObSerialized(EObState.PRESENT)
+            self.ob.fields[REF_COUNT_COLUMN] = ref_count
+            self.ob.fields[VERSION_COLUMN] = 0
             self._enforce_schema_init(fields)
             self.modified = True
         else:
@@ -237,6 +246,18 @@ class FederatedObject:
     @staticmethod
     def _enforce_enum_value(col_name, col_val, col_def, before_commit):
         pass
+
+
+    def lent_to(self, social_handle):
+        now = datetime.now()
+        #now_str = now.strftime("YYYY-MM-DDTHH:MM:SS.mmmmmm")
+        #gCon.log(f"now str is {now_str} now is {now}")
+        self.ob.state = EObState.LENT
+        self.ob.fields = {
+                'lent_to' : social_handle,
+                'date_lending' : str(now)
+        }
+        self.modified = True
 
 
     @staticmethod
@@ -451,15 +472,15 @@ class FederatedObject:
 
     @ensure_lock
     def _dec_ref_ob(self):
-        assert self.ob.ref_count > 0
-        self.ob.ref_count -= 1
+        assert self.ob.fields[REF_COUNT_COLUMN] > 0
+        self.ob.fields[REF_COUNT_COLUMN] -= 1
         self.modified = True
 
 
     @ensure_lock
     def _inc_ref_ob(self):
-        assert self.ob.ref_count >= 0
-        self.ob.ref_count += 1
+        assert self.ob.fields[REF_COUNT_COLUMN] >= 0
+        self.ob.fields[REF_COUNT_COLUMN] += 1
         self.modified = True
 
 

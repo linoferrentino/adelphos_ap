@@ -124,7 +124,11 @@ class SyncTester(ContextDecorator):
 
 
     def __enter__(self):
-        self.app.on_startup()
+        try:
+            self.app.on_startup()
+        except Exception as ex:
+            self.app.on_teardown()
+            raise
         return self
 
 

@@ -30,6 +30,9 @@ from app.federation.LifespanAware import LifespanAware
 from app.federation.FederatedObject import FederatedObject
 from app.federation.SocialListener import SocialListener
 from app.federation.FederatedObject import str_to_fob
+from app.federation.FederatedObject import REF_COUNT_COLUMN
+from app.federation.FederatedObject import VERSION_COLUMN
+from app.federation.FederatedObject import EObState
 from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
 from app.federation.FederatedUri import FederatedUri
@@ -41,6 +44,8 @@ from app.store.SqliteStore import SqliteStore
 
 from dataclasses import dataclass
 from app.logging import gCon
+
+from app.misc.WrapInt import W32
 
 import traceback
 import weakref
@@ -76,7 +81,8 @@ class FederatedTransaction:
 
     def _do_creates(self):
         for k,v in self.created_uris.items():
-            if v.ob.ref_count == 0:
+            gCon.log(f"check creates {v.ob}")
+            if v.ob.fields[REF_COUNT_COLUMN] == 0:
                 continue
             self._update_uri_str(k, v)
         self.created_uris.clear()
@@ -84,9 +90,9 @@ class FederatedTransaction:
 
     def _do_updates(self):
         for k,v in self.locked_uris.items():
-            gCon.log(f"check {k} -> {v}")
-            if v.ob.ref_count == 0:
-                gCon.log(f"will delete {v}")
+            gCon.log(f"check updates {v.ob}")
+            if ((v.ob.state == EObState.PRESENT) and
+                (v.ob.fields[REF_COUNT_COLUMN] == 0)):
                 self._delete_uri_str(k)
                 continue
             if v.modified == False:
@@ -101,7 +107,10 @@ class FederatedTransaction:
 
 
     def _update_uri_str(self, key_str, fob):
-        fob.enforce_schema_before_commit()
+        if (fob.ob.state == EObState.PRESENT):
+            fob.enforce_schema_before_commit()
+            new_version = W32.inc_and_get_val(int(fob.ob.fields[VERSION_COLUMN]))
+            fob.ob.fields[VERSION_COLUMN] = new_version
         ob_str = fob.to_store_str()
         self.fdb.db.set(key_str, ob_str)
 
@@ -365,8 +374,8 @@ class FederatedStore(Dependency, LifespanAware):
     async def _read_remote_ctx(self, rctx):
         host = rctx.uri_ob.host
         social_api = self.kernel.get_dep(Dependencies.SOCIAL_API)
-        res = await social_api.remote_req('fdb', 'read', host, uri_str =
-                    rctx.uri_str)
+        res = await social_api.remote_req('fdb', 'borrow', host, uri_str =
+                    rctx.uri_str, lock = rctx.must_lock)
         gCon.log(f"got {res} as response")
         remote_ob_str = res['obstr']
         return remote_ob_str
@@ -395,7 +404,8 @@ class FederatedStore(Dependency, LifespanAware):
         if t_ob_str is not None:
             ob_type = rctx.uri_ob.ob_type
             registrar = self.fact.get_registrar(ob_type)
-            rctx.fob = str_to_fob(rctx.uri_ob, registrar, t_ob_str, rctx.must_lock)
+            rctx.fob = str_to_fob(rctx.uri_ob, registrar, t_ob_str,
+                                  rctx.must_lock)
             rctx.tob.read_ob_ctx(rctx)
             return
 
@@ -407,6 +417,21 @@ class FederatedStore(Dependency, LifespanAware):
     async def uri_read_lock(self, t_id, uri_ob, maybe = False):
         rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = True, maybe = maybe) 
         await self._read_ctx(rctx)
+        return weakref.ref(rctx.fob)
+
+
+    async def uri_read_str(self, t_id, uri_str, *, maybe = False,
+                           must_lock = True):
+        uri_ob = self.parse_uri(uri_str)
+        rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = must_lock, 
+                                maybe = maybe) 
+        return await self._read_ref(rctx)
+
+
+    async def _read_ref(self, rctx):
+        await self._read_ctx(rctx)
+        if rctx.fob is None:
+            return None
         return weakref.ref(rctx.fob)
 
 

@@ -12,10 +12,12 @@
 ######################################################
 
 
+import re
+
 from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
 from app.federation.FederatedObject import FObColumnDefinition,\
-        FObColType, FObCardType, FederatedEnum
+        FObColType, FObCardType, FederatedEnum, FDB_RESERVED_PREFIX 
 from dataclasses import dataclass
 from dataclasses import field
 import app.misc.utils as misc
@@ -81,6 +83,8 @@ class FederatedFactory:
 
     def _add_column(self, col, registrar):
         col_name = col['name']
+        if re.match(FDB_RESERVED_PREFIX, col_name) is not None:
+            raise FdbException(EFdbErrors.EFDB_RESERVED, col_name)
 
         col_type_str = col['type']
         col_type_id = FederatedFactory.translate_type(col_type_str)

@@ -154,10 +154,19 @@ federated_db_rpcs = """
       fdb:
         class: app.federation.FederatedRPCs.FederatedRPCs
         syscalls:
-          - name: read
+          - name: borrow
             pars:
               uri_str:
                 required: true
+              lock:
+                required: true
+
+          - name: return
+            pars:
+              uri_str:
+                required: true
+
+
 
 
 """
