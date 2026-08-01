@@ -68,7 +68,6 @@ class SyncTransport(AbstractTransport):
         if is_local == True:
             val_no_wait = self.in_get_json(urls)
         else:
-            gCon.log(f"{urls} I will route it!")
             val_no_wait = self.gateway.route_message("GET", urls)
 
         if (isinstance(val_no_wait, asyncio.Task)):
@@ -92,8 +91,6 @@ class SyncTransport(AbstractTransport):
         if self.in_app is None:
             raise HTTPException(500)
         val_app = self.in_app.in_get_json(urlp)
-        gCon.log(f"App {self.in_app} get {urlp} got {val_app}")
         return val_app
-
 
 

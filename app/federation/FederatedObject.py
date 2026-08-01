@@ -102,9 +102,22 @@ def enforce_schema(func):
     return _inner_enforce
 
 
+class EObState(IntEnum):
+    PRESENT = 0
+    LENT = 1
+
+
+@dataclass
+class FObDb:
+    state: EObState
+    borrower: str
+    date_borrow: datetime
+
+
 @dataclass
 class FObSerialized:
     version: int
+    state: EObState
     ref_count: int
     fields: dict = field(default_factory = dict)
 
@@ -173,7 +186,7 @@ class FederatedObject:
             else:
                 ref_count = 0
 
-            self.ob = FObSerialized(0, ref_count)
+            self.ob = FObSerialized(0, EObState.PRESENT, ref_count)
             self._enforce_schema_init(fields)
             self.modified = True
         else:

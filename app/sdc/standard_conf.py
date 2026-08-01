@@ -148,6 +148,20 @@ testable_rpc_conf = """
 
 """
 
+federated_db_rpcs = """
+
+    rpc_api:
+      fdb:
+        class: app.federation.FederatedRPCs.FederatedRPCs
+        syscalls:
+          - name: read
+            pars:
+              uri_str:
+                required: true
+
+
+"""
+
 standard_cli_api = """
 
     cli_api:
@@ -260,6 +274,31 @@ debug_cli_api = """
 
 """
 
+social_api = """
+
+      sapi:
+          class: app.ad_api.BaseSocialApiProvider.BaseSocialApiProvider
+          syscalls:
+
+            - name: q
+              handler: _sys_call_q
+              pars: 
+                api_id: 
+                  required: true
+                payload:
+                  required: true
+
+            - name: a
+              handler: _sys_call_a
+              pars:
+                api_id:
+                  required: true
+                payload:
+                  required: true
+
+
+"""
+
 
 standard_inbox_api = """
 
@@ -287,31 +326,9 @@ standard_inbox_api = """
                 invite_code:
                     required: true
                 password:
-                    required: true
+                    required: true""" + social_api
 
 
-      sapi:
-          class: app.ad_api.BaseSocialApiProvider.BaseSocialApiProvider
-          syscalls:
-
-            - name: q
-              handler: _sys_call_q
-              pars: 
-                api_id: 
-                  required: true
-                payload:
-                  required: true
-
-            - name: a
-              handler: _sys_call_a
-              pars:
-                api_id:
-                  required: true
-                payload:
-                  required: true
-
-
-"""
 
 
 release_kernel_template = (testable_kernel_prefix

@@ -134,8 +134,6 @@ class BaseSocialApiProvider(SocialApiProvider):
 
         await async_ctx.wait_until_done()
 
-        gCon.log(f"[red]the answer is {async_ctx.answer}[/red]")
-
         remote_errno = async_ctx.answer['errno'] 
         if remote_errno != AdErrno.DONE_OK:
             raise AdelphosException(remote_errno, async_ctx.answer['res'])
@@ -239,7 +237,6 @@ class BaseSocialApiProvider(SocialApiProvider):
 
         payload_ans = self._pack_response_message(remote_errno, res)
         answer_msg = f"{SOCIAL_API_ANSWER} api_id {api_id} payload {payload_ans}"
-        gCon.log(f"sending {answer_msg}")
         return answer_msg
 
 
@@ -255,7 +252,6 @@ class BaseSocialApiProvider(SocialApiProvider):
 
         res = await rpc_api.sys_call_handler_call(context, rpc,
                                              actor_from, req_json['params'])
-        gCon.log(f"=====================   external res {res} type {type(res)}")
         internal_res = res['res']
         return internal_res
 
@@ -272,7 +268,6 @@ class BaseSocialApiProvider(SocialApiProvider):
             raise AdelphosException(EAdErrno.EGENERIC_SERVER)
         payload_decoded = self._decode_daemon_message(payload_str)
         remote_json = json.loads(payload_decoded)
-        gCon.log(f"Remote answer json is {remote_json}")
         async_ctx.answer = remote_json
         async with async_ctx.async_cond:
            async_ctx.async_cond.notify()
@@ -285,7 +280,6 @@ class BaseSocialApiProvider(SocialApiProvider):
             out_msg = await self.new_post_try(envelope)
 
         except AdelphosContinueException as exce:
-            gCon.log(f"[red] got continuation, no-op [/red]")
             return
         except AdelphosCoreException as exce:
             traceback.print_exc()
@@ -296,8 +290,6 @@ class BaseSocialApiProvider(SocialApiProvider):
         except Exception as ex:
             traceback.print_exc()
             out_msg = f"Server Error in syscall {ex}"
-
-        gCon.log(f"[red]out message is {out_msg}[/red]")
     
         social_gw = self.kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
         await social_gw.out_outbox_dtos(envelope.myself,
@@ -308,9 +300,6 @@ class BaseSocialApiProvider(SocialApiProvider):
         inbox_api = self.kernel.get_dep(Dependencies.INBOX_API)
         out_dict = await inbox_api.sys_call_gateway_msg(envelope,
                                                         envelope.content)
-        gCon.log(f"out msg {out_dict} type {type(out_dict)}")
         out_msg = out_dict['res']
         return out_msg
-        #gCon.log(f"out_dict {out_dict}")
-        #    return out_dict
 

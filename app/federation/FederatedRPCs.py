@@ -31,7 +31,6 @@ class FederatedRPCs:
 
         t_id = await fdb.begin_transaction()
         fob = await fdb.uri_read_lock(t_id, uri_ob, maybe = True)
-        gCon.log(f"the ob is {fob()}")
         if fob is not None:
             fob_str = fob().to_store_str()
             gCon.log(f"returning string {fob_str}")

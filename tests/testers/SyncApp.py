@@ -79,8 +79,6 @@ class SyncApp:
 
     def __init__(self, host, kernel, root_path = ""):
 
-        gCon.log(f"Creating app with root_path {root_path}")
-
         transport = SyncTransport(host, self)
         self.transport = transport
 
@@ -142,7 +140,6 @@ class SyncApp:
 
     @exception_sync_middleware
     def in_get_json(self, urlp):
-        gCon.log(f"XXXX {urlp}")
         return self._do_sync_req("GET", self.get_routes, urlp)
 
 
@@ -179,7 +176,6 @@ class SyncApp:
         endpoint = route.endpoint
         request = SyncRequest(method, dict_params, path_params, in_json, urlp, headers)
 
-        gCon.log(f"endpoint {endpoint} called in async")
         res = run_coro_in_loop(endpoint, (request,))
 
         return res

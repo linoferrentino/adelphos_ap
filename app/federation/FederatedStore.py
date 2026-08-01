@@ -350,7 +350,6 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     def remove_localhost(self, uriob):
-        gCon.log(f"removing localhost my host is {self.hostname}")
         if uriob.host is None:
             return uriob
         if ((uriob.host == self.hostname) or

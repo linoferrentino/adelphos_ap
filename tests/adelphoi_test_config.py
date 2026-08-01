@@ -89,43 +89,11 @@ conf:
 
     fed_db:
       db_name: ':memory:'
-      db_type: mem
-      
-
-    rpc_api:
-      fdb:
-        class: app.federation.FederatedRPCs.FederatedRPCs
-        syscalls:
-          - name: read
-            pars:
-              uri_str:
-                required: true
-
-    inbox_api:
-       sapi:
-          class: app.ad_api.BaseSocialApiProvider.BaseSocialApiProvider
-          syscalls:
-
-            - name: q
-              handler: _sys_call_q
-              pars: 
-                api_id: 
-                  required: true
-                payload:
-                  required: true
-
-            - name: a
-              handler: _sys_call_a
-              pars:
-                api_id:
-                  required: true
-                payload:
-                  required: true
-
-
-
-
+      db_type: mem """ \
+    + stdcnf.federated_db_rpcs + \
 """
+    inbox_api: 
+""" + stdcnf.social_api
 
 
 federated_store_kernel_template = """

@@ -62,7 +62,6 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
 
     async def sys_call_gateway_msg(self, param, msg):
-        gCon.log(f"--> received {msg}")
         cp = CliParser(msg)
         ctx_cmd = cp.cmd.split('.')
         if len(ctx_cmd) != 2:
@@ -83,7 +82,6 @@ class SysCallGateway(Dependency, SyncLifespanAware):
                     context, syscall, param, kwargs)
             errno = int(AdErrno.DONE_OK)
         except AdelphosContinueException as exce:
-            gCon.log(f"[red]========== continue ===========[/red]")
             raise
         except AdelphosCoreException as exce:
             traceback.print_exc()
@@ -107,24 +105,11 @@ class SysCallGateway(Dependency, SyncLifespanAware):
                 }
 
         response_str = presenter.present_to_user_ok(dict_out)
-        gCon.log(f"-------> response str {response_str}")
         return response_str
 
 
     async def sys_call_handler_call_try(self, context, syscall, param, kwargs):
-    #async def sys_call_handler_call(self, context, syscall, param, kwargs):
         msg_out = await syscall.handler(self.kernel, param, kwargs)
-        #if msg_out is None:
-        #    msg_out = f"Command {syscall} completed successfully."
-
-        #dict_out = {
-        #        'errno' : int(AdErrno.DONE_OK),
-        #        'res' : msg_out if msg_out is not None else "",
-        #        'realm' : self.realm,
-        #        'context' : context,
-        #        'syscall' : syscall.name,
-        #        }
-        #return dict_out
         return msg_out
 
 
