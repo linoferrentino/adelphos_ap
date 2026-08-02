@@ -14,6 +14,8 @@
 
 import pytest
 import re
+import asyncio 
+
 from app.federation.FederatedStore import FederatedStore
 from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
@@ -474,21 +476,47 @@ def test_remote_uri(federated_db):
 
 async def _create_object_uri_in_transaction(fdb, uri, fields = {}):
     tid = await fdb.begin_transaction()
-    fob = await fdb.new_ob_uri(tid, uri, fields)
+    await fdb.new_ob_uri(tid, uri, fields)
     await fdb.commit_transaction(tid)
-    return fob
+
+
+async def _create_object_in_isolated_tx(fdb, uri_type, uri_name, host = None,
+                                        fields = {}):
+    ob_uri = FederatedUriTest(uri_type, uri_name, host = host)
+    await _create_object_uri_in_transaction(fdb, ob_uri, fields)
 
 
 async def a_test_remote_uri(fdb1, fdb2):
     t1uri = FederatedUriTest('al_uri', 'a1', host = FIRST_HOST)
     t2uri = FederatedUriTest('al_uri', 'a2', host = OTHERHOST)
 
-    fob1 = await _create_object_uri_in_transaction(fdb1, t1uri)
-    fob2 = await _create_object_uri_in_transaction(fdb2, t2uri)
+    await _create_object_uri_in_transaction(fdb1, t1uri)
+    await _create_object_uri_in_transaction(fdb2, t2uri)
 
     tid1 = await fdb1.begin_transaction()
-    fremote1 = await fdb1.uri_read_lock(tid1, t2uri)
-    assert fremote1 is not None
+
+    flocal = await fdb1.uri_read_lock(tid1, t1uri)
+    fremote = await fdb1.uri_read_lock(tid1, t2uri)
+    assert fremote is not None
+
+    tline_ob = await fdb1.new_ob(tid1, 'tline', 'tt1', fields = {
+        'equity' : 99.9,
+        })
+    assert tline_ob is not None
+    gCon.log(f"Created the ob {tline_ob().uri}")
+
+    with pytest.raises(FdbException) as fex:
+        flocal().add_link('tlines', tline_ob)
+    assert fex.value.errno == EFdbErrors.EFDB_UNKNOWN_COLUMN
+
+    fremote().add_link('trust_lines', tline_ob)
+    flocal().add_link('trust_lines', tline_ob)
+
+    await fdb1.commit_transaction(tid1)
+
+    gCon.log("Waiting...")
+    await asyncio.sleep(0.5)
+    gCon.log("End wait")
 
 
 def test_set_uri_local(fdb1_loc):

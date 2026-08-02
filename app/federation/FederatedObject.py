@@ -65,6 +65,8 @@ def enforce_schema_not_scalar(func):
     def _inner_enforce(self, key, *args):
         schema = self.registrar.pars
         par = schema.get(key)
+        if par is None:
+            raise FdbException(EFdbErrors.EFDB_UNKNOWN_COLUMN, key)
         if par.cardinality == FObCardType.SCALAR:
             raise FdbException(EFdbErrors.EFDB_SCALAR_UNEXPECTED, key)
 
@@ -105,13 +107,8 @@ def enforce_schema(func):
 class EObState(IntEnum):
     PRESENT = 0
     LENT = 1
-
-
-#@dataclass
-#class FObDb:
-#    state: EObState
-#    borrower: str
-#    date_borrow: datetime
+    BORROWED = 2
+    CLONED = 3
 
 
 FDB_RESERVED_PREFIX = "_fdb_"
@@ -122,9 +119,7 @@ VERSION_COLUMN   = f"{FDB_RESERVED_PREFIX}version"
 
 @dataclass
 class FObSerialized:
-    #version: int
     state: EObState
-    #ref_count: int
     fields: dict = field(default_factory = dict)
 
 
@@ -192,7 +187,6 @@ class FederatedObject:
             else:
                 ref_count = 0
 
-            #self.ob = FObSerialized(0, EObState.PRESENT, ref_count)
             self.ob = FObSerialized(EObState.PRESENT)
             self.ob.fields[REF_COUNT_COLUMN] = ref_count
             self.ob.fields[VERSION_COLUMN] = 0
@@ -216,7 +210,6 @@ class FederatedObject:
 
     @staticmethod
     def enforce_def(col_name, col_val, col_def, before_commit = False):
-        #gCon.log(f"enforcing {col_name} value {col_val} with {col_def} commit {before_commit}")
         if col_def.cardinality == FObCardType.SCALAR:
             FederatedObject.enforce_scalar(col_name, col_val, col_def, before_commit)
         else:
@@ -250,12 +243,13 @@ class FederatedObject:
 
     def lent_to(self, social_handle):
         now = datetime.now()
-        #now_str = now.strftime("YYYY-MM-DDTHH:MM:SS.mmmmmm")
-        #gCon.log(f"now str is {now_str} now is {now}")
+        now_str = now.strftime("%Y-%m-%dT%H:%M:%S.%f")
         self.ob.state = EObState.LENT
+        backup_fields = self.ob.fields
         self.ob.fields = {
-                'lent_to' : social_handle,
-                'date_lending' : str(now)
+            'lent_to' : social_handle,
+            'date_lending' : now_str,
+            'backup' : backup_fields
         }
         self.modified = True
 
@@ -425,12 +419,17 @@ class FederatedObject:
                 ob()._inc_ref_ob()
             else:
                 cur_set = set(cur_value)
-                if uri_str not in cur_set:
+                if uri_str in cur_set:
+                    return
+                else:
                     cur_set.add(uri_str)
                     ob()._inc_ref_ob()
             self.ob.fields[key] = list(cur_set)
+            self.modified = True
+
         elif par.cardinality == FObCardType.ARRAY:
             raise Exception("TO DO")
+
         else:
             raise Exception("TO DO 1")
 

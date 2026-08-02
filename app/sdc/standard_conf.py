@@ -165,6 +165,8 @@ federated_db_rpcs = """
             pars:
               uri_str:
                 required: true
+              obstr:
+                required: true
 
 
 

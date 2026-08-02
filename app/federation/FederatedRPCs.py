@@ -20,8 +20,7 @@ class FederatedRPCs:
 
     @staticmethod
     async def _sys_call_return(kernel, actor_from, pars):
-        pass
- 
+        gCon.log("Got the return!")
 
 
     @staticmethod

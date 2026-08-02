@@ -60,6 +60,7 @@ f"Illegal URI {object_part} I was expecting something like #<type>#<name>")
 
         return (uri_type, name_part)
 
+
 schema_reserved_error = f"""
 
 uri_constructor: 'tests.federation.schema_simple.FederatedUriTest'
@@ -78,6 +79,7 @@ classes:
 
 """
   
+
 schema_simple_yaml = f"""
 
 uri_constructor: 'tests.federation.schema_simple.FederatedUriTest'

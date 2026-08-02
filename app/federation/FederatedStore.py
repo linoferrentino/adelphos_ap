@@ -17,6 +17,7 @@ import copy
 import sys
 import threading
 import yaml
+import asyncio
 
 from app.misc.WrapInt import WrapInt
 from app.transport.RouterProvider import RouterProvider
@@ -51,21 +52,15 @@ import traceback
 import weakref
 
 
-class ELockResolution(StrEnum):
-
-    FAIL_FAST = auto()
-    RETRY_TIMEOUT = auto()
-
-
 class FederatedTransaction:
 
     def __init__(self, tid, fdb):
         self.tid = tid
         self.fdb = fdb
         self.created_uris = {}
-        self.locked_uris = {} # they might be unmodified, but they belong to this tx
+        self.locked_uris = {} 
         self.deleted_uris = {}
-        self.read_uris = {} # read only objects.
+        self.read_uris = {} 
         self.begin_transaction = datetime.now()
 
 
@@ -90,15 +85,21 @@ class FederatedTransaction:
 
     def _do_updates(self):
         for k,v in self.locked_uris.items():
-            gCon.log(f"check updates {v.ob}")
+            gCon.log(f"check updates {k} = {v.ob}")
             if ((v.ob.state == EObState.PRESENT) and
                 (v.ob.fields[REF_COUNT_COLUMN] == 0)):
                 self._delete_uri_str(k)
                 continue
             if v.modified == False:
                 # XXX check read consistency
+                gCon.log(f"{id(v)} NO MODIFIED")
                 continue
-            self._update_uri_str(k, v)
+            if v.ob.state == EObState.BORROWED:
+                self.fdb.return_object(k, v)
+            else:
+                assert ((v.ob.state == EObState.PRESENT) or
+                        (v.ob.state == EObState.LENT))
+                self._update_uri_str(k, v)
         self.locked_uris.clear()
 
 
@@ -112,6 +113,7 @@ class FederatedTransaction:
             new_version = W32.inc_and_get_val(int(fob.ob.fields[VERSION_COLUMN]))
             fob.ob.fields[VERSION_COLUMN] = new_version
         ob_str = fob.to_store_str()
+        gCon.log(f"Set {key_str} = {ob_str}")
         self.fdb.db.set(key_str, ob_str)
 
 
@@ -214,15 +216,11 @@ class FedStore_ReadCtx:
     maybe: bool  = False
     uri_str: str = None
     must_lock: bool = False 
-    #only_local: bool = False
-    #lock_resolution : ELockResolution = ELockResolution.FAIL_FAST
-    #timeout_deadlock : int = 120
     tob : FederatedTransaction = None
     fob : FederatedObject = None
 
  
 class FederatedStore(Dependency, LifespanAware):
-
 
     def __init__(self, kernel, *, db_type = None, schema = None):
         super().__init__(kernel)
@@ -250,9 +248,17 @@ class FederatedStore(Dependency, LifespanAware):
         return db
 
 
+    async def _fdb_worker(self):
+        while True:
+            await asyncio.sleep(0.5)
+            gCon.log("Waiting fdb")
+
+
     async def start_async(self):
 
         config = self.conf.get_conf(Dependencies.FEDERATED_DB)
+
+        self.ses_worker = asyncio.create_task(self._fdb_worker())
 
         if self.db_type is None:
             if config is None:
@@ -339,7 +345,20 @@ class FederatedStore(Dependency, LifespanAware):
         parse_fn = getattr(self.fact.uri_constructor, 'parse')
         uri_ob = parse_fn(uri_str)
         return uri_ob
-        
+
+
+    def return_object(self, key, ob):
+        asyncio.create_task(FederatedStore.return_object_task(self, key, ob))
+
+
+    async def return_object_task(self, key, ob):
+        host = ob.uri.host
+        gCon.log(f"I must return the object! key {key} ob {ob} host {host}")
+        ob_str = ob.to_store_str()
+        social_api = self.kernel.get_dep(Dependencies.SOCIAL_API)
+        res = await social_api.remote_req('fdb', 'return', host, uri_str
+                    = key, obstr = ob_str)
+
 
     async def new_ob_from_uri_coro(self, t_id, registrar, uri, fields):
         
@@ -390,28 +409,28 @@ class FederatedStore(Dependency, LifespanAware):
         if rctx.fob is not None:
             return
 
-        first_pass = True
-        while True:
-            t_ob_str = self.db.get_maybe(rctx.uri_str) 
-            if ((t_ob_str is None) and first_pass 
-                and (rctx.uri_ob.host is not None)):
-                first_pass = False
-                t_ob_str = await self._read_remote_ctx(rctx)
-                gCon.log(f"Got {t_ob_str} as the remote string")
-                break
-            break
+        t_ob_str = self.db.get_maybe(rctx.uri_str) 
+        new_state = None
+        if ((t_ob_str is None) and (rctx.uri_ob.host is not None)):
+            t_ob_str = await self._read_remote_ctx(rctx)
+            gCon.log(f"Got {t_ob_str} as the remote string")
+            if rctx.must_lock:
+                new_state = EObState.BORROWED
+            else:
+                new_state = EObState.CLONED
 
-        if t_ob_str is not None:
-            ob_type = rctx.uri_ob.ob_type
-            registrar = self.fact.get_registrar(ob_type)
-            rctx.fob = str_to_fob(rctx.uri_ob, registrar, t_ob_str,
-                                  rctx.must_lock)
-            rctx.tob.read_ob_ctx(rctx)
-            return
+        if t_ob_str is None:
+            if rctx.maybe:
+                return None
+            raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB, rctx.uri_str)
 
-        if rctx.maybe:
-            return None
-        raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB, rctx.uri_str)
+        ob_type = rctx.uri_ob.ob_type
+        registrar = self.fact.get_registrar(ob_type)
+        rctx.fob = str_to_fob(rctx.uri_ob, registrar, t_ob_str,
+                              rctx.must_lock)
+        if new_state is not None:
+            rctx.fob.ob.state = new_state
+        rctx.tob.read_ob_ctx(rctx)
 
 
     async def uri_read_lock(self, t_id, uri_ob, maybe = False):
