@@ -12,6 +12,8 @@
 ######################################################
 
 
+import traceback
+
 from dataclasses import dataclass
 from app.sdc.Dependencies import Dependencies
 from abc import ABC, abstractmethod
@@ -177,8 +179,16 @@ class BaseSocial(SocialProvider):
 
 
     async def incoming_message(self, actor_from, recipient, message):
-        await recipient.new_msg(actor_from, message)
-
+        try:
+            await recipient.new_msg(actor_from, message)
+        except Exception as ex:
+            gCon.log("Got exception while handling the message")
+            #traceback.print_exc(ex)
+            gCon.log("Exiting...")
+        except TypeError as ex:
+            gCon.log("Got type error while handling the message")
+            traceback.print_exc(ex)
+ 
 
     def _pri_get_user_stub(self, user):
         user_stub = self.users.get(user)

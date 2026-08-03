@@ -170,6 +170,7 @@ class Kernel(LifespanAware):
     async def stop_async(self):
         await self.stop_daemons()
         for module in reversed(self.async_modules):
+            gCon.log(f"stopping module {module}")
             await module.ob.stop_async()
 
 

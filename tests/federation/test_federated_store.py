@@ -514,9 +514,9 @@ async def a_test_remote_uri(fdb1, fdb2):
 
     await fdb1.commit_transaction(tid1)
 
-    gCon.log("Waiting...")
-    await asyncio.sleep(0.5)
-    gCon.log("End wait")
+    #gCon.log("Waiting...")
+    #await asyncio.sleep(0.5)
+    #gCon.log("End wait")
 
 
 def test_set_uri_local(fdb1_loc):

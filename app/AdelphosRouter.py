@@ -64,6 +64,7 @@ class AdelphosRouter(Routable):
 
     async def tear_down(self):
         await self.kernel.stop_async()
+        gCon.log("beginning stop sync!")
         self.kernel.stop_sync()
 
 

@@ -36,6 +36,7 @@ modules:
 
     fed_db:
       constructor: app.federation.FederatedStore.FederatedStore
+      priority: 150
       args: 
         schema:  {_inline_schema_}
         db_type: {_db_type_}

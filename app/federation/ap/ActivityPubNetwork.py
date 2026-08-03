@@ -13,6 +13,7 @@
 
 import re
 import json
+import traceback
 
 from starlette.routing import Route
 from starlette.routing import WebSocketRoute
@@ -124,8 +125,12 @@ class ActivityPubNetwork(SocialNetwork):
     async def in_inbox(self, request):
         social_gw = self.kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
         user = request.path_params['username']
-        response = await social_gw.in_inbox(user, request)
-        return response
+        try:
+            response = await social_gw.in_inbox(user, request)
+            return response
+        except Exception as ex:
+            traceback.print_exc(ex)
+            return Response(status_code = 500)
 
 
     def in_outbox(self, request):

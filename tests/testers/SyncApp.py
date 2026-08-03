@@ -65,8 +65,8 @@ class SyncApp:
 
 
     def on_teardown(self):
-        SyncApp.gateway.stop()
         run_coro_in_loop(self.routable.tear_down, ())
+        SyncApp.gateway.stop()
 
 
     def get_routable(self):

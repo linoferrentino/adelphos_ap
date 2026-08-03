@@ -18,6 +18,7 @@ import sys
 import threading
 import yaml
 import asyncio
+from asyncio import TaskGroup
 
 from app.misc.WrapInt import WrapInt
 from app.transport.RouterProvider import RouterProvider
@@ -249,16 +250,25 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     async def _fdb_worker(self):
-        while True:
-            await asyncio.sleep(0.5)
-            gCon.log("Waiting fdb")
+        self.fdbtg = TaskGroup()
+        async with self.fdbtg:
+            while self.run_enabled:
+                async with self.stop_signal:
+                    await self.stop_signal.wait()
+            while self.background_tasks > 0:
+                gCon.log(f"{self.background_tasks} tasks still running.")
+                await asyncio.sleep(0.5)
+            gCon.log(f"end of the _fdb_worker")
 
 
     async def start_async(self):
 
         config = self.conf.get_conf(Dependencies.FEDERATED_DB)
 
+        self.run_enabled = True
+        self.background_tasks = 0
         self.ses_worker = asyncio.create_task(self._fdb_worker())
+        self.stop_signal = asyncio.Condition()
 
         if self.db_type is None:
             if config is None:
@@ -277,6 +287,13 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     async def stop_async(self):
+        gCon.log(f"receiving stop signal, waiting background async tasks")
+        self.run_enabled = False
+        async with self.stop_signal:
+            self.stop_signal.notify_all()
+        gCon.log("Waiting the session worker...")
+        await self.ses_worker
+        gCon.log("After wait session worker.")
         self.db.close()
 
 
@@ -348,17 +365,30 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     def return_object(self, key, ob):
-        asyncio.create_task(FederatedStore.return_object_task(self, key, ob))
+        self.background_tasks += 1
+        self.fdbtg.create_task(FederatedStore.return_object_task(self, key, ob))
 
 
     async def return_object_task(self, key, ob):
+        try:
+            await self.return_object_task_try(key, ob)
+        except Exception as ex:
+            traceback.print_exc(ex)
+            gCon.log("Got exception in return object!")
+        finally:
+            gCon.log("[red]end of remote request[/red]")
+            self.background_tasks -= 1
+            async with self.stop_signal:
+                self.stop_signal.notify_all()
+
+
+    async def return_object_task_try(self, key, ob):
         host = ob.uri.host
         gCon.log(f"I must return the object! key {key} ob {ob} host {host}")
         ob_str = ob.to_store_str()
         social_api = self.kernel.get_dep(Dependencies.SOCIAL_API)
         res = await social_api.remote_req('fdb', 'return', host, uri_str
                     = key, obstr = ob_str)
-
 
     async def new_ob_from_uri_coro(self, t_id, registrar, uri, fields):
         

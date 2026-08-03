@@ -225,5 +225,6 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
 
     def stop_sync(self):
+        gCon.log(f"{id(self)} CLEAR SYSCALL!")
         self.clear_syscalls()
 
