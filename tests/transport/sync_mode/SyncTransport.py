@@ -58,6 +58,10 @@ class SyncTransport(AbstractTransport):
     async def get_json(self, url):
         try:
             return await self._get_json_try(url)
+        except HTTPException as htex:
+            gCon.log(f"returning with http error {htex} for url {url}")
+            traceback.print_exc()
+            raise htex
         except Exception as exc:
             traceback.print_exc()
             raise HTTPException(401)

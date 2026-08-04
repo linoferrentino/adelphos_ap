@@ -87,12 +87,12 @@ class ActivityPubNetwork(SocialNetwork):
         username = request.path_params['username']
         social = self.kernel.get_dep(Dependencies.SOCIAL)
         userob = social.local_user_get(username)
-        if userob is None:
-            gCon.log(f"Not found user {username}")
-            return Response(status_code=404)
-
         config = self.conf
         host = config.get_host()
+        if userob is None:
+            gCon.log(f"{host}: not found user {username}")
+            return Response(status_code=404)
+
         root_path = config.get_root_path()
         host_api = f"{host}{root_path}"
 
@@ -125,11 +125,15 @@ class ActivityPubNetwork(SocialNetwork):
     async def in_inbox(self, request):
         social_gw = self.kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
         user = request.path_params['username']
+        config = self.conf
+        host = config.get_host()
         try:
             response = await social_gw.in_inbox(user, request)
             return response
         except Exception as ex:
-            traceback.print_exc(ex)
+            body = await request.body()
+            gCon.log(f"{host}: got exception while delivering {body}")
+            traceback.print_exc()
             return Response(status_code = 500)
 
 

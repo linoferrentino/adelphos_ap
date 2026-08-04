@@ -373,8 +373,8 @@ class FederatedStore(Dependency, LifespanAware):
         try:
             await self.return_object_task_try(key, ob)
         except Exception as ex:
-            traceback.print_exc(ex)
-            gCon.log("Got exception in return object!")
+            traceback.print_exc()
+            gCon.log(f"Got exception {ex} in return object!")
         finally:
             gCon.log("[red]end of remote request[/red]")
             self.background_tasks -= 1

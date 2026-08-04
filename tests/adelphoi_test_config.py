@@ -36,7 +36,7 @@ modules:
 
     fed_db:
       constructor: app.federation.FederatedStore.FederatedStore
-      priority: 150
+      priority: 20
       args: 
         schema:  {_inline_schema_}
         db_type: {_db_type_}
@@ -46,6 +46,7 @@ modules:
 
     social_api:
       constructor: tests.testers.SimpleSocialApiProvider.SimpleSocialApiProvider
+      priority: 25
 
     social:
       constructor: app.federation.BaseSocial.BaseSocial

@@ -20,7 +20,11 @@ class FederatedRPCs:
 
     @staticmethod
     async def _sys_call_return(kernel, actor_from, pars):
-        gCon.log("Got the return!")
+        uri_str = pars['uri_str']
+        gCon.log(f"Got the return for object {uri_str}")
+        return {
+                'val' : 'good'
+        }
 
 
     @staticmethod

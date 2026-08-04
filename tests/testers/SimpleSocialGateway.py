@@ -40,6 +40,7 @@ class SimpleSocialGateway(BaseSocialGateway):
 
 
     async def _check_signature_message(self, actor_str, request, body_str):
+        #gCon.log(f"[gray]check signature for {body_str} coming from {actor_str}[/gray]")
         actor_dto = await self._actor_get_or_discover(actor_str)
 
         headers = request.headers

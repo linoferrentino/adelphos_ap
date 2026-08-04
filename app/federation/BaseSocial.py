@@ -182,12 +182,9 @@ class BaseSocial(SocialProvider):
         try:
             await recipient.new_msg(actor_from, message)
         except Exception as ex:
-            gCon.log("Got exception while handling the message")
-            #traceback.print_exc(ex)
+            traceback.print_exc()
+            gCon.log(f"Got exception {ex} while handling the message")
             gCon.log("Exiting...")
-        except TypeError as ex:
-            gCon.log("Got type error while handling the message")
-            traceback.print_exc(ex)
  
 
     def _pri_get_user_stub(self, user):

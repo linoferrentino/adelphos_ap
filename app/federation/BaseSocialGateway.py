@@ -178,9 +178,11 @@ resource=acct:{actor_instance}"
         actor_uri = urlsplit(uri)
         actor_uri = actor_uri._replace(fragment = "")
         social_dao = self.kernel.get_dep(Dependencies.SOCIAL_DAO)
+        gCon.log(f"Asking actor actor {actor_uri}")
         actor_dto = social_dao.actor_get_from_parsed_url(actor_uri)
         if actor_dto is not None:
             return actor_dto
+        gCon.log(f"Not found, I will discover: {actor_uri}")
         return await self._actor_discover_from_actor_uri(actor_uri)
 
 

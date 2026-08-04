@@ -59,6 +59,7 @@ class SimpleSocialDao(BaseSocialDao):
             return server_dto.server_id
         server_dto_ob = json.loads(server_dto_dict['srv'])
         server_dto = ApServerDto(**server_dto_ob)
+        gCon.log(f"Create the server {host_name} with id {server_dto.server_id}")
         return server_dto.server_id
 
 
@@ -67,8 +68,11 @@ class SimpleSocialDao(BaseSocialDao):
             host = self.conf.get_host()
         else:
             host = parsed_url.netloc
+
+        user_name = parsed_url.path.split('/')[-1]
     
-        actor = self._actor_get_host(host, parsed_url.path)
+        gCon.log(f"ASKING user {host} ---> {user_name}")
+        actor = self._actor_get_host(host, user_name)
         return actor
 
 
@@ -81,10 +85,12 @@ class SimpleSocialDao(BaseSocialDao):
 
         srv_info = self.servers.get(host)
         if srv_info is None:
+            gCon.log(f"Not found host {host}")
             return None
         users = srv_info['users']
         actor_dto_dict = users.get(user_name)
         if actor_dto_dict is None:
+            gCon.log(f"Not found user {user_name}")
             return None
         actor_dto = ApActorDto(**json.loads(actor_dto_dict))
         actor_dto.srv = ApServerDto(**actor_dto.srv)
@@ -93,6 +99,10 @@ class SimpleSocialDao(BaseSocialDao):
 
 
     def _store_actor_impl(self, actor_dto):
+
+        host = self.kernel.config.get_host()
+
+        gCon.log(f"[red]{host}: storing {actor_dto.get_social_handle()}[/red]")
 
         found = False
         for k, server_inf in self.servers.items():
@@ -111,6 +121,9 @@ class SimpleSocialDao(BaseSocialDao):
 
         server_inf['users'][actor_dto.act.preferred_username] = \
                 json.dumps(asdict(actor_dto))
+
+        gCon.log(f"[red]Stored {actor_dto.act.preferred_username} with id \
+{actor_dto.act.actor_id}[/red]")
 
         return actor_dto.act.actor_id
 
