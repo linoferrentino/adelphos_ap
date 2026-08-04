@@ -71,7 +71,7 @@ class SimpleSocialDao(BaseSocialDao):
 
         user_name = parsed_url.path.split('/')[-1]
     
-        gCon.log(f"ASKING user {host} ---> {user_name}")
+        gCon.log(f"ASKING {parsed_url} | {host} ---> {user_name}")
         actor = self._actor_get_host(host, user_name)
         return actor
 

@@ -40,10 +40,12 @@ class SimpleSocialGateway(BaseSocialGateway):
 
 
     async def _check_signature_message(self, actor_str, request, body_str):
-        #gCon.log(f"[gray]check signature for {body_str} coming from {actor_str}[/gray]")
+        gCon.log(f"[gray]check signature for {body_str} coming from {actor_str}[/gray]")
         actor_dto = await self._actor_get_or_discover(actor_str)
 
         headers = request.headers
+
+        gCon.log(f"headers are {headers}")
         
         signature = headers.get('x-simple-signature')
         if signature is None:
@@ -59,6 +61,7 @@ class SimpleSocialGateway(BaseSocialGateway):
         headers = {
                 'x-simple-signature' : f"{message[:3]}-{message[-3:]}"
                 }
+        gCon.log("Sending headers {headers}")
         return ( headers, { 
                 'actor' : actor_uri,
                 'msg' : message,
