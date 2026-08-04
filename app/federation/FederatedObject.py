@@ -61,6 +61,19 @@ def enforce_schema_scalar(func):
     return _inner_enforce
 
 
+def enforce_uri_type(func):
+    def _inner_enforce(self, key, *args):
+        schema = self.registrar.pars
+        par = schema.get(key)
+        if (par.typecol != FObColType.URI and 
+            par.typecol != FObColType.LOCAL_URI):
+            raise FdbException(EFdbErrors.EFDB_URI_EXPECTED, key)
+        return func(self, key, *args)
+
+    return _inner_enforce
+
+
+
 def enforce_schema_not_scalar(func):
     def _inner_enforce(self, key, *args):
         schema = self.registrar.pars
@@ -405,12 +418,23 @@ class FederatedObject:
         self.modified = True
         
 
+    @enforce_schema_not_scalar
+    def get_as_list(self, key):
+        cur_value = self.ob.fields.get(key)
+        if cur_value is None:
+            return []
+        return list(cur_value)
+                
+
     @ensure_lock
     @enforce_schema_not_scalar
+    @enforce_uri_type
     def add_link(self, key, ob):
         schema = self.registrar.pars
         par = schema.get(key)
         cur_value = self.ob.fields[key]
+
+        #if par.typecol == FObColType.URI:
         uri_str = ob().uri.unparse()
 
         if par.cardinality == FObCardType.SET:

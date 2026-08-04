@@ -128,26 +128,8 @@ class ActivityPubNetwork(SocialNetwork):
     async def in_inbox(self, request):
         social_gw = self.kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
         user = request.path_params['username']
-        config = self.conf
-        host = config.get_host()
-        try:
-            response = await social_gw.in_inbox(user, request)
-            return response
-        except AdelphosException as adex:
-            body = await request.body()
-            gCon.log(f"{host}: got adelphos exception {adex} while delivering {body}")
-            #return Response(status_code = 401)
-            raise
-        except HTTPException as htex:
-            body = await request.body()
-            gCon.log(f"{host}: got htxexception {htex} while delivering {body}")
-            #return Response(status_code = htex.status_code)
-            raise
-        except Exception as ex:
-            body = await request.body()
-            gCon.log(f"{host}: got exception {type(ex)} while delivering {body}")
-            traceback.print_exc()
-            return Response(status_code = 500)
+        response = await social_gw.in_inbox(user, request)
+        return response
 
 
     def in_outbox(self, request):

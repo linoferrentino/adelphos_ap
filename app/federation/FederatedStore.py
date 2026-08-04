@@ -458,6 +458,14 @@ class FederatedStore(Dependency, LifespanAware):
         registrar = self.fact.get_registrar(ob_type)
         rctx.fob = str_to_fob(rctx.uri_ob, registrar, t_ob_str,
                               rctx.must_lock)
+
+        if rctx.fob.ob.state == EObState.LENT:
+            gCon.log(f"Object has been lent! {rctx.fob}")
+            raise FdbException(EFdbErrors.EFDB_LENT, rctx.uri_str)
+        else:
+            gCon.log(f"Object is present! {t_ob_str}")
+
+
         if new_state is not None:
             rctx.fob.ob.state = new_state
         rctx.tob.read_ob_ctx(rctx)

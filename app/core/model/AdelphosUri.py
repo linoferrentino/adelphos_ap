@@ -36,7 +36,7 @@ class AdelphosUri(FederatedUri):
 
     family: str = None
 
-    def unparse(self):
+    def unparse(self, hostname = None):
 
         if self.ob_type == EAdelphosType.ALIAS_TYPE:
             uri_local = f"#{self.ob_type}#{self.name}.{self.family}"
@@ -46,10 +46,11 @@ class AdelphosUri(FederatedUri):
         if self.fragment is not None:
             uri_local += f"#{self.fragment}"
 
-        if self.host is None:
-            return uri_local
+        uri_local += self._base_get_host_part(hostname)
+        #if self.host is None:
+        #    return uri_local
 
-        uri_local += f"@{self.host}"
+        #uri_local += f"@{self.host}"
         return uri_local
      
 

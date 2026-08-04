@@ -42,8 +42,10 @@ class EFdbErrors(IntEnum):
     EFDB_CARDINALITY_LOWER = 22
     EFDB_INVALID_ENUM_VALUE = 23
     EFDB_RESERVED = 24 
+    EFDB_LENT = 25
+    EFDB_URI_EXPECTED = 26
 
-    EFDB_INTERNAL_ERROR = 999
+    EFDB_INTERNAL_ERROR = 9999
 
 
 class FdbException(AdelphosBaseException):

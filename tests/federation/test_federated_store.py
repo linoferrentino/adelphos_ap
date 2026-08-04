@@ -514,9 +514,22 @@ async def a_test_remote_uri(fdb1, fdb2):
 
     await fdb1.commit_transaction(tid1)
 
-    #gCon.log("Waiting...")
-    #await asyncio.sleep(0.5)
-    #gCon.log("End wait")
+    tid2 = await fdb2.begin_transaction()
+    with pytest.raises(FdbException) as fex:
+        local = await fdb2.uri_read_lock(tid2, t2uri)
+    assert fex.value.errno == EFdbErrors.EFDB_LENT
+
+    #gCon.log(f"Waiting")
+    #await asyncio.sleep(5)
+    #local = await fdb2.uri_read_lock(tid2, t2uri)
+
+    #assert local is not None
+    #gCon.log(f"the {local().uri} (remote) object is present!")
+
+    #trust_lines = local().get_as_list('trust_lines')
+    #gCon.log(f"trust lines are {trust_lines}")
+    #assert len(trust_lines) == 1
+
 
 
 def test_set_uri_local(fdb1_loc):
