@@ -133,7 +133,6 @@ class SyncTester(ContextDecorator):
 
 
     def __exit__(self, *exc):
-        gCon.log("----------- END TEST")
         self.app.on_teardown()
         return False
 

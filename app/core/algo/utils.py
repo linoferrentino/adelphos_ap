@@ -29,26 +29,26 @@ def federated_transaction(raise_if_fail):
 
         async def internal_commit(kernel, *args, **kwargs):
             fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-            t_id = await fdb.begin_transaction()
+            t_id = fdb.begin_transaction()
             kwargs['t_id'] = t_id
             try:
                 res = await func(kernel, *args, **kwargs)
-                await fdb.commit_transaction(t_id)
+                fdb.commit_transaction(t_id)
                 return res if res is not None else ECoreErrno.DONE_OK
             except AdelphosCoreException as ex:
-                await fdb.rollback_transaction(t_id)
+                fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return -ex.errno
                 raise ex
             except FdbException as fdbex:
                 traceback.print_exc()
-                await fdb.rollback_transaction(t_id)
+                fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return str(fdbex)
                 raise AdelphosCoreException(ECoreErrno.EFDB, fdbex.out_str) from fdbex
             except Exception as exc:
                 traceback.print_exc()
-                await fdb.rollback_transaction(t_id)
+                fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return -ECoreErrno.ESYS
                 raise AdelphosCoreException(ECoreErrno.ESYS, str(exc)) from exc 

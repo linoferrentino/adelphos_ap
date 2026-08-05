@@ -46,7 +46,7 @@ class FederatedUri(ABC):
 
 
     def _base_get_host_part(self):
-        return f"@{self.host}"
+        return f"@{self.host}" if self.host is not None else ""
 
 
     @staticmethod

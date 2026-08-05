@@ -33,7 +33,6 @@ class SyncGateway(AbstractGateway):
 
 
     def stop(self):
-        gCon.log("-------------------- stop gateway!")
         if len(self.hosts) > 0:
             self.hosts = dict()
 

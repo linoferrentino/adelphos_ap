@@ -22,10 +22,12 @@ class FederatedRPCs:
     async def _sys_call_return(kernel, actor_from, pars):
         uri_str = pars['uri_str']
         obstr = pars['obstr']
-        gCon.log(f"Got the return for object {uri_str} = {obstr}")
-        #return {
-        #        'val' : 'good'
-        #}
+        gCon.log(f"[red]Got the return for object {uri_str} = {obstr}[/red]")
+        fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+
+        t_id = fdb.begin_transaction()
+        await fdb.return_object_received(t_id, uri_str, obstr)
+        fdb.commit_transaction(t_id)
 
 
     @staticmethod
@@ -37,7 +39,7 @@ class FederatedRPCs:
 
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
-        t_id = await fdb.begin_transaction()
+        t_id = fdb.begin_transaction()
         fob = await fdb.uri_read_str(t_id, uri_str,
                                      must_lock = lock, maybe = True)
         if fob is None:
@@ -48,9 +50,9 @@ class FederatedRPCs:
 
         if lock == True:
             fob().lent_to(social_handle)
-            await fdb.commit_transaction(t_id)
+            fdb.commit_transaction(t_id)
         else:
-            await fdb.rollback_transaction(t_id)
+            fdb.rollback_transaction(t_id)
 
         return {
                 'obstr' : fob_str

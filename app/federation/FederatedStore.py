@@ -77,7 +77,7 @@ class FederatedTransaction:
 
     def _do_creates(self):
         for k,v in self.created_uris.items():
-            gCon.log(f"check creates {v.ob}")
+            gCon.log(f"Created {k} => {v.ob}")
             if v.ob.fields[REF_COUNT_COLUMN] == 0:
                 continue
             self._update_uri_str(k, v)
@@ -114,7 +114,8 @@ class FederatedTransaction:
             new_version = W32.inc_and_get_val(int(fob.ob.fields[VERSION_COLUMN]))
             fob.ob.fields[VERSION_COLUMN] = new_version
         ob_str = fob.to_store_str()
-        gCon.log(f"Set {key_str} = {ob_str}")
+        host = self.fdb.hostname
+        gCon.log(f"[blue]{host} => Set {key_str} = {ob_str}[/blue]")
         self.fdb.db.set(key_str, ob_str)
 
 
@@ -155,6 +156,7 @@ class FederatedTransaction:
     def new_ob(self, fob):
         uri_db = self.fdb.remove_localhost(fob.uri)
         key_uri = uri_db.unparse()
+        gCon.log(f"new object {fob.uri} it has become {uri_db} -> {key_uri}")
 
         #key_uri = fob.uri.unparse()
 
@@ -220,6 +222,8 @@ class FedStore_ReadCtx:
     maybe: bool  = False
     uri_str: str = None
     must_lock: bool = False 
+    only_local: bool = False
+    internal_read: bool = False
     tob : FederatedTransaction = None
     fob : FederatedObject = None
 
@@ -392,6 +396,7 @@ class FederatedStore(Dependency, LifespanAware):
         res = await social_api.remote_req('fdb', 'return', host, uri_str
                     = key, obstr = ob_str)
 
+
     async def new_ob_from_uri_coro(self, t_id, registrar, uri, fields):
         
         t_ob = self.get_tob_safe(t_id)
@@ -412,7 +417,7 @@ class FederatedStore(Dependency, LifespanAware):
         pass
 
 
-    def remove_localhost(self, uriob):
+    def remove_localhost(self, uriob, enforce = False):
         if uriob.host is None:
             return uriob
         if ((uriob.host == self.hostname) or
@@ -422,6 +427,8 @@ class FederatedStore(Dependency, LifespanAware):
             copied_uri = copy.copy(uriob)
             copied_uri.host = None
             return copied_uri
+        if enforce == True:
+            raise FdbException(EFDB_ONLY_LOCAL_STORE, uriob.host)
         return uriob
 
 
@@ -435,9 +442,26 @@ class FederatedStore(Dependency, LifespanAware):
         return remote_ob_str
 
 
+    async def return_object_received(self, t_id, uri_str, obstr):
+        gCon.log(f"The uri to ask is {uri_str}")
+
+        ob = await self.uri_read_str(t_id, uri_str, only_local = True,
+                                     internal_read = True)
+        gCon.log(f"got {ob().ob.fields} as the object")
+
+        if ob().ob.state != EObState.LENT:
+            gCon.log(f"invalid state {ob().ob.state}")
+            raise FdbException(EFdbErrors.EFDB_INVALID_STATE)
+
+        
+        gCon.log(f"the object returned is {obstr}")
+
+
+
     async def _read_ctx(self, rctx):
         rctx.tob = self.get_tob_safe(rctx.t_id)
-        rctx.uri_ob = self.remove_localhost(rctx.uri_ob)
+        rctx.uri_ob = self.remove_localhost(rctx.uri_ob,
+                    rctx.only_local)
 
         rctx.uri_str = rctx.uri_ob.unparse()
         rctx.fob = rctx.tob.get_ob(rctx.uri_str)
@@ -464,12 +488,12 @@ class FederatedStore(Dependency, LifespanAware):
         rctx.fob = str_to_fob(rctx.uri_ob, registrar, t_ob_str,
                               rctx.must_lock)
 
-        if rctx.fob.ob.state == EObState.LENT:
+        if ((rctx.fob.ob.state == EObState.LENT) and 
+            (rctx.internal_read == False)):
             gCon.log(f"Object has been lent! {rctx.fob}")
             raise FdbException(EFdbErrors.EFDB_LENT, rctx.uri_str)
         else:
             gCon.log(f"Object is present! {t_ob_str}")
-
 
         if new_state is not None:
             rctx.fob.ob.state = new_state
@@ -482,11 +506,9 @@ class FederatedStore(Dependency, LifespanAware):
         return weakref.ref(rctx.fob)
 
 
-    async def uri_read_str(self, t_id, uri_str, *, maybe = False,
-                           must_lock = True):
+    async def uri_read_str(self, t_id, uri_str, **kwargs):
         uri_ob = self.parse_uri(uri_str)
-        rctx = FedStore_ReadCtx(uri_ob, t_id, must_lock = must_lock, 
-                                maybe = maybe) 
+        rctx = FedStore_ReadCtx(uri_ob, t_id, kwargs) 
         return await self._read_ref(rctx)
 
 
@@ -506,7 +528,7 @@ class FederatedStore(Dependency, LifespanAware):
         return weakref.ref(rctx.fob)
 
 
-    async def begin_transaction(self):
+    def begin_transaction(self):
 
         tid = uuid.uuid4()
         tob = FederatedTransaction(tid, self)
@@ -514,12 +536,12 @@ class FederatedStore(Dependency, LifespanAware):
         return tid
 
 
-    async def commit_transaction(self, t_id):
+    def commit_transaction(self, t_id):
         t_ob = self.get_tob_safe(t_id)
         t_ob.t_commit()
 
 
-    async def rollback_transaction(self, t_id):
+    def rollback_transaction(self, t_id):
         t_ob = self.get_tob_safe(t_id)
         t_ob.t_rollback()
 

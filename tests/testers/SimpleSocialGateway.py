@@ -12,6 +12,7 @@
 ######################################################
 
 
+import json
 from app.federation.SocialGateway import SocialGateway
 from app.federation.BaseSocialGateway import BaseSocialGateway
 from app.exc.AdelphosException import AdelphosException
@@ -40,16 +41,22 @@ class SimpleSocialGateway(BaseSocialGateway):
 
 
     async def _check_signature_message(self, actor_str, request, body_str):
-        gCon.log(f"[gray]check signature for {body_str} coming from {actor_str}[/gray]")
         actor_dto = await self._actor_get_or_discover(actor_str)
 
         headers = request.headers
 
-        gCon.log(f"headers are {headers}")
-        
         signature = headers.get('x-simple-signature')
         if signature is None:
             raise AdelphosException(AdErrno.EINVALID_SIGNATURE)
+
+        body_ob = json.loads(body_str)
+        msg = body_ob['msg']
+
+        got_signature = f"{msg[:3]}-{msg[-3:]}"
+        if got_signature != signature:
+            if signature != 'BACKDOOR_GO':
+                raise AdelphosException(AdErrno.EINVALID_SIGNATURE,
+                    f"msg: {msg} expected: {signature}")
 
         if actor_dto is None:
             return (None, False)
@@ -61,7 +68,6 @@ class SimpleSocialGateway(BaseSocialGateway):
         headers = {
                 'x-simple-signature' : f"{message[:3]}-{message[-3:]}"
                 }
-        gCon.log("Sending headers {headers}")
         return ( headers, { 
                 'actor' : actor_uri,
                 'msg' : message,

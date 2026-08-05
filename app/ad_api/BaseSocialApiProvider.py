@@ -205,7 +205,6 @@ class BaseSocialApiProvider(SocialApiProvider):
     
     async def stop_async(self):
         size_req = len(self.async_contexts)
-        gCon.log(f"----> STOP ASYNC BaseSocialApiProvider {size_req} <---------")
         social_user = self.get_social_user()
         social = self.kernel.get_dep(Dependencies.SOCIAL)
         social.remove_listener(social_user)
