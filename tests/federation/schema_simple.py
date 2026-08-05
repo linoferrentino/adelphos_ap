@@ -30,13 +30,12 @@ TYPE_T2 = "TYPE_T2"
 
 class FederatedUriTest(FederatedUri):
 
-    def unparse(self, hostname = None):
+    def unparse(self, force_local = False):
         base_name = "XX_test_type_" + self.ob_type + "/name=" + self.name
         if self.fragment is not None:
             base_name += f"#{self.fragment}"
-        base_name += self._base_get_host_part(hostname)
-        #if self.host is not None:
-        #    base_name += f"@{self.host}"
+        if force_local == False:
+            base_name += self._base_get_host_part()
         return base_name
 
 

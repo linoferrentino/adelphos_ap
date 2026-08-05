@@ -153,7 +153,10 @@ class FederatedTransaction:
         raise fdex
 
     def new_ob(self, fob):
-        key_uri = fob.uri.unparse()
+        uri_db = self.fdb.remove_localhost(fob.uri)
+        key_uri = uri_db.unparse()
+
+        #key_uri = fob.uri.unparse()
 
         #if self.locked_uris.get(key_uri) is not None:
         #    raise FdbException(EFdbErrors.EFDB_URI_EXISTS)
@@ -343,8 +346,7 @@ class FederatedStore(Dependency, LifespanAware):
         if registrar is None:
             raise FdbException(EFdbErrors.EFDB_UNKNOWN_TYPE)
 
-        uri_loc = self.remove_localhost(uri)
-        return await self.new_ob_from_uri_coro(t_id, registrar, uri_loc, fields)
+        return await self.new_ob_from_uri_coro(t_id, registrar, uri, fields)
 
 
     async def new_ob(self, t_id, ob_type, name, *, fields = {} , **kwargs):
@@ -395,6 +397,9 @@ class FederatedStore(Dependency, LifespanAware):
         t_ob = self.get_tob_safe(t_id)
 
         await self.ensure_uri_not_existing(t_ob, uri)
+
+        if uri.host is None:
+            uri.host = self.hostname
 
         fob = FederatedObject(uri, registrar, fields = fields, locked = True)
         t_ob.new_ob(fob)

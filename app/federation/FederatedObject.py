@@ -406,7 +406,7 @@ class FederatedObject:
         gCon.log(f"cur_value {key} {cur_value}")
         if cur_value is None:
             raise FdbException(EFdbErrors.EFDB_VALUE_NOT_PRESENT, key)
-        uri_str = ob().uri.unparse()
+        uri_str = ob().uri.unparse(par.typecol == FObColType.LOCAL_URI)
         uri_set = set(cur_value)
         if uri_str not in uri_set:
             raise FdbException(EFdbErrors.EFDB_VALUE_NOT_PRESENT, key)
@@ -434,8 +434,7 @@ class FederatedObject:
         par = schema.get(key)
         cur_value = self.ob.fields[key]
 
-        #if par.typecol == FObColType.URI:
-        uri_str = ob().uri.unparse()
+        uri_str = ob().uri.unparse(par.typecol == FObColType.LOCAL_URI)
 
         if par.cardinality == FObCardType.SET:
             if cur_value is None:
@@ -465,12 +464,16 @@ class FederatedObject:
         
 
     def _compare_and_swap_link_impl(self, key, expected_ob, new_ob):
+        schema = self.registrar.pars
+        par = schema.get(key)
+
         prev_link = self.ob.fields.get(key)
 
         if expected_ob is None:
             exp_link = None
         else:
-            exp_link = expected_ob().uri.unparse()
+            exp_link = expected_ob().uri.unparse(
+                par.typecol == FObColType.LOCAL_URI)
 
         if prev_link != exp_link:
             raise FederatedObject(EFdbErrors.EFDB_URI_NOT_EXPECTED, prev_link)
@@ -478,7 +481,8 @@ class FederatedObject:
         if new_ob is None:
             new_link = None
         else:
-            new_link = new_ob().uri.unparse()
+            new_link = new_ob().uri.unparse(
+                par.typecol == FObColType.LOCAL_URI)
        
         if prev_link == new_link:
             return
