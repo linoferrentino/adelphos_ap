@@ -41,7 +41,8 @@ class FederatedRPCs:
 
         t_id = fdb.begin_transaction()
         fob = await fdb.uri_read_str(t_id, uri_str,
-                                     must_lock = lock, maybe = True)
+                                     must_lock = lock,
+                                     maybe = True)
         if fob is None:
             return None
 
@@ -50,6 +51,7 @@ class FederatedRPCs:
 
         if lock == True:
             fob().lent_to(social_handle)
+            gCon.log("======================= finalizing lending ")
             fdb.commit_transaction(t_id)
         else:
             fdb.rollback_transaction(t_id)
