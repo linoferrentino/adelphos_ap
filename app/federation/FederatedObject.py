@@ -254,6 +254,15 @@ class FederatedObject:
         pass
 
 
+    def returned_object(self, obstr):
+        gCon.log(f"I have to substitute {obstr}")
+        ob = json.loads(obstr)
+        obs = FObSerialized(**ob)
+        self.ob = obs
+        self.ob.state = EObState.PRESENT
+        self.modified = True
+
+
     def lent_to(self, social_handle):
         now = datetime.now()
         now_str = now.strftime("%Y-%m-%dT%H:%M:%S.%f")

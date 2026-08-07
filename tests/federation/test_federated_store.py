@@ -525,12 +525,11 @@ async def a_test_remote_uri(fdb1, fdb2):
     local = await fdb2.uri_read_lock(tid2, t2uri)
     gCon.log(f"the {local().uri} (remote) object is present!")
 
-    #assert local is not None
+    assert local is not None
 
-    #trust_lines = local().get_as_list('trust_lines')
-    #gCon.log(f"trust lines are {trust_lines}")
-    #assert len(trust_lines) == 1
-
+    trust_lines = local().get_as_list('trust_lines')
+    gCon.log(f"trust lines are {trust_lines}")
+    assert len(trust_lines) == 1
 
 
 def test_set_uri_local(fdb1_loc):

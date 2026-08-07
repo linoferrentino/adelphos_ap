@@ -447,20 +447,22 @@ class FederatedStore(Dependency, LifespanAware):
     async def return_object_received(self, t_id, uri_str, obstr):
         gCon.log(f"The uri to ask is {uri_str}")
 
-        ob = await self.uri_read_str(t_id, uri_str, only_local = True,
+        rctx = await self._uri_read_str_impl(t_id, uri_str, only_local = True,
                                      internal_read = True, must_lock = True)
-        gCon.log(f"got {ob().ob.fields} as the object")
+        gCon.log(f"got {rctx.fob.ob.fields} as the object")
 
-        if ob().ob.state != EObState.LENT:
-            gCon.log(f"invalid state {ob().ob.state}")
+        if rctx.fob.ob.state != EObState.LENT:
+            gCon.log(f"invalid state {rctx.fob.state}")
             raise FdbException(EFdbErrors.EFDB_INVALID_STATE)
 
-        ob().ob = str_to_fob(rctx.uri_ob, registrar, t_ob_str,
-                              rctx.must_lock)
+        rctx.fob.returned_object(obstr)
 
+        #ob_type = rctx.uri_ob.ob_type
+        #registrar = self.fact.get_registrar(ob_type)
+        #ob().ob = str_to_fob(rctx.uri_ob, registrar, t_ob_str,
+        #                      rctx.must_lock)
         
-        gCon.log(f"the object returned is {obstr}")
-
+        #gCon.log(f"the object returned is {obstr}")
 
 
     async def _read_ctx(self, rctx):
@@ -511,17 +513,25 @@ class FederatedStore(Dependency, LifespanAware):
         return weakref.ref(rctx.fob)
 
 
-    async def uri_read_str(self, t_id, uri_str, **kwargs):
+    async def _uri_read_str_impl(self, t_id, uri_str, **kwargs):
         uri_ob = self.parse_uri(uri_str)
         rctx = FedStore_ReadCtx(uri_ob, t_id, **kwargs) 
-        return await self._read_ref(rctx)
-
-
-    async def _read_ref(self, rctx):
         await self._read_ctx(rctx)
+        return rctx
+
+
+    async def uri_read_str(self, t_id, uri_str, **kwargs):
+        rctx = await self._uri_read_str_impl(t_id, uri_str, **kwargs)
         if rctx.fob is None:
             return None
         return weakref.ref(rctx.fob)
+
+
+    #async def _read_ref(self, rctx):
+    #    await self._read_ctx(rctx)
+    #    if rctx.fob is None:
+    #        return None
+    #    return weakref.ref(rctx.fob)
 
 
     async def uri_read_no_lock(self, t_id, uri_ob, maybe = False):
