@@ -177,6 +177,19 @@ adelphos_testable_2_conf = {
 }
 
 
+adelphos_testable_3_conf = {
+
+        '_port_': 9929,
+        '_daemon_user_': 'adelphos',
+        '_demo_1_nick_': 'demo29',
+        '_demo_1_complete_name_': 'demo29 alt',
+        '_demo_2_nick_': 'demo30',
+        '_demo_2_complete_name_': 'demo30 alt',
+        '_root_handle_' : ':local:demo29',
+        '_root_password_' : 'tigerZZ',
+}
+
+
 debug_adelphos_chunk_modules = """
 
     social_dao:

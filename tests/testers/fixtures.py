@@ -66,7 +66,25 @@ def get_routable_app_param(request):
                                            conf, request.param)
 
     return _build_routable_from_config
- 
+
+
+def _build_federated_world_impl(federated_world_template, conf):
+    if conf is not None:
+        federated_world = federated_world_template.format(**conf)
+    else:
+        federated_world = federated_world_template
+
+    fed_world = yaml.safe_load(federated_world)
+    gCon.log(f"I have to build this world {fed_world}")
+
+
+@pytest.fixture(scope = "session")
+def federated_world():
+    def _build_federated_world(federated_world_template, conf = None):
+        return _build_federated_world_impl(federated_world_template, conf)
+
+    return _build_federated_world
+
 
 @pytest.fixture(scope = "session")
 def get_routable_app():

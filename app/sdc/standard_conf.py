@@ -214,7 +214,21 @@ standard_cli_api = """
                 required: true
               password:
                 required: true
-                
+
+      trustline:
+        class: app.core.sys.TrustLineCalls.TrustLineCalls
+        syscalls:
+          - name: create
+            pars:
+              trust_level:
+                required: true
+              maximum_weight:
+                required: false
+                default: 5.0
+              maximum_dim:
+                required: false
+                default: 50.0
+              
 
       family:
         class: app.core.sys.FamilyCalls.FamilyCalls

@@ -15,6 +15,7 @@ import re
 import pytest
 
 from tests.testers.fixtures import get_routable_app
+from tests.testers.fixtures import federated_world
 import tests.adelphoi_test_config as tconf
 import tests.helpers.alias_helpers as ah
 import tests.helpers.family_helpers as fh
@@ -24,6 +25,25 @@ from app.exc.AdelphosException import AdErrno
 from app.exc.AdelphosException import AdelphosException
 from app.sdc.Dependencies import Dependencies
 from app.logging import gCon
+from tests.scripts.world1 import world_1_yaml
+
+
+def test_create_trust_line(federated_world):
+
+    world = federated_world(world_1_yaml)
+    gCon.log(f"world to test is {world}")
+
+#
+#    test1 = get_routable_app('test1', stdcnf.release_kernel_template,
+#                             tconf.adelphos_testable_1_conf)
+#
+#    test2 = get_routable_app('test2', stdcnf.release_kernel_template,
+#                             tconf.adelphos_testable_2_conf)
+#
+#    test3 = get_routable_app('test3', stdcnf.release_kernel_template,
+#                             tconf.adelphos_testable_3_conf)
+#
+#    gCon.log(f"the world is {world_1_yaml}")
 
 
 def test_invite_member(get_routable_app):
