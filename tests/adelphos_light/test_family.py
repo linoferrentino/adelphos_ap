@@ -31,19 +31,8 @@ from tests.scripts.world1 import world_1_yaml
 def test_create_trust_line(simulated_fediverse):
 
     sim_fed = simulated_fediverse(world_1_yaml)
-    gCon.log(f"world to test is {sim_fed}")
-
-#
-#    test1 = get_routable_app('test1', stdcnf.release_kernel_template,
-#                             tconf.adelphos_testable_1_conf)
-#
-#    test2 = get_routable_app('test2', stdcnf.release_kernel_template,
-#                             tconf.adelphos_testable_2_conf)
-#
-#    test3 = get_routable_app('test3', stdcnf.release_kernel_template,
-#                             tconf.adelphos_testable_3_conf)
-#
-#    gCon.log(f"the world is {world_1_yaml}")
+    #gCon.log(f"world to test is {sim_fed}")
+    sim_fed.test(None)
 
 
 def test_invite_member(get_routable_app):

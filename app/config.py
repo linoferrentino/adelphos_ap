@@ -65,7 +65,7 @@ class Config:
 
     
     def get_social_config(self):
-        return self.config['conf']['social']
+        return self.config['conf'].get('social')
 
 
     def get_social_dao_cnf(self):

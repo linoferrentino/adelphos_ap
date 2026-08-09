@@ -12,8 +12,13 @@
 ######################################################
 
 import yaml
+from dataclasses import dataclass
+
 from app.logging import gCon
+import app.consts as CNST
+
 import app.sdc.standard_conf as sc
+import tests.testers.fixtures as fix
 
 
 simulated_instance_conf = """
@@ -22,10 +27,17 @@ simulated_instance_conf = """
 
       debug: true 
       port: 8999
-      host: {_host_} 
+      host: {host} 
       root_path: /api
-      root: ':local:{_root_handle_}'
-      root_password: {_root_password_}
+      root: ':local:{root}'
+      root_password: {password}
+
+    social:
+      users:
+        - preferredusername: adelphos
+          name: Adelphos daemon
+          login_shell: false
+
 
     social_dao:
       db_name: ':memory:'
@@ -44,6 +56,13 @@ standard_simulated_instance_conf = (sc.testable_kernel_prefix
                 + sc.release_daemons)
 
 
+@dataclass
+class SimulatedInstance:
+
+    instance: object
+    sock: object = None
+
+
 class SimulFediverse:
     
 
@@ -56,6 +75,7 @@ class SimulFediverse:
         fed_world = yaml.safe_load(federated_world)
         gCon.log(f"I have to build this world {fed_world}")
 
+        self._inst = dict()
         for instance in fed_world['instances']:
             self._build_instance(instance)
 
@@ -63,11 +83,29 @@ class SimulFediverse:
     def _build_instance(self, instance):
         name = instance['name']
         gCon.log(f"Build instance {name} = {instance}")
-        #routable = _build_routable_config_impl()
-        pass
+        instance = fix._build_routable_config_impl(name,
+            standard_simulated_instance_conf, instance, 'sync')
+        si = SimulatedInstance(instance)
+        self._inst[name] = si
 
 
+    def test(self, testcase):
+        list_inst = list( x.instance for x in self._inst.values() )
+        gCon.log(f"I have to test the list {list_inst}")
+        with_stat = "with ("
+        for ix in range(0, len(list_inst)):
+            with_stat += f" list_inst[{ix}] as li_{ix},  "
+        with_stat += " ):"
+        with_stat += """
+          with ("""
+        for ix in range(0, len(list_inst)):
+            with_stat += f" li_{ix}.websocket_connect(CNST.WS_ROUTE) as ws_{ix}, \n"
 
-
+        with_stat += " ):"
+        with_stat += """
+            gCon.log("Hello")
+        """
+        gCon.log(f"The test to run is \n{with_stat}")
+        exec(with_stat)
 
 

@@ -226,6 +226,8 @@ class BaseSocial(SocialProvider):
         host = config.get_host()
         self.host = host
 
+        if soc_cnf is None:
+            return
         users = soc_cnf['users']
         self.create_users(users)
 
