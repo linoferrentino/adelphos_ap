@@ -15,7 +15,7 @@ import re
 import pytest
 
 from tests.testers.fixtures import get_routable_app
-from tests.testers.fixtures import federated_world
+from tests.testers.fixtures import simulated_fediverse
 import tests.adelphoi_test_config as tconf
 import tests.helpers.alias_helpers as ah
 import tests.helpers.family_helpers as fh
@@ -28,10 +28,10 @@ from app.logging import gCon
 from tests.scripts.world1 import world_1_yaml
 
 
-def test_create_trust_line(federated_world):
+def test_create_trust_line(simulated_fediverse):
 
-    world = federated_world(world_1_yaml)
-    gCon.log(f"world to test is {world}")
+    sim_fed = simulated_fediverse(world_1_yaml)
+    gCon.log(f"world to test is {sim_fed}")
 
 #
 #    test1 = get_routable_app('test1', stdcnf.release_kernel_template,

@@ -15,23 +15,26 @@
 world_1_yaml = """
 
     instances:
-        - www.ad1.com:
+        -  name: ad1
+           host: www.ad1.com
            root: ad1root
            password: ad1pass
            accepts:
-             - www.ad2.com
-             - www.ad3.com
-        - www.ad2.com:
+             - ad2
+             - ad3
+        -  name: ad2
+           host: www.ad2.com
            root: ad2root
            password: ad2pass
            accepts:
-             - www.ad1.com
-             - www.ad3.com
-        - www.ad3.com:
+             - ad1 
+             - ad3
+        -  name: ad3
+           host: www.ad3.com
            root: ad3root
            password: ad3pass
            accepts:
-             - www.ad2.com
-             - www.ad1.com
+             - ad2
+             - ad1
 
 """

@@ -37,6 +37,9 @@ import app.consts as CNST
 import app.sdc.s_utils as su
 import tests.adelphoi_test_config as tconf
 
+from tests.testers.SimulFediverse import SimulFediverse
+
+
 def _build_routable_config_impl(instance_name, build_template, conf, mode):
 
     build_complete = build_template.format(**conf)
@@ -68,7 +71,7 @@ def get_routable_app_param(request):
     return _build_routable_from_config
 
 
-def _build_federated_world_impl(federated_world_template, conf):
+def _build_simul_fediverse(fediverse_template, conf):
     if conf is not None:
         federated_world = federated_world_template.format(**conf)
     else:
@@ -76,14 +79,18 @@ def _build_federated_world_impl(federated_world_template, conf):
 
     fed_world = yaml.safe_load(federated_world)
     gCon.log(f"I have to build this world {fed_world}")
+    world = FederatedWorld(federated_world)
+    return world
 
 
 @pytest.fixture(scope = "session")
-def federated_world():
-    def _build_federated_world(federated_world_template, conf = None):
-        return _build_federated_world_impl(federated_world_template, conf)
+def simulated_fediverse():
+    def _build_simul_fediverse(fediverse_template, conf = None):
+        sim_fed = SimulFediverse(fediverse_template, conf)
+        return sim_fed
+    #return _build_simul_fediverse_impl(fediverse_template, conf)
 
-    return _build_federated_world
+    return _build_simul_fediverse
 
 
 @pytest.fixture(scope = "session")
