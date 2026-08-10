@@ -19,6 +19,7 @@ import app.consts as CNST
 
 import app.sdc.standard_conf as sc
 import tests.testers.fixtures as fix
+import tests.helpers.alias_helpers as ah
 
 
 simulated_instance_conf = """
@@ -37,6 +38,10 @@ simulated_instance_conf = """
         - preferredusername: adelphos
           name: Adelphos daemon
           login_shell: false
+
+        - preferredusername: {root}
+          name: Adelphos local root 
+          login_shell: true
 
 
     social_dao:
@@ -58,8 +63,8 @@ standard_simulated_instance_conf = (sc.testable_kernel_prefix
 
 @dataclass
 class SimulatedInstance:
-
     instance: object
+    instance_conf: object
     sock: object = None
 
 
@@ -83,18 +88,18 @@ class SimulFediverse:
     def _build_instance(self, instance):
         name = instance['name']
         gCon.log(f"Build instance {name} = {instance}")
-        instance = fix._build_routable_config_impl(name,
+        instance_ob = fix._build_routable_config_impl(name,
             standard_simulated_instance_conf, instance, 'sync')
-        si = SimulatedInstance(instance)
+        si = SimulatedInstance(instance_ob, instance)
         self._inst[name] = si
 
 
     def test(self, testcase):
-        list_inst = list( x.instance for x in self._inst.values() )
+        list_inst = list( (k, x.instance) for k, x in self._inst.items() )
         gCon.log(f"I have to test the list {list_inst}")
         with_stat = "with ("
         for ix in range(0, len(list_inst)):
-            with_stat += f" list_inst[{ix}] as li_{ix},  "
+            with_stat += f" list_inst[{ix}][1] as li_{ix},  "
         with_stat += " ):"
         with_stat += """
           with ("""
@@ -103,9 +108,21 @@ class SimulFediverse:
 
         with_stat += " ):"
         with_stat += """
-            gCon.log("Hello")
+            for ix in range(0, len(list_inst)):
+                name_inst = list_inst[ix][0]
+                gCon.log(f"Hello instance " + name_inst)
+                self._inst[name_inst].sock = eval('ws_' + str(ix))
+                gCon.log("socket " + str(self._inst[name_inst].sock))
+
+
+            for k, v in self._inst.items():
+                gCon.log(f"instance {k} = {v.instance_conf}")
+                ah.ws_local_root_login(v.instance, v.sock,
+                                       v.instance_conf['root'],
+                                       v.instance_conf['password'])
         """
         gCon.log(f"The test to run is \n{with_stat}")
         exec(with_stat)
-
+        
+        gCon.log(f"Test done")
 

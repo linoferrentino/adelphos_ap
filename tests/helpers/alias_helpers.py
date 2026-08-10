@@ -23,6 +23,10 @@ import app.misc.alias_utils as au
 def ws_upgrade_socket_to_local_root(wrapper, ws, conf):
     root_pass = conf['_root_password_']
     local_root = au.get_local_alias(conf['_root_handle_'])
+    ws_local_root_login(wrapper, ws, local_root, root_pass)
+
+
+def ws_local_root_login(wrapper, ws, local_root, root_pass):
     ws_alias_login_in_app(wrapper, local_root, ws, 'root.admins', root_pass)
 
  

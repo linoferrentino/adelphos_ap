@@ -89,15 +89,16 @@ class BaseSocial(SocialProvider):
 
 
     def create_user(self, user):
+    
+        actor_dto = self.get_or_create_actor(user)
 
-            actor_dto = self.get_or_create_actor(user)
+        if user['login_shell'] == False:
+            return None
 
-            if user['login_shell'] == False:
-                return None
-
-            user_inbox = UserInbox(actor_dto)
-            self.users[user['preferredusername']] = user_inbox
-            return user_inbox
+        gCon.log(f"{id(self)} ======================= {user} create inbox")
+        user_inbox = UserInbox(actor_dto)
+        self.users[user['preferredusername']] = user_inbox
+        return user_inbox
 
 
     def _create_actor(self, user):
@@ -139,9 +140,9 @@ class BaseSocial(SocialProvider):
         if actor_dto is None:
             raise AdelphosException(AdErrno.USER_DOES_NOT_EXIST)
         if user in self.users:
-            #gCon.log(f"Instance {id(self)} user {user} exists")
+            gCon.log(f"Instance {id(self)} user {user} exists")
             raise AdelphosException(AdErrno.USER_ALREADY_EXISTING)
-        #gCon.log(f"Instance {id(self)} user {user} does not exist, will add it")
+        gCon.log(f"Instance {id(self)} user {user} does not exist, will add it")
         self.users[user] = UserInbox(actor_dto, listener)
         self.actor_listener = actor_dto
 
@@ -155,7 +156,7 @@ class BaseSocial(SocialProvider):
         if user not in self.users:
             raise AdelphosException(AdErrno.USER_DOES_NOT_EXIST)
 
-        #gCon.log(f"instance {id(self)} user {user} delisted")
+        gCon.log(f"instance {id(self)} user {user} delisted")
         del self.users[user]
         self.actor_listener = None
  
@@ -188,6 +189,7 @@ class BaseSocial(SocialProvider):
  
 
     def _pri_get_user_stub(self, user):
+        gCon.log(f"{id(self)} get user {user} len users {len(self.users)}")
         user_stub = self.users.get(user)
         if user_stub is None:
             raise AdelphosException(AdErrno.USER_DOES_NOT_EXIST)
@@ -233,6 +235,7 @@ class BaseSocial(SocialProvider):
 
 
     def stop_sync(self):
+        gCon.log("STOP SYNC!")
         self.users = {}
 
 

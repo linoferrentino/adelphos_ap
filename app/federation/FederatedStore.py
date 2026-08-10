@@ -247,7 +247,6 @@ class FederatedStore(Dependency, LifespanAware):
         self.transactions = {}
         self.fact = FederatedFactory()
         self.hostname = kernel.conf().get_host()
-        self.inited = 0
 
 
     def _create_db(self, db_type, db_name):
@@ -294,13 +293,9 @@ class FederatedStore(Dependency, LifespanAware):
         self.db = self._create_db(self.db_type, self.db_name)
         self.fact.parse_schema(self.schema)
         self.db.open()
-        self.inited = 1
 
 
     async def stop_async(self):
-        #if self.inited == 0:
-        #    gCon.log("Not inited")
-        #    return
         gCon.log(f"receiving stop signal, waiting background async tasks")
         self.run_enabled = False
         async with self.stop_signal:
@@ -309,7 +304,6 @@ class FederatedStore(Dependency, LifespanAware):
         await self.ses_worker
         gCon.log("After wait session worker.")
         self.db.close()
-        self.inited = 0
 
 
     def is_local_uri(self, uri):
