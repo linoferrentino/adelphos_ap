@@ -156,7 +156,6 @@ class BaseSocial(SocialProvider):
         if user not in self.users:
             raise AdelphosException(AdErrno.USER_DOES_NOT_EXIST)
 
-        gCon.log(f"instance {id(self)} user {user} delisted")
         del self.users[user]
         self.actor_listener = None
  
@@ -235,7 +234,6 @@ class BaseSocial(SocialProvider):
 
 
     def stop_sync(self):
-        gCon.log("STOP SYNC!")
         self.users = {}
 
 

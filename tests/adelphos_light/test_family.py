@@ -25,14 +25,15 @@ from app.exc.AdelphosException import AdErrno
 from app.exc.AdelphosException import AdelphosException
 from app.sdc.Dependencies import Dependencies
 from app.logging import gCon
-from tests.scripts.world1 import world_1_yaml
+import tests.scripts.world1 as wld1
+from tests.testers.ATestCase import ATestCase
 
 
 def test_create_trust_line(simulated_fediverse):
 
-    sim_fed = simulated_fediverse(world_1_yaml)
-    #gCon.log(f"world to test is {sim_fed}")
-    sim_fed.test(None)
+    sim_fed = simulated_fediverse(wld1.world_1_yaml)
+    tc = ATestCase(wld1.fixture_1_yaml, None)
+    sim_fed.test(wld1.fixture_1_yaml, tc)
 
 
 def test_invite_member(get_routable_app):

@@ -20,6 +20,7 @@ import app.consts as CNST
 import app.sdc.standard_conf as sc
 import tests.testers.fixtures as fix
 import tests.helpers.alias_helpers as ah
+import tests.daemon.daemon_tests as dt
 
 
 simulated_instance_conf = """
@@ -94,9 +95,52 @@ class SimulFediverse:
         self._inst[name] = si
 
 
-    def test(self, testcase):
+    def _upgrade_sockets(self):
+        for k, v in self._inst.items():
+            gCon.log(f"instance {k} = {v.instance_conf}")
+            ah.ws_local_root_login(v.instance, v.sock,
+                                   v.instance_conf['root'],
+                                   v.instance_conf['password'])
+
+
+    def _do_accepts_instances(self):
+        for k, v in self._inst.items():
+            for k1, v1 in self._inst.items():
+                if k == k1:
+                    continue
+                gCon.log(f"{k} accepts {k1} -> {v1.instance_conf['host']}")
+                dt.ws_authorize_remote_adelphos(v.sock, v1.instance_conf['host'])
+
+
+    def _do_setup_world(self, world_conf):
+        world_setup = yaml.safe_load(world_conf)
+        self._install_social_users(world_setup)
+        self._install_aliases(world_setup)
+
+
+    def _install_aliases(self, world_setup):
+        for k, v in self._inst.items():
+            inst_setup = world_setup.get(f"{k}_setup")
+            if inst_setup is None:
+                continue
+
+
+    def _install_social_users(self, world_setup):
+        for k, v in self._inst.items():
+            inst_setup = world_setup.get(f"{k}_setup")
+            if inst_setup is None:
+                continue
+            gCon.log(f"{k} -> instance {inst_setup}")
+            users = inst_setup.get('users')
+            if users is None:
+                continue
+            for user in users:
+                gCon.log(f"Create user {user}")
+                ah.ws_create_user(v.sock, user)
+
+
+    def test(self, world_conf, testcase):
         list_inst = list( (k, x.instance) for k, x in self._inst.items() )
-        gCon.log(f"I have to test the list {list_inst}")
         with_stat = "with ("
         for ix in range(0, len(list_inst)):
             with_stat += f" list_inst[{ix}][1] as li_{ix},  "
@@ -110,16 +154,17 @@ class SimulFediverse:
         with_stat += """
             for ix in range(0, len(list_inst)):
                 name_inst = list_inst[ix][0]
-                gCon.log(f"Hello instance " + name_inst)
                 self._inst[name_inst].sock = eval('ws_' + str(ix))
-                gCon.log("socket " + str(self._inst[name_inst].sock))
 
+            self._upgrade_sockets()
+            self._do_accepts_instances()
 
-            for k, v in self._inst.items():
-                gCon.log(f"instance {k} = {v.instance_conf}")
-                ah.ws_local_root_login(v.instance, v.sock,
-                                       v.instance_conf['root'],
-                                       v.instance_conf['password'])
+            #testcase.setup(self)
+            self._do_setup_world(world_conf)
+            testcase.pre_conditions()
+            testcase.do_actions()
+            testcase.verify()
+
         """
         gCon.log(f"The test to run is \n{with_stat}")
         exec(with_stat)

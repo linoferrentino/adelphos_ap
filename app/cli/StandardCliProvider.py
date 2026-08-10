@@ -32,7 +32,6 @@ from app.core.sys.SysCallGateway import SysCallGateway
 from app.core.ECoreErrno import ECoreErrno
 
 from dataclasses import asdict
-#from app.cli.SysCall import SysCallAns
 
 
 class StandardCliClient:
@@ -77,9 +76,6 @@ class StandardCliClient:
         while True:
             data = await self.websocket.receive_text()
             response = await self.cli_api.sys_call_gateway_msg(self.session, data)
-            #response_str = self.cli_presenter.present_to_user_ok(response)
-            #await self._out_final_str(response_str)
-            gCon.log(f"CLI {response} ============================= {type(response)}")
             if isinstance(response, dict):
                 response = json.dumps(response)
             await self._out_final_str(response)
@@ -112,7 +108,6 @@ class StandardCliClient:
 
     async def _process_exception(self, exc):
         response_str = self.cli_presenter.present_to_user_exc(exc)
-        gCon.log(f"EXC {response_str} ===================================== {type(response_str)}")
         if isinstance(response_str, dict):
           response_str = json.dumps(response_str)
         await self._out_final_str(response_str)
