@@ -88,8 +88,10 @@ class RootApi:
         password = pars['password']
         trust = pars['trust']
         alias_name = pars['alias']
+        currency = pars['currency']
 
         (alias, family) = au.split_alias(alias_name, True)
         await AliasAlgo.alias_create(kernel,
-                local_user.actor_dto.act.actor_id, alias, family, password, trust) 
+                local_user.actor_dto.act.actor_id,
+                                     alias, family, password, trust, currency) 
 

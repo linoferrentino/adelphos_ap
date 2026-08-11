@@ -39,7 +39,8 @@ def test_add_alias(w_local):
 async def a_test_add_alias(w_local):
 
     kernel = w_local.kernel
-    res = await AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre', 'pass', 1.0)
+    res = await AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre',
+                                       'pass', 1.0, 'EUR')
     assert (res == ECoreErrno.DONE_OK)
 
 
@@ -50,11 +51,14 @@ def test_add_dup_family(w_local):
 async def a_test_add_dup_family(w_local):
 
     kernel = w_local.kernel
-    res = await AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre', 'pass', 1.0)
+    res = await AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre', 'pass', 1.0
+                                       ,'EUR')
     assert (res == ECoreErrno.DONE_OK)
-    res = await AliasAlgo.alias_create(kernel, 0, 'alice', 'famal', 'pass99', 1.0)
+    res = await AliasAlgo.alias_create(kernel, 0, 'alice', 'famal', 'pass99', 1.0
+                                       ,'EUR')
     assert (res == ECoreErrno.DONE_OK)
-    res = await AliasAlgo.alias_create(kernel, 0, 'bob', 'ferre', 'pass', 1.0)
+    res = await AliasAlgo.alias_create(kernel, 0, 'bob', 'ferre', 'pass', 1.0
+                                       ,'EUR')
     assert res == -ECoreErrno.EDUPLICATED_FAMILY
     res = await AliasCalls.login(kernel, 'lino', 'ferre', 'pass', False)
     assert res == ECoreErrno.DONE_OK

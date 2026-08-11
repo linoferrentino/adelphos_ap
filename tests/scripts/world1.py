@@ -75,10 +75,10 @@ fixture_1_yaml = """
       - name: fam_t2
         members:
           john_al:
-            actor: '@john@www.ad3.com'
+            actor: '@john3@www.ad3.com'
             password: john_pass
           katy_al:
-            actor: '@katy@www.ad3.com'
+            actor: '@katy3@www.ad3.com'
             password: katy_pass
         boss: john_al
         equity: 239.19
@@ -89,15 +89,17 @@ fixture_1_yaml = """
   ad3_setup:
 
     users:
-      - john
-      - katy
+      - john3
+      - katy3
 
     families:
       - name: fam_t3
         members: 
           john_a3:
+            actor: john3
             password: john_a3pp
           katy_a3:
+            actor: katy3
             password: katy_a3pp
         boss: john_a3
         equity: 63.44

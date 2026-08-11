@@ -161,7 +161,7 @@ class AdelphosCliRouter(CliRouter):
         to the @adelphos user at this instance. Like this:
 
         <p>
-        @adelphos@{host} alias_create alias name.family password _password_ equity number
+        @adelphos@{host} alias_create alias name.family password _password_ trust number currency ('EUR'|'USD'|...)
 
         <p>
         You will receive a messange and you can come back here to login.

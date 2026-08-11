@@ -214,6 +214,9 @@ standard_cli_api = """
                 required: true
               password:
                 required: true
+              currency:
+                required: false
+                default: EUR
 
 
       trustline:
@@ -345,7 +348,10 @@ standard_inbox_api = """
                     required: false 
                     par_type: float
                     default: 25.0 
-
+                currency:
+                    required: false 
+                    default: EUR
+ 
           - name: join_family
             pars:
                 alias:

@@ -22,6 +22,10 @@ import tests.testers.fixtures as fix
 import tests.helpers.alias_helpers as ah
 import tests.daemon.daemon_tests as dt
 
+from app.sdc.Dependencies import Dependencies
+from app.transport.bridge.loop import run_coro_in_loop
+from app.core.algo.AliasAlgo import AliasAlgo
+
 
 simulated_instance_conf = """
 
@@ -67,6 +71,12 @@ class SimulatedInstance:
     instance: object
     instance_conf: object
     sock: object = None
+
+    def mod(self, dependency):
+        return self.instance.app.routable.get_dep(dependency)
+
+    def kernel(self):
+        return self.instance.app.get_kernel()
 
 
 class SimulFediverse:
@@ -141,14 +151,56 @@ class SimulFediverse:
     def _install_alias_for_instance(instance, inst_setup):
         families = inst_setup['families']
         for family in families:
-            members = family['members']
-            family_name = family['name']
-            boss = family['boss']
-            member = members[boss]
-            if (actor := member.get('actor')) is None:
-                actor = boss
-            gCon.log(f"family is {family_name} with boss {boss} actor {actor}")
+            SimulFediverse._install_family(instance, family)
 
+
+    @staticmethod
+    def _install_family(instance, family):
+        members = family['members']
+        family_name = family['name']
+        boss = family['boss']
+        trust = family['trust']
+        currency = family['currency']
+        member = members[boss]
+        actor_dto = SimulFediverse._get_actor_for_alias(instance, boss, member)
+
+        gCon.log(f"boss {boss} is actor {actor_dto}")
+
+        run_coro_in_loop(AliasAlgo.alias_create_safe, (instance.kernel(),
+            actor_dto.act.actor_id, boss, family_name,
+            member['password'], trust, currency))
+
+        for member, m_dict in members.items():
+            if member == boss:
+                continue
+            actor_dto = SimulFediverse._get_actor_for_alias(instance,
+                        member, m_dict)
+            gCon.log(f"Adding member {member} {m_dict} act {actor_dto}")
+
+            run_coro_in_loop(AliasAlgo.family_add_alias_safe, (instance.kernel(),
+                        actor_dto.act.actor_id, member, family_name,
+                        m_dict['password']) )
+
+    
+    @staticmethod
+    def _get_actor_for_alias(instance, alias, member):
+        actor_dto = None
+        if (actor := member.get('actor')) is not None:
+            gCon.log(f"alias {alias} has actor {actor}")
+            if actor[0] == '@':
+                sg = instance.mod(Dependencies.SOCIAL_GATEWAY)
+                gCon.log(f"social gateway {sg}")
+                actor_dto = run_coro_in_loop(sg.discover_user, (actor,))
+        else:
+            actor = alias 
+
+        if actor_dto is None:
+            gCon.log(f"local alias {alias} has local actor {actor}")
+            so = instance.mod(Dependencies.SOCIAL)
+            inbox = so.local_user_get(actor)
+            actor_dto = inbox.actor_dto
+
+        return actor_dto
 
 
     @staticmethod

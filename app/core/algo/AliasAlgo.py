@@ -50,32 +50,34 @@ class AliasAlgo:
         alias_name = pars['name']
         password = pars['password']
         trust = pars['trust']
+        currency = pars['currency']
 
         (alias, family) = au.split_alias(alias_name, True)
 
         await AliasAlgo.alias_create_safe(kernel,
-                envelope.actor_from.act.actor_id, alias, family, password, trust)
+                envelope.actor_from.act.actor_id, alias,
+                    family, password, trust, currency)
         return "Alias created, you can login, now."
 
 
     @staticmethod
     @federated_transaction(raise_if_fail = False)
     async def alias_create(kernel, actor_id, name, family, password,
-                           trust, t_id):
+                           trust, currency, t_id):
         return await AliasAlgo._alias_create_impl(kernel, actor_id, 
-                        name, family, password, trust, t_id)
+               name, family, password, trust, currency, t_id)
  
 
     @staticmethod
     @federated_transaction(raise_if_fail = True)
     async def alias_create_safe(kernel, actor_id, name, family, password,
-                                trust, t_id):
+                                trust, currency, t_id):
         return await AliasAlgo._alias_create_impl(kernel, actor_id, 
-                        name, family, password, trust, t_id)
+               name, family, password, trust, currency, t_id)
  
 
     async def _alias_create_impl(kernel, actor_id, name,
-                                 family, password, trust, t_id):
+          family, password, trust, currency, t_id):
 
         if trust <= 0:
             raise AdelphosCoreException(ECoreErrno.EINVALID_TRUST, trust)
@@ -89,18 +91,19 @@ class AliasAlgo:
             raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY)
 
         family_ob = await fdb.new_ob_uri(t_id, family_uri, fields = {
-            'trust' : tutils.abs_to_db(trust)
+            'trust' : tutils.abs_to_db(trust),
+            'currency' : currency,
             })
 
-        alias_ob = await AliasAlgo._alias_create_db(fdb, actor_id,
+        alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, actor_id,
                         name, family, password, t_id)
 
         family_ob().set_link('boss', alias_ob)
-        family_ob().add_link('members', alias_ob)
 
 
     @staticmethod
-    async def _alias_create_db(fdb, actor_id, name, family, password, t_id):
+    async def _alias_add_in_family(fdb, family_ob, actor_id,
+                                   name, family, password, t_id):
         ph = PasswordHasher()
         pass_hashed = ph.hash(password)
 
@@ -112,6 +115,7 @@ class AliasAlgo:
         alias_ob = await fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
                                       name, family = family, fields = fields)
 
+        family_ob().add_link('members', alias_ob)
         return alias_ob
        
 
@@ -121,6 +125,18 @@ class AliasAlgo:
                     invite_code, alias, family, password, t_id):
         await AliasAlgo._family_accept_invite_impl(kernel, actor_id,
                     user_handle, invite_code, alias, family, password, t_id)
+
+
+    @staticmethod
+    @federated_transaction(raise_if_fail = True)
+    async def family_add_alias_safe(kernel, actor_id, 
+                    alias, family, password, t_id):
+        fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+        family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
+        family_ob = await fdb.uri_read_lock(t_id, family_uri)
+        alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob,
+                actor_id, alias, family, password, t_id)
+        return alias_ob
 
 
     @staticmethod
@@ -147,7 +163,6 @@ class AliasAlgo:
 
         family_ob().set_scalar('invite', None)
 
-        alias_ob = await AliasAlgo._alias_create_db(fdb, actor_id,
+        alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, actor_id,
                             alias, family, password, t_id)
 
-        family_ob().add_link('members', alias_ob)
