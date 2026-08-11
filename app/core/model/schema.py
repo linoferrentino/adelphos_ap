@@ -103,17 +103,6 @@ classes:
           cardinality: set
           required: true
 
-        - name: board_ask
-          type: uri
-          cardinality: array
-          required: false
-
-        - name: board_bid
-          type: uri
-          cardinality: array
-          required: false
-
-
 
     - uri_prefix: {EAdelphosType.GROUP_TYPE}
       can_be_root: false

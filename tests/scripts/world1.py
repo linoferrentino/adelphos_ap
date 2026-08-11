@@ -36,43 +36,73 @@ world_1_yaml = """
 fixture_1_yaml = """
 
   ad1_setup:
-    levels: 0
+
     users:
+
       - bob
       - alice
-    level_0:
+      - tom
+      - jane
+
+    families:
+
       - name: fam_t1
         members: 
-          - alias: bob
-          - alias: alice
+          bob:
+           password: bob_ps
+          alice:
+           password: alice_ps
+        boss: alice
         equity: 33.92
         currency: EUR
+        trust: 115
+
+      - name: fam_t2
+        members: 
+          tom:
+           password: tom_ps
+          jane:
+           password: jane_ps
+        boss: tom
+        equity: 102.92
+        currency: EUR
+        trust: 150
+
 
   ad2_setup:
-    levels: 0
-    level_0:
+
+    families:
       - name: fam_t2
         members:
-          - alias: john_al
+          john_al:
             actor: '@john@www.ad3.com'
-          - alias: katy_al
+            password: john_pass
+          katy_al:
             actor: '@katy@www.ad3.com'
+            password: katy_pass
+        boss: john_al
         equity: 239.19
         currency: EUR
+        trust: 250
    
 
   ad3_setup:
-    levels: 0
+
     users:
       - john
       - katy
-    level_0:
+
+    families:
       - name: fam_t3
         members: 
-          - alias: john_a3
-          - alias: katy_a3
+          john_a3:
+            password: john_a3pp
+          katy_a3:
+            password: katy_a3pp
+        boss: john_a3
         equity: 63.44
         currency: USD 
+        trust: 99
 
 
 """

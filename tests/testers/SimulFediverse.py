@@ -119,24 +119,46 @@ class SimulFediverse:
 
 
     def _install_aliases(self, world_setup):
-        for k, v in self._inst.items():
-            inst_setup = world_setup.get(f"{k}_setup")
-            if inst_setup is None:
-                continue
+        self._for_all_configured_instances(world_setup,
+              SimulFediverse._install_alias_for_instance)
 
 
-    def _install_social_users(self, world_setup):
+    def _for_all_configured_instances(self, world_setup, action):
         for k, v in self._inst.items():
             inst_setup = world_setup.get(f"{k}_setup")
             if inst_setup is None:
                 continue
             gCon.log(f"{k} -> instance {inst_setup}")
-            users = inst_setup.get('users')
-            if users is None:
-                continue
-            for user in users:
-                gCon.log(f"Create user {user}")
-                ah.ws_create_user(v.sock, user)
+            action(v, inst_setup)
+
+
+    def _install_social_users(self, world_setup):
+        self._for_all_configured_instances(world_setup,
+              SimulFediverse._install_users_for_instance)
+
+
+    @staticmethod
+    def _install_alias_for_instance(instance, inst_setup):
+        families = inst_setup['families']
+        for family in families:
+            members = family['members']
+            family_name = family['name']
+            boss = family['boss']
+            member = members[boss]
+            if (actor := member.get('actor')) is None:
+                actor = boss
+            gCon.log(f"family is {family_name} with boss {boss} actor {actor}")
+
+
+
+    @staticmethod
+    def _install_users_for_instance(instance, inst_setup):
+        users = inst_setup.get('users')
+        if users is None:
+            return
+        for user in users:
+            gCon.log(f"Create user {user}")
+            ah.ws_create_user(instance.sock, user)
 
 
     def test(self, world_conf, testcase):
