@@ -32,8 +32,16 @@ from tests.testers.ATestCase import ATestCase
 def test_create_trust_line(simulated_fediverse):
 
     sim_fed = simulated_fediverse(wld1.world_1_yaml)
-    tc = ATestCase(wld1.fixture_1_yaml, None)
-    sim_fed.test(wld1.fixture_1_yaml, tc)
+    sim_fed.test(wld1.fixture_1_yaml, _test_create_trust_line)
+
+
+def _test_create_trust_line(world):
+
+    ad1 = world.get_instance('ad1')
+    gCon.log(f"The simul instance is {ad1}")
+    ad1.push_user('bob.fam_t1')
+
+
 
 
 def test_invite_member(get_routable_app):

@@ -78,6 +78,9 @@ class SimulatedInstance:
     def kernel(self):
         return self.instance.app.get_kernel()
 
+    def push_user(self, alias):
+        ah.ws_sudo_push_alias(self.sock, alias)
+
 
 class SimulFediverse:
     
@@ -126,6 +129,10 @@ class SimulFediverse:
         world_setup = yaml.safe_load(world_conf)
         self._install_social_users(world_setup)
         self._install_aliases(world_setup)
+
+
+    def get_instance(self, instance):
+        return self._inst[instance]
 
 
     def _install_aliases(self, world_setup):
@@ -232,12 +239,9 @@ class SimulFediverse:
 
             self._upgrade_sockets()
             self._do_accepts_instances()
-
-            #testcase.setup(self)
             self._do_setup_world(world_conf)
-            testcase.pre_conditions()
-            testcase.do_actions()
-            testcase.verify()
+
+            testcase(self)
 
         """
         gCon.log(f"The test to run is \n{with_stat}")

@@ -224,15 +224,21 @@ standard_cli_api = """
         syscalls:
           - name: create
             pars:
+              trustee:
+                required: true
               trust_level:
+                par_type: float
                 required: true
               maximum_weight:
+                par_type: float
                 required: false
                 default: 5.0
               maximum_dim:
+                par_type: float
                 required: false
                 default: 50.0
               change_ratio:
+                par_type: float
                 required: false
                 default: 1.0
               
