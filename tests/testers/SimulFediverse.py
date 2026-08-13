@@ -72,14 +72,21 @@ class SimulatedInstance:
     instance_conf: object
     sock: object = None
 
+
     def mod(self, dependency):
         return self.instance.app.routable.get_dep(dependency)
+
 
     def kernel(self):
         return self.instance.app.get_kernel()
 
+
     def push_user(self, alias):
         ah.ws_sudo_push_alias(self.sock, alias)
+
+
+    def get_sock(self):
+        return self.sock
 
 
 class SimulFediverse:

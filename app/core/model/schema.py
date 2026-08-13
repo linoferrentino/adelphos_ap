@@ -103,6 +103,38 @@ classes:
           cardinality: set
           required: true
 
+    - uri_prefix: {EAdelphosType.TRUST_LINE_TYPE}
+      can_be_root: false
+
+      columns:
+
+        - name: alias_from
+          type: uri
+          cardinality: scalar
+          required: true
+
+        - name: alias_to
+          type: uri
+          cardinality: scalar
+          required: true
+
+        - name: trust
+          type: real
+          cardinality: scalar
+          required: true
+
+        - name: change_ratio
+          type: real
+          cardinality: scalar
+          required: false
+          default: 1.0
+
+        - name: balance
+          type: real
+          cardinality: scalar
+          required: false
+          default: 0.0
+
 
     - uri_prefix: {EAdelphosType.GROUP_TYPE}
       can_be_root: false

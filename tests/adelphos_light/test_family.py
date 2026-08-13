@@ -28,6 +28,8 @@ from app.logging import gCon
 import tests.scripts.world1 as wld1
 from tests.testers.ATestCase import ATestCase
 
+import tests.helpers.trust_helpers as th
+
 
 def test_create_trust_line(simulated_fediverse):
 
@@ -40,8 +42,8 @@ def _test_create_trust_line(world):
     ad1 = world.get_instance('ad1')
     gCon.log(f"The simul instance is {ad1}")
     ad1.push_user('bob.fam_t1')
-
-
+    th.ws_create_trust_line(ad1.get_sock(), "#al#john_al.fam_t2@www.ad2.com",
+            100)
 
 
 def test_invite_member(get_routable_app):

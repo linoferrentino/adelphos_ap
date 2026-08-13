@@ -20,6 +20,7 @@ from enum import auto
 from app.logging import gCon
 from app.exc.AdelphosException import AdErrno
 from app.exc.AdelphosException import AdelphosException
+import app.misc.alias_utils as au
 
 
 class EUserState(IntEnum):
@@ -75,6 +76,12 @@ class UserSession:
     @property
     def alias_family(self):
         return f"{self.alias}.{self.family}"
+
+
+    @property
+    def alias_uri(self):
+        return au.alias_as_uri(self.alias, self.family, 
+            self.actor_dto.srv.host_name)
 
 
     def is_login_valid(self):

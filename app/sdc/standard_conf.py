@@ -224,9 +224,9 @@ standard_cli_api = """
         syscalls:
           - name: create
             pars:
-              trustee:
+              alias_to:
                 required: true
-              trust_level:
+              trust:
                 par_type: float
                 required: true
               maximum_weight:
