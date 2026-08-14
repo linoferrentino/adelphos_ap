@@ -33,51 +33,55 @@ class AliasAlgo:
 
     @staticmethod
     async def _sys_call_join_family(kernel, envelope, pars):
-        alias = pars['alias']
-        family = pars['family']
-        password = pars['password']
-        invite_code = pars['invite_code']
         user_handle = envelope.actor_from.get_social_handle()
         actor_id = envelope.actor_from.actor_id
+        pars['actor_id'] = actor_id
+        pars['user_handle'] = user_handle
         gCon.log(f"received command to join family by {user_handle}")
-        await AliasAlgo.family_accept_invite_safe(kernel, actor_id,
-                user_handle, invite_code, alias, family, password)
-        return f"OK, You can join family {family}."
+        await AliasAlgo.family_accept_invite_safe(kernel, pars)
+        return f"OK, You can join family {pars['family']}."
  
 
     @staticmethod
     async def _sys_call_create(kernel, envelope, pars):
-        alias_name = pars['name']
-        password = pars['password']
-        trust = pars['trust']
-        currency = pars['currency']
+        alias = pars['name']
+        #password = pars['password']
+        #trust = pars['trust']
+        #currency = pars['currency']
 
-        (alias, family) = au.split_alias(alias_name, True)
+        (alias_name, family) = au.split_alias(alias, True)
 
-        await AliasAlgo.alias_create_safe(kernel,
-                envelope.actor_from.act.actor_id, alias,
-                    family, password, trust, currency)
+        pars['actor_id'] = envelope.actor_from.act.actor_id
+        pars['alias_name'] = alias_name
+        pars['family'] = family
+
+        gCon.log(f"pars sys_call {pars}")
+
+        await AliasAlgo.alias_create_safe(kernel, pars)
         return "Alias created, you can login, now."
 
 
     @staticmethod
     @federated_transaction(raise_if_fail = False)
-    async def alias_create(kernel, actor_id, name, family, password,
-                           trust, currency, t_id):
-        return await AliasAlgo._alias_create_impl(kernel, actor_id, 
-               name, family, password, trust, currency, t_id)
+    async def alias_create(kernel, pars, t_id):
+        return await AliasAlgo._alias_create_impl(kernel, pars, t_id)
  
 
     @staticmethod
     @federated_transaction(raise_if_fail = True)
-    async def alias_create_safe(kernel, actor_id, name, family, password,
-                                trust, currency, t_id):
-        return await AliasAlgo._alias_create_impl(kernel, actor_id, 
-               name, family, password, trust, currency, t_id)
+    async def alias_create_safe(kernel, pars, t_id):
+        return await AliasAlgo._alias_create_impl(kernel, pars, t_id)
  
 
-    async def _alias_create_impl(kernel, actor_id, name,
-          family, password, trust, currency, t_id):
+    async def _alias_create_impl(kernel, pars, t_id):
+        gCon.log(f"pars are {pars}")
+
+        actor_id = pars['actor_id']
+        alias_name = pars['alias_name']
+        family = pars['family']
+        password = pars['password']
+        trust = pars['trust'] if hasattr(pars, 'trust') else 5.0
+        currency = pars['currency'] if hasattr(pars, 'currency') else 'EUR'
 
         if trust <= 0:
             raise AdelphosCoreException(ECoreErrno.EINVALID_TRUST, trust)
@@ -96,7 +100,7 @@ class AliasAlgo:
             })
 
         alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, actor_id,
-                        name, family, password, t_id)
+                        alias_name, family, password, t_id)
 
         family_ob().set_link('boss', alias_ob)
 
@@ -121,16 +125,19 @@ class AliasAlgo:
 
     @staticmethod
     @federated_transaction(raise_if_fail = True)
-    async def family_accept_invite_safe(kernel, actor_id, user_handle,
-                    invite_code, alias, family, password, t_id):
-        await AliasAlgo._family_accept_invite_impl(kernel, actor_id,
-                    user_handle, invite_code, alias, family, password, t_id)
+    async def family_accept_invite_safe(kernel, pars, t_id):
+        await AliasAlgo._family_accept_invite_impl(kernel, pars, t_id)
 
 
     @staticmethod
     @federated_transaction(raise_if_fail = True)
-    async def family_add_alias_safe(kernel, actor_id, 
-                    alias, family, password, t_id):
+    async def family_add_alias_safe(kernel, pars, t_id):
+
+        actor_id = pars['actor_id']
+        alias = pars['alias']
+        family = pars['family']
+        password = pars['password']
+
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
         family_ob = await fdb.uri_read_lock(t_id, family_uri)
@@ -140,9 +147,14 @@ class AliasAlgo:
 
 
     @staticmethod
-    async def _family_accept_invite_impl(kernel, actor_id,
-                                        user_handle, invite_code,
-                                        alias, family, password, t_id):
+    async def _family_accept_invite_impl(kernel, pars, t_id):
+
+        actor_id = pars['actor_id']
+        user_handle = pars['user_handle']
+        invite_code = pars['invite_code']
+        alias = pars['alias']
+        family = pars['family']
+        password = pars['password']
 
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)

@@ -56,7 +56,13 @@ class AliasCalls:
     @staticmethod
     async def _session_login(kernel, session, login, password, force = False):
         (alias, family) = au.split_alias(login)
-        actor_id = await AliasCalls.login_safe(kernel, alias, family, password, force)
+        pars = {
+          'alias' : alias,
+          'family' : family,
+          'password': password,
+          'force' : force,
+        }
+        actor_id = await AliasCalls.login_safe(kernel, pars)
         social_dao = kernel.get_dep(Dependencies.SOCIAL_DAO)
         actor_dto = social_dao.actor_get_from_id(actor_id)
         token = session.login_start(alias, family, actor_dto, force)
@@ -87,20 +93,23 @@ class AliasCalls:
  
     @staticmethod
     @federated_transaction(raise_if_fail = False)
-    async def login(kernel, alias, family, password, force, t_id):
-        return await AliasCalls._login_impl(kernel, alias, family, password,
-                            force, t_id)
+    async def login(kernel, pars, t_id):
+        return await AliasCalls._login_impl(kernel, pars, t_id)
 
 
     @staticmethod
     @federated_transaction(raise_if_fail = True)
-    async def login_safe(kernel, alias, family, password, force, t_id):
-        return await AliasCalls._login_impl(kernel, alias, family, password,
-                            force, t_id)
+    async def login_safe(kernel, pars, t_id):
+        return await AliasCalls._login_impl(kernel, pars, t_id)
 
 
     @staticmethod
-    async def _login_impl(kernel, alias, family, password, force, t_id):
+    async def _login_impl(kernel, pars, t_id):
+
+        alias = pars['alias']
+        family = pars['family']
+        password = pars['password']
+        force = pars['force']
 
         alias_uri = AdelphosUri(EAdelphosType.ALIAS_TYPE, alias, family = family)
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)

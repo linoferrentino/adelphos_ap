@@ -39,8 +39,15 @@ def test_add_alias(w_local):
 async def a_test_add_alias(w_local):
 
     kernel = w_local.kernel
-    res = await AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre',
-                                       'pass', 1.0, 'EUR')
+
+    pars = {
+      'actor_id' : 0,
+      'alias_name' : 'lino',
+      'family' : 'ferre',
+      'password' : 'pass',
+    }
+
+    res = await AliasAlgo.alias_create(kernel, pars)
     assert (res == ECoreErrno.DONE_OK)
 
 
@@ -51,20 +58,48 @@ def test_add_dup_family(w_local):
 async def a_test_add_dup_family(w_local):
 
     kernel = w_local.kernel
-    res = await AliasAlgo.alias_create(kernel, 0, 'lino', 'ferre', 'pass', 1.0
-                                       ,'EUR')
+
+    pars = {
+      'actor_id' : 0,
+      'alias_name' : 'lino',
+      'family' : 'ferre',
+      'password' : 'pass',
+    }
+
+
+    res = await AliasAlgo.alias_create(kernel, pars)
     assert (res == ECoreErrno.DONE_OK)
-    res = await AliasAlgo.alias_create(kernel, 0, 'alice', 'famal', 'pass99', 1.0
-                                       ,'EUR')
+
+    pars['alias_name'] = 'alice'
+    pars['family'] = 'famal'
+    pars['password'] = 'pass99'
+
+    res = await AliasAlgo.alias_create(kernel, pars)
     assert (res == ECoreErrno.DONE_OK)
-    res = await AliasAlgo.alias_create(kernel, 0, 'bob', 'ferre', 'pass', 1.0
-                                       ,'EUR')
+
+    pars['alias_name'] = 'bob'
+    pars['family'] = 'ferre'
+    pars['password'] = 'pass'
+    res = await AliasAlgo.alias_create(kernel, pars)
     assert res == -ECoreErrno.EDUPLICATED_FAMILY
-    res = await AliasCalls.login(kernel, 'lino', 'ferre', 'pass', False)
+
+    pars = {
+      'alias' : 'lino',
+      'family' : 'ferre',
+      'password' : 'pass',
+      'force' : False
+    }
+    res = await AliasCalls.login(kernel, pars)
     assert res == ECoreErrno.DONE_OK
-    res = await AliasCalls.login(kernel, 'lino', 'ferre', 'pass1', False)
+
+    pars['password'] = 'pass1'
+    res = await AliasCalls.login(kernel, pars)
     assert res == -ECoreErrno.EINVALID_USER_OR_PASSWORD
-    res = await AliasCalls.login(kernel, 'lino1', 'ferre', 'pass', False)
+
+
+    pars['password'] = 'pass'
+    pars['alias'] = 'lino1'
+    res = await AliasCalls.login(kernel, pars)
     assert res == -ECoreErrno.EINVALID_USER_OR_PASSWORD
 
 

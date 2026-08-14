@@ -180,9 +180,16 @@ class SimulFediverse:
 
         gCon.log(f"boss {boss} is actor {actor_dto}")
 
-        run_coro_in_loop(AliasAlgo.alias_create_safe, (instance.kernel(),
-            actor_dto.act.actor_id, boss, family_name,
-            member['password'], trust, currency))
+        pars = {
+            'actor_id' : actor_dto.act.actor_id,
+            'alias_name' : boss,
+            'family' : family_name,
+            'password': member['password'],
+            'trust' : trust,
+            'currency' : currency,
+        }
+
+        run_coro_in_loop(AliasAlgo.alias_create_safe, (instance.kernel(), pars))
 
         for member, m_dict in members.items():
             if member == boss:
@@ -191,9 +198,15 @@ class SimulFediverse:
                         member, m_dict)
             gCon.log(f"Adding member {member} {m_dict} act {actor_dto}")
 
-            run_coro_in_loop(AliasAlgo.family_add_alias_safe, (instance.kernel(),
-                        actor_dto.act.actor_id, member, family_name,
-                        m_dict['password']) )
+            pars = {
+              'actor_id' : actor_dto.act.actor_id,
+              'alias' : member,
+              'family' : family_name,
+              'password' : m_dict['password'],
+            }
+
+            run_coro_in_loop(AliasAlgo.family_add_alias_safe,
+                        (instance.kernel(), pars))
 
     
     @staticmethod

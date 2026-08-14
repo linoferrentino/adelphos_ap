@@ -40,8 +40,8 @@ class FamilyCalls:
         this_host = kernel.conf().get_host()
         social_handle = f"@{social_user}@{this_host}"
 
-        await FamilyCalls._family_add_invite_safe(kernel,
-                session.family, user_handle, invite_code)
+        pars['family'] = session.family
+        await FamilyCalls._family_add_invite_safe(kernel, pars)
         
         await social.out_msg_listener_to_actor(user_dto,
 f"""You have been invited to join adelphos by @{session.alias_family}@{this_host}
@@ -52,16 +52,17 @@ f"""You have been invited to join adelphos by @{session.alias_family}@{this_host
 
     @staticmethod
     @federated_transaction(raise_if_fail = True)
-    async def _family_add_invite_safe(kernel, family, user_handle,
-                                      invite_code, t_id):
-
-        await FamilyCalls._family_add_invite_impl(kernel, family, user_handle,
-                                      invite_code, t_id)
+    async def _family_add_invite_safe(kernel, pars ,t_id):
+        await FamilyCalls._family_add_invite_impl(kernel, pars, t_id)
 
 
     @staticmethod
-    async def _family_add_invite_impl(kernel, family, user_handle,
-                                      invite_code, t_id):
+    async def _family_add_invite_impl(kernel, pars, t_id):
+
+        family = pars['family']
+        user_handle = pars['user_handle']
+        invite_code = pars['invite_code']
+
 
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)

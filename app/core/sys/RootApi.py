@@ -85,13 +85,16 @@ class RootApi:
     async def _sys_call_add_user_alias(kernel, session, pars):
         local_user = await RootApi._add_user_impl(kernel, session, pars)
 
-        password = pars['password']
-        trust = pars['trust']
-        alias_name = pars['alias']
-        currency = pars['currency']
+        #password = pars['password']
+        #trust = pars['trust']
+        alias = pars['alias']
+        #currency = pars['currency']
 
-        (alias, family) = au.split_alias(alias_name, True)
-        await AliasAlgo.alias_create(kernel,
-                local_user.actor_dto.act.actor_id,
-                                     alias, family, password, trust, currency) 
+        (alias_name, family) = au.split_alias(alias, True)
+
+        pars['actor_id'] = local_user.actor_dto.act.actor_id
+        pars['alias_name'] = alias_name
+        pars['family']  = family
+
+        await AliasAlgo.alias_create(kernel, pars) 
 

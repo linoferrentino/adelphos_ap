@@ -32,9 +32,16 @@ class AdelphosInitDaemon(Daemon):
     async def _create_local_root(self, local_user, root_password):
         social = self.get_dep(Dependencies.SOCIAL)
         local_user = social.local_user_get(local_user, create_if_not_exists = True)
-        res = await AliasAlgo.alias_create(self.kernel,
-                local_user.actor_dto.act.actor_id, 'root', 'admins',
-                                           root_password, 5.0, 'EUR')
+
+        pars = {
+            'actor_id' : local_user.actor_dto.act.actor_id,
+            'alias_name' : 'root',
+            'family' : 'admins',
+            'password' : root_password,
+        }
+
+        res = await AliasAlgo.alias_create(self.kernel, pars)
+
         if res != ECoreErrno.DONE_OK:
             gCon.log(f"res error {res} creating root alias")
         gCon.log(f"created the root {local_user} with id {local_user.actor_dto.act.actor_id}")

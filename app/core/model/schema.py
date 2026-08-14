@@ -102,6 +102,13 @@ classes:
           type: local_uri 
           cardinality: set
           required: true
+          minimum_cardinality: 1
+
+        - name: agorai
+          type: local_uri
+          cardinality: set
+          required: false
+
 
     - uri_prefix: {EAdelphosType.TRUST_LINE_TYPE}
       can_be_root: false
@@ -162,21 +169,38 @@ classes:
           cardinality: scalar
           required: true
 
-        - name: judge
-          type: uri 
-          cardinality: scalar
-          required: true
-
-        - name: vice
-          type: uri 
-          cardinality: scalar
-          required: true
-
         - name: equity
           type: real
           cardinality: scalar
           required: false
           default: 0.0
+
+
+    - uri_prefix: {EAdelphosType.AGORA_TYPE}
+      can_be_root: false
+
+      columns:
+
+        - name: location
+          type: str
+          cardinality: scalar
+          required: true
+
+        - name: level
+          type: int
+          cardinality: scalar
+          required: true
+        
+        - name: offers
+          type: uri
+          cardinality: set
+          required: false
+
+        - name: asks
+          type: uri
+          cardinality: set
+          required: false
+
 
 
 """

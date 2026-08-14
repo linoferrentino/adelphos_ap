@@ -357,6 +357,9 @@ standard_inbox_api = """
                 currency:
                     required: false 
                     default: EUR
+                location:
+                    required: false
+                    default: no location given
  
           - name: join_family
             pars:

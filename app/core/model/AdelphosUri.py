@@ -29,6 +29,7 @@ class EAdelphosType(StrEnum):
     FAMILY_TYPE = 'fa'
     GROUP_TYPE = 'gr'
     TRUST_LINE_TYPE = 'tr'
+    AGORA_TYPE = 'ag'
 
 
 @dataclass
