@@ -133,20 +133,24 @@ daemons:
 
 """
 
+testable_rpcs = """
+      math:
+        class: tests.testers.MathRPCs.MathRPCs
+        syscalls:
+          - name: radd
+            pars:
+              n1:
+                required: true
+              n2:
+                required: true
+
+"""
+
 testable_rpc_conf = """
 
     rpc_api:
-        math:
-            class: tests.testers.MathRPCs.MathRPCs
-            syscalls:
-                - name: radd
-                  pars:
-                    n1:
-                      required: true
-                    n2:
-                      required: true
 
-"""
+""" + testable_rpcs
 
 federated_db_rpcs = """
 
@@ -224,19 +228,11 @@ standard_cli_api = """
         syscalls:
           - name: create
             pars:
-              alias_to:
+              family_to:
                 required: true
               trust:
                 par_type: float
                 required: true
-              maximum_weight:
-                par_type: float
-                required: false
-                default: 5.0
-              maximum_dim:
-                par_type: float
-                required: false
-                default: 50.0
               change_ratio:
                 par_type: float
                 required: false
@@ -379,7 +375,8 @@ release_kernel_template = (testable_kernel_prefix
                 + common_adelphos_modules
                 + real_adelphos_chunk_modules 
                 + testable_kernel_suffix_template
-                + testable_rpc_conf
+                + federated_db_rpcs
+                + testable_rpcs
                 + standard_cli_api
                 + debug_cli_api
                 + standard_inbox_api
@@ -389,6 +386,7 @@ release_kernel_template = (testable_kernel_prefix
 release_kernel_conf = (release_kernel_prefix
                 + common_adelphos_modules
                 + real_adelphos_chunk_modules 
+                + federated_db_rpcs
                 + standard_cli_api 
                 + standard_inbox_api
                 + release_daemons)

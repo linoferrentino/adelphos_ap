@@ -59,7 +59,7 @@ standard_simulated_instance_conf = (sc.testable_kernel_prefix
                 + sc.common_adelphos_modules
                 + sc.real_adelphos_chunk_modules 
                 + simulated_instance_conf 
-                + sc.testable_rpc_conf
+                + sc.federated_db_rpcs
                 + sc.standard_cli_api
                 + sc.debug_cli_api
                 + sc.standard_inbox_api

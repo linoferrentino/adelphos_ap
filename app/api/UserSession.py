@@ -21,6 +21,9 @@ from app.logging import gCon
 from app.exc.AdelphosException import AdErrno
 from app.exc.AdelphosException import AdelphosException
 import app.misc.alias_utils as au
+from app.core.model.AdelphosUri import AdelphosUri
+from app.core.model.AdelphosUri import EAdelphosType
+
 
 
 class EUserState(IntEnum):
@@ -82,6 +85,12 @@ class UserSession:
     def alias_uri(self):
         return au.alias_as_uri(self.alias, self.family, 
             self.actor_dto.srv.host_name)
+
+
+    @property
+    def family_uri(self):
+        return AdelphosUri(EAdelphosType.FAMILY_TYPE, self.family,
+                           host = self.actor_dto.srv.host_name)
 
 
     def is_login_valid(self):

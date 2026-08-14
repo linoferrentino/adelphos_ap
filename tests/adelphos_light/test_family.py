@@ -42,7 +42,7 @@ def _test_create_trust_line(world):
     ad1 = world.get_instance('ad1')
     gCon.log(f"The simul instance is {ad1}")
     ad1.push_user('bob.fam_t1')
-    th.ws_create_trust_line(ad1.get_sock(), "#al#john_al.fam_t2@www.ad2.com",
+    th.ws_create_trust_line(ad1.get_sock(), "#fa#fam_t2@www.ad2.com",
             100)
 
 

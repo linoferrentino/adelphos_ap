@@ -38,13 +38,6 @@ class FederatedUri(ABC):
         pass
 
 
-    #def unparse_local(self):
-    #    backup_host = self.host
-    #    self.host = None
-    #    uri_str = self.unparse()
-    #    self.host = backup_host
-
-
     def _base_get_host_part(self):
         return f"@{self.host}" if self.host is not None else ""
 

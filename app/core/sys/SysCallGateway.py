@@ -58,6 +58,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
             if sc.name in syscall_map:
                 raise Exception(f"Duplicated syscall {sc.name}")
             syscall_map[sc.name] = sc
+            gCon.log(f"Adding syscall {sc}")
         return syscall_map
 
 
@@ -201,6 +202,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
 
     def _add_syscalls(self, context, syscalls):
+        gCon.log(f"=================== [red] Adding context {context}[/red]")
         if self.contexts.get(context) is not None:
             raise Exception(f"Context {context} already existing")
         syscall_map = self._transform_list(syscalls)

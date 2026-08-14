@@ -98,6 +98,11 @@ classes:
           cardinality: scalar
           required: true
 
+        - name: trust_lines
+          type: uri
+          cardinality: set
+          required: false
+
         - name: members
           type: local_uri 
           cardinality: set
