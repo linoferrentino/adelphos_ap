@@ -532,6 +532,24 @@ async def a_test_remote_uri(fdb1, fdb2):
     assert len(trust_lines) == 1
 
 
+def test_need_uri(fdb1_loc):
+    run_coro_in_loop(a_test_need_uri, (fdb1_loc,))
+
+
+async def a_test_need_uri(fdb1_loc):
+    t1uri = FederatedUriTest('test_no_uri', 'a')
+    t_id = fdb1_loc.begin_transaction()
+    fob = await fdb1_loc.new_ob_uri(t_id, t1uri )
+
+    with pytest.raises(FdbException) as fex:
+        fdb1_loc.commit_transaction(t_id)
+    assert fex.value.errno == EFdbErrors.EFDB_REQUIRED_FIELD_MISSING
+
+    with pytest.raises(FdbException) as fex:
+        fob().set_scalar('need_uri', "impossible")
+    assert fex.value.errno == EFdbErrors.EFDB_INVALID_VAL_TYPE
+
+
 def test_set_uri_local(fdb1_loc):
     run_coro_in_loop(a_test_set_uri_local, (fdb1_loc,))
 
@@ -540,7 +558,6 @@ async def a_test_set_uri_local(fdb1_loc):
 
     t1uri = FederatedUriTest(TYPE_T1, 'a')
 
-    # test of a insert, no transaction no party
     fob = None
     with pytest.raises(FdbException):
         fob = await fdb1_loc.new_ob_uri(None, t1uri )

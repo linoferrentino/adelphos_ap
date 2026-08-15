@@ -97,6 +97,7 @@ class AliasAlgo:
         family_ob = await fdb.new_ob_uri(t_id, family_uri, fields = {
             'trust' : tutils.abs_to_db(trust),
             'currency' : currency,
+            'level' : 0
             })
 
         alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, actor_id,

@@ -75,6 +75,17 @@ classes:
           required: false
           default: 0.0
 
+        - name: level
+          type: int
+          cardinality: scalar
+          required: true
+
+        - name: multiplier
+          type: real
+          cardinality: scalar
+          required: false
+          default: 0.15
+
         - name: trust
           type: real
           cardinality: scalar
@@ -120,12 +131,12 @@ classes:
 
       columns:
 
-        - name: alias_from
+        - name: family_from
           type: uri
           cardinality: scalar
           required: true
 
-        - name: alias_to
+        - name: family_to 
           type: uri
           cardinality: scalar
           required: true

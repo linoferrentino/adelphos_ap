@@ -186,6 +186,15 @@ classes:
           required: false
 
 
+    - uri_prefix: test_no_uri
+      can_be_root: true
+      columns:
+        - name: need_uri 
+          type: uri
+          cardinality: scalar
+          required: true
+
+
     - uri_prefix: tline
       can_be_root: false
       columns:

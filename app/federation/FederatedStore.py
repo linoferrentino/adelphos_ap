@@ -76,6 +76,7 @@ class FederatedTransaction:
 
 
     def _do_creates(self):
+        gCon.log("created objects")
         for k,v in self.created_uris.items():
             gCon.log(f"Created {k} => {v.ob}")
             if v.ob.fields[REF_COUNT_COLUMN] == 0:
@@ -515,23 +516,25 @@ class FederatedStore(Dependency, LifespanAware):
 
     async def _uri_read_str_impl(self, t_id, uri_str, **kwargs):
         uri_ob = self.parse_uri(uri_str)
+        return await self._uri_read_ob_impl(t_id, uri_ob, **kwargs)
+
+
+    async def _uri_read_ob_impl(self, t_id, uri_ob, **kwargs):
         rctx = FedStore_ReadCtx(uri_ob, t_id, **kwargs) 
         await self._read_ctx(rctx)
         return rctx
 
 
     async def uri_read_str(self, t_id, uri_str, **kwargs):
-        rctx = await self._uri_read_str_impl(t_id, uri_str, **kwargs)
+        uri_ob = self.parse_uri(uri_str)
+        return await self.uri_read_ob(t_id, uri_ob, **kwargs)
+
+
+    async def uri_read_ob(self, t_id, uri_ob, **kwargs):
+        rctx = await self._uri_read_ob_impl(t_id, uri_ob, **kwargs)
         if rctx.fob is None:
             return None
         return weakref.ref(rctx.fob)
-
-
-    #async def _read_ref(self, rctx):
-    #    await self._read_ctx(rctx)
-    #    if rctx.fob is None:
-    #        return None
-    #    return weakref.ref(rctx.fob)
 
 
     async def uri_read_no_lock(self, t_id, uri_ob, maybe = False):
@@ -552,6 +555,7 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     def commit_transaction(self, t_id):
+        gCon.log(f"COMMIT! {t_id}")
         t_ob = self.get_tob_safe(t_id)
         t_ob.t_commit()
 

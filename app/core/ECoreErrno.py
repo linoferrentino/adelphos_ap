@@ -25,6 +25,8 @@ class ECoreErrno(IntEnum):
     ECANNOT_FIND_INVITE = 7
     EWRONG_INVITE_CODE = 8
     EWRONG_USER_HANDLE = 9
+    ETL_EXISTS = 10
+    EFAMILY_NOT_FOUND = 11
     
     EFDB = 9998
     ESYS = 9999

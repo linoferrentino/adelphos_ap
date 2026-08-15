@@ -45,9 +45,6 @@ def _build_routable_config_impl(instance_name, build_template, conf, mode):
     build_complete = build_template.format(**conf)
     kernel_conf = yaml.safe_load(build_complete)
 
-    gCon.log(f"This is the build")
-    gCon.log(kernel_conf)
-
     prefix = mode
     kernel = su.boot_kernel(f"{prefix}-{instance_name}", kernel_conf)
     aroutable = kernel.get_dep(Dependencies.ROUTER)
