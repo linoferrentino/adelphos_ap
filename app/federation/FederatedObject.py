@@ -466,6 +466,10 @@ class FederatedObject:
             raise Exception("TO DO 1")
 
 
+    def prepare_to_oblivion(self, tx_ob):
+        gCon.log("prepare to oblivion")
+
+
     @ensure_lock
     @enforce_schema
     def compare_and_swap_link(self, key, expected_ob, new_ob):
@@ -518,6 +522,11 @@ class FederatedObject:
         assert self.ob.fields[REF_COUNT_COLUMN] >= 0
         self.ob.fields[REF_COUNT_COLUMN] += 1
         self.modified = True
+
+
+    @property
+    def ref_count(self):
+        return self.ob.fields[REF_COUNT_COLUMN]
 
 
     @ensure_lock

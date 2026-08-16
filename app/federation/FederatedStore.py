@@ -305,6 +305,7 @@ class FederatedStore(Dependency, LifespanAware):
         await self.ses_worker
         gCon.log("After wait session worker.")
         self.db.close()
+        self.fact.reset()
 
 
     def is_local_uri(self, uri):

@@ -561,7 +561,7 @@ def test_need_uri(fdb1_loc):
 async def a_test_need_uri(fdb1_loc):
     t1uri = FederatedUriTest('test_no_uri', 'a')
     t_id = fdb1_loc.begin_transaction()
-    fob = await fdb1_loc.new_ob_uri(t_id, t1uri )
+    fob = await fdb1_loc.new_ob_uri(t_id, t1uri)
 
     with pytest.raises(FdbException) as fex:
         fdb1_loc.commit_transaction(t_id)
@@ -570,6 +570,38 @@ async def a_test_need_uri(fdb1_loc):
     with pytest.raises(FdbException) as fex:
         fob().set_scalar('need_uri', "impossible")
     assert fex.value.errno == EFdbErrors.EFDB_INVALID_VAL_TYPE
+
+
+def test_no_ref_downlink(fdb1_loc):
+    run_coro_in_loop(a_test_no_ref_downlink, (fdb1_loc,))
+
+
+async def a_test_no_ref_downlink(fdb1_loc):
+    t1uri = FederatedUriTest('test_no_ref', 'a')
+    t_id = fdb1_loc.begin_transaction()
+    fob = await fdb1_loc.new_ob_uri(t_id, t1uri)
+
+    t1uri_root = FederatedUriTest(TYPE_T1, 'a')
+    fob_root = await fdb1_loc.new_ob_uri(t_id, t1uri_root, fields = {
+        'key_int' : 391
+    })
+
+    assert fob().ref_count == 0
+    assert fob_root().ref_count == 1
+
+    fob().set_link('need_uri', fob_root)
+
+    assert fob().ref_count == 0
+    assert fob_root().ref_count == 2
+
+    fdb1_loc.commit_transaction(t_id)
+
+    t_id = fdb1_loc.begin_transaction()
+    fob_root = await fdb1_loc.uri_read_ob(t_id, t1uri_root, must_lock = True)
+
+    fob = await fdb1_loc.uri_read_ob(t_id, t1uri, maybe = True)
+    assert fob is None
+    assert fob_root().ref_count == 2
 
 
 def test_set_uri_local(fdb1_loc):

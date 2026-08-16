@@ -34,6 +34,10 @@ class FederatedFactoryRegistrar:
 class FederatedFactory:
 
     def __init__(self):
+        self.reset()
+
+
+    def reset(self):
         self.registrars = dict()
         self.uri_constructor = None
         self.enums = dict()
