@@ -36,6 +36,8 @@ from tests.federation.fixtures import federated_db
 from app.transport.bridge.loop import run_coro_in_loop
 from tests.federation.schema_simple import schema_simple_yaml
 from tests.federation.schema_simple import schema_reserved_error
+from tests.federation.schema_simple import schema_duplicated_class
+from tests.federation.schema_simple import schema_duplicated_column
 import tests.adelphoi_test_config as tconf
 
 
@@ -460,6 +462,26 @@ def test_impossibile_column(federated_db):
         with wrap1:
             pass
     assert fex.value.errno == EFdbErrors.EFDB_RESERVED
+
+
+def test_duplicate_class(federated_db):
+    wrap1 = federated_db(FIRST_HOST, tconf.federated_store_kernel_template,
+                         schema_duplicated_class)
+
+    with pytest.raises(FdbException) as fex:
+        with wrap1:
+            pass
+    assert fex.value.errno == EFdbErrors.EFDB_DUPLICATED_CLASS
+
+
+def test_duplicate_column(federated_db):
+    wrap1 = federated_db(FIRST_HOST, tconf.federated_store_kernel_template,
+                         schema_duplicated_column)
+
+    with pytest.raises(FdbException) as fex:
+        with wrap1:
+            pass
+    assert fex.value.errno == EFdbErrors.EFDB_DUPLICATED_COLUMN
 
 
 def test_remote_uri(federated_db):

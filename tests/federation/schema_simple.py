@@ -79,6 +79,56 @@ classes:
 
 """
   
+schema_duplicated_class = f"""
+
+uri_constructor: 'tests.federation.schema_simple.FederatedUriTest'
+
+types:
+
+
+classes:
+
+    - uri_prefix: cloned_error
+      can_be_root: true 
+      columns:
+        - name: age 
+          type: int
+          cardinality: scalar
+          required: true
+
+    - uri_prefix: cloned_error
+      can_be_root: true 
+      columns:
+        - name: age 
+          type: int
+          cardinality: scalar
+          required: true
+
+"""
+
+schema_duplicated_column = f"""
+
+uri_constructor: 'tests.federation.schema_simple.FederatedUriTest'
+
+types:
+
+
+classes:
+
+    - uri_prefix: person
+      can_be_root: true 
+      columns:
+        - name: age 
+          type: int
+          cardinality: scalar
+          required: true
+
+        - name: age 
+          type: real
+          cardinality: scalar
+          required: true
+
+"""
 
 schema_simple_yaml = f"""
 
@@ -187,7 +237,16 @@ classes:
 
 
     - uri_prefix: test_no_uri
-      can_be_root: true
+      can_be_root: true 
+      columns:
+        - name: need_uri 
+          type: uri
+          cardinality: scalar
+          required: true
+    
+
+    - uri_prefix: test_no_ref
+      can_be_root: false
       columns:
         - name: need_uri 
           type: uri
