@@ -168,18 +168,28 @@ class ActivityPubGateway(BaseSocialGateway):
 
         payload = {
             "@context": "https://www.w3.org/ns/activitystreams",
-            "id": f"{sender_url}/posts/{id_message}/activities",
+            "id": f"{sender_url}/posts/{id_message}/activity",
             "type": "Create",
             "actor": sender_url,
+            "to" : [
+                actor_uri
+            ],
+            "cc" : [],
             "object": {
                 "id": f"{sender_url}/posts/{id_message}",
                 "type": "Note",
                 "attributedTo": sender_url,
                 "to": [actor_uri],
                 "content": f"{msg}",
+                "tag" : [
+                    { 
+                     "type" : "Mention",
+                     "href" : actor_uri,
+                     "name" : actor_to_dto.get_social_handle(),
+                    },
+                ],
                 }
-
-            }
+        }
 
         payload_str = json.dumps(payload)
 

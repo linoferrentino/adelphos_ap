@@ -97,8 +97,10 @@ class AsyncPostReq(AsyncRequestBase):
 
 
     async def async_req_try(self, session):
+        gCon.log(f"POST headers {self._headers} json {self._json}")
         async with session.post(self._url, headers = self._headers,
                                 json = self._json) as resp:
+            gCon.log(f"obtained {resp} {resp.status}")
             self.status_code = resp.status
 
 

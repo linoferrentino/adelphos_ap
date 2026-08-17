@@ -86,6 +86,8 @@ class AliasAlgo:
         is_present_family = await fdb.is_present_uri_str(t_id, family_uri)
 
         if is_present_family is True:
+            if pars.get('maybe') == True:
+                return
             raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY)
 
         family_ob = await fdb.new_ob_uri(t_id, family_uri, fields = {

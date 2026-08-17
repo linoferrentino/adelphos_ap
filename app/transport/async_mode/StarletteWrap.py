@@ -55,6 +55,7 @@ async def async_lifespan_gw(app):
 
     loop = get_loop()
 
+    app.cond = asyncio.Condition()  
     app.running = True
     out_gateway = AsyncGateway()
     app.set_out_gateway(out_gateway)
@@ -62,7 +63,6 @@ async def async_lifespan_gw(app):
     await out_gateway.start(app)
     await app.routable.init_up()
  
-    app.cond = asyncio.Condition()  
     yield
 
     app.running = False

@@ -52,6 +52,7 @@ class AdelphosInitDaemon(Daemon):
             'alias_name' : 'root',
             'family' : 'admins',
             'password' : root_password,
+            'maybe' : True
         }
 
         res = await AliasAlgo.alias_create(self.kernel, pars)
