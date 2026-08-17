@@ -41,7 +41,7 @@ def test_real1(get_standalone_app):
     ad1 = get_standalone_app('adelphos1', stdcnf.release_kernel_template,
                              tconf.adelphos_testable_1_conf)
     with ad1:
-        time.sleep(2)
+        time.sleep(3)
         port = tconf.adelphos_testable_1_conf['_port_']
         gCon.log(f"I want to connect to port {port}")
         response = httpx.post(f'http://127.0.0.1:{port}/api/users/adelphos/inbox', 

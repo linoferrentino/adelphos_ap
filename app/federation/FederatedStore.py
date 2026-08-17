@@ -32,6 +32,7 @@ from app.federation.LifespanAware import LifespanAware
 from app.federation.FederatedObject import FederatedObject
 from app.federation.SocialListener import SocialListener
 from app.federation.FederatedObject import str_to_fob
+from app.federation.FederatedObject import str_to_fobs
 from app.federation.FederatedObject import REF_COUNT_COLUMN
 from app.federation.FederatedObject import VERSION_COLUMN
 from app.federation.FederatedObject import EObState
@@ -66,13 +67,18 @@ class FederatedTransaction:
 
 
     def _check_read_consistency(self):
-        # XXX to do
-        pass
+        for k,v in self.read_uris.items():
+            present_str = self.fdb.db.get(k)
+            obs = str_to_fobs(present_str)
+            if obs.get_state == EObState.LENT:
+                raise FdbException(EFDB_OBJECT_GONE, k)
+            if obs.version != v.version:
+                raise FdbException(EFDB_READ_INCOHERENT, k)
 
 
     def _do_deletes(self):
         for k, v in self.deleted_uris.items():
-            self._delete_uri_str(k)
+            self._delete_ob(k, v)
 
 
     def _do_creates(self):
@@ -80,9 +86,11 @@ class FederatedTransaction:
         for k,v in self.created_uris.items():
             gCon.log(f"Created {k} => {v.ob}")
             if v.ob.fields[REF_COUNT_COLUMN] == 0:
+                v.prepare_to_oblivion(self)
                 continue
             self._update_uri_str(k, v)
-        self.created_uris.clear()
+        if self.do_mod_db:
+            self.created_uris.clear()
 
 
     def _do_updates(self):
@@ -91,7 +99,7 @@ class FederatedTransaction:
             gCon.log(f"check updates {k} = {v.ob}")
             if ((v.ob.state == EObState.PRESENT) and
                 (v.ob.fields[REF_COUNT_COLUMN] == 0)):
-                self._delete_uri_str(k)
+                self._delete_ob(k, v)
                 continue
             if v.modified == False:
                 # XXX check read consistency
@@ -103,14 +111,20 @@ class FederatedTransaction:
             else:
                 assert ((v.ob.state == EObState.PRESENT) or
                         (v.ob.state == EObState.LENT))
-        self.locked_uris.clear()
+        if self.do_mod_db:
+            self.locked_uris.clear()
 
 
-    def _delete_uri_str(self, key_str):
+    def _delete_ob(self, key_str, ob):
+        ob.prepare_to_oblivion(self)
+        if self.do_mod_db == False:
+            return
         self.fdb.db.del_key(key_str)
 
 
     def _update_uri_str(self, key_str, fob):
+        if self.do_mod_db == False:
+            return
         if (fob.ob.state != EObState.LENT):
             fob.enforce_schema_before_commit()
             new_version = W32.inc_and_get_val(int(fob.ob.fields[VERSION_COLUMN]))
@@ -127,7 +141,15 @@ class FederatedTransaction:
 
     def t_rollback(self):
         self._release_all_locks()
-        
+
+
+    def _commit_pass(self):
+        self._do_deletes()
+
+        self._do_updates()
+
+        self._do_creates()
+       
 
     def t_commit(self):
 
@@ -135,11 +157,16 @@ class FederatedTransaction:
 
             self._check_read_consistency()
 
-            self._do_deletes()
-
-            self._do_updates()
-
-            self._do_creates()
+            self.do_mod_db = False
+            while True:
+                self.chain_deletes = False
+                self._commit_pass()
+                if self.chain_deletes == True:
+                    continue
+                if (self.do_mod_db == True):
+                    break
+                self.do_mod_db = True
+                
 
             self.fdb.db.commit()
 
@@ -155,20 +182,11 @@ class FederatedTransaction:
         self.fdb.db.rollback()
         raise fdex
 
+
     def new_ob(self, fob):
         uri_db = self.fdb.remove_localhost(fob.uri)
         key_uri = uri_db.unparse()
         gCon.log(f"new object {fob.uri} it has become {uri_db} -> {key_uri}")
-
-        #key_uri = fob.uri.unparse()
-
-        #if self.locked_uris.get(key_uri) is not None:
-        #    raise FdbException(EFdbErrors.EFDB_URI_EXISTS)
-
-        #if self.deleted_uris.get(key_uri) is not None:
-        #    raise FdbException(EFdbErrors.EFDB_URI_DELETED)
-        
-        #gCon.log(f"storing key {key_uri} in local db")
         self.created_uris[key_uri] = fob
 
 
@@ -189,16 +207,50 @@ class FederatedTransaction:
         return None
 
 
-    def get_ob(self, uri_str):
+    def downvote_deleted_ob(self, uri_str_complete):
+        uri_ob = self.fdb.parse_uri(uri_str_complete)
+        uri_ob_local = self.fdb.remove_localhost(uri_ob)
+        uri_str = uri_ob_local.unparse()
+        gCon.log(f"I have to search {uri_str} to downvote")
 
         if self.deleted_uris.get(uri_str) is not None:
+            return
+
+        if self.read_uris.get(uri_str) is not None:
+            raise FdbException(EFdbErrors.EFDB_NO_LOCK_ON_OB, uri_str)
+
+        locked_ob = self.locked_uris.get(uri_str)
+        if locked_ob is not None:
+            gCon.log(f"Found object to downvote {uri_str}")
+            locked_ob._dec_ref_ob()
+            self.chain_deletes = True
+            return
+
+        created_ob = self.created_uris.get(uri_str)
+        if created_ob is not None:
+            gCon.log(f"Found created object to downvote {uri_str}")
+            created_ob._dec_ref_ob()
+            self.chain_deletes = True
+            return
+
+        raise FdbException(EFdbErrors.EFDB_MISSING_LINK_TO_DELETED_OB, uri_str)
+
+
+    def get_ob(self, rctx):
+
+        if self.deleted_uris.get(rctx.uri_str) is not None:
             raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB)
 
-        exist_val = self.locked_uris.get(uri_str)
-        if exist_val is not None:
-            return exist_val
+        if rctx.must_lock:
+            exist_val = self.locked_uris.get(rctx.uri_str)
+            if exist_val is not None:
+                return exist_val
+        else:
+            exist_val = self.read_uris.get(rctx.uri_str)
+            if exist_val is not None:
+                return exist_val
 
-        maybe_created = self.created_uris.get(uri_str)
+        maybe_created = self.created_uris.get(rctx.uri_str)
         if maybe_created is not None:
             return maybe_created
 
@@ -459,13 +511,6 @@ class FederatedStore(Dependency, LifespanAware):
 
         rctx.fob.returned_object(obstr)
 
-        #ob_type = rctx.uri_ob.ob_type
-        #registrar = self.fact.get_registrar(ob_type)
-        #ob().ob = str_to_fob(rctx.uri_ob, registrar, t_ob_str,
-        #                      rctx.must_lock)
-        
-        #gCon.log(f"the object returned is {obstr}")
-
 
     async def _read_ctx(self, rctx):
         rctx.tob = self.get_tob_safe(rctx.t_id)
@@ -473,7 +518,7 @@ class FederatedStore(Dependency, LifespanAware):
                     rctx.only_local)
 
         rctx.uri_str = rctx.uri_ob.unparse()
-        rctx.fob = rctx.tob.get_ob(rctx.uri_str)
+        rctx.fob = rctx.tob.get_ob(rctx)
         if rctx.fob is not None:
             return
 

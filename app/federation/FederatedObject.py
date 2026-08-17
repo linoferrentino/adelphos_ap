@@ -30,9 +30,16 @@ from app.federation.FdbException import EFdbErrors
 import weakref
 
 
-def str_to_fob(uri_ob, registrar, str_ob, locked = False):
+def str_to_fobs(str_ob):
     ob = json.loads(str_ob)
     obs = FObSerialized(**ob)
+    return obs
+
+
+def str_to_fob(uri_ob, registrar, str_ob, locked = False):
+    obs = str_to_fobs(str_ob)
+    #ob = json.loads(str_ob)
+    #obs = FObSerialized(**ob)
     fob = FederatedObject(uri_ob, registrar, ob = obs, locked = locked)
     return fob
 
@@ -134,6 +141,20 @@ VERSION_COLUMN   = f"{FDB_RESERVED_PREFIX}version"
 class FObSerialized:
     state: EObState
     fields: dict = field(default_factory = dict)
+
+    @property
+    def ref_count(self):
+        return self.fields[REF_COUNT_COLUMN]
+
+
+    @property
+    def version(self):
+        return self.fields[VERSION_COLUMN]
+
+
+    @property
+    def get_state(self):
+        return self.state
 
 
 class FObColType(IntEnum):
@@ -466,8 +487,30 @@ class FederatedObject:
             raise Exception("TO DO 1")
 
 
+    def downvote_uri(self, uri_to_downvote, tx_ob):
+        gCon.log(f"need to downvote the URI {uri_to_downvote}")
+        ob_to_downvote = tx_ob.downvote_deleted_ob(uri_to_downvote)
+
+
     def prepare_to_oblivion(self, tx_ob):
-        gCon.log("prepare to oblivion")
+        if hasattr(self, 'prepared_to_oblivion'):
+            return 
+        gCon.log("[red]prepare to oblivion[/red]")
+        for par, definition in self.registrar.pars.items():
+            if ((definition.typecol != FObColType.URI)
+                and (definition.typecol != FObColType.LOCAL_URI)):
+                    continue
+            uris_to_downvote = self.ob.fields[par] 
+            if definition.cardinality == FObCardType.SCALAR:
+                if uris_to_downvote is not None:
+                    self.downvote_uri(uris_to_downvote, tx_ob)
+            elif definition.cardinality == FObCardType.SET:
+                set_uri_downvoted = set(uris_to_downvote)
+                for uri_to_downvote in set_uri_downvoted:
+                    self.downvote_uri(uri_to_downvote, tx_ob)
+            else:
+                raise Exception("To do")
+        self.prepared_to_oblivion = True
 
 
     @ensure_lock
@@ -527,6 +570,11 @@ class FederatedObject:
     @property
     def ref_count(self):
         return self.ob.fields[REF_COUNT_COLUMN]
+
+
+    @property
+    def version(self):
+        return self.ob.fields[VERSION_COLUMN]
 
 
     @ensure_lock

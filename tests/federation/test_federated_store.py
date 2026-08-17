@@ -601,7 +601,7 @@ async def a_test_no_ref_downlink(fdb1_loc):
 
     fob = await fdb1_loc.uri_read_ob(t_id, t1uri, maybe = True)
     assert fob is None
-    assert fob_root().ref_count == 2
+    assert fob_root().ref_count == 1
 
 
 def test_set_uri_local(fdb1_loc):
