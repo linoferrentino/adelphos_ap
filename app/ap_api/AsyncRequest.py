@@ -19,6 +19,7 @@ from app.logging import gCon
 from urllib.parse import urlsplit
 import re
 import traceback
+import json
 
 
 # the base class for all the requests in Adelphos.
@@ -90,16 +91,20 @@ class AsyncGetReq(AsyncRequestBase):
 class AsyncPostReq(AsyncRequestBase):
 
 
-    def __init__(self, url, headers, json):
+    def __init__(self, url, headers, ajson):
         super().__init__(url)
         self._headers = headers
-        self._json = json
+        if isinstance(ajson, dict):
+            json_str = json.dumps(ajson)
+        else:
+            json_str = ajson
+        self._json = json_str
 
 
     async def async_req_try(self, session):
         gCon.log(f"POST headers {self._headers} json {self._json}")
         async with session.post(self._url, headers = self._headers,
-                                json = self._json) as resp:
+                                data = self._json) as resp:
             gCon.log(f"obtained {resp} {resp.status}")
             self.status_code = resp.status
 

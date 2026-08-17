@@ -26,7 +26,7 @@ from starlette.exceptions import HTTPException
 from urllib.parse import urlsplit
 from app.logging import gCon
 from app.dao.ApActorDto import create_remote_actor
-from datetime import datetime
+from datetime import datetime, timezone
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.backends import default_backend as crypto_default_backend
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -156,14 +156,17 @@ class ActivityPubGateway(BaseSocialGateway):
 
     def _do_envelope(self, actor_from_dto, actor_to_dto, msg):
 
-        msg = re.sub("\n", "<p>", msg)
+        #msg = re.sub("\n", "<p>", msg)
+        paragraphs = [f"<p>{p.strip()}</p>" for p in re.split(r'\n+', msg) if p.strip()]
+        html_msg = "".join(paragraphs) if paragraphs else "<p></p>"
+        gCon.log(f"message has become {html_msg}")
 
         id_message = uuid.uuid4()
 
         sender_url = actor_from_dto.get_uri()
         actor_uri = actor_to_dto.get_uri()
 
-        current_date = datetime.now().strftime(
+        current_date = datetime.now(timezone.utc).strftime(
             '%a, %d %b %Y %H:%M:%S GMT')
 
         payload = {
@@ -180,7 +183,7 @@ class ActivityPubGateway(BaseSocialGateway):
                 "type": "Note",
                 "attributedTo": sender_url,
                 "to": [actor_uri],
-                "content": f"{msg}",
+                "content": html_msg,
                 "tag" : [
                     { 
                      "type" : "Mention",
@@ -191,7 +194,7 @@ class ActivityPubGateway(BaseSocialGateway):
                 }
         }
 
-        payload_str = json.dumps(payload)
+        payload_str = json.dumps(payload, separators=(',',':'))
 
         digest = base64.b64encode(hashlib.sha256(
             payload_str.encode('utf-8')).digest())
@@ -223,6 +226,6 @@ class ActivityPubGateway(BaseSocialGateway):
             'signature': signature_header
             }
 
-        return (headers, payload) 
+        return (headers, payload_str) 
 
 

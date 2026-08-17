@@ -87,11 +87,12 @@ class BaseSocialGateway(SocialGateway):
 
     async def out_outbox_dtos(self, actor_from_dto, actor_to_dto, message):
         message = f"@{actor_to_dto.act.preferred_username} {message}"
-        (headers, payload) = self._do_envelope(actor_from_dto, actor_to_dto, message)
+        (headers, payload_str) = self._do_envelope(
+                actor_from_dto, actor_to_dto, message)
         actor_uri = f"https://{actor_to_dto.srv.host_name}\
 {actor_to_dto.act.inbox_path}"
         transport = self.kernel.get_dep(Dependencies.TRANSPORT)
-        await transport.post_json(actor_uri, payload, headers)
+        await transport.post_json(actor_uri, payload_str, headers)
 
 
     async def discover_user(self, handle):
