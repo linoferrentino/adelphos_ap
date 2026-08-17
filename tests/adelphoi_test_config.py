@@ -164,6 +164,20 @@ adelphos_testable_1_conf = {
 }
 
 
+adelphos_testable_2_remote_conf = {
+
+        '_port_': 9919,
+        '_daemon_user_': 'adelphos',
+        '_demo_1_nick_': 'demo1',
+        '_demo_1_complete_name_': 'John Demo1',
+        '_demo_2_nick_': 'demo2',
+        '_demo_2_complete_name_': 'Mary Demo2',
+        '_root_handle_' : '"@demo1@localhost:7777"',
+        '_root_password_' : 'tiger11',
+
+}
+
+
 adelphos_testable_2_conf = {
 
         '_port_': 9921,

@@ -29,12 +29,26 @@ class AdelphosInitDaemon(Daemon):
         super().__init__(kernel)
 
 
+    async def _create_remote_root(self, root_handle, root_password):
+        sg = self.get_dep(Dependencies.SOCIAL_GATEWAY)
+        root_actor = await sg.discover_user(root_handle)
+        gCon.log(f"Found the remote root actor {root_actor}")
+        await self._create_root_alias(root_handle,
+                                      root_actor.act.actor_id,
+                                      root_password)
+
+
     async def _create_local_root(self, local_user, root_password):
         social = self.get_dep(Dependencies.SOCIAL)
-        local_user = social.local_user_get(local_user, create_if_not_exists = True)
+        root_user = social.local_user_get(local_user, create_if_not_exists = True)
+        await self._create_root_alias(local_user,
+                                      root_user.actor_dto.act.actor_id,
+                                      root_password)
 
+
+    async def _create_root_alias(self, root_user, root_actor_id, root_password):
         pars = {
-            'actor_id' : local_user.actor_dto.act.actor_id,
+            'actor_id' : root_actor_id,
             'alias_name' : 'root',
             'family' : 'admins',
             'password' : root_password,
@@ -44,16 +58,15 @@ class AdelphosInitDaemon(Daemon):
 
         if res != ECoreErrno.DONE_OK:
             gCon.log(f"res error {res} creating root alias")
-        gCon.log(f"created the root {local_user} with id {local_user.actor_dto.act.actor_id}")
+            raise Exception(f"res error {res} creating root alias")
+        gCon.log(f"created the root {root_user} with id {root_actor_id}")
 
 
     async def start_impl(self):
         root_handle = self.conf.get_conf('general')['root']
         root_password = self.conf.get_conf('general')['root_password']
-        #local_user_mt = re.match(LOCAL_REX, root_handle)
         local_user = au.get_local_alias(root_handle)
         if local_user is not None:
-            #local_user = local_user_mt.group(1)
             gCon.log(f"Root is the local user {local_user}")
             await self._create_local_root(local_user, root_password)
         else:

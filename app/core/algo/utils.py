@@ -31,10 +31,7 @@ def federated_transaction(raise_if_fail):
         async def internal_commit(kernel, pars):
             fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
             t_id = fdb.begin_transaction()
-            #kwargs['t_id'] = t_id
             try:
-                gCon.log(f"pars are {pars}")
-                #gCon.log(f"kwargs are {kwargs}")
                 res = await func(kernel, pars, t_id)
                 fdb.commit_transaction(t_id)
                 return res if res is not None else ECoreErrno.DONE_OK

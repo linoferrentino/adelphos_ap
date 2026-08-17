@@ -45,17 +45,11 @@ class AliasAlgo:
     @staticmethod
     async def _sys_call_create(kernel, envelope, pars):
         alias = pars['name']
-        #password = pars['password']
-        #trust = pars['trust']
-        #currency = pars['currency']
-
         (alias_name, family) = au.split_alias(alias, True)
 
         pars['actor_id'] = envelope.actor_from.act.actor_id
         pars['alias_name'] = alias_name
         pars['family'] = family
-
-        gCon.log(f"pars sys_call {pars}")
 
         await AliasAlgo.alias_create_safe(kernel, pars)
         return "Alias created, you can login, now."

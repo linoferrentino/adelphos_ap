@@ -102,10 +102,11 @@ class FederatedTransaction:
                 self._delete_ob(k, v)
                 continue
             if v.modified == False:
-                # XXX check read consistency
                 gCon.log(f"{id(v)} NO MODIFIED")
                 continue
             self._update_uri_str(k, v)
+            if self.do_mod_db == False:
+                return
             if v.ob.state == EObState.BORROWED:
                 self.fdb.return_object(k, v)
             else:
@@ -506,7 +507,7 @@ class FederatedStore(Dependency, LifespanAware):
         gCon.log(f"got {rctx.fob.ob.fields} as the object")
 
         if rctx.fob.ob.state != EObState.LENT:
-            gCon.log(f"invalid state {rctx.fob.state}")
+            gCon.log(f"invalid state {rctx.fob.ob.state}")
             raise FdbException(EFdbErrors.EFDB_INVALID_STATE)
 
         rctx.fob.returned_object(obstr)

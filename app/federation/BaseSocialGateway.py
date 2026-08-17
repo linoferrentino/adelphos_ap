@@ -149,7 +149,7 @@ resource=acct:{actor_instance}"
 
         href_user = None
         # I have to get the URI corresponding to activitypub stream
-        # this is from W3C reccomentations. 
+        # this is from W3C reccomendations. 
         # https://www.w3.org/community/reports/socialcg/CG-FINAL-apwf-20240608/
         for link in actor_def_ob['links']:
             if link['rel'] != 'self':

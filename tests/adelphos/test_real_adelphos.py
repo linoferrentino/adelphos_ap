@@ -144,6 +144,17 @@ def test_create_root_user(get_routable_app):
                               ECoreErrno.EINVALID_USER_OR_PASSWORD)
 
 
+def test_remote_root(get_routable_app):
+    test1 = get_routable_app('test100', stdcnf.release_kernel_template,
+                             tconf.adelphos_testable_1_conf)
+    test2 = get_routable_app('test201', stdcnf.release_kernel_template,
+                             tconf.adelphos_testable_2_remote_conf)
+    with test1:
+        with test2:
+            gCon.log(f"test2 is active")
+
+ 
+
 def test_real_remote_add(get_routable_app):
     test1 = get_routable_app('test100', stdcnf.release_kernel_template,
                              tconf.adelphos_testable_1_conf)
