@@ -24,6 +24,11 @@ uri_constructor: app.core.model.AdelphosUri.AdelphosUri
 types:
 
     enums:
+
+      state:
+        - WAITING
+        - VALID
+
       currency:
         - APC
         - AUD
@@ -105,7 +110,7 @@ classes:
           required: false
 
         - name: boss
-          type: local_uri 
+          type: uri 
           cardinality: scalar
           required: true
 
@@ -115,13 +120,13 @@ classes:
           required: false
 
         - name: members
-          type: local_uri 
+          type: uri 
           cardinality: set
           required: true
           minimum_cardinality: 1
 
         - name: agorai
-          type: local_uri
+          type: uri
           cardinality: set
           required: false
 
@@ -141,6 +146,13 @@ classes:
           cardinality: scalar
           required: true
 
+        - name: state
+          type: enum
+          sub_type: state
+          cardinality: scalar
+          required: false
+          default: WAITING
+
         - name: trust
           type: real
           cardinality: scalar
@@ -153,39 +165,6 @@ classes:
           default: 1.0
 
         - name: balance
-          type: real
-          cardinality: scalar
-          required: false
-          default: 0.0
-
-
-    - uri_prefix: {EAdelphosType.GROUP_TYPE}
-      can_be_root: false
-
-      columns:
-
-        - name: multiplier
-          type: real
-          cardinality: scalar
-          required: false
-          default: 0.20
-
-        - name: level
-          type: int
-          cardinality: scalar
-          required: true
-
-        - name: members
-          type: uri 
-          cardinality: set
-          required: true
-
-        - name: boss
-          type: uri 
-          cardinality: scalar
-          required: true
-
-        - name: equity
           type: real
           cardinality: scalar
           required: false

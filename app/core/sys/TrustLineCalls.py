@@ -22,16 +22,16 @@ from app.sdc.Dependencies import Dependencies
 from app.core.AdelphosCoreException import AdelphosCoreException
 from app.core.ECoreErrno import ECoreErrno
 import app.misc.trust_utils as tutils
+import app.core.sys.sys_calls_utils as scu
+import app.core.sys.social_utils as su
+
 
 class TrustLineCalls:
 
     @staticmethod
     @active_login
     async def _sys_call_create(kernel, session, pars):
-        family_uri = session.family_uri
-        pars['family_from'] = family_uri
-        gCon.log(f"You want to create a trust line from {family_uri}")
-        gCon.log(f"pars {pars}")
+        pars['_session'] = session
         await TrustLineCalls.tl_create_safe(kernel, pars)
 
 
@@ -39,19 +39,24 @@ class TrustLineCalls:
     @federated_transaction(raise_if_fail = True)
     async def tl_create_safe(kernel, pars, t_id):
 
+        family_from_ob = await scu.get_family_in_session(kernel, pars, t_id)
+        scu.ensure_logged_alias_is_boss(family_from_ob, pars)
+
+        family_from = pars['_session'].family_uri
+
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
         family_to_uri = fdb.parse_uri(pars['family_to'])
         gCon.log(f"family to uri {family_to_uri}")
 
-        tl_name = pars['family_from'].name + "_" + \
+        tl_name = family_from.name + "_" + \
                 family_to_uri.name + "_" + \
                 family_to_uri.host
         tl_name = re.sub(r'\.', "_", tl_name)
         gCon.log(f"tl name is {tl_name}")
 
         tl_uri = AdelphosUri.create_uri(EAdelphosType.TRUST_LINE_TYPE,
-                        tl_name, host_part = pars['family_from'].host)
+                        tl_name, host_part = family_from.host)
 
         gCon.log(f"the trust line uri is {tl_uri}")
 
@@ -61,8 +66,8 @@ class TrustLineCalls:
             raise AdelphosCoreException(ECoreErrno.ETL_EXISTS,
                                         tl_name)
 
-        family_to_ob   = await fdb.uri_read_ob(t_id, family_to_uri,
-                                           must_lock = True, maybe = True)
+        family_to_ob = await fdb.uri_read_ob(t_id, family_to_uri,
+                                   must_lock = True, maybe = True)
 
         if family_to_ob is None:
             raise AdelphosCoreException(ECoreErrno.EFAMILY_NOT_FOUND,
@@ -75,14 +80,17 @@ class TrustLineCalls:
 
         gCon.log(f"Created the trust line {trust_line_ob}")
 
-        family_from_ob = await fdb.uri_read_ob(t_id, pars['family_from'],
-                                           must_lock = True)
-
         trust_line_ob().set_link('family_from', family_from_ob)
         trust_line_ob().set_link('family_to', family_to_ob)
 
         gCon.log(f"Now the trust line has ref {trust_line_ob().ob.fields}")
 
-        
+        family_from_ob().add_link('trust_lines', trust_line_ob)
+        family_to_ob().add_link('trust_lines', trust_line_ob)
 
+        await su.out_msg_to_family_boss(kernel, family_to_ob, f"""
+You have received an invite to join family {family_from} by its boss
+{family_from_ob().get_scalar('boss')} with a trust of 
+{pars['trust']}. Login to adelphos to accept it.""", t_id)
  
+

@@ -23,6 +23,8 @@ from app.core.ECoreErrno import ECoreErrno
 
 from app.logging import gCon
 
+import app.core.sys.sys_calls_utils as scu
+
 
 class FamilyCalls:
 
@@ -40,14 +42,13 @@ class FamilyCalls:
         this_host = kernel.conf().get_host()
         social_handle = f"@{social_user}@{this_host}"
 
-        pars['family'] = session.family
+        pars['_session'] = session
         await FamilyCalls._family_add_invite_safe(kernel, pars)
         
         await social.out_msg_listener_to_actor(user_dto,
 f"""You have been invited to join adelphos by @{session.alias_family}@{this_host}
  to accept it do a private mention 
  {social_handle} family.join alias $alias_chosen invite_code {invite_code}""")
-
 
 
     @staticmethod
@@ -59,14 +60,13 @@ f"""You have been invited to join adelphos by @{session.alias_family}@{this_host
     @staticmethod
     async def _family_add_invite_impl(kernel, pars, t_id):
 
-        family = pars['family']
+        #family = pars['_session'].family
         user_handle = pars['user_handle']
         invite_code = pars['invite_code']
 
+        family_ob = await scu.get_family_in_session(kernel, pars, t_id)
 
-        fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-        family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
-        family_ob = await fdb.uri_read_lock(t_id, family_uri)
+        scu.ensure_logged_alias_is_boss(family_ob, pars)
 
         invite_ob = family_ob().get_scalar('invite')
         if invite_ob is not None:

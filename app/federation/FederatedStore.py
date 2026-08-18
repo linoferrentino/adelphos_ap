@@ -68,7 +68,9 @@ class FederatedTransaction:
 
     def _check_read_consistency(self):
         for k,v in self.read_uris.items():
-            present_str = self.fdb.db.get(k)
+            present_str = self.fdb.db.get_maybe(k)
+            if present_str is None:
+                return
             obs = str_to_fobs(present_str)
             if obs.get_state == EObState.LENT:
                 raise FdbException(EFDB_OBJECT_GONE, k)

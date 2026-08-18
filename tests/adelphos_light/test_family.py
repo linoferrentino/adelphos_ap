@@ -22,6 +22,7 @@ import tests.helpers.family_helpers as fh
 import app.consts as CNST
 import app.sdc.standard_conf as stdcnf
 from app.exc.AdelphosException import AdErrno
+from app.core.ECoreErrno import ECoreErrno
 from app.exc.AdelphosException import AdelphosException
 from app.sdc.Dependencies import Dependencies
 from app.logging import gCon
@@ -41,7 +42,7 @@ def _test_create_trust_line(world):
 
     ad1 = world.get_instance('ad1')
     gCon.log(f"The simul instance is {ad1}")
-    ad1.push_user('bob.fam_t1')
+    ad1.push_user('alice.fam_t1')
     th.ws_create_trust_line(ad1.get_sock(), "#fa#fam_t2@www.ad2.com",
             100)
 
@@ -81,6 +82,11 @@ def test_invite_member(get_routable_app):
             count_msg = mary_inbox.count_msg()
             assert count_msg == 0
 
+            ah.ws_create_user(ws2, 'mary_friend')
+            mary_friend_inbox = social2.login_user('mary_friend')
+            count_msg = mary_friend_inbox.count_msg()
+            assert count_msg == 0
+
             ah.ws_sudo_push_alias(ws1, 'jh.fam1')
 
             code_mary = "c0d3_mar1"
@@ -101,4 +107,7 @@ def test_invite_member(get_routable_app):
 
             alias_family = f"{alias_chosen}.{family}"
             ah.ws_alias_login(mary_inbox, ws1, alias_family, pass_mary)
+
+            fh.ws_invite_user_raw(ws1, f'@mary_friend@{host2}', 'impossible',
+                            ECoreErrno.EDENIED)
 
