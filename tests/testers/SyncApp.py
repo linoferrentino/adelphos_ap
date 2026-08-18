@@ -10,9 +10,10 @@
 # This is free software. Licensed with GPL version 3
 #
 ######################################################
-#
+
 
 import re
+import json
 
 import asyncio
 import threading
@@ -174,7 +175,10 @@ class SyncApp:
             path_params[k] = v
 
         endpoint = route.endpoint
-        request = SyncRequest(method, dict_params, path_params, in_json, urlp, headers)
+        #assert ((in_json is None) or (isinstance(in_json, str)))
+        #json_str = json.dumps(in_json, separators = (',', ':'))
+        request = SyncRequest(method, dict_params, path_params,
+                in_json, urlp, headers)
 
         res = run_coro_in_loop(endpoint, (request,))
 

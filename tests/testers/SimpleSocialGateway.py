@@ -44,6 +44,7 @@ class SimpleSocialGateway(BaseSocialGateway):
         actor_dto = await self._actor_get_or_discover(actor_str)
 
         headers = request.headers
+        gCon.log(f"headers are {headers}")
 
         signature = headers.get('x-simple-signature')
         if signature is None:
@@ -51,6 +52,8 @@ class SimpleSocialGateway(BaseSocialGateway):
 
         body_ob = json.loads(body_str)
         msg = body_ob['msg']
+
+        gCon.log(f"message is {msg}")
 
         got_signature = f"{msg[:3]}-{msg[-3:]}"
         if got_signature != signature:

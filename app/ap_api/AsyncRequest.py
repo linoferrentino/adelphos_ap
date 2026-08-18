@@ -94,11 +94,12 @@ class AsyncPostReq(AsyncRequestBase):
     def __init__(self, url, headers, ajson):
         super().__init__(url)
         self._headers = headers
-        if isinstance(ajson, dict):
-            json_str = json.dumps(ajson)
-        else:
-            json_str = ajson
-        self._json = json_str
+        assert isinstance(ajson, str)
+        #if isinstance(ajson, dict):
+        #    json_str = json.dumps(ajson)
+        #else:
+        #    json_str = ajson
+        self._json = ajson
 
 
     async def async_req_try(self, session):

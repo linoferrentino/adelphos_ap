@@ -51,6 +51,7 @@ class ActivityPubGateway(BaseSocialGateway):
 
 
     async def _check_signature_message(self, actor_str, request, body_str):
+        gCon.log(f"START SIGNATURE CHECK! {body_str} {type(body_str)}")
         
         headers = request.headers
 
@@ -65,6 +66,7 @@ class ActivityPubGateway(BaseSocialGateway):
 
         algo_id_val = algorithm.split("=")[1][1:-1]
         if (algo_id_val != "rsa-sha256"):
+            gCon.log(f"invalid algo {algo_id_val}")
             return (None, False)
 
         key_id_val = keyId.split("=")[1][1:-1]
@@ -74,19 +76,25 @@ class ActivityPubGateway(BaseSocialGateway):
         digest_body = base64.b64encode(hashlib.sha256(
             body_str.encode('utf-8')).digest())
 
+        #digest_body = base64.b64encode(hashlib.sha256(
+        #    body_str).digest())
+
         digest_body_total = "SHA-256=" + digest_body.decode('utf-8')
         digest_sign = headers['digest']
 
         if (digest_body_total != digest_sign):
+            gCon.log("[red]different signature[/red]")
             return (None, False)
 
         date_str = headers['date']
         date_val = datetime.strptime(date_str, '%a, %d %b %Y %H:%M:%S GMT')
-        current_date = datetime.now()
+        current_date = datetime.now(timezone.utc)
+        current_date = current_date.replace(tzinfo = None)
         time_diff = current_date - date_val
         total_secs = abs(time_diff.total_seconds())
 
         if (total_secs > 30):
+            gCon.log(f"[red]drift in time {total_secs}[/red]")
             return (None, False)
 
         host_hdr = headers['host']
@@ -131,8 +139,10 @@ class ActivityPubGateway(BaseSocialGateway):
                     )
 
         except Exception as err:
+            gCon.log("[red]Invalid signature[/red]")
             return (None, False)
 
+        gCon.log("[green]Valid signature[/green]")
         return (actor_dto, True)
 
     

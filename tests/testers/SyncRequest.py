@@ -20,11 +20,29 @@ class SyncRequest:
 
 
     def __init__(self, method, query_params, path_params,
-                 json_ob, urlp, headers = None):
+                 in_json, urlp, headers = None):
 
 
-        if (json_ob is not None) and (isinstance(json_ob, dict) == False):
-            raise Exception(f"I am expeting an object here got {json_ob}")
+        #if (json_ob is not None) and (isinstance(json_ob, dict) == False):
+        #    raise Exception(f"I am expeting an object here got {json_ob}")
+        gCon.log(f"get {in_json} of type {type(in_json)} for url {urlp} headers {headers}")
+        #assert ((json_str is None) or (isinstance(json_str, str)))
+        #assert ((json_ob is None) or (isinstance(json_ob, dict)))
+        if in_json is None:
+            json_ob = None
+            json_body = None
+        elif isinstance(in_json, bytes):
+            json_ob = json.loads(in_json)
+            json_body = in_json
+        elif isinstance(in_json, str):
+            json_ob = json.loads(in_json)
+            json_body = in_json.encode('utf-8')
+        elif isinstance(in_json, dict):
+            json_ob = in_json
+            json_body = json.dumps(in_json, separators=(',',':')).encode('utf-8')
+        else:
+            gCon.log(f"invalid type {in_json}")
+            assert False
 
         self.method = method
         self.query_params = { k: v[0] for k, v in query_params.items() }
@@ -34,7 +52,7 @@ class SyncRequest:
         self.headers = headers if headers is not None else {}
         self.url = urlp
         self.client = ""
-        self._inner_body = json.dumps(json_ob).encode('utf-8')
+        self._inner_body = json_body 
         self.body = self.get_body
 
 
