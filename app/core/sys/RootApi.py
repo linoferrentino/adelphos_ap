@@ -95,6 +95,7 @@ class RootApi:
         pars['actor_id'] = local_user.actor_dto.act.actor_id
         pars['alias_name'] = alias_name
         pars['family']  = family
+        pars['user_handle'] = local_user.actor_dto.get_social_handle()
 
         await AliasAlgo.alias_create(kernel, pars) 
 

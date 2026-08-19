@@ -65,3 +65,11 @@ class AdelphosUri(FederatedUri):
                           host = host_part, fragment = fragment)
         return uri
      
+
+    @staticmethod
+    def alias_as_uri(alias, family, host):
+        ad = AdelphosUri(EAdelphosType.ALIAS_TYPE, alias, family = family,
+                host = host)
+        return ad
+
+

@@ -48,6 +48,7 @@ class AliasAlgo:
         (alias_name, family) = au.split_alias(alias, True)
 
         pars['actor_id'] = envelope.actor_from.act.actor_id
+        pars['user_handle'] = envelope.actor_from.get_social_handle()
         pars['alias_name'] = alias_name
         pars['family'] = family
 
@@ -76,6 +77,7 @@ class AliasAlgo:
         password = pars['password']
         trust = pars['trust'] if hasattr(pars, 'trust') else 5.0
         currency = pars['currency'] if hasattr(pars, 'currency') else 'EUR'
+        user_handle = pars['user_handle']
 
         if trust <= 0:
             raise AdelphosCoreException(ECoreErrno.EINVALID_TRUST, trust)
@@ -97,21 +99,24 @@ class AliasAlgo:
             })
 
         alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, actor_id,
-                        alias_name, family, password, t_id)
+                        user_handle, alias_name, family, password, t_id)
 
         family_ob().set_link('boss', alias_ob)
 
 
     @staticmethod
-    async def _alias_add_in_family(fdb, family_ob, actor_id,
+    async def _alias_add_in_family(fdb, family_ob, actor_id, user_handle,
                                    name, family, password, t_id):
         ph = PasswordHasher()
         pass_hashed = ph.hash(password)
 
         fields = {
                 'actor_id' : actor_id,
-                'password': pass_hashed
+                'actor_handle' : user_handle,
+                'password': pass_hashed,
         }
+
+        gCon.log(f"Adding alias {fields}")
 
         alias_ob = await fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
                                       name, family = family, fields = fields)
@@ -134,12 +139,13 @@ class AliasAlgo:
         alias = pars['alias']
         family = pars['family']
         password = pars['password']
+        user_handle = pars['user_handle']
 
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
         family_ob = await fdb.uri_read_lock(t_id, family_uri)
         alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob,
-                actor_id, alias, family, password, t_id)
+                actor_id, user_handle, alias, family, password, t_id)
         return alias_ob
 
 
@@ -152,6 +158,8 @@ class AliasAlgo:
         alias = pars['alias']
         family = pars['family']
         password = pars['password']
+
+        gCon.log(f"accept impl pars {pars}")
 
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
@@ -173,5 +181,5 @@ class AliasAlgo:
         family_ob().set_scalar('invite', None)
 
         alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, actor_id,
-                            alias, family, password, t_id)
+                            user_handle, alias, family, password, t_id)
 

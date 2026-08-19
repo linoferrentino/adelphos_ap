@@ -14,8 +14,7 @@
 import re
 from app.core.AdelphosCoreException import AdelphosCoreException
 from app.core.ECoreErrno import ECoreErrno
-from app.core.model.AdelphosUri import AdelphosUri
-from app.core.model.AdelphosUri import EAdelphosType
+
 
 LOCAL_REX = r":local:(\w*)"
 
@@ -54,10 +53,5 @@ def alias_check(local_name):
         raise AdelphosCoreException(ECoreErrno.EINVALID_ALIAS_SYNTAX,
         f"name {local_name} length incorrect")
 
-
-def alias_as_uri(alias, family, host):
-    ad = AdelphosUri(EAdelphosType.ALIAS_TYPE, alias, family = family,
-            host = host)
-    return ad
 
 

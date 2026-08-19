@@ -53,6 +53,11 @@ classes:
           cardinality: scalar
           required: true
 
+        - name: actor_handle
+          type: str
+          cardinality: scalar
+          required: true
+
         - name: password
           type: str
           cardinality: scalar

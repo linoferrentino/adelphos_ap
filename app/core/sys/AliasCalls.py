@@ -114,6 +114,7 @@ class AliasCalls:
         alias_uri = AdelphosUri(EAdelphosType.ALIAS_TYPE, alias, family = family)
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
+        gCon.log(f"Searching alias {alias_uri}")
         alias_ob = await fdb.uri_read_no_lock(t_id, alias_uri, True)
 
         if alias_ob is None:

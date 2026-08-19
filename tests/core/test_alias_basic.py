@@ -45,6 +45,7 @@ async def a_test_add_alias(w_local):
       'alias_name' : 'lino',
       'family' : 'ferre',
       'password' : 'pass',
+      'user_handle' : '@lino@host.com',
     }
 
     res = await AliasAlgo.alias_create(kernel, pars)
@@ -64,6 +65,7 @@ async def a_test_add_dup_family(w_local):
       'alias_name' : 'lino',
       'family' : 'ferre',
       'password' : 'pass',
+      'user_handle' : '@lino@host.com',
     }
 
 

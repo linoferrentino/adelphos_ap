@@ -102,6 +102,7 @@ def test_invite_member(get_routable_app):
             alias_chosen = "mary"
             family = "fam1"
             pass_mary = "my_secret_pass"
+            gCon.log("==================== accept ===========================")
             fh.ws_accept_invite_raw(ws2, host1, alias_chosen,
                                     family, code_mary, pass_mary, mary_inbox)
 

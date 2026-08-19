@@ -42,9 +42,9 @@ class BaseSocialGateway(SocialGateway):
         #body_str = body
         body_ob = await request.json()
 
-        gCon.log(f"Request is {request}")
-        gCon.log(f"The body ob is {body_ob} type {type(body_ob)}")
-        gCon.log(f"The body  is {body} type {type(body)}")
+        #gCon.log(f"Request is {request}")
+        #gCon.log(f"The body ob is {body_ob} type {type(body_ob)}")
+        #gCon.log(f"The body  is {body} type {type(body)}")
 
         self._filter_message_type(body_ob)
 

@@ -49,6 +49,7 @@ class AdelphosInitDaemon(Daemon):
     async def _create_root_alias(self, root_user, root_actor_id, root_password):
         pars = {
             'actor_id' : root_actor_id,
+            'user_handle' : root_user,
             'alias_name' : 'root',
             'family' : 'admins',
             'password' : root_password,

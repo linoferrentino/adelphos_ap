@@ -25,7 +25,7 @@ class SyncRequest:
 
         #if (json_ob is not None) and (isinstance(json_ob, dict) == False):
         #    raise Exception(f"I am expeting an object here got {json_ob}")
-        gCon.log(f"get {in_json} of type {type(in_json)} for url {urlp} headers {headers}")
+        #gCon.log(f"get {in_json} of type {type(in_json)} for url {urlp} headers {headers}")
         #assert ((json_str is None) or (isinstance(json_str, str)))
         #assert ((json_ob is None) or (isinstance(json_ob, dict)))
         if in_json is None:

@@ -177,7 +177,6 @@ class SimulFediverse:
         currency = family['currency']
         member = members[boss]
         actor_dto = SimulFediverse._get_actor_for_alias(instance, boss, member)
-
         gCon.log(f"boss {boss} is actor {actor_dto}")
 
         pars = {
@@ -187,7 +186,10 @@ class SimulFediverse:
             'password': member['password'],
             'trust' : trust,
             'currency' : currency,
+            'user_handle' : actor_dto.get_social_handle(),
         }
+
+        gCon.log(f"building alias with pars {pars}")
 
         run_coro_in_loop(AliasAlgo.alias_create_safe, (instance.kernel(), pars))
 
@@ -203,6 +205,7 @@ class SimulFediverse:
               'alias' : member,
               'family' : family_name,
               'password' : m_dict['password'],
+              'user_handle' : actor_dto.get_social_handle(),
             }
 
             run_coro_in_loop(AliasAlgo.family_add_alias_safe,
