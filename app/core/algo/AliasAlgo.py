@@ -71,7 +71,6 @@ class AliasAlgo:
     async def _alias_create_impl(kernel, pars, t_id):
         gCon.log(f"pars are {pars}")
 
-        actor_id = pars['actor_id']
         alias_name = pars['alias_name']
         family = pars['family']
         password = pars['password']
@@ -98,20 +97,19 @@ class AliasAlgo:
             'level' : 0
             })
 
-        alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, actor_id,
+        alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, 
                         user_handle, alias_name, family, password, t_id)
 
         family_ob().set_link('boss', alias_ob)
 
 
     @staticmethod
-    async def _alias_add_in_family(fdb, family_ob, actor_id, user_handle,
+    async def _alias_add_in_family(fdb, family_ob, user_handle,
                                    name, family, password, t_id):
         ph = PasswordHasher()
         pass_hashed = ph.hash(password)
 
         fields = {
-                'actor_id' : actor_id,
                 'actor_handle' : user_handle,
                 'password': pass_hashed,
         }
@@ -135,7 +133,6 @@ class AliasAlgo:
     @federated_transaction(raise_if_fail = True)
     async def family_add_alias_safe(kernel, pars, t_id):
 
-        actor_id = pars['actor_id']
         alias = pars['alias']
         family = pars['family']
         password = pars['password']
@@ -145,14 +142,13 @@ class AliasAlgo:
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
         family_ob = await fdb.uri_read_lock(t_id, family_uri)
         alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob,
-                actor_id, user_handle, alias, family, password, t_id)
+                user_handle, alias, family, password, t_id)
         return alias_ob
 
 
     @staticmethod
     async def _family_accept_invite_impl(kernel, pars, t_id):
 
-        actor_id = pars['actor_id']
         user_handle = pars['user_handle']
         invite_code = pars['invite_code']
         alias = pars['alias']
@@ -180,6 +176,6 @@ class AliasAlgo:
 
         family_ob().set_scalar('invite', None)
 
-        alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, actor_id,
+        alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, 
                             user_handle, alias, family, password, t_id)
 

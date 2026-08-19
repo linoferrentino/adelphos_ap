@@ -34,21 +34,18 @@ class AdelphosInitDaemon(Daemon):
         root_actor = await sg.discover_user(root_handle)
         gCon.log(f"Found the remote root actor {root_actor}")
         await self._create_root_alias(root_handle,
-                                      root_actor.act.actor_id,
                                       root_password)
 
 
     async def _create_local_root(self, local_user, root_password):
         social = self.get_dep(Dependencies.SOCIAL)
         root_user = social.local_user_get(local_user, create_if_not_exists = True)
-        await self._create_root_alias(local_user,
-                                      root_user.actor_dto.act.actor_id,
+        await self._create_root_alias(root_user.actor_dto.get_social_handle(),
                                       root_password)
 
 
-    async def _create_root_alias(self, root_user, root_actor_id, root_password):
+    async def _create_root_alias(self, root_user, root_password):
         pars = {
-            'actor_id' : root_actor_id,
             'user_handle' : root_user,
             'alias_name' : 'root',
             'family' : 'admins',
@@ -61,7 +58,7 @@ class AdelphosInitDaemon(Daemon):
         if res != ECoreErrno.DONE_OK:
             gCon.log(f"res error {res} creating root alias")
             raise Exception(f"res error {res} creating root alias")
-        gCon.log(f"created the root {root_user} with id {root_actor_id}")
+        gCon.log(f"created the root {root_user}")
 
 
     async def start_impl(self):

@@ -178,6 +178,17 @@ classes:
       can_be_root: false
       columns: []
 
+
+    - uri_prefix: conflict_c
+      can_be_root: true
+      columns:
+        - name: name
+          type: str
+          cardinality: scalar
+          required: false
+          default: "no name"
+
+
     - uri_prefix: t_json
       can_be_root: false
       columns:

@@ -62,9 +62,10 @@ class AliasCalls:
           'password': password,
           'force' : force,
         }
-        actor_id = await AliasCalls.login_safe(kernel, pars)
+        actor_handle = await AliasCalls.login_safe(kernel, pars)
+        gCon.log(f"OK, the user {actor_handle} has logged in with alias {alias}")
         social_dao = kernel.get_dep(Dependencies.SOCIAL_DAO)
-        actor_dto = social_dao.actor_get_from_id(actor_id)
+        actor_dto = social_dao.actor_get_from_actor_handle(actor_handle)
         token = session.login_start(alias, family, actor_dto, force)
 
         if force == True:
@@ -105,7 +106,6 @@ class AliasCalls:
 
     @staticmethod
     async def _login_impl(kernel, pars, t_id):
-
         alias = pars['alias']
         family = pars['family']
         password = pars['password']
@@ -131,5 +131,6 @@ class AliasCalls:
                 raise AdelphosCoreException(ECoreErrno.EINVALID_USER_OR_PASSWORD,
                                         f"{alias}.{family}")
 
-        return alias_ob().get_scalar('actor_id')
+        return alias_ob().get_scalar('actor_handle')
+
 

@@ -27,8 +27,6 @@ from app.exc.AdelphosException import AdelphosException
 from app.sdc.Dependencies import Dependencies
 from app.logging import gCon
 import tests.scripts.world1 as wld1
-from tests.testers.ATestCase import ATestCase
-
 import tests.helpers.trust_helpers as th
 
 

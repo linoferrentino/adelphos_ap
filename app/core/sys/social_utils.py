@@ -23,5 +23,5 @@ async def out_msg_to_family_boss(kernel, family_ob, msg, t_id):
     boss_ob = await fdb.uri_read_str(t_id, boss_uri)
 
     gCon.log(f"Will send msg {msg}")
-    gCon.log(f"to {boss_uri} which is {boss_ob().get_scalar('actor_id')}")
+    gCon.log(f"to {boss_uri} which is {boss_ob().get_scalar('actor_handle')}")
 

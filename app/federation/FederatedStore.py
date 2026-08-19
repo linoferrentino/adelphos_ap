@@ -90,6 +90,10 @@ class FederatedTransaction:
             if v.ob.fields[REF_COUNT_COLUMN] == 0:
                 v.prepare_to_oblivion(self)
                 continue
+            present_str = self.fdb.db.get_maybe(k)
+            if present_str is not None:
+                raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_COMMIT,
+                                   k)
             self._update_uri_str(k, v)
         if self.do_mod_db:
             self.created_uris.clear()

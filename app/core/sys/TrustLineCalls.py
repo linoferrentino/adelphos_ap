@@ -24,6 +24,7 @@ from app.core.ECoreErrno import ECoreErrno
 import app.misc.trust_utils as tutils
 import app.core.sys.sys_calls_utils as scu
 import app.core.sys.social_utils as su
+import app.core.sys.task_utils as tku
 
 
 class TrustLineCalls:
@@ -73,20 +74,24 @@ class TrustLineCalls:
             raise AdelphosCoreException(ECoreErrno.EFAMILY_NOT_FOUND,
                                         pars['family_to'])
 
-        trust_line_ob = await fdb.new_ob_uri(t_id, tl_uri, fields = {
-            'trust' : tutils.abs_to_db(pars['trust']),
-            'change_ratio' : pars['change_ratio'],
-            })
+        #trust_line_ob = await fdb.new_ob_uri(t_id, tl_uri, fields = {
+        #    'trust' : tutils.abs_to_db(pars['trust']),
+        #    'change_ratio' : pars['change_ratio'],
+        #    })
 
-        gCon.log(f"Created the trust line {trust_line_ob}")
+        #gCon.log(f"Created the trust line {trust_line_ob}")
 
-        trust_line_ob().set_link('family_from', family_from_ob)
-        trust_line_ob().set_link('family_to', family_to_ob)
+        #trust_line_ob().set_link('family_from', family_from_ob)
+        #trust_line_ob().set_link('family_to', family_to_ob)
 
-        gCon.log(f"Now the trust line has ref {trust_line_ob().ob.fields}")
+        #gCon.log(f"Now the trust line has ref {trust_line_ob().ob.fields}")
 
-        family_from_ob().add_link('trust_lines', trust_line_ob)
-        family_to_ob().add_link('trust_lines', trust_line_ob)
+        #family_from_ob().add_link('trust_lines', trust_line_ob)
+        #family_to_ob().add_link('trust_lines', trust_line_ob)
+
+        boss_to = family_to_ob().get_scalar('boss')
+
+        tku.add_task_to_alias(kernel, boss_to, "accept_trust_family")
 
         await su.out_msg_to_family_boss(kernel, family_to_ob, f"""
 You have received an invite to join family {family_from} by its boss

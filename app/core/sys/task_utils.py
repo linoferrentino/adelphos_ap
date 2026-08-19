@@ -11,9 +11,9 @@
 #
 ######################################################
 
-import tests.t_utils as tu
 
+from app.logging import gCon
 
-def ws_create_trust_line(ws, family_to, trust):
+def add_task_to_alias(kernel, alias, task):
 
-    tu.ws_send_cmd(ws, f"trustline.create family_to {family_to} trust {trust}")
+    gCon.log(f"[red]Adding {task} to {alias}[/red]")

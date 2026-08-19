@@ -38,8 +38,6 @@ def str_to_fobs(str_ob):
 
 def str_to_fob(uri_ob, registrar, str_ob, locked = False):
     obs = str_to_fobs(str_ob)
-    #ob = json.loads(str_ob)
-    #obs = FObSerialized(**ob)
     fob = FederatedObject(uri_ob, registrar, ob = obs, locked = locked)
     return fob
 
@@ -47,7 +45,7 @@ def str_to_fob(uri_ob, registrar, str_ob, locked = False):
 def ensure_lock(func):
 
     def _locked_or_croak(self, *args, **kwargs):
-        if self.ts_locked is None:
+        if self.ts_locked is False:
             raise FdbException(EFdbErrors.EFDB_NO_LOCK_ON_OB)
         return func(self, *args, **kwargs)
 
@@ -129,6 +127,7 @@ class EObState(IntEnum):
     LENT = 1
     BORROWED = 2
     CLONED = 3
+    DETACHED = 4
 
 
 FDB_RESERVED_PREFIX = "_fdb_"
@@ -231,14 +230,14 @@ class FederatedObject:
             self.modified = False
 
         if locked:
-            self.ts_locked = datetime.now() 
+            self.ts_locked = True 
         else:
             assert ob is not None
-            self.ts_locked = None
+            self.ts_locked = False
 
 
     def enforce_lock(self):
-        if self.ts_locked is None:
+        if self.ts_locked is False:
             raise FdbException(EFdbErrors.EFDB_NO_LOCK_ON_OB)
  
 
@@ -408,6 +407,16 @@ class FederatedObject:
         if maybe == True:
             return None
         raise AttributeError(key)
+
+
+    def detach(self):
+        if self.modified == True:
+            raise FdbException(EFdbErrors.EFDB_CANNOT_DETACH_A_MODIFIED_OBJECT)
+        if self.ts_locked == True:
+            raise FdbException(EFdbErrors.EFDB_CANNOT_DETACH_A_LOCKED_OBJECT)
+        detached = copy.deepcopy(self)
+        self.ob.state = EObState.DETACHED
+        return detached
 
 
     def add_ref(self):

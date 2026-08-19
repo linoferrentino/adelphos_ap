@@ -25,10 +25,6 @@ types:
 
     enums:
 
-      state:
-        - WAITING
-        - VALID
-
       currency:
         - APC
         - AUD
@@ -47,11 +43,6 @@ classes:
       can_be_root: false 
 
       columns:
-
-        - name: actor_id
-          type: int
-          cardinality: scalar
-          required: true
 
         - name: actor_handle
           type: str
@@ -141,33 +132,25 @@ classes:
 
       columns:
 
-        - name: family_from
+        - name: family_1
           type: uri
           cardinality: scalar
           required: true
 
-        - name: family_to 
+        - name: family_2
           type: uri
           cardinality: scalar
           required: true
 
-        - name: state
-          type: enum
-          sub_type: state
-          cardinality: scalar
-          required: false
-          default: WAITING
-
-        - name: trust
+        - name: trust_from_1_to_2
           type: real
           cardinality: scalar
           required: true
 
-        - name: change_ratio
+        - name: trust_from_2_to_1
           type: real
           cardinality: scalar
-          required: false
-          default: 1.0
+          required: true
 
         - name: balance
           type: real
@@ -186,11 +169,11 @@ classes:
           cardinality: scalar
           required: true
 
-        - name: level
-          type: int
+        - name: family
+          type: uri
           cardinality: scalar
           required: true
-        
+
         - name: offers
           type: uri
           cardinality: set
@@ -200,6 +183,42 @@ classes:
           type: uri
           cardinality: set
           required: false
+
+        - name: watcher
+          type: uri
+          cardinality: scalar
+          required: true
+
+
+    - uri_prefix: {EAdelphosType.OBJECT_TYPE}
+      can_be_root: false
+
+      columns:
+
+        - name: owner
+          type: uri
+          cardinality: scalar
+          required: true
+
+        - name: description
+          type: str
+          cardinality: scalar
+          required: true
+
+        - name: price
+          type: real
+          cardinality: scalar
+          required: true
+
+        - name: max_dim
+          type: real
+          cardinality: scalar
+          required: true
+
+        - name: weight
+          type: real
+          cardinality: scalar
+          required: true
 
 
 

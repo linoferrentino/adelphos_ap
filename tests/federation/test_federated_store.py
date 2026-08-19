@@ -484,6 +484,28 @@ def test_duplicate_column(federated_db):
     assert fex.value.errno == EFdbErrors.EFDB_DUPLICATED_COLUMN
 
 
+def test_create_conflict(fdb1_loc):
+    run_coro_in_loop(a_test_create_conflict, (fdb1_loc,))
+
+
+async def a_test_create_conflict(fdb1_loc):
+
+    t2uri = FederatedUriTest('conflict_c', 'a')
+
+    t_id_1 = fdb1_loc.begin_transaction()
+    fob12 = await fdb1_loc.new_ob_uri(t_id_1, t2uri)
+
+
+    t_id_2 = fdb1_loc.begin_transaction()
+    fob21 = await fdb1_loc.new_ob_uri(t_id_2, t2uri)
+    fdb1_loc.commit_transaction(t_id_1)
+
+    with pytest.raises(FdbException) as fex:
+        fdb1_loc.commit_transaction(t_id_2)
+
+    assert fex.value.errno == EFdbErrors.EFDB_CONFLICT_DURING_COMMIT
+
+
 def test_remote_uri(federated_db):
     wrap1 = federated_db(FIRST_HOST, tconf.federated_store_network_template,
                          schema_simple_yaml)

@@ -60,12 +60,14 @@ async def a_test_add_dup_family(w_local):
 
     kernel = w_local.kernel
 
+    lino_handle = '@lino@host.com'
+
     pars = {
       'actor_id' : 0,
       'alias_name' : 'lino',
       'family' : 'ferre',
       'password' : 'pass',
-      'user_handle' : '@lino@host.com',
+      'user_handle' : lino_handle,
     }
 
 
@@ -92,7 +94,7 @@ async def a_test_add_dup_family(w_local):
       'force' : False
     }
     res = await AliasCalls.login(kernel, pars)
-    assert res == ECoreErrno.DONE_OK
+    assert res == lino_handle
 
     pars['password'] = 'pass1'
     res = await AliasCalls.login(kernel, pars)

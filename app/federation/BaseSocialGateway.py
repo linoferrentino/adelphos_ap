@@ -26,6 +26,7 @@ from app.sdc.Dependencies import Dependencies
 from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
 from app.dao.ApActorDto import create_remote_actor
+import app.misc.federation_utils as fu
 
 
 class BaseSocialGateway(SocialGateway):
@@ -126,15 +127,11 @@ class BaseSocialGateway(SocialGateway):
 
 
     async def _actor_get_or_discover_from_handle(self, handle):
-        (first_char, actor_instance) = (handle[0], handle[1:])
+        ((preferred_username, rem_instance), actor_instance) = \
+                fu.split_social_handle(handle)
 
-        if (first_char != '@'):
-            raise AdelphosException(AdErrno.EINVALID_HANDLE)
+        gCon.log(f"inst {rem_instance} user {preferred_username} actor {actor_instance}")
 
-        user_host = actor_instance.split('@')
-        if (len(user_host) != 2):
-            raise AdelphosException(AdErrno.EINVALID_HANDLE)
-        (preferred_username, rem_instance) = user_host
 
         social_dao = self.kernel.get_dep(Dependencies.SOCIAL_DAO)
         actor = social_dao.actor_get(rem_instance, preferred_username)
@@ -143,6 +140,8 @@ class BaseSocialGateway(SocialGateway):
 
         actor_query = f"https://{rem_instance}/.well-known/webfinger?\
 resource=acct:{actor_instance}"
+
+        gCon.log(f"actor query is {actor_query}")
 
         transport = self.kernel.get_dep(Dependencies.TRANSPORT)
         actor_def_str = await transport.get_json_safe(actor_query, 

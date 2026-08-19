@@ -12,9 +12,6 @@
 ######################################################
 
 
-
-# Every object in adelphos is identified by this URI
-
 from enum import StrEnum
 from app.federation.FederatedUri import FederatedUri
 from dataclasses import dataclass
@@ -27,9 +24,9 @@ import app.misc.alias_utils as au
 class EAdelphosType(StrEnum):
     ALIAS_TYPE = 'al'
     FAMILY_TYPE = 'fa'
-    GROUP_TYPE = 'gr'
     TRUST_LINE_TYPE = 'tr'
     AGORA_TYPE = 'ag'
+    OBJECT_TYPE = 'ob'
 
 
 @dataclass

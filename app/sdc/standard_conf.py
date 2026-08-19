@@ -233,10 +233,6 @@ standard_cli_api = """
               trust:
                 par_type: float
                 required: true
-              change_ratio:
-                par_type: float
-                required: false
-                default: 1.0
               
 
       family:
