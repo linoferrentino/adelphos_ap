@@ -69,13 +69,19 @@ class FederatedTransaction:
     def _check_read_consistency(self):
         for k,v in self.read_uris.items():
             present_str = self.fdb.db.get_maybe(k)
-            if present_str is None:
+            gCon.log(f"read consinstency for {k} -> {v.ob}")
+            if v.ob.state == EObState.CLONED:
+                if present_str is not None:
+                    raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_COMMIT,
+                                       f"{k} cloned but present, why?")
                 return
+            if present_str is None:
+                raise FdbException(EFdbErrors.EFDB_OBJECT_GONE, k)
             obs = str_to_fobs(present_str)
             if obs.get_state == EObState.LENT:
-                raise FdbException(EFDB_OBJECT_GONE, k)
+                raise FdbException(EFdbErrors.EFDB_OBJECT_GONE, k)
             if obs.version != v.version:
-                raise FdbException(EFDB_READ_INCOHERENT, k)
+                raise FdbException(EFdbErrors.EFDB_READ_INCOHERENT, k)
 
 
     def _do_deletes(self):
@@ -94,7 +100,7 @@ class FederatedTransaction:
             if present_str is not None:
                 raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_COMMIT,
                                    k)
-            self._update_uri_str(k, v)
+            self._update_uri_str(k, v, True)
         if self.do_mod_db:
             self.created_uris.clear()
 
@@ -129,13 +135,47 @@ class FederatedTransaction:
         self.fdb.db.del_key(key_str)
 
 
-    def _update_uri_str(self, key_str, fob):
+    def _update_uri_str(self, key_str, fob, is_create = False):
         if self.do_mod_db == False:
             return
-        if (fob.ob.state != EObState.LENT):
+        present_ob_str = self.fdb.db.get_maybe(key_str)
+
+        if fob.ob.state != EObState.LENT:
             fob.enforce_schema_before_commit()
-            new_version = W32.inc_and_get_val(int(fob.ob.fields[VERSION_COLUMN]))
-            fob.ob.fields[VERSION_COLUMN] = new_version
+
+        if fob.ob.state == EObState.BORROWED:
+
+            gCon.log(f"ob {key_str} has been borrowed")
+            if present_ob_str is not None:
+                raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_COMMIT,
+                                   f"object {key_str} borrowed, cannot exist")
+
+        elif (fob.ob.state != EObState.LENT):
+            if is_create:
+                if present_ob_str is not None:
+                    raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_COMMIT,
+                                   f"object {key_str} created")
+            else:
+
+                if present_ob_str is None:
+                    raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_COMMIT,
+                                   f"object {key_str} deleted")
+                obs = str_to_fobs(present_ob_str)
+                gCon.log(f"check coherence for {obs}")
+                gCon.log(f"with {fob.ob.fields} of state {fob.ob.state}")
+
+                if obs.state == EObState.LENT:
+                    old_version = obs.fields['backup'][VERSION_COLUMN]
+                else:
+                    old_version = obs.fields[VERSION_COLUMN]
+
+                if old_version != fob.ob.fields[VERSION_COLUMN]:
+                    raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_COMMIT,
+                                       f"object {key_str} version mismatch")
+                new_version = W32.inc_and_get_val(int
+                                    (fob.ob.fields[VERSION_COLUMN]))
+                fob.ob.fields[VERSION_COLUMN] = new_version
+
         ob_str = fob.to_store_str()
         host = self.fdb.hostname
         gCon.log(f"[blue]{host} => Set {key_str} = {ob_str}[/blue]")

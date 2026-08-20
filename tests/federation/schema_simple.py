@@ -188,6 +188,12 @@ classes:
           required: false
           default: "no name"
 
+        - name: balance
+          type: int
+          cardinality: scalar
+          required: false
+          default: 0
+
 
     - uri_prefix: t_json
       can_be_root: false
