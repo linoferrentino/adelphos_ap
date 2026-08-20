@@ -90,10 +90,11 @@ class FederatedTransaction:
 
 
     def _do_creates(self):
-        gCon.log("created objects")
+        gCon.log(f"Scanning created objects... {self.do_mod_db}")
         for k,v in self.created_uris.items():
             gCon.log(f"Created {k} => {v.ob}")
             if v.ob.fields[REF_COUNT_COLUMN] == 0:
+                gCon.log(f"will prepare {k} to oblivion")
                 v.prepare_to_oblivion(self)
                 continue
             present_str = self.fdb.db.get_maybe(k)
@@ -101,8 +102,6 @@ class FederatedTransaction:
                 raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_COMMIT,
                                    k)
             self._update_uri_str(k, v, True)
-        if self.do_mod_db:
-            self.created_uris.clear()
 
 
     def _do_updates(self):
@@ -124,8 +123,6 @@ class FederatedTransaction:
             else:
                 assert ((v.ob.state == EObState.PRESENT) or
                         (v.ob.state == EObState.LENT))
-        if self.do_mod_db:
-            self.locked_uris.clear()
 
 
     def _delete_ob(self, key_str, ob):
@@ -182,12 +179,16 @@ class FederatedTransaction:
         self.fdb.db.set(key_str, ob_str)
 
 
-    def _release_all_locks(self):
-        self.locked_uris.clear()
-
-
     def t_rollback(self):
-        self._release_all_locks()
+        self._remove_all_maps()
+
+
+    def _remove_all_maps(self):
+        gCon.rule("[red]Removing all maps![/red]")
+        self.created_uris.clear()
+        self.locked_uris.clear()
+        self.deleted_uris.clear()
+        self.read_uris.clear()
 
 
     def _commit_pass(self):
@@ -217,6 +218,8 @@ class FederatedTransaction:
 
             self.fdb.db.commit()
 
+            self._remove_all_maps()
+
             return
 
         except FdbException as fdbex:
@@ -227,6 +230,7 @@ class FederatedTransaction:
             fdex = FdbException(EFdbErrors.EFDB_INTERNAL_ERROR, str(ex)) 
 
         self.fdb.db.rollback()
+        #self._remove_all_maps()
         raise fdex
 
 

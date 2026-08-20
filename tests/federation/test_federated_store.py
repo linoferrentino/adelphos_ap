@@ -296,6 +296,7 @@ async def a_test_uri_set(fdb1_loc):
     t_id = fdb1_loc.begin_transaction()
     fob = await fdb1_loc.new_ob_uri(t_id, t1uri)
 
+    gCon.rule("[red] here it is 1st commit [/red]")
     with pytest.raises(FdbException) as fex:
         fdb1_loc.commit_transaction(t_id)
 
@@ -310,6 +311,7 @@ async def a_test_uri_set(fdb1_loc):
         fob().set_link('members', fob_dep)
     assert fex.value.errno == EFdbErrors.EFDB_SCALAR_UNEXPECTED
 
+    gCon.rule("[red] here it is [/red]")
     with pytest.raises(FdbException) as fex:
         fdb1_loc.commit_transaction(t_id)
     assert fex.value.errno == EFdbErrors.EFDB_REQUIRED_FIELD_MISSING
@@ -515,6 +517,52 @@ async def a_test_update_conflict(fdb1_loc):
     assert fex.value.errno == EFdbErrors.EFDB_CONFLICT_DURING_COMMIT
 
 
+def test_update_after_tx(fdb1_loc):
+    run_coro_in_loop(a_test_update_after_tx, (fdb1_loc,))
+
+
+async def a_test_update_after_tx(fdb1_loc):
+
+    ob_uri = await _create_object_in_isolated_tx(fdb1_loc,
+                       'conflict_c', 'pp', fields = { 'balance' : 193 })
+    t_id_1 = fdb1_loc.begin_transaction()
+    fob = await fdb1_loc.uri_read_ob(t_id_1, ob_uri)
+    assert fob() is not None
+    fdb1_loc.commit_transaction(t_id_1)
+    assert fob() is None
+
+    t_id_1 = fdb1_loc.begin_transaction()
+    fob = await fdb1_loc.uri_read_ob(t_id_1, ob_uri)
+    assert fob() is not None
+    balance = fob().get_scalar('balance')
+    assert balance == 193
+    fdb1_loc.rollback_transaction(t_id_1)
+    assert fob() is None
+    
+    t_id_1 = fdb1_loc.begin_transaction()
+    fob = await fdb1_loc.uri_read_ob(t_id_1, ob_uri)
+    assert fob() is not None
+    detached_ob = fob().detach()
+    fdb1_loc.rollback_transaction(t_id_1)
+    assert fob() is None
+    
+    balance = detached_ob.get_scalar('balance')
+    assert balance == 193
+    detached_uri = detached_ob.uri
+    gCon.log(detached_uri)
+    local_uri = fdb1_loc.remove_localhost(ob_uri)
+    gCon.log(local_uri)
+    assert local_uri.unparse() == detached_uri.unparse()
+
+    gCon.log(f"Detached ob is {detached_ob.ob}")
+    detached_ob.set_scalar('balance', 1010)
+ 
+    #t_id_1 = fdb1_loc.begin_transaction()
+    #fdb1_loc.update_detached_ob(t_id_1, detached_ob)
+    #fdb1_loc.commit_transaction(t_id_1)
+    
+
+
 def test_create_conflict(fdb1_loc):
     run_coro_in_loop(a_test_create_conflict, (fdb1_loc,))
 
@@ -555,10 +603,11 @@ async def _create_object_uri_in_transaction(fdb, uri, fields = {}):
     fdb.commit_transaction(tid)
 
 
-async def _create_object_in_isolated_tx(fdb, uri_type, uri_name, host = None,
+async def _create_object_in_isolated_tx(fdb, uri_type, uri_name, *, host = None,
                                         fields = {}):
     ob_uri = FederatedUriTest(uri_type, uri_name, host = host)
     await _create_object_uri_in_transaction(fdb, ob_uri, fields)
+    return ob_uri
 
 
 async def a_test_remote_uri(fdb1, fdb2):

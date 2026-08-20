@@ -14,6 +14,7 @@
 from abc import ABC
 from abc import abstractmethod
 
+import copy
 import json
 import dataclasses
 
@@ -45,7 +46,7 @@ def str_to_fob(uri_ob, registrar, str_ob, locked = False):
 def ensure_lock(func):
 
     def _locked_or_croak(self, *args, **kwargs):
-        if self.ts_locked is False:
+        if ((self.ts_locked is False) and (self.ob.state != EObState.DETACHED)):
             raise FdbException(EFdbErrors.EFDB_NO_LOCK_ON_OB)
         return func(self, *args, **kwargs)
 
@@ -415,7 +416,7 @@ class FederatedObject:
         if self.ts_locked == True:
             raise FdbException(EFdbErrors.EFDB_CANNOT_DETACH_A_LOCKED_OBJECT)
         detached = copy.deepcopy(self)
-        self.ob.state = EObState.DETACHED
+        detached.ob.state = EObState.DETACHED
         return detached
 
 
