@@ -15,13 +15,10 @@ from app.sdc.Dependencies import Dependencies
 from app.logging import gCon
 
 
-async def out_msg_to_family_boss(kernel, family_ob, msg, t_id):
+async def out_msg_to_alias_ob(kernel, alias_ob, msg, t_id):
 
-    boss_uri = family_ob().get_scalar('boss')
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-
-    boss_ob = await fdb.uri_read_str(t_id, boss_uri)
 
     gCon.log(f"Will send msg {msg}")
-    gCon.log(f"to {boss_uri} which is {boss_ob().get_scalar('actor_handle')}")
+    gCon.log(f"to {alias_ob().uri} which is {alias_ob().ob.fields}")
+    gCon.log(f"{alias_ob().get_scalar('actor_handle')}")
 

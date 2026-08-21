@@ -184,7 +184,6 @@ class FederatedTransaction:
 
 
     def _remove_all_maps(self):
-        gCon.rule("[red]Removing all maps![/red]")
         self.created_uris.clear()
         self.locked_uris.clear()
         self.deleted_uris.clear()

@@ -81,6 +81,22 @@ def enforce_uri_type(func):
 
 
 def enforce_schema_not_scalar(func):
+    def _inner_enforce(self, key, val, *args):
+        schema = self.registrar.pars
+        par = schema.get(key)
+        if par is None:
+            raise FdbException(EFdbErrors.EFDB_UNKNOWN_COLUMN, key)
+        if par.cardinality == FObCardType.SCALAR:
+            raise FdbException(EFdbErrors.EFDB_SCALAR_UNEXPECTED, key)
+
+        FederatedObject.enforce_scalar(key, val, par, False)
+
+        return func(self, key, val, *args)
+
+    return _inner_enforce
+
+
+def enforce_schema_not_scalar_read(func):
     def _inner_enforce(self, key, *args):
         schema = self.registrar.pars
         par = schema.get(key)
@@ -340,7 +356,6 @@ class FederatedObject:
                 col_def.sub_type.enforce_type(col_val, before_commit)
 
 
-
     @staticmethod
     def _enforce_not_uri(col_name, col_def):
         if ((col_def == FObColType.URI) or (col_def == FObColType.LOCAL_URI)):
@@ -458,7 +473,7 @@ class FederatedObject:
         self.modified = True
         
 
-    @enforce_schema_not_scalar
+    @enforce_schema_not_scalar_read
     def get_as_list(self, key):
         cur_value = self.ob.fields.get(key)
         if cur_value is None:
@@ -591,7 +606,27 @@ class FederatedObject:
     @enforce_schema
     def set_scalar(self, key, val):
         if self.ob.fields.get(key) != val:
-            self.ob.fields[key] = val
+            self.ob.fields[key] = copy.deepcopy(val)
             self.modified = True
 
 
+    @ensure_lock
+    @enforce_schema_not_scalar
+    def add_scalar(self, key, val):
+        schema = self.registrar.pars
+        par = schema.get(key)
+        cur_value = self.ob.fields[key]
+
+        if par.cardinality == FObCardType.ARRAY:
+
+            if cur_value is None:
+                cur_value = [ copy.deepcopy(val) ]
+            else:
+                cur_value.append(copy.deepcopy(val))
+
+            self.ob.fields[key] = cur_value
+            self.modified = True
+            
+        else:
+
+            raise Exception(f"to do {key} {par}")

@@ -203,6 +203,16 @@ classes:
           cardinality: scalar
           required: true
 
+
+    - uri_prefix: t_json_array
+      can_be_root: true 
+      columns:
+        - name: tasks
+          type: json
+          cardinality: array
+          required: false
+
+
     - uri_prefix: p_enum
       can_be_root: true
       columns:

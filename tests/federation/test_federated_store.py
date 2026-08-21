@@ -517,6 +517,38 @@ async def a_test_update_conflict(fdb1_loc):
     assert fex.value.errno == EFdbErrors.EFDB_CONFLICT_DURING_COMMIT
 
 
+def test_add_json_array(fdb1_loc):
+    run_coro_in_loop(a_test_add_json_array, (fdb1_loc,))
+
+
+async def a_test_add_json_array(fdb1_loc):
+    ob_uri = await _create_object_in_isolated_tx(fdb1_loc,
+                       't_json_array', 'a1')
+    t_id_1 = fdb1_loc.begin_transaction()
+    fob = await fdb1_loc.uri_read_ob(t_id_1, ob_uri, must_lock = True)
+
+    tasks = fob().get_as_list('tasks')
+    assert len(tasks) == 0
+
+    task_ob = {
+            'msg' : '1st task'
+    }
+    fob().add_scalar('tasks', task_ob)
+
+    task_ob['msg'] = '2nd task'
+    fob().add_scalar('tasks', task_ob)
+
+    fdb1_loc.commit_transaction(t_id_1)
+
+    t_id_1 = fdb1_loc.begin_transaction()
+    fob = await fdb1_loc.uri_read_ob(t_id_1, ob_uri, must_lock = True)
+    tasks = fob().get_as_list('tasks')
+
+    assert len(tasks) == 2
+    assert tasks[0]['msg'] == '1st task'
+    assert tasks[1]['msg'] == '2nd task'
+
+
 def test_update_after_tx(fdb1_loc):
     run_coro_in_loop(a_test_update_after_tx, (fdb1_loc,))
 

@@ -91,9 +91,12 @@ class TrustLineCalls:
 
         boss_to = family_to_ob().get_scalar('boss')
 
-        tku.add_task_to_alias(kernel, boss_to, "accept_trust_family")
+        boss_ob = await fdb.uri_read_str(t_id, boss_to, must_lock = True)
 
-        await su.out_msg_to_family_boss(kernel, family_to_ob, f"""
+        await tku.add_task_to_alias_str(kernel, boss_ob,
+                "TASK: accept_trust_family", t_id)
+
+        await su.out_msg_to_alias_ob(kernel, boss_ob, f"""
 You have received an invite to join family {family_from} by its boss
 {family_from_ob().get_scalar('boss')} with a trust of 
 {pars['trust']}. Login to adelphos to accept it.""", t_id)
