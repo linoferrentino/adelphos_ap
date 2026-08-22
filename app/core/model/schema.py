@@ -124,7 +124,8 @@ classes:
         - name: agorai
           type: uri
           cardinality: set
-          required: false
+          required: true
+          minimum_cardinality: 1
 
 
     - uri_prefix: {EAdelphosType.TRUST_LINE_TYPE}
@@ -167,7 +168,8 @@ classes:
         - name: location
           type: str
           cardinality: scalar
-          required: true
+          required: false
+          default: not set
 
         - name: family
           type: uri

@@ -74,21 +74,6 @@ class TrustLineCalls:
             raise AdelphosCoreException(ECoreErrno.EFAMILY_NOT_FOUND,
                                         pars['family_to'])
 
-        #trust_line_ob = await fdb.new_ob_uri(t_id, tl_uri, fields = {
-        #    'trust' : tutils.abs_to_db(pars['trust']),
-        #    'change_ratio' : pars['change_ratio'],
-        #    })
-
-        #gCon.log(f"Created the trust line {trust_line_ob}")
-
-        #trust_line_ob().set_link('family_from', family_from_ob)
-        #trust_line_ob().set_link('family_to', family_to_ob)
-
-        #gCon.log(f"Now the trust line has ref {trust_line_ob().ob.fields}")
-
-        #family_from_ob().add_link('trust_lines', trust_line_ob)
-        #family_to_ob().add_link('trust_lines', trust_line_ob)
-
         boss_to = family_to_ob().get_scalar('boss')
 
         boss_ob = await fdb.uri_read_str(t_id, boss_to, must_lock = True)
