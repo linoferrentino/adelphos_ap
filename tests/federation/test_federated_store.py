@@ -114,7 +114,27 @@ async def a_fdb1_link_a(fdb1_loc):
     fob1().compare_and_swap_link('uses', None, fob2)
 
     fdb1_loc.commit_transaction(t_id)
- 
+
+
+def test_no_create_remote(fdb1_loc):
+    run_coro_in_loop(a_test_no_create_remote, (fdb1_loc,))
+
+
+async def a_test_no_create_remote(fdb1_loc):
+
+    t1uri = FederatedUriTest(TYPE_T1, 'a', host = "www.agalaxyfaraway.com")
+    t_id = fdb1_loc.begin_transaction()
+
+    with pytest.raises(FdbException) as fex:
+        fob = await fdb1_loc.new_ob_uri(t_id, t1uri )
+    assert fex.value.errno == EFdbErrors.EFDB_ONLY_LOCAL_STORE
+
+
+    with pytest.raises(FdbException) as fex:
+        fob = await fdb1_loc.new_ob(t_id, TYPE_T1, 'a', 
+            host = "www.agalaxyfaraway.com")
+    assert fex.value.errno == EFdbErrors.EFDB_ONLY_LOCAL_STORE
+
 
 def test_link2(fdb1_loc):
 

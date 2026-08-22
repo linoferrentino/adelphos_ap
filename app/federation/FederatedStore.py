@@ -234,9 +234,9 @@ class FederatedTransaction:
 
 
     def new_ob(self, fob):
-        uri_db = self.fdb.remove_localhost(fob.uri)
-        key_uri = uri_db.unparse()
-        gCon.log(f"new object {fob.uri} it has become {uri_db} -> {key_uri}")
+        #uri_db = self.fdb.remove_localhost(fob.uri)
+        key_uri = fob.uri.unparse(True)
+        gCon.log(f"new object {fob.uri} it has become {fob.uri} -> {key_uri}")
         self.created_uris[key_uri] = fob
 
 
@@ -456,6 +456,7 @@ class FederatedStore(Dependency, LifespanAware):
         if registrar is None:
             raise FdbException(EFdbErrors.EFDB_UNKNOWN_TYPE)
 
+
         return await self.new_ob_from_uri_coro(t_id, registrar, uri, fields)
 
 
@@ -507,10 +508,13 @@ class FederatedStore(Dependency, LifespanAware):
         
         t_ob = self.get_tob_safe(t_id)
 
+        uri = self.remove_localhost(uri, True)
+        gCon.log(f"new uri {uri}")
+
         await self.ensure_uri_not_existing(t_ob, uri)
 
-        if uri.host is None:
-            uri.host = self.hostname
+        #if uri.host is None:
+        uri.host = self.hostname
 
         fob = FederatedObject(uri, registrar, fields = fields, locked = True)
         t_ob.new_ob(fob)
@@ -534,7 +538,7 @@ class FederatedStore(Dependency, LifespanAware):
             copied_uri.host = None
             return copied_uri
         if enforce == True:
-            raise FdbException(EFDB_ONLY_LOCAL_STORE, uriob.host)
+            raise FdbException(EFdbErrors.EFDB_ONLY_LOCAL_STORE, uriob.host)
         return uriob
 
 
