@@ -429,10 +429,10 @@ class FederatedStore(Dependency, LifespanAware):
 
     async def is_present_uri_str(self, t_id, uri):
         t_ob = self.get_tob_safe(t_id)
-        return await self.is_present_uri(t_ob, uri)
+        return self.is_present_uri(t_ob, uri)
 
 
-    async def is_present_uri(self, t_ob, uri):
+    def is_present_uri(self, t_ob, uri):
         key_uri = uri.unparse()
 
         exists_trx = t_ob.exists_ob(key_uri)
@@ -443,32 +443,30 @@ class FederatedStore(Dependency, LifespanAware):
         return exists_trx
 
 
-    async def ensure_uri_not_existing(self, t_ob, uri):
+    def ensure_uri_not_existing(self, t_ob, uri):
 
-        exists_trx = await self.is_present_uri(t_ob, uri)
+        exists_trx = self.is_present_uri(t_ob, uri)
 
         if exists_trx == True:
             raise FdbException(EFdbErrors.EFDB_URI_EXISTS, uri)
 
 
-    async def new_ob_uri(self, t_id, uri, fields = {} ):
+    def new_ob_uri(self, t_id, uri, fields = {} ):
         registrar = self.fact.get_registrar(uri.ob_type)
         if registrar is None:
             raise FdbException(EFdbErrors.EFDB_UNKNOWN_TYPE)
 
+        return self.new_ob_from_uri(t_id, registrar, uri, fields)
 
-        return await self.new_ob_from_uri_coro(t_id, registrar, uri, fields)
 
-
-    async def new_ob(self, t_id, ob_type, name, *, fields = {} , **kwargs):
-
+    def new_ob(self, t_id, ob_type, name, *, fields = {} , **kwargs):
         registrar = self.fact.get_registrar(ob_type)
         if registrar is None:
             raise FdbException(EFdbErrors.EFDB_UNKNOWN_TYPE, ob_type)
 
         uri = self.fact.uri_constructor(ob_type, name, **kwargs)
 
-        return await self.new_ob_from_uri_coro(t_id, registrar, uri, fields)
+        return self.new_ob_from_uri(t_id, registrar, uri, fields)
 
 
     def parse_uri(self, uri_str):
@@ -504,14 +502,14 @@ class FederatedStore(Dependency, LifespanAware):
                     = key, obstr = ob_str)
 
 
-    async def new_ob_from_uri_coro(self, t_id, registrar, uri, fields):
+    def new_ob_from_uri(self, t_id, registrar, uri, fields):
         
         t_ob = self.get_tob_safe(t_id)
 
         uri = self.remove_localhost(uri, True)
         gCon.log(f"new uri {uri}")
 
-        await self.ensure_uri_not_existing(t_ob, uri)
+        self.ensure_uri_not_existing(t_ob, uri)
 
         #if uri.host is None:
         uri.host = self.hostname

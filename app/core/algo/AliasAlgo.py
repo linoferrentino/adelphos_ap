@@ -91,7 +91,7 @@ class AliasAlgo:
                 return
             raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY)
 
-        family_ob = await fdb.new_ob_uri(t_id, family_uri, fields = {
+        family_ob = fdb.new_ob_uri(t_id, family_uri, fields = {
             'trust' : tutils.abs_to_db(trust),
             'currency' : currency,
             'level' : 0
@@ -110,7 +110,7 @@ class AliasAlgo:
         agora_name = family_ob().uri.name + "_main_agora"
         gCon.log(f"Adding the default agora {agora_name}")
 
-        agora_ob = await fdb.new_ob(t_id, EAdelphosType.AGORA_TYPE,
+        agora_ob = fdb.new_ob(t_id, EAdelphosType.AGORA_TYPE,
                         agora_name)
         agora_ob().set_link('watcher', alias_ob)
         agora_ob().set_link('family', family_ob)
@@ -130,7 +130,7 @@ class AliasAlgo:
 
         gCon.log(f"Adding alias {fields}")
 
-        alias_ob = await fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
+        alias_ob = fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
                                       name, family = family, fields = fields)
 
         family_ob().add_link('members', alias_ob)

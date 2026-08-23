@@ -54,7 +54,7 @@ async def a_test_new_object_f(fdb1_loc):
             'key_int' : 99
             }
 
-    fob1 = await fdb1_loc.new_ob(t_id, TYPE_T1, "ob1", fields = fields)
+    fob1 = fdb1_loc.new_ob(t_id, TYPE_T1, "ob1", fields = fields)
     assert fob1() is not None
     val_int = fob1().get_scalar('key_int')
     assert val_int == 99
@@ -93,7 +93,7 @@ async def a_test_new_object_f(fdb1_loc):
 async def a_fdb1_loc_a(fdb1_loc):
 
     t_id = fdb1_loc.begin_transaction()
-    fob = await fdb1_loc.new_ob(t_id, TYPE_T1, 'a', fields = {
+    fob = fdb1_loc.new_ob(t_id, TYPE_T1, 'a', fields = {
         'key_int' : 11
         })
     fob().set_scalar('key1', 'val1')
@@ -108,7 +108,7 @@ async def a_fdb1_link_a(fdb1_loc):
     t2uri = FederatedUriTest(TYPE_T2, 'a')
     t_id = fdb1_loc.begin_transaction()
 
-    fob2 = await fdb1_loc.new_ob(t_id, TYPE_T2, 'a')
+    fob2 = fdb1_loc.new_ob(t_id, TYPE_T2, 'a')
 
     fob1 = await fdb1_loc.uri_read_lock(t_id, t1uri)
     fob1().compare_and_swap_link('uses', None, fob2)
@@ -153,7 +153,7 @@ async def a_test_link2(fdb1_loc):
 
     fob1 = await fdb1_loc.uri_read_lock(t_id, t1uri)
     fob2_old = await fdb1_loc.uri_read_lock(t_id, t2uri_old)
-    fob2_new = await fdb1_loc.new_ob_uri(t_id, t2uri_new)
+    fob2_new = fdb1_loc.new_ob_uri(t_id, t2uri_new)
     fob1().compare_and_swap_link('uses', fob2_old, fob2_new)
 
     fdb1_loc.commit_transaction(t_id)
@@ -201,8 +201,8 @@ async def a_test_link1(fdb1_loc):
     t2urib = FederatedUriTest(TYPE_T2, 'b')
     t_id = fdb1_loc.begin_transaction()
 
-    fob2 = await fdb1_loc.new_ob_uri(t_id, t2uri)
-    fob2_b = await fdb1_loc.new_ob_uri(t_id, t2urib)
+    fob2 = fdb1_loc.new_ob_uri(t_id, t2uri)
+    fob2_b = fdb1_loc.new_ob_uri(t_id, t2urib)
     fob1 = await fdb1_loc.uri_read_lock(t_id, t1uri)
     fob1().compare_and_swap_link('uses', None, fob2)
     fdb1_loc.commit_transaction(t_id)
@@ -270,7 +270,7 @@ async def a_test_set_uri_local_1(fdb1_loc):
 
     t1uri = FederatedUriTest(TYPE_T1, 'a', host = LOCALHOST)
     t_id = fdb1_loc.begin_transaction()
-    fob = await fdb1_loc.new_ob_uri(t_id, t1uri, fields = {
+    fob = fdb1_loc.new_ob_uri(t_id, t1uri, fields = {
         'key_int' : 1032
         })
     fob_get = await fdb1_loc.uri_read_no_lock(t_id, t1uri)
@@ -302,7 +302,7 @@ async def a_test_create_alias(fdb1_loc):
 
     assert fex.value.errno == EFdbErrors.EFDB_REQUIRED_FIELD_MISSING
 
-    fob = await fdb1_loc.new_ob_uri(t_id, t1uri, fields = { 'equity' : 99.2 })
+    fob = fdb1_loc.new_ob_uri(t_id, t1uri, fields = { 'equity' : 99.2 })
 
     assert fob().get_scalar('equity') == 99.2
 
@@ -314,7 +314,7 @@ def test_uri_set(fdb1_loc):
 async def a_test_uri_set(fdb1_loc):
     t1uri = FederatedUriTest('t_uri_set', 'tj1')
     t_id = fdb1_loc.begin_transaction()
-    fob = await fdb1_loc.new_ob_uri(t_id, t1uri)
+    fob = fdb1_loc.new_ob_uri(t_id, t1uri)
 
     gCon.rule("[red] here it is 1st commit [/red]")
     with pytest.raises(FdbException) as fex:
@@ -323,7 +323,7 @@ async def a_test_uri_set(fdb1_loc):
     assert fex.value.errno == EFdbErrors.EFDB_REQUIRED_FIELD_MISSING
 
     tmember_uri = FederatedUriTest('t_member', 'member_lino', host = LOCALHOST)
-    fob_dep = await fdb1_loc.new_ob_uri(t_id, tmember_uri, fields = {
+    fob_dep = fdb1_loc.new_ob_uri(t_id, tmember_uri, fields = {
         'name' : 'lino'
         })
     
@@ -405,7 +405,7 @@ async def a_test_enum_field(fdb1_loc):
         })
     assert fex.value.errno == EFdbErrors.EFDB_INVALID_ENUM_VALUE
 
-    fob = await fdb1_loc.new_ob_uri(t_id, t1uri, fields = {
+    fob = fdb1_loc.new_ob_uri(t_id, t1uri, fields = {
             'name' : 'John',
             'preferred_fruit' : 'apple',
         })
@@ -449,7 +449,7 @@ async def a_test_json_field(fdb1_loc):
         fob = await fdb1_loc.new_ob_uri(t_id, t1uri)
     assert fex.value.errno == EFdbErrors.EFDB_REQUIRED_FIELD_MISSING
 
-    fob = await fdb1_loc.new_ob_uri(t_id, t1uri, fields = {
+    fob = fdb1_loc.new_ob_uri(t_id, t1uri, fields = {
         'ob_json' : obj
         })
 
@@ -514,7 +514,7 @@ async def a_test_update_conflict(fdb1_loc):
     t2uri = FederatedUriTest('conflict_c', 'a')
 
     t_id_1 = fdb1_loc.begin_transaction()
-    fob12 = await fdb1_loc.new_ob_uri(t_id_1, t2uri)
+    fob12 = fdb1_loc.new_ob_uri(t_id_1, t2uri)
     fdb1_loc.commit_transaction(t_id_1)
 
 
@@ -542,7 +542,7 @@ def test_add_json_array(fdb1_loc):
 
 
 async def a_test_add_json_array(fdb1_loc):
-    ob_uri = await _create_object_in_isolated_tx(fdb1_loc,
+    ob_uri = _create_object_in_isolated_tx(fdb1_loc,
                        't_json_array', 'a1')
     t_id_1 = fdb1_loc.begin_transaction()
     fob = await fdb1_loc.uri_read_ob(t_id_1, ob_uri, must_lock = True)
@@ -575,7 +575,7 @@ def test_update_after_tx(fdb1_loc):
 
 async def a_test_update_after_tx(fdb1_loc):
 
-    ob_uri = await _create_object_in_isolated_tx(fdb1_loc,
+    ob_uri = _create_object_in_isolated_tx(fdb1_loc,
                        'conflict_c', 'pp', fields = { 'balance' : 193 })
     t_id_1 = fdb1_loc.begin_transaction()
     fob = await fdb1_loc.uri_read_ob(t_id_1, ob_uri)
@@ -624,11 +624,11 @@ async def a_test_create_conflict(fdb1_loc):
     t2uri = FederatedUriTest('conflict_c', 'a')
 
     t_id_1 = fdb1_loc.begin_transaction()
-    fob12 = await fdb1_loc.new_ob_uri(t_id_1, t2uri)
+    fob12 = fdb1_loc.new_ob_uri(t_id_1, t2uri)
 
 
     t_id_2 = fdb1_loc.begin_transaction()
-    fob21 = await fdb1_loc.new_ob_uri(t_id_2, t2uri)
+    fob21 = fdb1_loc.new_ob_uri(t_id_2, t2uri)
     fdb1_loc.commit_transaction(t_id_1)
 
     with pytest.raises(FdbException) as fex:
@@ -649,16 +649,16 @@ def test_remote_uri(federated_db):
         run_coro_in_loop(a_test_remote_uri, (fdb1, fdb2))
 
 
-async def _create_object_uri_in_transaction(fdb, uri, fields = {}):
+def _create_object_uri_in_transaction(fdb, uri, fields = {}):
     tid = fdb.begin_transaction()
-    await fdb.new_ob_uri(tid, uri, fields)
+    fdb.new_ob_uri(tid, uri, fields)
     fdb.commit_transaction(tid)
 
 
-async def _create_object_in_isolated_tx(fdb, uri_type, uri_name, *, host = None,
+def _create_object_in_isolated_tx(fdb, uri_type, uri_name, *, host = None,
                                         fields = {}):
     ob_uri = FederatedUriTest(uri_type, uri_name, host = host)
-    await _create_object_uri_in_transaction(fdb, ob_uri, fields)
+    _create_object_uri_in_transaction(fdb, ob_uri, fields)
     return ob_uri
 
 
@@ -666,8 +666,8 @@ async def a_test_remote_uri(fdb1, fdb2):
     t1uri = FederatedUriTest('al_uri', 'a1', host = FIRST_HOST)
     t2uri = FederatedUriTest('al_uri', 'a2', host = OTHERHOST)
 
-    await _create_object_uri_in_transaction(fdb1, t1uri)
-    await _create_object_uri_in_transaction(fdb2, t2uri)
+    _create_object_uri_in_transaction(fdb1, t1uri)
+    _create_object_uri_in_transaction(fdb2, t2uri)
 
     tid1 = fdb1.begin_transaction()
 
@@ -675,7 +675,7 @@ async def a_test_remote_uri(fdb1, fdb2):
     fremote = await fdb1.uri_read_lock(tid1, t2uri)
     assert fremote is not None
 
-    tline_ob = await fdb1.new_ob(tid1, 'tline', 'tt1', fields = {
+    tline_ob = fdb1.new_ob(tid1, 'tline', 'tt1', fields = {
         'equity' : 99.9,
         })
     assert tline_ob is not None
@@ -715,7 +715,7 @@ def test_need_uri(fdb1_loc):
 async def a_test_need_uri(fdb1_loc):
     t1uri = FederatedUriTest('test_no_uri', 'a')
     t_id = fdb1_loc.begin_transaction()
-    fob = await fdb1_loc.new_ob_uri(t_id, t1uri)
+    fob = fdb1_loc.new_ob_uri(t_id, t1uri)
 
     with pytest.raises(FdbException) as fex:
         fdb1_loc.commit_transaction(t_id)
@@ -733,10 +733,10 @@ def test_no_ref_downlink(fdb1_loc):
 async def a_test_no_ref_downlink(fdb1_loc):
     t1uri = FederatedUriTest('test_no_ref', 'a')
     t_id = fdb1_loc.begin_transaction()
-    fob = await fdb1_loc.new_ob_uri(t_id, t1uri)
+    fob = fdb1_loc.new_ob_uri(t_id, t1uri)
 
     t1uri_root = FederatedUriTest(TYPE_T1, 'a')
-    fob_root = await fdb1_loc.new_ob_uri(t_id, t1uri_root, fields = {
+    fob_root = fdb1_loc.new_ob_uri(t_id, t1uri_root, fields = {
         'key_int' : 391
     })
 
@@ -767,11 +767,12 @@ async def a_test_set_uri_local(fdb1_loc):
     t1uri = FederatedUriTest(TYPE_T1, 'a')
 
     fob = None
-    with pytest.raises(FdbException):
-        fob = await fdb1_loc.new_ob_uri(None, t1uri )
+    with pytest.raises(FdbException) as fex:
+        fob = fdb1_loc.new_ob_uri(None, t1uri )
+    assert fex.value.errno == EFdbErrors.EFDB_NO_SUCH_TRANSACTION
 
     t_id = fdb1_loc.begin_transaction()
-    fob = await fdb1_loc.new_ob_uri(t_id, t1uri, fields = {
+    fob = fdb1_loc.new_ob_uri(t_id, t1uri, fields = {
         'key_int' : 391
         })
 
