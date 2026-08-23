@@ -114,7 +114,7 @@ class AliasAlgo:
                         agora_name)
         agora_ob().set_link('watcher', alias_ob)
         agora_ob().set_link('family', family_ob)
-        family_ob().add_link('agorai', agora_ob)
+        family_ob().set_link('agora', agora_ob)
 
 
     @staticmethod

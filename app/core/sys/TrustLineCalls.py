@@ -50,22 +50,22 @@ class TrustLineCalls:
         family_to_uri = fdb.parse_uri(pars['family_to'])
         gCon.log(f"family to uri {family_to_uri}")
 
-        tl_name = family_from.name + "_" + \
-                family_to_uri.name + "_" + \
-                family_to_uri.host
-        tl_name = re.sub(r'\.', "_", tl_name)
-        gCon.log(f"tl name is {tl_name}")
+        #tl_name = family_from.name + "_" + \
+        #        family_to_uri.name + "_" + \
+        #        family_to_uri.host
+        #tl_name = re.sub(r'\.', "_", tl_name)
+        #gCon.log(f"tl name is {tl_name}")
 
-        tl_uri = AdelphosUri.create_uri(EAdelphosType.TRUST_LINE_TYPE,
-                        tl_name, host_part = family_from.host)
+        #tl_uri = AdelphosUri.create_uri(EAdelphosType.TRUST_LINE_TYPE,
+        #                tl_name, host_part = family_from.host)
 
-        gCon.log(f"the trust line uri is {tl_uri}")
+        #gCon.log(f"the trust line uri is {tl_uri}")
 
-        trust_line_ob = await fdb.uri_read_ob(t_id, tl_uri,
-                            must_lock = True, maybe = True, only_local = True)
-        if trust_line_ob is not None:
-            raise AdelphosCoreException(ECoreErrno.ETL_EXISTS,
-                                        tl_name)
+        #trust_line_ob = await fdb.uri_read_ob(t_id, tl_uri,
+        #                    must_lock = True, maybe = True, only_local = True)
+        #if trust_line_ob is not None:
+        #    raise AdelphosCoreException(ECoreErrno.ETL_EXISTS,
+        #                                tl_name)
 
         family_to_ob = await fdb.uri_read_ob(t_id, family_to_uri,
                                    must_lock = True, maybe = True)

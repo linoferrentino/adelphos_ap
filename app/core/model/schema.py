@@ -110,22 +110,33 @@ classes:
           cardinality: scalar
           required: true
 
-        - name: trust_lines
-          type: uri
-          cardinality: set
-          required: false
-
         - name: members
           type: uri 
           cardinality: set
           required: true
           minimum_cardinality: 1
 
-        - name: agorai
+        - name: agora
           type: uri
-          cardinality: set
+          cardinality: scalar
           required: true
-          minimum_cardinality: 1
+        
+        - name: upper_family
+          type: uri
+          cardinality: scalar
+          required: false
+
+        - name: upper_trust
+          type: real
+          cardinality: scalar
+          required: false
+          default: 0.0
+
+        - name: balance
+          type: real
+          cardinality: scalar
+          required: false
+          default: 0.0
 
 
     - uri_prefix: {EAdelphosType.TRUST_LINE_TYPE}
