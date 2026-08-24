@@ -19,6 +19,7 @@ from tests.testers.fixtures import simulated_fediverse
 import tests.adelphoi_test_config as tconf
 import tests.helpers.alias_helpers as ah
 import tests.helpers.family_helpers as fh
+import tests.helpers.object_helpers as oh
 import app.consts as CNST
 import app.sdc.standard_conf as stdcnf
 from app.exc.AdelphosException import AdErrno
@@ -30,19 +31,28 @@ import tests.scripts.world1 as wld1
 import tests.helpers.trust_helpers as th
 
 
-def test_create_trust_line(simulated_fediverse):
+def test_simul_fediverse_basic(simulated_fediverse):
 
     sim_fed = simulated_fediverse(wld1.world_1_yaml)
-    sim_fed.test(wld1.fixture_1_yaml, _test_create_trust_line)
+    sim_fed.test(wld1.fixture_1_yaml, (
+        _test_create_trust_line,
+        _test_put_object_ad))
+
+
+def _test_put_object_ad(world):
+    ad1 = world.get_instance('ad1')
+    ad1.push_user('bob.fam_t1')
+    oh.ws_create_object_ad(ad1.get_sock(), 'a used pair of man shoes, size 10',
+                    30, 0.9, 12.0)
 
 
 def _test_create_trust_line(world):
 
     ad1 = world.get_instance('ad1')
-    gCon.log(f"The simul instance is {ad1}")
     ad1.push_user('alice.fam_t1')
     th.ws_create_trust_line(ad1.get_sock(), "#fa#fam_t2@www.ad2.com",
             100)
+    ad1.pop_user()
 
 
 def test_invite_member(get_routable_app):

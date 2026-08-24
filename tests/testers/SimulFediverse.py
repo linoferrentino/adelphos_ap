@@ -85,6 +85,10 @@ class SimulatedInstance:
         ah.ws_sudo_push_alias(self.sock, alias)
 
 
+    def pop_user(self):
+        ah.ws_pop_alias(self.sock)
+
+
     def get_sock(self):
         return self.sock
 
@@ -264,7 +268,12 @@ class SimulFediverse:
             self._do_accepts_instances()
             self._do_setup_world(world_conf)
 
-            testcase(self)
+            from collections.abc import Iterable
+            if isinstance(testcase, Iterable):
+                for tc in testcase:
+                    tc(self)
+            else:
+                testcase(self)
 
         """
         gCon.log(f"The test to run is \n{with_stat}")

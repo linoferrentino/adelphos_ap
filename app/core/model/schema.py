@@ -138,37 +138,15 @@ classes:
           required: false
           default: 0.0
 
-
-    - uri_prefix: {EAdelphosType.TRUST_LINE_TYPE}
-      can_be_root: false
-
-      columns:
-
-        - name: family_1
+        - name: inbox
           type: uri
-          cardinality: scalar
-          required: true
-
-        - name: family_2
-          type: uri
-          cardinality: scalar
-          required: true
-
-        - name: trust_from_1_to_2
-          type: real
-          cardinality: scalar
-          required: true
-
-        - name: trust_from_2_to_1
-          type: real
-          cardinality: scalar
-          required: true
-
-        - name: balance
-          type: real
-          cardinality: scalar
+          cardinality: set
           required: false
-          default: 0.0
+
+        - name: outbox
+          type: uri
+          cardinality: set
+          required: false
 
 
     - uri_prefix: {EAdelphosType.AGORA_TYPE}

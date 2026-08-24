@@ -230,10 +230,25 @@ standard_cli_api = """
             pars:
               family_to:
                 required: true
-              trust:
+
+
+      object:
+        class: app.core.sys.ObjectCalls.ObjectCalls
+        syscalls:
+          - name: put_ad
+            pars:
+              weight:
+                required: true
+                par_type: float
+              max_dim:
+                required: true
+                par_type: float
+              description:
+                required: true
+              price:
                 par_type: float
                 required: true
-              
+                    
 
       family:
         class: app.core.sys.FamilyCalls.FamilyCalls
@@ -245,6 +260,12 @@ standard_cli_api = """
               user_handle:
                 required: true
 
+          - name: invite_family
+            pars:
+              invite_code:
+                required: true
+              user_handle:
+                required: true
 
       alias:
         class: app.core.sys.AliasCalls.AliasCalls

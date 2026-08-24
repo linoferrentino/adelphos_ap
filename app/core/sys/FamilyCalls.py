@@ -30,6 +30,12 @@ class FamilyCalls:
 
     @staticmethod
     @active_login
+    async def _sys_call_invite_family(kernel, session, pars):
+        pass
+ 
+
+    @staticmethod
+    @active_login
     async def _sys_call_invite(kernel, session, pars):
         invite_code = pars['invite_code']
         user_handle = pars['user_handle']

@@ -24,7 +24,6 @@ import app.misc.alias_utils as au
 class EAdelphosType(StrEnum):
     ALIAS_TYPE = 'al'
     FAMILY_TYPE = 'fa'
-    TRUST_LINE_TYPE = 'tr'
     AGORA_TYPE = 'ag'
     OBJECT_TYPE = 'ob'
 

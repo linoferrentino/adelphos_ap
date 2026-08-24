@@ -83,7 +83,7 @@ class TrustLineCalls:
 
         await su.out_msg_to_alias_ob(kernel, boss_ob, f"""
 You have received an invite to join family {family_from} by its boss
-{family_from_ob().get_scalar('boss')} with a trust of 
-{pars['trust']}. Login to adelphos to accept it.""", t_id)
+{family_from_ob().get_scalar('boss')}.
+Login to adelphos to accept it.""", t_id)
  
 
