@@ -12,12 +12,6 @@
 ######################################################
 
 
-import math
+def family_add_object(fdb, family_ob, object_ob, t_id):
+    pass
 
-
-def abs_to_db(val_abs):
-    return 10.0 * math.log10(val_abs)
-
-
-def db_to_abs(val_db):
-    return math.pow(10.0, val_db / 10.0)

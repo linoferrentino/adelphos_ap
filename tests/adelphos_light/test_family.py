@@ -43,7 +43,10 @@ def _test_put_object_ad(world):
     ad1 = world.get_instance('ad1')
     ad1.push_user('bob.fam_t1')
     oh.ws_create_object_ad(ad1.get_sock(), 'a used pair of man shoes, size 10',
-                    30, 0.9, 12.0)
+                    30, 0.9, 12.0, ECoreErrno.EEQUITY_OVERFLOW)
+    oh.ws_create_object_ad(ad1.get_sock(), "a pokemon card",
+                    5, 0.05, 2)
+
 
 
 def _test_create_trust_line(world):

@@ -18,13 +18,23 @@ from app.core.model.AdelphosUri import AdelphosUri
 from app.core.ECoreErrno import ECoreErrno
 from app.core.AdelphosCoreException import AdelphosCoreException
 
+
 async def get_family_in_session(kernel, pars, t_id):
     family = pars['_session'].family
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
-    family_ob = await fdb.uri_read_lock(t_id, family_uri)
+    family_ob = await fdb.uri_read_ob(t_id, family_uri, must_lock = True,
+                                      only_local = True)
 
     return family_ob
+
+
+async def get_alias_in_session(kernel, pars, t_id):
+    alias_uri = pars['_session'].alias_uri
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    alias_ob = await fdb.uri_read_ob(t_id, alias_uri, must_lock = True,
+                                     only_local = True)
+    return alias_ob
 
 
 def ensure_logged_alias_is_boss(family_ob, pars):

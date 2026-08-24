@@ -82,14 +82,11 @@ class BaseSocial(SocialProvider):
 
 
     def create_users(self, users):
-
         for user in users:
-
             self.create_user(user)
 
 
     def create_user(self, user):
-    
         actor_dto = self.get_or_create_actor(user)
 
         if user['login_shell'] == False:

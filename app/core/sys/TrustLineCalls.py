@@ -21,7 +21,7 @@ from app.logging import gCon
 from app.sdc.Dependencies import Dependencies
 from app.core.AdelphosCoreException import AdelphosCoreException
 from app.core.ECoreErrno import ECoreErrno
-import app.misc.trust_utils as tutils
+#import app.misc.trust_utils as tutils
 import app.core.sys.sys_calls_utils as scu
 import app.core.sys.social_utils as su
 import app.core.sys.task_utils as tku

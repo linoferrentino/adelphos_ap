@@ -11,14 +11,75 @@
 #
 ######################################################
 
+import re
 
 from app.api.UserSession import active_login
+from app.core.algo.utils import federated_transaction
+from app.core.AdelphosCoreException import AdelphosCoreException
+from app.core.ECoreErrno import ECoreErrno
+from app.core.model.AdelphosUri import AdelphosUri
+from app.core.model.AdelphosUri import EAdelphosType
+from app.sdc.Dependencies import Dependencies
+
+import app.core.sys.sys_calls_utils as scu
+from app.logging import gCon
 
 
 class ObjectCalls:
 
+
     @staticmethod
     @active_login
     async def _sys_call_put_ad(kernel, session, pars):
-        pass
+        pars['_session'] = session
+        await ObjectCalls._object_put_add_in_agora_safe(kernel, pars)
  
+
+    @staticmethod
+    @federated_transaction(raise_if_fail = True)
+    async def _object_put_add_in_agora_safe(kernel, pars ,t_id):
+        family_ob = await scu.get_family_in_session(kernel, pars, t_id)
+        gCon.log(f"Adding object in family's agora {family_ob().ob.fields}")
+        ObjectCalls._check_equity(family_ob, pars['price'])
+        object_ob = ObjectCalls._create_object_from_pars(kernel, family_ob,
+                                                         pars, t_id)
+        gCon.log(f"Created the object {object_ob().ob.fields}")
+
+        alias_ob = await scu.get_alias_in_session(kernel, pars, t_id)
+        object_ob().set_link('sender', alias_ob)
+
+        agora_uri_str = family_ob().get_scalar('agora')
+        fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+        agora_ob = await fdb.uri_read_str(t_id, agora_uri_str, must_lock = True,
+                                only_local = True)
+        agora_ob().add_link('offers', object_ob)
+
+
+    @staticmethod
+    def _check_equity(family_ob, price):
+        fam_equity = family_ob().get_scalar('equity')
+        if price >= (2 * fam_equity):
+            raise AdelphosCoreException(ECoreErrno.EEQUITY_OVERFLOW, f"""
+Price of object {price} is greater than
+two times your family's equity {fam_equity}.
+Lower the price or increase your family's equity
+(if you are the boss).""")
+
+
+    @staticmethod
+    def _create_object_from_pars(kernel, family_ob, pars, t_id):
+        fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+        ob_name = "".join(pars['description'].split())
+        ob_name = re.sub(r"\W", "_", ob_name)
+        ob_name += "_" + family_ob().uri.name
+        gCon.log(f"Create an object with name {ob_name}")
+        ob_uri = AdelphosUri.create_uri(EAdelphosType.OBJECT_TYPE, ob_name)
+
+        object_ob = fdb.new_ob_uri(t_id, ob_uri, fields = {
+            'price' : pars['price'],
+            'description' : pars['description']
+            })
+
+        return object_ob
+
+

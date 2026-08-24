@@ -319,6 +319,7 @@ class FederatedObject:
         if col_val is None:
             if before_commit == True:
                 if col_def.required:
+                    gCon.log(f"The col_def for {col_name} is {col_def}")
                     raise FdbException(EFdbErrors.EFDB_REQUIRED_FIELD_MISSING,
                                        col_name)
             return

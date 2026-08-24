@@ -210,7 +210,7 @@ standard_cli_api = """
             pars:
               user:
                 required: true
-              trust:
+              equity:
                 required: false
                 default: 50.0
                 par_type: float
@@ -363,7 +363,7 @@ standard_inbox_api = """
                     required: true
                 password:
                     required: true
-                trust:
+                equity:
                     required: false 
                     par_type: float
                     default: 25.0 

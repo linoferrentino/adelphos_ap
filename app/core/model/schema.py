@@ -87,12 +87,6 @@ classes:
           required: false
           default: 0.15
 
-        - name: trust
-          type: real
-          cardinality: scalar
-          required: false
-          default: 0.0
-
         - name: currency
           type: enum
           sub_type: currency
@@ -126,12 +120,6 @@ classes:
           cardinality: scalar
           required: false
 
-        - name: upper_trust
-          type: real
-          cardinality: scalar
-          required: false
-          default: 0.0
-
         - name: balance
           type: real
           cardinality: scalar
@@ -139,11 +127,6 @@ classes:
           default: 0.0
 
         - name: inbox
-          type: uri
-          cardinality: set
-          required: false
-
-        - name: outbox
           type: uri
           cardinality: set
           required: false
@@ -170,15 +153,15 @@ classes:
           cardinality: set
           required: false
 
-        - name: asks
-          type: uri
-          cardinality: set
-          required: false
-
         - name: watcher
           type: uri
           cardinality: scalar
           required: true
+
+        - name: transit_box
+          type: uri
+          cardinality: set
+          required: false
 
 
     - uri_prefix: {EAdelphosType.OBJECT_TYPE}
@@ -186,10 +169,15 @@ classes:
 
       columns:
 
-        - name: owner
+        - name: sender 
           type: uri
           cardinality: scalar
           required: true
+
+        - name: recipient
+          type: uri
+          cardinality: scalar
+          required: false
 
         - name: description
           type: str
@@ -197,16 +185,6 @@ classes:
           required: true
 
         - name: price
-          type: real
-          cardinality: scalar
-          required: true
-
-        - name: max_dim
-          type: real
-          cardinality: scalar
-          required: true
-
-        - name: weight
           type: real
           cardinality: scalar
           required: true

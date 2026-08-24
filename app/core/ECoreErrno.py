@@ -28,6 +28,7 @@ class ECoreErrno(IntEnum):
     ETL_EXISTS = 10
     EFAMILY_NOT_FOUND = 11
     EDENIED = 12
+    EEQUITY_OVERFLOW = 13
     
     EFDB = 9998
     ESYS = 9999
