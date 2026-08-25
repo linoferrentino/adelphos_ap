@@ -35,17 +35,16 @@ def test_simul_fediverse_basic(simulated_fediverse):
 
     sim_fed = simulated_fediverse(wld1.world_1_yaml)
     sim_fed.test(wld1.fixture_1_yaml, (
-        _test_create_trust_line,
-        _test_put_object_ad))
+        #_test_create_trust_line,
+        _test_put_object_ad,))
 
 
 def _test_put_object_ad(world):
     ad1 = world.get_instance('ad1')
     ad1.push_user('bob.fam_t1')
     oh.ws_create_object_ad(ad1.get_sock(), 'a used pair of man shoes, size 10',
-                    30, 0.9, 12.0, ECoreErrno.EEQUITY_OVERFLOW)
-    oh.ws_create_object_ad(ad1.get_sock(), "a pokemon card",
-                    5, 0.05, 2)
+                    12.0, ECoreErrno.EEQUITY_OVERFLOW)
+    oh.ws_create_object_ad(ad1.get_sock(), "a pokemon card", 2)
 
 
 

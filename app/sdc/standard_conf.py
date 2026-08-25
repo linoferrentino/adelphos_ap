@@ -228,7 +228,18 @@ standard_cli_api = """
         syscalls:
           - name: create
             pars:
+              location:
+                required: false
               family_to:
+                required: true
+              max_equity:
+                par_type: float
+                required: true
+              export_tax:
+                par_type: float
+                required: true
+              import_tax:
+                par_type: float
                 required: true
 
 
@@ -237,12 +248,6 @@ standard_cli_api = """
         syscalls:
           - name: put_ad
             pars:
-              weight:
-                required: true
-                par_type: float
-              max_dim:
-                required: true
-                par_type: float
               description:
                 required: true
               price:

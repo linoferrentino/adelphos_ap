@@ -158,7 +158,12 @@ classes:
           cardinality: scalar
           required: true
 
-        - name: transit_box
+        - name: export_box
+          type: uri
+          cardinality: set
+          required: false
+
+        - name: import_box 
           type: uri
           cardinality: set
           required: false

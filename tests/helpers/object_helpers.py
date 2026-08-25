@@ -15,8 +15,8 @@ from app.core.ECoreErrno import ECoreErrno
 import tests.t_utils as tu
 
 
-def ws_create_object_ad(ws, description, max_dim, weight, price,
+def ws_create_object_ad(ws, description, price,
     exp_errno_code = ECoreErrno.DONE_OK):
 
-    ws.send_text(f"object.put_ad description '{description}' max_dim {max_dim} weight {weight} price {price}")
+    ws.send_text(f"object.put_ad description '{description}' price {price}")
     tu.ws_assert_code(ws, exp_errno_code)
