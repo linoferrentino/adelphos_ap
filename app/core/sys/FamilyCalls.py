@@ -30,10 +30,23 @@ class FamilyCalls:
 
     @staticmethod
     @active_login
-    async def _sys_call_invite_family(kernel, session, pars):
-        pass
+    async def _sys_call_associate(kernel, session, pars):
+        pars['_session'] = session
+        await FamilyCalls._family_associate_safe(kernel, pars)
  
 
+    @staticmethod
+    @federated_transaction(raise_if_fail = True)
+    async def _family_associate_safe(kernel, pars ,t_id):
+        await FamilyCalls._family_associate_impl(kernel, pars, t_id)
+
+
+    @staticmethod
+    @active_login
+    async def _sys_call_join(kernel, session, pars):
+        pass
+
+ 
     @staticmethod
     @active_login
     async def _sys_call_invite(kernel, session, pars):
@@ -61,6 +74,12 @@ f"""You have been invited to join adelphos by @{session.alias_family}@{this_host
     @federated_transaction(raise_if_fail = True)
     async def _family_add_invite_safe(kernel, pars ,t_id):
         await FamilyCalls._family_add_invite_impl(kernel, pars, t_id)
+
+
+    @staticmethod
+    async def _family_associate_impl(kernel, pars, t_id):
+        family_ob = await scu.get_family_in_session(kernel, pars, t_id)
+        scu.ensure_logged_alias_is_boss(family_ob, pars)
 
 
     @staticmethod

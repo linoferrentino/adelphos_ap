@@ -36,7 +36,8 @@ def test_simul_fediverse_basic(simulated_fediverse):
     sim_fed = simulated_fediverse(wld1.world_1_yaml)
     sim_fed.test(wld1.fixture_1_yaml, (
         #_test_create_trust_line,
-        _test_put_object_ad,))
+        _test_put_object_ad,
+        _test_associate_with_family_denied,))
 
 
 def _test_put_object_ad(world):
@@ -44,8 +45,17 @@ def _test_put_object_ad(world):
     ad1.push_user('bob.fam_t1')
     oh.ws_create_object_ad(ad1.get_sock(), 'a used pair of man shoes, size 10',
                     12.0, ECoreErrno.EEQUITY_OVERFLOW)
-    oh.ws_create_object_ad(ad1.get_sock(), "a pokemon card", 2)
+    data = oh.ws_create_object_ad(ad1.get_sock(), "a pokemon card", 2)
+    gCon.log(f"data is {data}")
+    ad1.pop_user()
 
+
+def _test_associate_with_family_denied(world):
+    ad2 = world.get_instance('ad2')
+    ad2.push_user('katy_al.fam_t2')
+    fh.ws_associate_with_family(ad2.get_sock(), "impossibile",
+                    "impossibile", 0.99, code_exp = ECoreErrno.EDENIED)
+    ad2.pop_user()
 
 
 def _test_create_trust_line(world):

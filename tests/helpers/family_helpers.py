@@ -14,6 +14,7 @@
 import re
 import tests.t_utils as tu
 from app.exc.AdelphosException import AdErrno
+from app.core.ECoreErrno import ECoreErrno
 from app.logging import gCon
 import tests.social.social_tests as stests
 
@@ -40,6 +41,24 @@ def ws_invite_user_macro(ws, user_handle, invite_code, user_inbox):
     assert code_got == invite_code
 
     gCon.log(f"the msg is {msg.content}")
+
+
+def ws_associate_with_family(ws, family_dest, invite_code,
+            import_export_tax, *, 
+            location = None, family_source = None,
+            upper_name = None, change_ratio = None,
+            code_exp = ECoreErrno.DONE_OK):
+    cmd = f"family.associate invite_code {invite_code} \
+import_export_tax {import_export_tax} family_dest {family_dest}"
+    if location is not None:
+        cmd += f" location '{location}'"
+    if family_source is not None:
+        cmd += f" family_source {family_source}"
+    if upper_name is not None:
+        cmd += f" upper_name {upper_name}"
+    if change_ratio is not None:
+        cmd += f" change_ratio {change_ratio}"
+    return tu.ws_send_cmd(ws, cmd, code_exp)
 
 
 def ws_accept_invite_raw(ws, remote_adelphos, alias_chosen,

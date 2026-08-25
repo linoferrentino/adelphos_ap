@@ -15,3 +15,6 @@
 def family_add_object(fdb, family_ob, object_ob, t_id):
     pass
 
+
+def ensure_user_boss_in_family(kernel, pars, t_id):
+    pass

@@ -223,29 +223,10 @@ standard_cli_api = """
                 default: EUR
 
 
-      trustline:
-        class: app.core.sys.TrustLineCalls.TrustLineCalls
-        syscalls:
-          - name: create
-            pars:
-              location:
-                required: false
-              family_to:
-                required: true
-              max_equity:
-                par_type: float
-                required: true
-              export_tax:
-                par_type: float
-                required: true
-              import_tax:
-                par_type: float
-                required: true
-
-
       object:
         class: app.core.sys.ObjectCalls.ObjectCalls
         syscalls:
+
           - name: put_ad
             pars:
               description:
@@ -253,7 +234,7 @@ standard_cli_api = """
               price:
                 par_type: float
                 required: true
-                    
+
 
       family:
         class: app.core.sys.FamilyCalls.FamilyCalls
@@ -265,12 +246,39 @@ standard_cli_api = """
               user_handle:
                 required: true
 
-          - name: invite_family
+          - name: join
             pars:
               invite_code:
                 required: true
-              user_handle:
+              family_dest:
                 required: true
+              change_ratio:
+                par_type: float
+                required: false
+                default: 1.0
+              family_source:
+                required: false
+
+          - name: associate
+            pars:
+              invite_code:
+                required: true
+              import_export_tax:
+                par_type: float
+                required: true
+              family_dest:
+                required: true
+              family_source:
+                required: false
+              upper_name:
+                required: false
+              location:
+                required: false
+              change_ratio:
+                par_type: float
+                required: false
+                default: 1.0
+
 
       alias:
         class: app.core.sys.AliasCalls.AliasCalls

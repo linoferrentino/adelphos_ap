@@ -19,4 +19,7 @@ def ws_create_object_ad(ws, description, price,
     exp_errno_code = ECoreErrno.DONE_OK):
 
     ws.send_text(f"object.put_ad description '{description}' price {price}")
-    tu.ws_assert_code(ws, exp_errno_code)
+    data = tu.ws_assert_code(ws, exp_errno_code)
+    return data
+
+

@@ -32,7 +32,7 @@ class ObjectCalls:
     @active_login
     async def _sys_call_put_ad(kernel, session, pars):
         pars['_session'] = session
-        await ObjectCalls._object_put_add_in_agora_safe(kernel, pars)
+        return await ObjectCalls._object_put_add_in_agora_safe(kernel, pars)
  
 
     @staticmethod
@@ -40,7 +40,9 @@ class ObjectCalls:
     async def _object_put_add_in_agora_safe(kernel, pars ,t_id):
         family_ob = await scu.get_family_in_session(kernel, pars, t_id)
         gCon.log(f"Adding object in family's agora {family_ob().ob.fields}")
-        ObjectCalls._check_equity(family_ob, pars['price'])
+        fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+
+        await ObjectCalls._check_equity(fdb, family_ob, pars['price'], t_id)
         object_ob = ObjectCalls._create_object_from_pars(kernel, family_ob,
                                                          pars, t_id)
         gCon.log(f"Created the object {object_ob().ob.fields}")
@@ -49,21 +51,35 @@ class ObjectCalls:
         object_ob().set_link('sender', alias_ob)
 
         agora_uri_str = family_ob().get_scalar('agora')
-        fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         agora_ob = await fdb.uri_read_str(t_id, agora_uri_str, must_lock = True,
                                 only_local = True)
         agora_ob().add_link('offers', object_ob)
 
+        ob_uri = object_ob().uri.unparse()
+
+        return {
+          'msg' : f"Created the ad, the object has its uri {ob_uri}",
+          'ob_uri' : ob_uri
+        }
+
 
     @staticmethod
-    def _check_equity(family_ob, price):
+    async def _check_equity(fdb, family_ob, price, t_id):
         fam_equity = family_ob().get_scalar('equity')
-        if price >= (2 * fam_equity):
+        if price < (2 * fam_equity):
+            return
+
+        upper_family = family_ob().get_scalar('upper_family')
+        if upper_family is None:
             raise AdelphosCoreException(ECoreErrno.EEQUITY_OVERFLOW, f"""
 Price of object {price} is greater than
-two times your family's equity {fam_equity}.
+two times your family's equity {fam_equity}, and no upper level is possible.
 Lower the price or increase your family's equity
-(if you are the boss).""")
+(if you are the boss), or consider joining other families in a larger group.""")
+
+        family_ob = await fdb.uri_read_str(t_id, upper_family,
+                                           must_lock = True)
+        return await _check_equity(fdb, family_ob, price, t_id)
 
 
     @staticmethod

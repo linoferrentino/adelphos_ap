@@ -152,4 +152,4 @@ def assert_error_code_in_response(response, error_expt):
 
 def ws_send_cmd(ws, text, exp_code = ECoreErrno.DONE_OK):
     ws.send_text(text)
-    ws_assert_code(ws, exp_code)
+    return ws_assert_code(ws, exp_code)
