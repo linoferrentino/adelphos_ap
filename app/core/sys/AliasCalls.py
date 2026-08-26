@@ -63,7 +63,6 @@ class AliasCalls:
           'force' : force,
         }
         actor_handle = await AliasCalls.login_safe(kernel, pars)
-        gCon.log(f"OK, the user {actor_handle} has logged in with alias {alias}")
         social_dao = kernel.get_dep(Dependencies.SOCIAL_DAO)
         actor_dto = social_dao.actor_get_from_actor_handle(actor_handle)
         token = session.login_start(alias, family, actor_dto, force)
@@ -114,7 +113,6 @@ class AliasCalls:
         alias_uri = AdelphosUri(EAdelphosType.ALIAS_TYPE, alias, family = family)
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
-        gCon.log(f"Searching alias {alias_uri}")
         alias_ob = await fdb.uri_read_no_lock(t_id, alias_uri, True)
 
         if alias_ob is None:

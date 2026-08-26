@@ -153,11 +153,6 @@ classes:
           cardinality: set
           required: false
 
-        - name: watcher
-          type: uri
-          cardinality: scalar
-          required: true
-
         - name: export_box
           type: uri
           cardinality: set

@@ -18,8 +18,6 @@ from app.exc.AdelphosException import AdErrno
 
 
 def split_social_handle(handle):
-
-    gCon.log(f"searching {handle}")
     (first_char, actor_instance) = (handle[0], handle[1:])
 
     if (first_char != '@'):

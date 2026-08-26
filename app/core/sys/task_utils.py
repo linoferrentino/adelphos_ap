@@ -12,26 +12,31 @@
 ######################################################
 
 
+import re
 from app.sdc.Dependencies import Dependencies
 from app.logging import gCon
 from datetime import datetime
+import app.core.sys.social_utils as su
 
 
-async def add_task_to_alias_str(kernel, alias_ob, task, t_id):
-
+async def add_task_to_alias(kernel, alias_ob, task, pars, t_id):
     gCon.log(f"[red]Adding {task} to {alias_ob()}[/red]")
+    clean_pars = { k: v for k, v 
+            in pars.items() if re.search(r'^_', k) is None }
 
-    #fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-
-    #alias_ob = await fdb.uri_read_str(t_id, alias_str, must_lock = True)
-
-    #gCon.log(f"alias is {alias_ob}")
-
+    gCon.log(f"the pars is {pars} clean pars are {clean_pars}")
     task_ob = {
-
-            'msg' : task,
+            'task' : task,
+            'pars' : clean_pars,
             'date' : datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
     }
 
+    gCon.log(f"The task is {task_ob} type {type(task_ob)}")
+
     alias_ob().add_scalar('tasks', task_ob)
+
+    await su.out_msg_to_alias_ob(kernel, alias_ob, f"""
+You have a new task {task} with parameters {pars}
+Login to adelphos to accept it.""", t_id)
+ 
 

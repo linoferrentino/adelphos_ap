@@ -69,7 +69,6 @@ class FederatedTransaction:
     def _check_read_consistency(self):
         for k,v in self.read_uris.items():
             present_str = self.fdb.db.get_maybe(k)
-            gCon.log(f"read consinstency for {k} -> {v.ob}")
             if v.ob.state == EObState.CLONED:
                 if present_str is not None:
                     raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_COMMIT,
@@ -90,9 +89,7 @@ class FederatedTransaction:
 
 
     def _do_creates(self):
-        gCon.log(f"Scanning created objects... {self.do_mod_db}")
         for k,v in self.created_uris.items():
-            gCon.log(f"Created {k} => {v.ob}")
             if v.ob.fields[REF_COUNT_COLUMN] == 0:
                 gCon.log(f"will prepare {k} to oblivion")
                 v.prepare_to_oblivion(self)
@@ -105,9 +102,7 @@ class FederatedTransaction:
 
 
     def _do_updates(self):
-        gCon.log(f"{self.fdb.hostname} _do_updates, start {len(self.locked_uris)}")
         for k,v in self.locked_uris.items():
-            gCon.log(f"check updates {k} = {v.ob}")
             if ((v.ob.state == EObState.PRESENT) and
                 (v.ob.fields[REF_COUNT_COLUMN] == 0)):
                 self._delete_ob(k, v)
@@ -157,8 +152,6 @@ class FederatedTransaction:
                     raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_COMMIT,
                                    f"object {key_str} deleted")
                 obs = str_to_fobs(present_ob_str)
-                gCon.log(f"check coherence for {obs}")
-                gCon.log(f"with {fob.ob.fields} of state {fob.ob.state}")
 
                 if obs.state == EObState.LENT:
                     old_version = obs.fields['backup'][VERSION_COLUMN]
@@ -198,9 +191,7 @@ class FederatedTransaction:
        
 
     def t_commit(self):
-
         try:
-
             self._check_read_consistency()
 
             self.do_mod_db = False
@@ -212,12 +203,9 @@ class FederatedTransaction:
                 if (self.do_mod_db == True):
                     break
                 self.do_mod_db = True
-                
 
             self.fdb.db.commit()
-
             self._remove_all_maps()
-
             return
 
         except FdbException as fdbex:
@@ -228,14 +216,11 @@ class FederatedTransaction:
             fdex = FdbException(EFdbErrors.EFDB_INTERNAL_ERROR, str(ex)) 
 
         self.fdb.db.rollback()
-        #self._remove_all_maps()
         raise fdex
 
 
     def new_ob(self, fob):
-        #uri_db = self.fdb.remove_localhost(fob.uri)
         key_uri = fob.uri.unparse(True)
-        gCon.log(f"new object {fob.uri} it has become {fob.uri} -> {key_uri}")
         self.created_uris[key_uri] = fob
 
 
@@ -311,7 +296,6 @@ class FederatedTransaction:
 
 
     def read_ob_ctx(self, rctx):
-        gCon.log(f"{self.fdb.hostname} read {rctx.uri_str} lock {rctx.must_lock}")
         if rctx.must_lock:
             self.locked_uris[rctx.uri_str] = rctx.fob
         else:
@@ -369,7 +353,6 @@ class FederatedStore(Dependency, LifespanAware):
             while self.background_tasks > 0:
                 gCon.log(f"{self.background_tasks} tasks still running.")
                 await asyncio.sleep(0.5)
-            gCon.log(f"end of the _fdb_worker")
 
 
     async def start_async(self):
@@ -398,13 +381,10 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     async def stop_async(self):
-        gCon.log(f"receiving stop signal, waiting background async tasks")
         self.run_enabled = False
         async with self.stop_signal:
             self.stop_signal.notify_all()
-        gCon.log("Waiting the session worker...")
         await self.ses_worker
-        gCon.log("After wait session worker.")
         self.db.close()
         self.fact.reset()
 
@@ -502,15 +482,10 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     def new_ob_from_uri(self, t_id, registrar, uri, fields):
-        
         t_ob = self.get_tob_safe(t_id)
 
         uri = self.remove_localhost(uri, True)
-        gCon.log(f"new uri {uri}")
-
         self.ensure_uri_not_existing(t_ob, uri)
-
-        #if uri.host is None:
         uri.host = self.hostname
 
         fob = FederatedObject(uri, registrar, fields = fields, locked = True)
@@ -597,8 +572,6 @@ class FederatedStore(Dependency, LifespanAware):
             (rctx.internal_read == False)):
             gCon.log(f"{self.hostname}: Object {rctx.uri_str} has been lent!")
             raise FdbException(EFdbErrors.EFDB_LENT, rctx.uri_str)
-        else:
-            gCon.log(f"Object is present! {t_ob_str}")
 
         if new_state is not None:
             rctx.fob.ob.state = new_state
@@ -652,7 +625,6 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     def commit_transaction(self, t_id):
-        gCon.log(f"COMMIT! {t_id}")
         t_ob = self.get_tob_safe(t_id)
         t_ob.t_commit()
 

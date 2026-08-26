@@ -92,7 +92,6 @@ class BaseSocial(SocialProvider):
         if user['login_shell'] == False:
             return None
 
-        gCon.log(f"{id(self)} ======================= {user} create inbox")
         user_inbox = UserInbox(actor_dto)
         self.users[user['preferredusername']] = user_inbox
         return user_inbox

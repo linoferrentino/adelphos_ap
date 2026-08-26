@@ -36,10 +36,11 @@ def test_simul_fediverse_basic(simulated_fediverse):
 
     sim_fed = simulated_fediverse(wld1.world_1_yaml)
     sim_fed.test(wld1.fixture_1_yaml, (
-        #_test_create_trust_line,
         _test_put_object_ad,
         _test_associate_with_family_denied,
         _test_list_objects_zero_ok,
+        _test_list_objects_zero_ko,
+        _test_list_uplevel_ko,
         _test_associate_with_family_ok,))
 
 
@@ -54,33 +55,46 @@ def _test_put_object_ad(world):
 
 
 def _test_list_objects_zero_ok(world):
-    ad1 = world.get_instance('ad1')
-    ad1.push_user('alice.fam_t1')
-    list_ads = agoh.ws_list_ads(ad1.get_sock(), 0)
-    gCon.log(f"The list is {list_ads}")
+    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 1)
+
+
+def _test_len_get_list(world, instance, user_pushed, len_expected, *,
+        code_exp = ECoreErrno.DONE_OK, uplevel = 0):
+    ad1 = world.get_instance(instance)
+    ad1.push_user(user_pushed)
+    res = agoh.ws_list_ads(ad1.get_sock(), uplevel, code_exp = code_exp)
+    if code_exp == ECoreErrno.DONE_OK:
+        list_ads = res['res']
+        gCon.log(f"The list is {list_ads}")
+        assert len(list_ads) == len_expected
     ad1.pop_user()
+
+
+def _test_list_objects_zero_ko(world):
+    _test_len_get_list(world, 'ad1', 'tom.fam_t2', 0)
+
+
+def _test_list_uplevel_ko(world):
+    _test_len_get_list(world, 'ad1', 'tom.fam_t2', -1, uplevel = 1,
+                       code_exp = ECoreErrno.EUPLEVEL_NOT_FOUND)
 
 
 def _test_associate_with_family_denied(world):
     ad2 = world.get_instance('ad2')
     ad2.push_user('katy_al.fam_t2')
-    fh.ws_associate_with_family(ad2.get_sock(), "impossibile",
-                    "impossibile", 0.99, code_exp = ECoreErrno.EDENIED)
+    fh.ws_associate_with_family(ad2.get_sock(), "impossibile", 0.99,
+                code_exp = ECoreErrno.EDENIED)
     ad2.pop_user()
 
 
 def _test_associate_with_family_ok(world):
     ad2 = world.get_instance('ad2')
-    #ad2.pop_user()
-
-
-def _test_create_trust_line(world):
-
-    ad1 = world.get_instance('ad1')
-    ad1.push_user('alice.fam_t1')
-    th.ws_create_trust_line(ad1.get_sock(), "#fa#fam_t2@www.ad2.com",
-            100)
-    ad1.pop_user()
+    ad2.push_user('john_al.fam_t2')
+    fh.ws_associate_with_family(ad2.get_sock(),
+                '#fa#fam_t1@www.ad1.com', 1.02,
+                location = 'East Of London 33', upper_name =
+                                'london_east_33')
+    ad2.pop_user()
 
 
 def test_invite_member(get_routable_app):

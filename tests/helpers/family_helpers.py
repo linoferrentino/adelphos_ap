@@ -43,12 +43,11 @@ def ws_invite_user_macro(ws, user_handle, invite_code, user_inbox):
     gCon.log(f"the msg is {msg.content}")
 
 
-def ws_associate_with_family(ws, family_dest, invite_code,
-            import_export_tax, *, 
+def ws_associate_with_family(ws, family_dest, import_export_tax, *, 
             location = None, family_source = None,
             upper_name = None, change_ratio = None,
             code_exp = ECoreErrno.DONE_OK):
-    cmd = f"family.associate invite_code {invite_code} \
+    cmd = f"family.associate \
 import_export_tax {import_export_tax} family_dest {family_dest}"
     if location is not None:
         cmd += f" location '{location}'"

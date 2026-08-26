@@ -83,13 +83,13 @@ class UserSession:
     @property
     def alias_uri(self):
         return AdelphosUri.alias_as_uri(self.alias, self.family, 
-            self.actor_dto.srv.host_name)
+            self.client.kernel.conf().get_host())
 
 
     @property
     def family_uri(self):
         return AdelphosUri(EAdelphosType.FAMILY_TYPE, self.family,
-                           host = self.actor_dto.srv.host_name)
+            self.client.kernel.conf().get_host())
 
 
     def is_login_valid(self):

@@ -29,6 +29,24 @@ async def get_family_in_session(kernel, pars, t_id):
     return family_ob
 
 
+async def get_family_source(kernel, pars, t_id):
+    family_source = pars.get('family_source')
+    if family_source is None:
+        return await get_family_in_session(kernel, pars, t_id)
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    family_ob = await fdb.uri_read_str(t_id, family_source,
+                must_lock = True)
+    return family_ob
+
+
+async def get_family_dest(kernel, pars, t_id):
+    family_dest = pars.get('family_dest')
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    family_ob = await fdb.uri_read_str(t_id, family_dest,
+                must_lock = True)
+    return family_ob
+
+
 async def get_family_uplevel(kernel, pars, t_id):
     family_ob = await get_family_in_session(kernel, pars, t_id)
     uplevel = pars['uplevel']
@@ -36,7 +54,7 @@ async def get_family_uplevel(kernel, pars, t_id):
         family_uri = family_ob().get_scalar('upper_family')
         if family_uri is None:
             raise AdelphosCoreException(ECoreErrno.EUPLEVEL_NOT_FOUND,
-                                        f"lev {lev} not found")
+                                        f"lev {lev+1} not found")
         family_ob = await fdb.uri_read_ob(t_id, family_uri, must_lock = True)
     return family_ob
 
@@ -50,10 +68,16 @@ async def get_alias_in_session(kernel, pars, t_id):
 
 
 def ensure_logged_alias_is_boss(family_ob, pars):
-
     logged_alias = pars['_session'].alias_uri.unparse()
     boss_uri = family_ob().get_scalar('boss')
     if boss_uri != logged_alias:
         raise AdelphosCoreException(ECoreErrno.EDENIED, f"You are {logged_alias} not {boss_uri}")
+
+
+def ensure_family_not_associated(family_ob):
+    upper_family = family_ob().get_scalar('upper_family')
+    if upper_family is not None:
+        raise AdelphosCoreException(ECoreErrno.EALREADY_ASSOCIATED,
+          f"Family {family_ob().uri} is already associated to {upper_family}")
 
 

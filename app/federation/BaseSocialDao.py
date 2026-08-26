@@ -45,7 +45,6 @@ class BaseSocialDao(SocialDao):
 
     @staticmethod
     def _fill_public_key(actor_dto):
-
         if actor_dto is None:
             return
 
@@ -59,7 +58,6 @@ class BaseSocialDao(SocialDao):
 
 
     def actor_store(self, actor):
-
         server_id = actor.srv.server_id
         if server_id is None:
 
@@ -68,8 +66,6 @@ class BaseSocialDao(SocialDao):
 
             actor.srv.server_id = server_id
             actor.act.server_fk = server_id
-        else:
-            gCon.log(f"Server {actor.srv.host_name} is already stored")
 
         actor_id = self._store_actor_impl(actor)
         return actor_id

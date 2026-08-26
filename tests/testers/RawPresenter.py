@@ -28,7 +28,6 @@ class RawPresenter(CliPresenter):
                 return sys_call_out
             case _:
                 sys_call_str = json.dumps(sys_call_out)
-                gCon.log(f"....> exit >{sys_call_str}<")
                 return sys_call_str
 
 

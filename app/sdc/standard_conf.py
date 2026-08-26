@@ -271,8 +271,6 @@ standard_cli_api = """
 
           - name: associate
             pars:
-              invite_code:
-                required: true
               import_export_tax:
                 par_type: float
                 required: true

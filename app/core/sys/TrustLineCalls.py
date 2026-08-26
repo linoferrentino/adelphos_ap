@@ -21,7 +21,6 @@ from app.logging import gCon
 from app.sdc.Dependencies import Dependencies
 from app.core.AdelphosCoreException import AdelphosCoreException
 from app.core.ECoreErrno import ECoreErrno
-#import app.misc.trust_utils as tutils
 import app.core.sys.sys_calls_utils as scu
 import app.core.sys.social_utils as su
 import app.core.sys.task_utils as tku
@@ -79,7 +78,7 @@ class TrustLineCalls:
         boss_ob = await fdb.uri_read_str(t_id, boss_to, must_lock = True)
 
         await tku.add_task_to_alias_str(kernel, boss_ob,
-                "TASK: accept_trust_family", t_id)
+                "accept_trust_family", t_id)
 
         await su.out_msg_to_alias_ob(kernel, boss_ob, f"""
 You have received an invite to join family {family_from} by its boss

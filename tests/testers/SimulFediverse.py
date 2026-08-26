@@ -181,7 +181,6 @@ class SimulFediverse:
         currency = family['currency']
         member = members[boss]
         actor_dto = SimulFediverse._get_actor_for_alias(instance, boss, member)
-        gCon.log(f"boss {boss} is actor {actor_dto}")
 
         pars = {
             'actor_id' : actor_dto.act.actor_id,
@@ -202,7 +201,6 @@ class SimulFediverse:
                 continue
             actor_dto = SimulFediverse._get_actor_for_alias(instance,
                         member, m_dict)
-            gCon.log(f"Adding member {member} {m_dict} act {actor_dto}")
 
             pars = {
               'actor_id' : actor_dto.act.actor_id,

@@ -112,7 +112,6 @@ class AliasAlgo:
 
         agora_ob = fdb.new_ob(t_id, EAdelphosType.AGORA_TYPE,
                         agora_name)
-        agora_ob().set_link('watcher', alias_ob)
         agora_ob().set_link('family', family_ob)
         family_ob().set_link('agora', agora_ob)
 
