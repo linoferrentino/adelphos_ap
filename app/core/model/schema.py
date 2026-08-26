@@ -81,7 +81,7 @@ classes:
           cardinality: scalar
           required: true
 
-        - name: multiplier
+        - name: shared_ratio 
           type: real
           cardinality: scalar
           required: false

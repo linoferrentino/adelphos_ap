@@ -29,6 +29,18 @@ async def get_family_in_session(kernel, pars, t_id):
     return family_ob
 
 
+async def get_family_uplevel(kernel, pars, t_id):
+    family_ob = await get_family_in_session(kernel, pars, t_id)
+    uplevel = pars['uplevel']
+    for lev in range(0, uplevel):
+        family_uri = family_ob().get_scalar('upper_family')
+        if family_uri is None:
+            raise AdelphosCoreException(ECoreErrno.EUPLEVEL_NOT_FOUND,
+                                        f"lev {lev} not found")
+        family_ob = await fdb.uri_read_ob(t_id, family_uri, must_lock = True)
+    return family_ob
+
+
 async def get_alias_in_session(kernel, pars, t_id):
     alias_uri = pars['_session'].alias_uri
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)

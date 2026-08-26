@@ -20,6 +20,7 @@ import tests.adelphoi_test_config as tconf
 import tests.helpers.alias_helpers as ah
 import tests.helpers.family_helpers as fh
 import tests.helpers.object_helpers as oh
+import tests.helpers.agora_helpers as agoh
 import app.consts as CNST
 import app.sdc.standard_conf as stdcnf
 from app.exc.AdelphosException import AdErrno
@@ -37,7 +38,9 @@ def test_simul_fediverse_basic(simulated_fediverse):
     sim_fed.test(wld1.fixture_1_yaml, (
         #_test_create_trust_line,
         _test_put_object_ad,
-        _test_associate_with_family_denied,))
+        _test_associate_with_family_denied,
+        _test_list_objects_zero_ok,
+        _test_associate_with_family_ok,))
 
 
 def _test_put_object_ad(world):
@@ -50,12 +53,25 @@ def _test_put_object_ad(world):
     ad1.pop_user()
 
 
+def _test_list_objects_zero_ok(world):
+    ad1 = world.get_instance('ad1')
+    ad1.push_user('alice.fam_t1')
+    list_ads = agoh.ws_list_ads(ad1.get_sock(), 0)
+    gCon.log(f"The list is {list_ads}")
+    ad1.pop_user()
+
+
 def _test_associate_with_family_denied(world):
     ad2 = world.get_instance('ad2')
     ad2.push_user('katy_al.fam_t2')
     fh.ws_associate_with_family(ad2.get_sock(), "impossibile",
                     "impossibile", 0.99, code_exp = ECoreErrno.EDENIED)
     ad2.pop_user()
+
+
+def _test_associate_with_family_ok(world):
+    ad2 = world.get_instance('ad2')
+    #ad2.pop_user()
 
 
 def _test_create_trust_line(world):

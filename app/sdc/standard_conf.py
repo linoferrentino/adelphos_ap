@@ -236,6 +236,16 @@ standard_cli_api = """
                 required: true
 
 
+      agora:
+        class: app.core.sys.AgoraCalls.AgoraCalls
+        syscalls:
+          - name: list_ads
+            pars:
+              uplevel:
+                par_type: int
+                required: true
+
+
       family:
         class: app.core.sys.FamilyCalls.FamilyCalls
         syscalls:

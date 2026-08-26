@@ -113,7 +113,6 @@ class FederatedTransaction:
                 self._delete_ob(k, v)
                 continue
             if v.modified == False:
-                gCon.log(f"{id(v)} NO MODIFIED")
                 continue
             self._update_uri_str(k, v)
             if self.do_mod_db == False:
