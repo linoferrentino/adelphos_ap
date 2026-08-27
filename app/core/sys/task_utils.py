@@ -17,6 +17,7 @@ from app.sdc.Dependencies import Dependencies
 from app.logging import gCon
 from datetime import datetime
 import app.core.sys.social_utils as su
+import uuid
 
 
 async def add_task_to_alias(kernel, alias_ob, task, pars, t_id):
@@ -24,8 +25,11 @@ async def add_task_to_alias(kernel, alias_ob, task, pars, t_id):
     clean_pars = { k: v for k, v 
             in pars.items() if re.search(r'^_', k) is None }
 
+    id_task = uuid.uuid4()
+
     gCon.log(f"the pars is {pars} clean pars are {clean_pars}")
     task_ob = {
+            'id' : str(id_task),
             'task' : task,
             'pars' : clean_pars,
             'date' : datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")

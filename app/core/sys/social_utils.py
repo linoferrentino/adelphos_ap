@@ -16,9 +16,9 @@ from app.logging import gCon
 
 
 async def out_msg_to_alias_ob(kernel, alias_ob, msg, t_id):
+    actor_handle = alias_ob().get_scalar('actor_handle')
+    social = kernel.get_dep(Dependencies.SOCIAL)
+    gCon.log(f"[red]Sending message to {actor_handle}[/red]")
+    await social.out_msg_listener_to_handle(actor_handle, msg)
 
-
-    gCon.log(f"Will send msg {msg}")
-    gCon.log(f"to {alias_ob().uri} which is {alias_ob().ob.fields}")
-    gCon.log(f"{alias_ob().get_scalar('actor_handle')}")
 

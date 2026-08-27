@@ -59,11 +59,6 @@ classes:
           cardinality: array
           required: false
 
-        - name: inbox
-          type: json
-          cardinality: array
-          required: false
-
 
     - uri_prefix: {EAdelphosType.FAMILY_TYPE}
       can_be_root: true
@@ -81,11 +76,17 @@ classes:
           cardinality: scalar
           required: true
 
-        - name: shared_ratio 
+        - name: brotherhood_ratio 
           type: real
           cardinality: scalar
           required: false
-          default: 0.15
+          default: 0.9
+
+        - name: change_ratio 
+          type: real
+          cardinality: scalar
+          required: false
+          default: 1.0
 
         - name: currency
           type: enum

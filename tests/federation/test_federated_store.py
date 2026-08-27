@@ -19,6 +19,7 @@ import asyncio
 from app.federation.FederatedStore import FederatedStore
 from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
+from app.federation.FederatedObject import EObState
 from app.store.MemoryStore import MemoryStore
 from app.store.SqliteStore import SqliteStore
 from app.logging import gCon
@@ -601,18 +602,20 @@ async def a_test_update_after_tx(fdb1_loc):
     balance = detached_ob.get_scalar('balance')
     assert balance == 193
     detached_uri = detached_ob.uri
-    gCon.log(detached_uri)
     local_uri = fdb1_loc.remove_localhost(ob_uri)
-    gCon.log(local_uri)
     assert local_uri.unparse() == detached_uri.unparse()
 
-    gCon.log(f"Detached ob is {detached_ob.ob}")
     detached_ob.set_scalar('balance', 1010)
  
-    #t_id_1 = fdb1_loc.begin_transaction()
-    #fdb1_loc.update_detached_ob(t_id_1, detached_ob)
-    #fdb1_loc.commit_transaction(t_id_1)
+    t_id_1 = fdb1_loc.begin_transaction()
+    fdb1_loc.update_detached_ob(t_id_1, detached_ob)
+    fdb1_loc.commit_transaction(t_id_1)
     
+    t_id_1 = fdb1_loc.begin_transaction()
+    fob = await fdb1_loc.uri_read_ob(t_id_1, ob_uri)
+    assert fob().ob.state == EObState.PRESENT
+    balance = detached_ob.get_scalar('balance')
+    assert balance == 1010
 
 
 def test_create_conflict(fdb1_loc):

@@ -223,6 +223,21 @@ standard_cli_api = """
                 default: EUR
 
 
+      task:
+        class: app.core.sys.TaskCalls.TaskCalls
+        syscalls:
+
+          - name: accept
+            pars:
+              task_id:
+                required: true
+
+          - name: decline
+            pars:
+              task_id:
+                required: true
+
+
       object:
         class: app.core.sys.ObjectCalls.ObjectCalls
         syscalls:
@@ -286,6 +301,10 @@ standard_cli_api = """
                 par_type: float
                 required: false
                 default: 1.0
+              brotherhood_ratio:
+                par_type: float
+                required: false
+                default: 0.9
 
 
       alias:

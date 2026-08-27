@@ -57,22 +57,17 @@ class SocialProvider(Dependency, SyncLifespanAware):
 
 
     @abstractmethod
+    async def out_msg_listener_to_handle(self, user_handle, message):
+        pass
+
+
+    @abstractmethod
     def add_listener(self, user, listener):
         pass
 
 
     @abstractmethod
     def remove_listener(self, user):
-        pass
-
-
-    @abstractmethod
-    def get_user_tag(self, user):
-        pass
-
-
-    @abstractmethod
-    def set_user_tag(self, user, tag):
         pass
 
 

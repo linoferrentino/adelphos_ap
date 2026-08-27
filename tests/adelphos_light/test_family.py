@@ -30,6 +30,7 @@ from app.sdc.Dependencies import Dependencies
 from app.logging import gCon
 import tests.scripts.world1 as wld1
 import tests.helpers.trust_helpers as th
+from app.federation.FederatedObject import str_to_fobs
 
 
 def test_simul_fediverse_basic(simulated_fediverse):
@@ -95,8 +96,19 @@ def _test_associate_with_family_ok(world):
                 location = 'East Of London 33', upper_name =
                                 'london_east_33')
     ad2.pop_user()
+    ad1 = world.get_instance('ad1')
+    alice_inbox = ad1.get_user_inbox('alice')
+    assert alice_inbox.count_msg() == 1
+    msg = alice_inbox.pop_lst_msg()
+    assert re.match("You have a new task associate_family", msg.content) \
+            is not None
+    data = ad1.push_user('alice.fam_t1')
+    gCon.log(f"Data of alice is {data}")
+    tasks = data['res']['tasks']
+    assert len(tasks) == 1
+    assert tasks[0]['task'] == 'associate_family'
 
-
+    
 def test_invite_member(get_routable_app):
     test1 = get_routable_app('test1', stdcnf.release_kernel_template,
                              tconf.adelphos_testable_1_conf)

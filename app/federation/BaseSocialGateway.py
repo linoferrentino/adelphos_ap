@@ -13,6 +13,7 @@
 
 
 import json
+import re
 import asyncio
 
 from urllib.parse import urlsplit
@@ -62,7 +63,8 @@ class BaseSocialGateway(SocialGateway):
         clean_content = await self._parse_message(user, request, actor_str,
                                             body_str, body_ob)
 
-        content_split = clean_content.split(" ", 1)
+        #content_split = clean_content.split(" ", 1)
+        content_split = re.split(r'\s|\n', clean_content, maxsplit = 1)
         if len(content_split) == 1:
             msg = f"Expecting a message with a mention, got {content_split}"
             raise HTTPException(400, msg)
@@ -73,6 +75,8 @@ class BaseSocialGateway(SocialGateway):
             raise HTTPException(400, msg)
 
         mention = mention[1:]
+
+        #gCon.log(f"The mention is {mention}")
 
         social = self.kernel.get_dep(Dependencies.SOCIAL)
         local_user= social.local_user_get(mention)

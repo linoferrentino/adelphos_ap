@@ -169,6 +169,11 @@ class BaseSocial(SocialProvider):
         await social_gw.out_outbox(user.actor_dto, recipient, message)
 
 
+    async def out_msg_listener_to_handle(self, user_handle, message):
+        social_gw = self.kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
+        await social_gw.out_outbox(self.actor_listener, user_handle, message)
+
+
     async def out_msg_listener_to_actor(self, actor_dto, message):
         social_gw = self.kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
         await social_gw.out_outbox_dtos(self.actor_listener, actor_dto, message)
@@ -231,13 +236,5 @@ class BaseSocial(SocialProvider):
 
     def stop_sync(self):
         self.users = {}
-
-
-    def get_user_tag(self, user):
-        pass
-
-
-    def set_user_tag(self, user, tag):
-        pass
 
 

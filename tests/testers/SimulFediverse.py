@@ -82,7 +82,7 @@ class SimulatedInstance:
 
 
     def push_user(self, alias):
-        ah.ws_sudo_push_alias(self.sock, alias)
+        return ah.ws_sudo_push_alias(self.sock, alias)
 
 
     def pop_user(self):
@@ -91,6 +91,10 @@ class SimulatedInstance:
 
     def get_sock(self):
         return self.sock
+
+
+    def get_user_inbox(self, user):
+        return self.mod(Dependencies.SOCIAL).local_user_get(user)
 
 
 class SimulFediverse:

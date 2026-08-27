@@ -145,7 +145,11 @@ class ActivityPubGateway(BaseSocialGateway):
         if (content is None):
             raise HTTPException(401, "No content in object {object_body}")
 
-        clean_content = re.sub('<[^<]+?>', '', content) 
+        clean_content = re.sub('</p>', '\n', content) 
+        clean_content = re.sub('<p>', '', clean_content) 
+        clean_content = re.sub('<[^<]+?>', '', clean_content) 
+        if clean_content[-1] == '\n':
+            clean_content = clean_content[:-1]
 
         return clean_content
 

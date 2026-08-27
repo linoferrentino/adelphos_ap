@@ -61,8 +61,10 @@ class RootApi:
     async def _sys_call_push_alias(kernel, session, pars):
         alias = pars['alias']
         alias_session = session.client.push_session(alias)
-        if alias_session.is_login_valid() == False:
-            await AliasCalls._session_login(kernel, alias_session, alias, None, True)
+        await AliasCalls._session_login(kernel, alias_session,
+                                        alias, None, True)
+        return alias_session.get_alias_ob().ob.fields
+
 
     @sudo_cmd
     @staticmethod

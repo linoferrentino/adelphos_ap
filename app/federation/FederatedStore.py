@@ -116,7 +116,8 @@ class FederatedTransaction:
                 self.fdb.return_object(k, v)
             else:
                 assert ((v.ob.state == EObState.PRESENT) or
-                        (v.ob.state == EObState.LENT))
+                        (v.ob.state == EObState.LENT) or
+                        (v.ob.state == EObState.DETACHED))
 
 
     def _delete_ob(self, key_str, ob):
@@ -164,6 +165,8 @@ class FederatedTransaction:
                 new_version = W32.inc_and_get_val(int
                                     (fob.ob.fields[VERSION_COLUMN]))
                 fob.ob.fields[VERSION_COLUMN] = new_version
+
+                fob.ob.state = EObState.PRESENT
 
         ob_str = fob.to_store_str()
         host = self.fdb.hostname
@@ -222,6 +225,21 @@ class FederatedTransaction:
     def new_ob(self, fob):
         key_uri = fob.uri.unparse(True)
         self.created_uris[key_uri] = fob
+
+
+    def update_detached_ob(self, detached_ob):
+        key_uri = detached_ob.uri.unparse(True)
+
+        if self.deleted_uris.get(key_uri) is not None:
+            raise FdbException(EFdbErrors.EFDB_DELETED_OBJECT, key_uri)
+
+        if self.read_uris.get(key_uri) is not None:
+            raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_UPDATE, key_uri)
+
+        if self.created_uris.get(key_uri) is not None:
+            raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_UPDATE, key_uri)
+
+        self.locked_uris[key_uri] = detached_ob
 
 
     def exists_ob(self, key_uri):
@@ -614,6 +632,11 @@ class FederatedStore(Dependency, LifespanAware):
         if rctx.fob is None:
             return None
         return weakref.ref(rctx.fob)
+
+
+    def update_detached_ob(self, t_id, detached_ob):
+        tob = self.get_tob_safe(t_id)
+        tob.update_detached_ob(detached_ob)
 
 
     def begin_transaction(self):

@@ -35,13 +35,3 @@ class AdelphosApiProvider(BaseSocialApiProvider):
         return False
 
 
-    def _is_allowed_remote_rpc_host_bad(self, host, mode):
-        social = self.kernel.get_dep(Dependencies.SOCIAL)
-        user_tag = social.get_user_tag(self.get_social_user())
-        if user_tag is None:
-            return False
-        perms = user_tag.get('perms')
-        if perms is None:
-            return False
-        return True
-

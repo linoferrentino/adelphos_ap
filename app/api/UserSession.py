@@ -48,7 +48,7 @@ class UserSession:
         self.user_state = EUserState.NOT_LOGGED
 
 
-    def login_start(self, alias, family, actor_dto, force = False):
+    def login_start(self, alias, family, actor_dto, alias_ob, force = False):
         self.alias = alias
         self.family = family
         self.token = secrets.token_urlsafe()
@@ -58,7 +58,12 @@ class UserSession:
         else:
             self.user_state = EUserState.LOGGED_AND_TOKEN
         self.actor_dto = actor_dto
+        self.alias_ob = alias_ob
         return self.token
+
+    
+    def get_alias_ob(self):
+        return self.alias_ob
 
 
     def logout(self):

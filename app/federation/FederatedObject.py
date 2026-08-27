@@ -431,8 +431,11 @@ class FederatedObject:
             raise FdbException(EFdbErrors.EFDB_CANNOT_DETACH_A_MODIFIED_OBJECT)
         if self.ts_locked == True:
             raise FdbException(EFdbErrors.EFDB_CANNOT_DETACH_A_LOCKED_OBJECT)
-        detached = copy.deepcopy(self)
-        detached.ob.state = EObState.DETACHED
+
+        detached_ob = copy.deepcopy(self.ob)
+        detached_ob.state = EObState.DETACHED
+        detached = FederatedObject(self.uri, self.registrar,
+                                   ob = detached_ob)
         return detached
 
 
