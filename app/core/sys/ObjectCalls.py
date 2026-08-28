@@ -47,8 +47,7 @@ class ObjectCalls:
                                                          pars, t_id)
         gCon.log(f"Created the object {object_ob().ob.fields}")
 
-        alias_ob = await scu.get_alias_in_session(kernel, pars, t_id)
-        object_ob().set_link('sender', alias_ob)
+        object_ob().set_link('family_src', family_ob)
 
         agora_uri_str = family_ob().get_scalar('agora')
         agora_ob = await fdb.uri_read_str(t_id, agora_uri_str, must_lock = True,

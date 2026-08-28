@@ -11,13 +11,11 @@
 #
 ######################################################
 
-from app.sdc.Dependencies import Dependencies
-from app.logging import gCon
+
+from app.core.ECoreErrno import ECoreErrno
+import tests.t_utils as tu
 
 
-async def out_msg_to_alias_ob(kernel, alias_ob, msg, t_id):
-    actor_handle = alias_ob().get_scalar('actor_handle')
-    social = kernel.get_dep(Dependencies.SOCIAL)
-    await social.out_msg_listener_to_handle(actor_handle, msg)
-
-
+def ws_accept_task(ws, task_id, *, exp_code = ECoreErrno.DONE_OK):
+    cmd = f"task.accept task_id {task_id}"
+    return tu.ws_send_cmd(ws, cmd, exp_code)

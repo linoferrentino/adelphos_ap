@@ -94,7 +94,7 @@ class UserSession:
     @property
     def family_uri(self):
         return AdelphosUri(EAdelphosType.FAMILY_TYPE, self.family,
-            self.client.kernel.conf().get_host())
+            host = self.client.kernel.conf().get_host())
 
 
     def is_login_valid(self):

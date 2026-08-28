@@ -22,7 +22,6 @@ class FederatedRPCs:
     async def _sys_call_return(kernel, actor_from, pars):
         uri_str = pars['uri_str']
         obstr = pars['obstr']
-        gCon.log(f"[red]Got the return for object {uri_str} = {obstr}[/red]")
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
         t_id = fdb.begin_transaction()
@@ -51,7 +50,6 @@ class FederatedRPCs:
 
         if lock == True:
             fob().lent_to(social_handle)
-            gCon.log("======================= finalizing lending ")
             fdb.commit_transaction(t_id)
         else:
             fdb.rollback_transaction(t_id)

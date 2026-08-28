@@ -170,7 +170,7 @@ classes:
 
       columns:
 
-        - name: sender 
+        - name: family_src 
           type: uri
           cardinality: scalar
           required: true

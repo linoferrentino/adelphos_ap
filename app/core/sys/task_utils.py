@@ -19,9 +19,19 @@ from datetime import datetime
 import app.core.sys.social_utils as su
 import uuid
 
+from app.core.AdelphosCoreException import AdelphosCoreException
+from app.core.ECoreErrno import ECoreErrno
+
+
+def get_task_with_id(alias_ob, task_id):
+    tasks = alias_ob.get_as_list('tasks')
+    for task in tasks:
+        if task['id'] == task_id:
+            return task
+    raise AdelphosCoreException(ECoreErrno.ETASK_NOT_FOUND, task_id)
+
 
 async def add_task_to_alias(kernel, alias_ob, task, pars, t_id):
-    gCon.log(f"[red]Adding {task} to {alias_ob()}[/red]")
     clean_pars = { k: v for k, v 
             in pars.items() if re.search(r'^_', k) is None }
 

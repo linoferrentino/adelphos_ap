@@ -21,6 +21,7 @@ import tests.helpers.alias_helpers as ah
 import tests.helpers.family_helpers as fh
 import tests.helpers.object_helpers as oh
 import tests.helpers.agora_helpers as agoh
+import tests.helpers.task_helpers as tkh
 import app.consts as CNST
 import app.sdc.standard_conf as stdcnf
 from app.exc.AdelphosException import AdErrno
@@ -42,7 +43,8 @@ def test_simul_fediverse_basic(simulated_fediverse):
         _test_list_objects_zero_ok,
         _test_list_objects_zero_ko,
         _test_list_uplevel_ko,
-        _test_associate_with_family_ok,))
+        _test_associate_with_family_ok,
+        _test_list_uplevel_one_ok))
 
 
 def _test_put_object_ad(world):
@@ -88,7 +90,12 @@ def _test_associate_with_family_denied(world):
     ad2.pop_user()
 
 
+def _test_list_uplevel_one_ok(world):
+    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 1, uplevel = 1)
+
+
 def _test_associate_with_family_ok(world):
+    gCon.rule("_test_associate_with_family_ok 1 ")
     ad2 = world.get_instance('ad2')
     ad2.push_user('john_al.fam_t2')
     fh.ws_associate_with_family(ad2.get_sock(),
@@ -96,17 +103,25 @@ def _test_associate_with_family_ok(world):
                 location = 'East Of London 33', upper_name =
                                 'london_east_33')
     ad2.pop_user()
+    
+    gCon.rule("_test_associate_with_family_ok 2")
+
     ad1 = world.get_instance('ad1')
     alice_inbox = ad1.get_user_inbox('alice')
     assert alice_inbox.count_msg() == 1
     msg = alice_inbox.pop_lst_msg()
     assert re.match("You have a new task associate_family", msg.content) \
             is not None
+
     data = ad1.push_user('alice.fam_t1')
     gCon.log(f"Data of alice is {data}")
     tasks = data['res']['tasks']
     assert len(tasks) == 1
     assert tasks[0]['task'] == 'associate_family'
+    tkh.ws_accept_task(ad1.get_sock(), tasks[0]['id'])
+    ad1.pop_user()
+
+    #_test_len_get_list(world, 'ad1', 'tom.fam_t2', -1, uplevel = 1,
 
     
 def test_invite_member(get_routable_app):

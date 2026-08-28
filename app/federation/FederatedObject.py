@@ -14,6 +14,8 @@
 from abc import ABC
 from abc import abstractmethod
 
+from collections.abc import Iterable
+
 import copy
 import json
 import dataclasses
@@ -54,7 +56,7 @@ def ensure_lock(func):
 
 
 def enforce_schema_scalar(func):
-    def _inner_enforce(self, key, *args):
+    def _inner_enforce(self, key, val, *args):
         schema = self.registrar.pars
         par = schema.get(key)
         if par is None:
@@ -62,7 +64,9 @@ def enforce_schema_scalar(func):
         if par.cardinality != FObCardType.SCALAR:
             raise FdbException(EFdbErrors.EFDB_SCALAR_EXPECTED, key)
 
-        return func(self, key, *args)
+        FederatedObject.enforce_scalar(key, val, par, False)
+
+        return func(self, key, val, *args)
 
     return _inner_enforce
 
@@ -80,7 +84,7 @@ def enforce_uri_type(func):
 
 
 
-def enforce_schema_not_scalar(func):
+def enforce_schema_not_scalar_scalar(func):
     def _inner_enforce(self, key, val, *args):
         schema = self.registrar.pars
         par = schema.get(key)
@@ -94,6 +98,39 @@ def enforce_schema_not_scalar(func):
         return func(self, key, val, *args)
 
     return _inner_enforce
+
+
+def enforce_schema_not_scalar_not_scalar(func):
+    def _inner_enforce(self, key, val, *args):
+        schema = self.registrar.pars
+        par = schema.get(key)
+        if par is None:
+            raise FdbException(EFdbErrors.EFDB_UNKNOWN_COLUMN, key)
+        if par.cardinality == FObCardType.SCALAR:
+            raise FdbException(EFdbErrors.EFDB_SCALAR_UNEXPECTED, key)
+
+        for val_item in val:
+            FederatedObject.enforce_scalar(key, val_item, par, False)
+
+        return func(self, key, val, *args)
+
+    return _inner_enforce
+
+
+
+def enforce_schema_scalar_read(func):
+    def _inner_enforce(self, key, *args):
+        schema = self.registrar.pars
+        par = schema.get(key)
+        if par is None:
+            raise FdbException(EFdbErrors.EFDB_UNKNOWN_COLUMN, key)
+        if par.cardinality != FObCardType.SCALAR:
+            raise FdbException(EFdbErrors.EFDB_SCALAR_EXPECTED, key)
+
+        return func(self, key, *args)
+
+    return _inner_enforce
+
 
 
 def enforce_schema_not_scalar_read(func):
@@ -292,7 +329,7 @@ class FederatedObject:
 
 
     def returned_object(self, obstr):
-        gCon.log(f"I have to substitute {obstr}")
+        gCon.log(f"[green]Object {self.uri.unparse()} returned[/green]")
         ob = json.loads(obstr)
         obs = FObSerialized(**ob)
         self.ob = obs
@@ -301,6 +338,7 @@ class FederatedObject:
 
 
     def lent_to(self, social_handle):
+        gCon.log(f"[red]Object {self.uri.unparse()} lent to {social_handle}[/red]")
         now = datetime.now()
         now_str = now.strftime("%Y-%m-%dT%H:%M:%S.%f")
         self.ob.state = EObState.LENT
@@ -315,7 +353,6 @@ class FederatedObject:
 
     @staticmethod
     def enforce_scalar(col_name, col_val, col_def, before_commit):
-
         if col_val is None:
             if before_commit == True:
                 if col_def.required:
@@ -414,7 +451,7 @@ class FederatedObject:
         return store_str
 
 
-    @enforce_schema_scalar
+    @enforce_schema_scalar_read
     def get_scalar(self, key, maybe = False):
         if maybe == False:
             return self.ob.fields[key]
@@ -486,7 +523,14 @@ class FederatedObject:
                 
 
     @ensure_lock
-    @enforce_schema_not_scalar
+    @enforce_schema_not_scalar_not_scalar
+    def set_list(self, key, new_list):
+        self.ob.fields[key] = copy.deepcopy(new_list)
+        self.modified = True
+
+
+    @ensure_lock
+    @enforce_schema_not_scalar_scalar
     @enforce_uri_type
     def add_link(self, key, ob):
         schema = self.registrar.pars
@@ -615,7 +659,7 @@ class FederatedObject:
 
 
     @ensure_lock
-    @enforce_schema_not_scalar
+    @enforce_schema_not_scalar_scalar
     def add_scalar(self, key, val):
         schema = self.registrar.pars
         par = schema.get(key)

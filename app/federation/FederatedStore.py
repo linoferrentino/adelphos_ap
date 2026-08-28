@@ -103,11 +103,13 @@ class FederatedTransaction:
 
     def _do_updates(self):
         for k,v in self.locked_uris.items():
+            #gCon.log(f"{k} -> {v} check update")
             if ((v.ob.state == EObState.PRESENT) and
                 (v.ob.fields[REF_COUNT_COLUMN] == 0)):
                 self._delete_ob(k, v)
                 continue
-            if v.modified == False:
+            if v.modified == False and v.ob.state != EObState.BORROWED:
+                #gCon.log("not modified")
                 continue
             self._update_uri_str(k, v)
             if self.do_mod_db == False:
@@ -136,8 +138,6 @@ class FederatedTransaction:
             fob.enforce_schema_before_commit()
 
         if fob.ob.state == EObState.BORROWED:
-
-            gCon.log(f"ob {key_str} has been borrowed")
             if present_ob_str is not None:
                 raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_COMMIT,
                                    f"object {key_str} borrowed, cannot exist")
@@ -492,7 +492,6 @@ class FederatedStore(Dependency, LifespanAware):
 
     async def return_object_task_try(self, key, ob):
         host = ob.uri.host
-        gCon.log(f"I must return the object! key {key} to host {host}")
         ob_str = ob.to_store_str()
         social_api = self.kernel.get_dep(Dependencies.SOCIAL_API)
         res = await social_api.remote_req('fdb', 'return', host, uri_str
@@ -537,20 +536,14 @@ class FederatedStore(Dependency, LifespanAware):
         social_api = self.kernel.get_dep(Dependencies.SOCIAL_API)
         res = await social_api.remote_req('fdb', 'borrow', host, uri_str =
                     rctx.uri_str, lock = rctx.must_lock)
-        gCon.log(f"got {res} as response")
         remote_ob_str = res['obstr']
         return remote_ob_str
 
 
     async def return_object_received(self, t_id, uri_str, obstr):
-        gCon.log(f"The uri to ask is {uri_str}")
-
         rctx = await self._uri_read_str_impl(t_id, uri_str, only_local = True,
                                      internal_read = True, must_lock = True)
-        gCon.log(f"got {rctx.fob.ob.fields} as the object")
-
         if rctx.fob.ob.state != EObState.LENT:
-            gCon.log(f"invalid state {rctx.fob.ob.state}")
             raise FdbException(EFdbErrors.EFDB_INVALID_STATE)
 
         rctx.fob.returned_object(obstr)
@@ -570,7 +563,6 @@ class FederatedStore(Dependency, LifespanAware):
         new_state = None
         if ((t_ob_str is None) and (rctx.uri_ob.host is not None)):
             t_ob_str = await self._read_remote_ctx(rctx)
-            gCon.log(f"Got {t_ob_str} as the remote string")
             if rctx.must_lock:
                 new_state = EObState.BORROWED
             else:
@@ -589,7 +581,7 @@ class FederatedStore(Dependency, LifespanAware):
         if ((rctx.fob.ob.state == EObState.LENT) and 
             (rctx.internal_read == False)):
             gCon.log(f"{self.hostname}: Object {rctx.uri_str} has been lent!")
-            raise FdbException(EFdbErrors.EFDB_LENT, rctx.uri_str)
+            raise FdbException(EFdbErrors.EFDB_LENT, f"{rctx.uri_str} lent to {rctx.fob.ob.fields}")
 
         if new_state is not None:
             rctx.fob.ob.state = new_state

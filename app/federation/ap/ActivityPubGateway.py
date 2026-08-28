@@ -159,7 +159,6 @@ class ActivityPubGateway(BaseSocialGateway):
         #msg = re.sub("\n", "<p>", msg)
         paragraphs = [f"<p>{p.strip()}</p>" for p in re.split(r'\n+', msg) if p.strip()]
         html_msg = "".join(paragraphs) if paragraphs else "<p></p>"
-        gCon.log(f"message has become {html_msg}")
 
         id_message = uuid.uuid4()
 

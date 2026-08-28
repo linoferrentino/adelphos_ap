@@ -25,6 +25,7 @@ import weakref
 import sys
 import app.misc.alias_utils as au
 #import app.misc.trust_utils as tutils
+import app.core.sys.family_utils as fu
 
 from app.logging import gCon
 
@@ -100,20 +101,9 @@ class AliasAlgo:
         alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, 
                         user_handle, alias_name, family, password, t_id)
 
-        await AliasAlgo._add_default_agora(fdb, family_ob, alias_ob, t_id)
+        fu.add_default_agora(fdb, family_ob, alias_ob, t_id)
 
         family_ob().set_link('boss', alias_ob)
-
-
-    @staticmethod
-    async def _add_default_agora(fdb, family_ob, alias_ob, t_id):
-        agora_name = family_ob().uri.name + "_main_agora"
-        gCon.log(f"Adding the default agora {agora_name}")
-
-        agora_ob = fdb.new_ob(t_id, EAdelphosType.AGORA_TYPE,
-                        agora_name)
-        agora_ob().set_link('family', family_ob)
-        family_ob().set_link('agora', agora_ob)
 
 
     @staticmethod

@@ -11,13 +11,12 @@
 #
 ######################################################
 
+
 from app.sdc.Dependencies import Dependencies
-from app.logging import gCon
 
 
-async def out_msg_to_alias_ob(kernel, alias_ob, msg, t_id):
-    actor_handle = alias_ob().get_scalar('actor_handle')
-    social = kernel.get_dep(Dependencies.SOCIAL)
-    await social.out_msg_listener_to_handle(actor_handle, msg)
-
-
+async def object_get_field_uri_locked(kernel, ob, field_uri, t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    uri = ob().get_scalar(field_uri)
+    ob_field = await fdb.uri_read_str(t_id, uri, must_lock = True)
+    return ob_field

@@ -101,11 +101,8 @@ f"""You have been invited to join adelphos by @{session.alias_family}@{this_host
                                   pars, t_id)
 
 
-
     @staticmethod
     async def _family_add_invite_impl(kernel, pars, t_id):
-
-        #family = pars['_session'].family
         user_handle = pars['user_handle']
         invite_code = pars['invite_code']
 

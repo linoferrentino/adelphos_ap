@@ -134,10 +134,8 @@ class BaseSocialGateway(SocialGateway):
         ((preferred_username, rem_instance), actor_instance) = \
                 fu.split_social_handle(handle)
 
-        gCon.log(f"inst {rem_instance} user {preferred_username} actor {actor_instance}")
-
-
         social_dao = self.kernel.get_dep(Dependencies.SOCIAL_DAO)
+        gCon.log(f"social dao get {rem_instance} / {preferred_username}")
         actor = social_dao.actor_get(rem_instance, preferred_username)
         if actor is not None:
             return actor

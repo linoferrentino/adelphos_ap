@@ -13,20 +13,77 @@
 
 
 from app.sdc.Dependencies import Dependencies
-
-
-def family_add_object(fdb, family_ob, object_ob, t_id):
-    pass
-
-
-def ensure_user_boss_in_family(kernel, pars, t_id):
-    pass
+import app.core.sys.sys_calls_utils as scu
+import app.core.sys.agora_utils as au
+import app.core.sys.object_utils as ou
+from app.core.model.AdelphosUri import EAdelphosType
+from app.core.model.AdelphosUri import AdelphosUri
+from app.logging import gCon
 
 
 async def family_get_your_boss(kernel, family_ob, t_id):
+    return await ou.object_get_field_uri_locked(kernel, family_ob,
+                                                'boss', t_id)
+
+
+async def family_get_your_agora(kernel, family_ob, t_id):
+    return await ou.object_get_field_uri_locked(kernel, family_ob,
+                                                'agora', t_id)
+
+
+async def family_associate_with_family(kernel, pars, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-    boss_uri = family_ob().get_scalar('boss')
-    boss_ob = await fdb.uri_read_str(t_id, boss_uri, must_lock = True)
-    return boss_ob
+
+    family_src_ob = await scu.get_family_source(kernel, pars, t_id)
+    family_dst_ob = await scu.get_family_dest(kernel, pars, t_id)
+
+    boss_ob = await family_get_your_boss(kernel, family_src_ob, t_id)
+
+    gCon.log(f"family src {family_src_ob().ob.fields} dst {family_dst_ob().ob.fields}")
+
+    sum_equity = family_src_ob().get_scalar('equity') + \
+            family_dst_ob().get_scalar('equity')
+    new_level = family_src_ob().get_scalar('level')
+    currency = family_src_ob().get_scalar('currency')
+
+    upper_family_name = pars['upper_name']
+
+    family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, upper_family_name)
+
+    family_ob = fdb.new_ob_uri(t_id, family_uri, fields = {
+        'equity' : sum_equity,
+        'currency' : currency,
+        'level' : new_level,
+        'brotherhood_ratio': pars['brotherhood_ratio']
+        })
+
+    family_ob().set_link('boss', boss_ob)
+    family_ob().add_link('members', family_src_ob)
+    family_ob().add_link('members', family_dst_ob)
+
+    agora_ob = add_default_agora(fdb, family_ob, boss_ob, t_id, location = 
+                      pars['location'])
+    family_src_ob().set_link('upper_family', family_ob)
+    family_dst_ob().set_link('upper_family', family_ob)
+
+    agora_src = await family_get_your_agora(kernel, family_src_ob, t_id)
+    agora_dst = await family_get_your_agora(kernel, family_dst_ob, t_id)
+
+    await au.copy_ads_from_lower_agora(kernel, agora_src, agora_ob, t_id)
+    await au.copy_ads_from_lower_agora(kernel, agora_dst, agora_ob, t_id)
+
+
+def add_default_agora(fdb, family_ob, alias_ob, t_id, *, location = None):
+    agora_name = family_ob().uri.name + "_main_agora"
+
+    fields = {}
+    if location is not None:
+        fields['location'] = location
+    agora_ob = fdb.new_ob(t_id, EAdelphosType.AGORA_TYPE,
+                    agora_name, fields = fields)
+    agora_ob().set_link('family', family_ob)
+    family_ob().set_link('agora', agora_ob)
+
+    return agora_ob
 
 
