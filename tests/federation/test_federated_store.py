@@ -213,7 +213,10 @@ async def a_test_link1(fdb1_loc):
     fob_get = await fdb1_loc.uri_read_no_lock(t_id, t2uri)
     assert fob_get() != None
      
-    fob_get = await fdb1_loc.uri_read_no_lock(t_id, t2urib, True)
+    #fob_get = await fdb1_loc.uri_read_no_lock(t_id, t2urib, True)
+    gCon.log(f"The uri to read is {t2urib}")
+    fob_get = await fdb1_loc.uri_read_ob(t_id, t2urib, maybe = True,
+                                         only_local = True, must_lock = False)
     assert fob_get == None
 
 
@@ -602,8 +605,8 @@ async def a_test_update_after_tx(fdb1_loc):
     balance = detached_ob.get_scalar('balance')
     assert balance == 193
     detached_uri = detached_ob.uri
-    local_uri = fdb1_loc.remove_localhost(ob_uri)
-    assert local_uri.unparse() == detached_uri.unparse()
+    #local_uri = fdb1_loc.remove_localhost(ob_uri)
+    assert ob_uri.unparse() == detached_uri.unparse()
 
     detached_ob.set_scalar('balance', 1010)
  

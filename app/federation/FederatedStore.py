@@ -332,6 +332,7 @@ class FedStore_ReadCtx:
     internal_read: bool = False
     tob : FederatedTransaction = None
     fob : FederatedObject = None
+    #uri_local: FederatedUri = None
 
  
 class FederatedStore(Dependency, LifespanAware):
@@ -484,7 +485,6 @@ class FederatedStore(Dependency, LifespanAware):
             traceback.print_exc()
             gCon.log(f"Got exception {ex} in return object!")
         finally:
-            gCon.log("[red]end of remote request[/red]")
             self.background_tasks -= 1
             async with self.stop_signal:
                 self.stop_signal.notify_all()
@@ -551,17 +551,17 @@ class FederatedStore(Dependency, LifespanAware):
 
     async def _read_ctx(self, rctx):
         rctx.tob = self.get_tob_safe(rctx.t_id)
-        rctx.uri_ob = self.remove_localhost(rctx.uri_ob,
+        uri_local = self.remove_localhost(rctx.uri_ob,
                     rctx.only_local)
 
-        rctx.uri_str = rctx.uri_ob.unparse()
+        rctx.uri_str = uri_local.unparse()
         rctx.fob = rctx.tob.get_ob(rctx)
         if rctx.fob is not None:
             return
 
         t_ob_str = self.db.get_maybe(rctx.uri_str) 
         new_state = None
-        if ((t_ob_str is None) and (rctx.uri_ob.host is not None)):
+        if ((t_ob_str is None) and (uri_local.host is not None)):
             t_ob_str = await self._read_remote_ctx(rctx)
             if rctx.must_lock:
                 new_state = EObState.BORROWED

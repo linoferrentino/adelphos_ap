@@ -69,8 +69,14 @@ async def family_associate_with_family(kernel, pars, t_id):
     agora_src = await family_get_your_agora(kernel, family_src_ob, t_id)
     agora_dst = await family_get_your_agora(kernel, family_dst_ob, t_id)
 
-    await au.copy_ads_from_lower_agora(kernel, agora_src, agora_ob, t_id)
-    await au.copy_ads_from_lower_agora(kernel, agora_dst, agora_ob, t_id)
+    tax_src = family_src_ob().get_scalar('import_export_tax')
+
+    await au.copy_ads_from_lower_agora(kernel, agora_src, tax_src, 
+                                       agora_ob, t_id)
+
+    tax_dst = family_dst_ob().get_scalar('import_export_tax')
+    await au.copy_ads_from_lower_agora(kernel, agora_dst, tax_dst,
+                                       agora_ob, t_id)
 
 
 def add_default_agora(fdb, family_ob, alias_ob, t_id, *, location = None):

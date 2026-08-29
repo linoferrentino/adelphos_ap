@@ -34,11 +34,8 @@ class SocialDao(Dependency, SyncLifespanAware):
 
 
     def actor_get_from_actor_handle(self, handle):
-        gCon.log(f"SocialDAO handle to search is {handle}")
         ((preferred_username, rem_instance), actor_instance) = \
                 fu.split_social_handle(handle)
-        gCon.log(f"SocialDAO handle to search has become {preferred_username}/{rem_instance}")
-
         return self.actor_get(rem_instance, preferred_username)
 
 

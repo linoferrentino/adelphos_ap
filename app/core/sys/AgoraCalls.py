@@ -29,19 +29,45 @@ class AgoraCalls:
  
 
     @staticmethod
+    @active_login
+    async def _sys_call_buy_object(kernel, session, pars):
+        pars['_session'] = session
+        return await AgoraCalls._agora_buy_object_safe(kernel, pars)
+
+ 
+    @staticmethod
     @federated_transaction(raise_if_fail = True)
     async def _agora_list_ads_safe(kernel, pars, t_id):
         return await AgoraCalls._agora_list_ads_impl(kernel, pars, t_id)
 
 
     @staticmethod
+    @federated_transaction(raise_if_fail = True)
+    async def _agora_buy_object_safe(kernel, pars, t_id):
+        return await AgoraCalls._agora_buy_object_impl(kernel, pars, t_id)
+
+
+    @staticmethod
+    async def _agora_buy_object_impl(kernel, pars, t_id):
+        pass
+
+
+    @staticmethod
     async def _agora_list_ads_impl(kernel, pars, t_id):
         family_lev_ob = await scu.get_family_uplevel(kernel, pars, t_id)
-        gCon.log(f"The family upleveled is {family_lev_ob().ob.fields}")
         agora_uri = family_lev_ob().get_scalar('agora')
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         agora_ob = await fdb.uri_read_str(t_id, agora_uri, must_lock = True)
         offers = agora_ob().get_as_list('offers')
-        return offers
+        if pars['get_only_uri'] == True:
+            return offers
+
+        ob_offers = []
+        for offer in offers:
+            offer_ob = await fdb.uri_read_str(t_id, offer,
+                                              must_lock = False)
+            ob_offers.append(offer_ob().ob.fields)
+
+        return ob_offers
 
 

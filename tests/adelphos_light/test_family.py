@@ -44,28 +44,30 @@ def test_simul_fediverse_basic(simulated_fediverse):
         _test_list_objects_zero_ko,
         _test_list_uplevel_ko,
         _test_associate_with_family_ok,
-        _test_list_uplevel_one_ok))
+        _test_list_uplevel_one_ok,
+        _test_buy_object_level_one))
 
 
 def _test_put_object_ad(world):
     ad1 = world.get_instance('ad1')
     ad1.push_user('bob.fam_t1')
     oh.ws_create_object_ad(ad1.get_sock(), 'a used pair of man shoes, size 10',
-                    12.0, ECoreErrno.EEQUITY_OVERFLOW)
+                    12.0 )
     data = oh.ws_create_object_ad(ad1.get_sock(), "a pokemon card", 2)
     gCon.log(f"data is {data}")
     ad1.pop_user()
 
 
 def _test_list_objects_zero_ok(world):
-    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 1)
+    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 2)
 
 
 def _test_len_get_list(world, instance, user_pushed, len_expected, *,
-        code_exp = ECoreErrno.DONE_OK, uplevel = 0):
+        code_exp = ECoreErrno.DONE_OK, uplevel = 0, only_uri = True):
     ad1 = world.get_instance(instance)
     ad1.push_user(user_pushed)
-    res = agoh.ws_list_ads(ad1.get_sock(), uplevel, code_exp = code_exp)
+    res = agoh.ws_list_ads(ad1.get_sock(), uplevel,
+                           code_exp = code_exp, only_uri = only_uri)
     if code_exp == ECoreErrno.DONE_OK:
         list_ads = res['res']
         gCon.log(f"The list is {list_ads}")
@@ -91,11 +93,17 @@ def _test_associate_with_family_denied(world):
 
 
 def _test_list_uplevel_one_ok(world):
-    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 1, uplevel = 1)
+    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 2, uplevel = 1,
+                       only_uri = False)
+
+
+def _test_buy_object_level_one(world):
+    ad1 = world.get_instance('ad1')
+    ad1.push_user('alice.fam_t1')
+    ad1.pop_user()
 
 
 def _test_associate_with_family_ok(world):
-    gCon.rule("_test_associate_with_family_ok 1 ")
     ad2 = world.get_instance('ad2')
     ad2.push_user('john_al.fam_t2')
     fh.ws_associate_with_family(ad2.get_sock(),
@@ -103,8 +111,6 @@ def _test_associate_with_family_ok(world):
                 location = 'East Of London 33', upper_name =
                                 'london_east_33')
     ad2.pop_user()
-    
-    gCon.rule("_test_associate_with_family_ok 2")
 
     ad1 = world.get_instance('ad1')
     alice_inbox = ad1.get_user_inbox('alice')
@@ -120,8 +126,6 @@ def _test_associate_with_family_ok(world):
     assert tasks[0]['task'] == 'associate_family'
     tkh.ws_accept_task(ad1.get_sock(), tasks[0]['id'])
     ad1.pop_user()
-
-    #_test_len_get_list(world, 'ad1', 'tom.fam_t2', -1, uplevel = 1,
 
     
 def test_invite_member(get_routable_app):

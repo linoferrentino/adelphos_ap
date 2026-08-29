@@ -42,9 +42,14 @@ class ObjectCalls:
         gCon.log(f"Adding object in family's agora {family_ob().ob.fields}")
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
-        await ObjectCalls._check_equity(fdb, family_ob, pars['price'], t_id)
+        price_array = []
+        await ObjectCalls._check_equity(fdb,
+                      family_ob, pars['price'], t_id, price_array)
+
+        gCon.log(f"The price array is {price_array}")
+        pars['price_array'] = price_array
         object_ob = ObjectCalls._create_object_from_pars(kernel, family_ob,
-                                                         pars, t_id)
+                    pars, t_id)
         gCon.log(f"Created the object {object_ob().ob.fields}")
 
         object_ob().set_link('family_src', family_ob)
@@ -63,22 +68,27 @@ class ObjectCalls:
 
 
     @staticmethod
-    async def _check_equity(fdb, family_ob, price, t_id):
+    async def _check_equity(fdb, family_ob, level_price, t_id, price_array):
+        price_array.append(level_price)
         fam_equity = family_ob().get_scalar('equity')
-        if price < (2 * fam_equity):
-            return
 
         upper_family = family_ob().get_scalar('upper_family')
         if upper_family is None:
-            raise AdelphosCoreException(ECoreErrno.EEQUITY_OVERFLOW, f"""
-Price of object {price} is greater than
-two times your family's equity {fam_equity}, and no upper level is possible.
-Lower the price or increase your family's equity
-(if you are the boss), or consider joining other families in a larger group.""")
+            return
+            #if level_price < (2 * fam_equity):
+            #    return
+
+            #raise AdelphosCoreException(ECoreErrno.EEQUITY_OVERFLOW, f"""
+#Price of object {level_price} is greater than
+#two times your family's equity {fam_equity}, and no upper level is possible.
+#Lower the price or increase your family's equity
+#(if you are the boss), or consider joining other families in a larger group.""")
 
         family_ob = await fdb.uri_read_str(t_id, upper_family,
                                            must_lock = True)
-        return await _check_equity(fdb, family_ob, price, t_id)
+        tax = family_ob().get_scalar('import_export_tax')
+        level_price *= import_export_tax
+        await _check_equity(fdb, family_ob, level_price, t_id, price_array)
 
 
     @staticmethod
@@ -91,7 +101,7 @@ Lower the price or increase your family's equity
         ob_uri = AdelphosUri.create_uri(EAdelphosType.OBJECT_TYPE, ob_name)
 
         object_ob = fdb.new_ob_uri(t_id, ob_uri, fields = {
-            'price' : pars['price'],
+            'price' : pars['price_array'],
             'description' : pars['description']
             })
 

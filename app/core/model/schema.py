@@ -121,6 +121,12 @@ classes:
           cardinality: scalar
           required: false
 
+        - name: import_export_tax
+          type: real 
+          cardinality: scalar
+          required: false
+          default: 1.02
+
         - name: balance
           type: real
           cardinality: scalar
@@ -187,8 +193,18 @@ classes:
 
         - name: price
           type: real
-          cardinality: scalar
+          cardinality: array
           required: true
+
+        - name: routing_exports
+          type: str
+          cardinality: array
+          required: false
+
+        - name: routing_imports
+          type: str
+          cardinality: array
+          required: false
 
 
 

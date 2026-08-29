@@ -259,6 +259,19 @@ standard_cli_api = """
               uplevel:
                 par_type: int
                 required: true
+              get_only_uri:
+                par_type: bool
+                required: false
+                default: false
+
+          - name: buy_object
+            pars:
+              uplevel:
+                par_type: int
+                required: true
+              index_ad:
+                par_type: int
+                required: true
 
 
       family:

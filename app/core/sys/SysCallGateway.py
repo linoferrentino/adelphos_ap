@@ -123,7 +123,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
                     case 'str':
                         val_final = val_str
                     case 'bool':
-                        val_final = bool(val_str)
+                        val_final = False if val_str == 'False' else True
                     case 'float':
                         val_final = float(val_str)
                     case 'int':
