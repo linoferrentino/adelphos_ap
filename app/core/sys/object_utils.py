@@ -15,8 +15,15 @@
 from app.sdc.Dependencies import Dependencies
 
 
-async def object_get_field_uri_locked(kernel, ob, field_uri, t_id):
+async def object_get_field_uri_locked(kernel, ob, field_uri, t_id,
+                        *, maybe = False):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     uri = ob().get_scalar(field_uri)
-    ob_field = await fdb.uri_read_str(t_id, uri, must_lock = True)
+    if uri is None:
+        if maybe == True:
+            return None
+        else:
+            raise Exception(f"No object in field {uri} maybe {maybe}")
+    ob_field = await fdb.uri_read_str(t_id, uri, must_lock = True,
+                            maybe = maybe)
     return ob_field

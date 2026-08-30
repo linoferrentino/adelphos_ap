@@ -45,6 +45,8 @@ def test_simul_fediverse_basic(simulated_fediverse):
         _test_list_uplevel_ko,
         _test_associate_with_family_ok,
         _test_list_uplevel_one_ok,
+        _test_put_object_after_associate,
+        _test_list_uplevel_two_ok,
         _test_buy_object_level_one))
 
 
@@ -56,6 +58,14 @@ def _test_put_object_ad(world):
     data = oh.ws_create_object_ad(ad1.get_sock(), "a pokemon card", 2)
     gCon.log(f"data is {data}")
     ad1.pop_user()
+
+
+def _test_put_object_after_associate(world):
+    ad2 = world.get_instance('ad2')
+    ad2.push_user('katy_al.fam_t2')
+    data = oh.ws_create_object_ad(ad2.get_sock(),
+                "Lawrence, Son and Lovers, used", 3.10)
+    ad2.pop_user()
 
 
 def _test_list_objects_zero_ok(world):
@@ -93,6 +103,11 @@ def _test_associate_with_family_denied(world):
 
 
 def _test_list_uplevel_one_ok(world):
+    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 1, uplevel = 1,
+                       only_uri = False)
+
+
+def _test_list_uplevel_two_ok(world):
     _test_len_get_list(world, 'ad1', 'alice.fam_t1', 2, uplevel = 1,
                        only_uri = False)
 

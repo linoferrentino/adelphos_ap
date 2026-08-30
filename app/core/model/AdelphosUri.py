@@ -51,7 +51,6 @@ class AdelphosUri(FederatedUri):
 
     @staticmethod
     def create_uri(uri_type, name_part, *, host_part = None, fragment = None):
-        gCon.log(f"create uri {uri_type} with name {name_part}")
         if uri_type == EAdelphosType.ALIAS_TYPE:
             (alias, family) = au.split_alias(name_part, True)
         else:

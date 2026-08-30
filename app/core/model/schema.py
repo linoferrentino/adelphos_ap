@@ -23,19 +23,7 @@ uri_constructor: app.core.model.AdelphosUri.AdelphosUri
 
 types:
 
-    enums:
 
-      currency:
-        - APC
-        - AUD
-        - CAD
-        - CHF
-        - CNY
-        - EUR
-        - GBP
-        - JPY
-        - NZD
-        - USD
 
 classes:
 
@@ -65,7 +53,25 @@ classes:
 
       columns:
 
-        - name: equity
+        - name: system_trust
+          type: real
+          cardinality: scalar
+          required: false
+          default: 6.98
+
+        - name: my_trust
+          type: real
+          cardinality: scalar
+          required: false
+          default: 0.0
+
+        - name: import_export_tax
+          type: real 
+          cardinality: scalar
+          required: false
+          default: 1.02
+
+        - name: balance
           type: real
           cardinality: scalar
           required: false
@@ -81,19 +87,6 @@ classes:
           cardinality: scalar
           required: false
           default: 0.9
-
-        - name: change_ratio 
-          type: real
-          cardinality: scalar
-          required: false
-          default: 1.0
-
-        - name: currency
-          type: enum
-          sub_type: currency
-          cardinality: scalar
-          required: false
-          default: EUR
 
         - name: invite
           type: json 
@@ -120,18 +113,6 @@ classes:
           type: uri
           cardinality: scalar
           required: false
-
-        - name: import_export_tax
-          type: real 
-          cardinality: scalar
-          required: false
-          default: 1.02
-
-        - name: balance
-          type: real
-          cardinality: scalar
-          required: false
-          default: 0.0
 
         - name: inbox
           type: uri
@@ -191,10 +172,11 @@ classes:
           cardinality: scalar
           required: true
 
-        - name: price
+        - name: prices
           type: real
           cardinality: array
           required: true
+          minimum_cardinality: 1
 
         - name: routing_exports
           type: str

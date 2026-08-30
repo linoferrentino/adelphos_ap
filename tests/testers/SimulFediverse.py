@@ -181,8 +181,7 @@ class SimulFediverse:
         members = family['members']
         family_name = family['name']
         boss = family['boss']
-        trust = family['trust']
-        currency = family['currency']
+        my_trust = family['my_trust']
         member = members[boss]
         actor_dto = SimulFediverse._get_actor_for_alias(instance, boss, member)
 
@@ -191,8 +190,7 @@ class SimulFediverse:
             'alias_name' : boss,
             'family' : family_name,
             'password': member['password'],
-            'trust' : trust,
-            'currency' : currency,
+            'my_trust' : my_trust,
             'user_handle' : actor_dto.get_social_handle(),
         }
 

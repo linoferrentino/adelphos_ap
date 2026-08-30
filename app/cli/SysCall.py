@@ -29,6 +29,7 @@ class SysCallPar:
     required: bool
     par_type: str
     def_value: str
+    validator: str
 
 
 @dataclass

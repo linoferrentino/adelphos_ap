@@ -24,6 +24,9 @@ from app.sdc.Dependencies import Dependencies
 import app.core.sys.sys_calls_utils as scu
 from app.logging import gCon
 
+import app.core.sys.family_utils as fu
+import app.misc.trust_utils as tutils
+
 
 class ObjectCalls:
 
@@ -42,22 +45,24 @@ class ObjectCalls:
         gCon.log(f"Adding object in family's agora {family_ob().ob.fields}")
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
-        price_array = []
-        await ObjectCalls._check_equity(fdb,
-                      family_ob, pars['price'], t_id, price_array)
+        #price_array = []
+        #await ObjectCalls._check_equity(fdb,
+        #              family_ob, pars['price'], t_id, price_array)
 
-        gCon.log(f"The price array is {price_array}")
-        pars['price_array'] = price_array
+        #gCon.log(f"The price array is {price_array}")
+        #pars['price_array'] = price_array
         object_ob = ObjectCalls._create_object_from_pars(kernel, family_ob,
                     pars, t_id)
         gCon.log(f"Created the object {object_ob().ob.fields}")
 
         object_ob().set_link('family_src', family_ob)
 
-        agora_uri_str = family_ob().get_scalar('agora')
-        agora_ob = await fdb.uri_read_str(t_id, agora_uri_str, must_lock = True,
-                                only_local = True)
+        agora_ob = await fu.family_get_your_agora(kernel,
+                            family_ob, t_id)
         agora_ob().add_link('offers', object_ob)
+
+        await ObjectCalls._export_object_in_upper_agorai(kernel,
+                    family_ob, pars['price'], object_ob, t_id)
 
         ob_uri = object_ob().uri.unparse()
 
@@ -68,9 +73,43 @@ class ObjectCalls:
 
 
     @staticmethod
-    async def _check_equity(fdb, family_ob, level_price, t_id, price_array):
+    async def _export_object_in_upper_agorai(kernel, family_ob, cur_price,
+                            object_ob, t_id):
+        #upper_family = family_ob().get_scalar('upper_family')
+
+        upper_family_ob = await fu.family_get_upper_family(kernel,
+                        family_ob, t_id, maybe = True)
+
+        if upper_family_ob is None:
+            return
+
+        export_trust = family_ob().get_scalar('my_trust')
+        tax = family_ob().get_scalar('import_export_tax')
+
+        #if upper_family is None:
+        #    return
+
+        #upper_family_ob = await fdb.uri_read_str(t_id, upper_family,
+        #                                   must_lock = True)
+        new_price = tax * cur_price
+        new_price_db = tutils.abs_to_db(new_price)
+        if new_price_db > export_trust:
+            return
+
+        object_ob().add_scalar('prices', new_price)
+
+        agora_upper = await fu.family_get_your_agora(kernel,
+                            upper_family_ob, t_id)
+        agora_upper().add_link('offers', object_ob)
+
+        await ObjectCalls._export_object_in_upper_agorai(kernel,
+                upper_family_ob, new_price, object_ob, t_id)
+
+
+    @staticmethod
+    async def _check_equity_OOO(fdb, family_ob, level_price, t_id, price_array):
         price_array.append(level_price)
-        fam_equity = family_ob().get_scalar('equity')
+        #fam_equity = family_ob().get_scalar('equity')
 
         upper_family = family_ob().get_scalar('upper_family')
         if upper_family is None:
@@ -87,7 +126,7 @@ class ObjectCalls:
         family_ob = await fdb.uri_read_str(t_id, upper_family,
                                            must_lock = True)
         tax = family_ob().get_scalar('import_export_tax')
-        level_price *= import_export_tax
+        level_price *= tax
         await _check_equity(fdb, family_ob, level_price, t_id, price_array)
 
 
@@ -100,8 +139,11 @@ class ObjectCalls:
         gCon.log(f"Create an object with name {ob_name}")
         ob_uri = AdelphosUri.create_uri(EAdelphosType.OBJECT_TYPE, ob_name)
 
+        price_array = list()
+        price_array.append(pars['price'])
+
         object_ob = fdb.new_ob_uri(t_id, ob_uri, fields = {
-            'price' : pars['price_array'],
+            'prices' : price_array ,
             'description' : pars['description']
             })
 

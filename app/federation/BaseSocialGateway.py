@@ -135,15 +135,12 @@ class BaseSocialGateway(SocialGateway):
                 fu.split_social_handle(handle)
 
         social_dao = self.kernel.get_dep(Dependencies.SOCIAL_DAO)
-        gCon.log(f"social dao get {rem_instance} / {preferred_username}")
         actor = social_dao.actor_get(rem_instance, preferred_username)
         if actor is not None:
             return actor
 
         actor_query = f"https://{rem_instance}/.well-known/webfinger?\
 resource=acct:{actor_instance}"
-
-        gCon.log(f"actor query is {actor_query}")
 
         transport = self.kernel.get_dep(Dependencies.TRANSPORT)
         actor_def_str = await transport.get_json_safe(actor_query, 

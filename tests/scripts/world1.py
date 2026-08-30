@@ -53,9 +53,8 @@ fixture_1_yaml = """
           alice:
            password: alice_ps
         boss: alice
-        equity: 33.92
-        currency: EUR
-        trust: 115
+        balance: 33.92
+        my_trust: 115
 
       - name: fam_t2
         members: 
@@ -64,9 +63,8 @@ fixture_1_yaml = """
           jane:
            password: jane_ps
         boss: tom
-        equity: 102.92
-        currency: EUR
-        trust: 150
+        balance: 102.92
+        my_trust: 150
 
 
   ad2_setup:
@@ -81,9 +79,8 @@ fixture_1_yaml = """
             actor: '@katy3@www.ad3.com'
             password: katy_pass
         boss: john_al
-        equity: 239.19
-        currency: EUR
-        trust: 250
+        balance: 239.19
+        my_trust: 250
    
 
   ad3_setup:
@@ -102,9 +99,8 @@ fixture_1_yaml = """
             actor: katy3
             password: katy_a3pp
         boss: john_a3
-        equity: 63.44
-        currency: USD 
-        trust: 99
+        balance: 63.44
+        my_trust: 99
 
 
 """

@@ -210,17 +210,20 @@ standard_cli_api = """
             pars:
               user:
                 required: true
-              equity:
+              trust_from:
                 required: false
-                default: 50.0
+                default: 5.0
                 par_type: float
+                validator: _v_ > 0
+              trust_to:
+                required: false
+                default: 5.0
+                par_type: float
+                validator: _v_ > 0
               alias:
                 required: true
               password:
                 required: true
-              currency:
-                required: false
-                default: EUR
 
 
       task:
@@ -416,13 +419,11 @@ standard_inbox_api = """
                     required: true
                 password:
                     required: true
-                equity:
+                trust_to:
                     required: false 
                     par_type: float
-                    default: 25.0 
-                currency:
-                    required: false 
-                    default: EUR
+                    default: 5.0 
+                    validator: _v_ > 0
                 location:
                     required: false
                     default: no location given

@@ -31,6 +31,12 @@ async def family_get_your_agora(kernel, family_ob, t_id):
                                                 'agora', t_id)
 
 
+async def family_get_upper_family(kernel, family_ob, t_id, *,
+                                  maybe = False):
+    return await ou.object_get_field_uri_locked(kernel, family_ob,
+                     'upper_family', t_id, maybe = maybe)
+
+
 async def family_associate_with_family(kernel, pars, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
@@ -41,18 +47,13 @@ async def family_associate_with_family(kernel, pars, t_id):
 
     gCon.log(f"family src {family_src_ob().ob.fields} dst {family_dst_ob().ob.fields}")
 
-    sum_equity = family_src_ob().get_scalar('equity') + \
-            family_dst_ob().get_scalar('equity')
-    new_level = family_src_ob().get_scalar('level')
-    currency = family_src_ob().get_scalar('currency')
+    new_level = family_src_ob().get_scalar('level') + 1
 
     upper_family_name = pars['upper_name']
 
     family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, upper_family_name)
 
     family_ob = fdb.new_ob_uri(t_id, family_uri, fields = {
-        'equity' : sum_equity,
-        'currency' : currency,
         'level' : new_level,
         'brotherhood_ratio': pars['brotherhood_ratio']
         })
@@ -70,13 +71,15 @@ async def family_associate_with_family(kernel, pars, t_id):
     agora_dst = await family_get_your_agora(kernel, family_dst_ob, t_id)
 
     tax_src = family_src_ob().get_scalar('import_export_tax')
+    export_trust = family_src_ob().get_scalar('my_trust')
 
-    await au.copy_ads_from_lower_agora(kernel, agora_src, tax_src, 
-                                       agora_ob, t_id)
+    await au.copy_ads_from_lower_agora(kernel, agora_src, export_trust,
+                                       tax_src, agora_ob, t_id)
 
     tax_dst = family_dst_ob().get_scalar('import_export_tax')
-    await au.copy_ads_from_lower_agora(kernel, agora_dst, tax_dst,
-                                       agora_ob, t_id)
+    export_trust = family_dst_ob().get_scalar('my_trust')
+    await au.copy_ads_from_lower_agora(kernel, agora_dst, export_trust,
+                                       tax_dst, agora_ob, t_id)
 
 
 def add_default_agora(fdb, family_ob, alias_ob, t_id, *, location = None):

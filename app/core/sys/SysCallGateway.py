@@ -12,6 +12,7 @@
 ######################################################
 
 
+import re
 import sys
 import traceback
 
@@ -134,6 +135,15 @@ class SysCallGateway(Dependency, SyncLifespanAware):
                         AdErrno.EREQUIRED_PARAMETER_MISSING, par.name) from ex
                 else:
                     val_final = par.def_value
+
+            if par.validator is not None:
+                string_validator = re.sub("_v_", str(val_final), par.validator)
+                gCon.log(f"The validator is {string_validator}")
+                validator_result = eval(string_validator)
+                if validator_result != True:
+                    raise AdelphosException(
+                        AdErrno.EVALIDATOR_EXCEPTION, val_final)
+
             kwargs[par.name] = val_final
 
         return kwargs
@@ -154,7 +164,9 @@ class SysCallGateway(Dependency, SyncLifespanAware):
                 (par_type != 'bool') and (par_type != 'float')):
                 raise AdelphosException(AdErrno.EINVALID_SYSCALL_PARAM_TYPE,
                                         f"{par_name}, type {par_type} unknown")
-            par = SysCallPar(par_name, required, par_type, default_value)
+            validator = value.get('validator')
+            par = SysCallPar(par_name, required, par_type,
+                             default_value, validator)
             par_list.append(par)
         return par_list
 

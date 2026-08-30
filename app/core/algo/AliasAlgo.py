@@ -24,7 +24,7 @@ from app.sdc.Dependencies import Dependencies
 import weakref
 import sys
 import app.misc.alias_utils as au
-#import app.misc.trust_utils as tutils
+import app.misc.trust_utils as tutils
 import app.core.sys.family_utils as fu
 
 from app.logging import gCon
@@ -75,12 +75,12 @@ class AliasAlgo:
         alias_name = pars['alias_name']
         family = pars['family']
         password = pars['password']
-        equity = pars['equity'] if hasattr(pars, 'equity') else 5.0
-        currency = pars['currency'] if hasattr(pars, 'currency') else 'EUR'
+        my_trust = pars['my_trust'] if hasattr(pars, 'my_trust') \
+                else 5.0
         user_handle = pars['user_handle']
 
-        if equity <= 0:
-            raise AdelphosCoreException(ECoreErrno.EINVALID_TRUST, equity)
+        #if equity <= 0:
+        #    raise AdelphosCoreException(ECoreErrno.EINVALID_TRUST, equity)
 
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
@@ -93,8 +93,7 @@ class AliasAlgo:
             raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY)
 
         family_ob = fdb.new_ob_uri(t_id, family_uri, fields = {
-            'equity' : equity,
-            'currency' : currency,
+            'my_trust' : tutils.abs_to_db(my_trust),
             'level' : 0
             })
 
