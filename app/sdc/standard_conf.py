@@ -172,7 +172,10 @@ federated_db_rpcs = """
               obstr:
                 required: true
 
-
+          - name: return_no_mod
+            pars:
+              uri_str:
+                required: true
 
 
 """
@@ -262,18 +265,30 @@ standard_cli_api = """
               uplevel:
                 par_type: int
                 required: true
+                validator: _v_ >= 0
               get_only_uri:
                 par_type: bool
                 required: false
                 default: false
 
-          - name: buy_object
+          - name: buy_object_idx
             pars:
               uplevel:
                 par_type: int
                 required: true
+                validator: _v_ > 0
               index_ad:
                 par_type: int
+                required: true
+                validator: _v_ >= 0
+
+          - name: buy_object_desc
+            pars:
+              uplevel:
+                par_type: int
+                required: true
+                validator: _v_ > 0
+              ad_desc:
                 required: true
 
 

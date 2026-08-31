@@ -136,8 +136,8 @@ class SimulFediverse:
             for k1, v1 in self._inst.items():
                 if k == k1:
                     continue
-                gCon.log(f"{k} accepts {k1} -> {v1.instance_conf['host']}")
-                dt.ws_authorize_remote_adelphos(v.sock, v1.instance_conf['host'])
+                dt.ws_authorize_remote_adelphos(v.sock,
+                                                v1.instance_conf['host'])
 
 
     def _do_setup_world(self, world_conf):
@@ -243,7 +243,6 @@ class SimulFediverse:
         if users is None:
             return
         for user in users:
-            gCon.log(f"Create user {user}")
             ah.ws_create_user(instance.sock, user)
 
 

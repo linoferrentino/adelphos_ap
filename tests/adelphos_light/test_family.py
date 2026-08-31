@@ -47,7 +47,13 @@ def test_simul_fediverse_basic(simulated_fediverse):
         _test_list_uplevel_one_ok,
         _test_put_object_after_associate,
         _test_list_uplevel_two_ok,
-        _test_buy_object_level_one))
+        _test_buy_object_level_one_same_family,
+        _test_buy_object_level_one_ok))
+
+    #    _test_buy_object_level_one_same_family))
+    # ,
+    #    _test_buy_object_level_one_ok,
+    #    ))
 
 
 def _test_put_object_ad(world):
@@ -112,9 +118,24 @@ def _test_list_uplevel_two_ok(world):
                        only_uri = False)
 
 
-def _test_buy_object_level_one(world):
+def _test_buy_object_level_one_ok(world):
+    gCon.rule("2nd buy, will do it")
     ad1 = world.get_instance('ad1')
     ad1.push_user('alice.fam_t1')
+    gCon.rule("2nd buy, first I try a not existent object")
+    agoh.ws_buy_object_desc(ad1.get_sock(), 1, 'A tale of two cities',
+                    ECoreErrno.ENO_SUCH_OBJECT)
+    gCon.rule("2nd buy, now I ask a real object")
+    agoh.ws_buy_object_desc(ad1.get_sock(), 1, 'Son and Lovers')
+    ad1.pop_user()
+
+
+def _test_buy_object_level_one_same_family(world):
+    gCon.rule("1st buy, same family")
+    ad1 = world.get_instance('ad1')
+    ad1.push_user('alice.fam_t1')
+    agoh.ws_buy_object_desc(ad1.get_sock(), 1, 'pokemon', code_exp = 
+                    ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY )
     ad1.pop_user()
 
 

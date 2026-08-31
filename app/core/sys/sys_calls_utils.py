@@ -18,6 +18,8 @@ from app.core.model.AdelphosUri import AdelphosUri
 from app.core.ECoreErrno import ECoreErrno
 from app.core.AdelphosCoreException import AdelphosCoreException
 
+from app.logging import gCon
+
 
 async def get_family_in_session(kernel, pars, t_id):
     family = pars['_session'].family
@@ -49,17 +51,44 @@ async def get_family_dest(kernel, pars, t_id):
     return family_ob
 
 
-async def get_family_uplevel(kernel, pars, t_id):
+async def get_family_chain_up(kernel, pars, t_id):
+    chain = list()
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     family_ob = await get_family_in_session(kernel, pars, t_id)
     uplevel = pars['uplevel']
+    chain.append(family_ob)
     for lev in range(0, uplevel):
         family_uri = family_ob().get_scalar('upper_family')
         if family_uri is None:
             raise AdelphosCoreException(ECoreErrno.EUPLEVEL_NOT_FOUND,
                                         f"lev {lev+1} not found")
         family_ob = await fdb.uri_read_str(t_id, family_uri, must_lock = True)
-    return family_ob
+        chain.append(family_ob)
+    return chain
+
+
+async def get_family_chain_up_from_to(kernel,
+                family_uri_src, family_to_ob, t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+
+    family_uri_dst = family_to_ob().uri.unparse()
+
+    chain = list()
+    while family_uri_src != family_uri_dst:
+
+        family_ob = await fdb.uri_read_str(t_id, family_uri_src,
+                                           must_lock = True)
+        chain.append(family_ob)
+        family_uri_src = family_ob().uri.unparse()
+        family_uri_src = family_ob().get_scalar('upper_family')
+
+    chain.append(family_to_ob)
+    return chain
+
+
+async def get_family_uplevel(kernel, pars, t_id):
+    chain = await get_family_chain_up(kernel, pars, t_id)
+    return chain[-1]
 
 
 async def get_alias_in_session(kernel, pars, t_id):

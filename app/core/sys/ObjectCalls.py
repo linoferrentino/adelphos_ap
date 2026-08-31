@@ -45,12 +45,6 @@ class ObjectCalls:
         gCon.log(f"Adding object in family's agora {family_ob().ob.fields}")
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
-        #price_array = []
-        #await ObjectCalls._check_equity(fdb,
-        #              family_ob, pars['price'], t_id, price_array)
-
-        #gCon.log(f"The price array is {price_array}")
-        #pars['price_array'] = price_array
         object_ob = ObjectCalls._create_object_from_pars(kernel, family_ob,
                     pars, t_id)
         gCon.log(f"Created the object {object_ob().ob.fields}")
@@ -86,11 +80,6 @@ class ObjectCalls:
         export_trust = family_ob().get_scalar('my_trust')
         tax = family_ob().get_scalar('import_export_tax')
 
-        #if upper_family is None:
-        #    return
-
-        #upper_family_ob = await fdb.uri_read_str(t_id, upper_family,
-        #                                   must_lock = True)
         new_price = tax * cur_price
         new_price_db = tutils.abs_to_db(new_price)
         if new_price_db > export_trust:

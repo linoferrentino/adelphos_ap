@@ -101,6 +101,12 @@ class FederatedTransaction:
             self._update_uri_str(k, v, True)
 
 
+    def _return_all_borrows(self):
+        for k,v in self.locked_uris.items():
+            if v.ob.state == EObState.BORROWED:
+                self.fdb.return_object(k)
+
+
     def _do_updates(self):
         for k,v in self.locked_uris.items():
             #gCon.log(f"{k} -> {v} check update")
@@ -115,7 +121,10 @@ class FederatedTransaction:
             if self.do_mod_db == False:
                 return
             if v.ob.state == EObState.BORROWED:
-                self.fdb.return_object(k, v)
+                if v.modified:
+                    self.fdb.return_object(k, v)
+                else:
+                    self.fdb.return_object(k)
             else:
                 assert ((v.ob.state == EObState.PRESENT) or
                         (v.ob.state == EObState.LENT) or
@@ -139,8 +148,9 @@ class FederatedTransaction:
 
         if fob.ob.state == EObState.BORROWED:
             if present_ob_str is not None:
+                gCon.log(f"I have found {present_ob_str} as string for a borrowed object")
                 raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_COMMIT,
-                                   f"object {key_str} borrowed, cannot exist")
+                  f"{self.fdb.hostname} object {key_str} borrowed, cannot exist")
 
         elif (fob.ob.state != EObState.LENT):
             if is_create:
@@ -175,6 +185,8 @@ class FederatedTransaction:
 
 
     def t_rollback(self):
+        gCon.rule(f"ROLLBACK! {self.tid}")
+        self._return_all_borrows()
         self._remove_all_maps()
 
 
@@ -332,7 +344,6 @@ class FedStore_ReadCtx:
     internal_read: bool = False
     tob : FederatedTransaction = None
     fob : FederatedObject = None
-    #uri_local: FederatedUri = None
 
  
 class FederatedStore(Dependency, LifespanAware):
@@ -473,7 +484,7 @@ class FederatedStore(Dependency, LifespanAware):
         return uri_ob
 
 
-    def return_object(self, key, ob):
+    def return_object(self, key, ob = None):
         self.background_tasks += 1
         self.fdbtg.create_task(FederatedStore.return_object_task(self, key, ob))
 
@@ -481,6 +492,9 @@ class FederatedStore(Dependency, LifespanAware):
     async def return_object_task(self, key, ob):
         try:
             await self.return_object_task_try(key, ob)
+            gCon.log(f"[red]Returned object ok, I delete the key {key}[/red]")
+            self.db.del_key(key)
+            self.db.commit()
         except Exception as ex:
             traceback.print_exc()
             gCon.log(f"Got exception {ex} in return object!")
@@ -491,11 +505,18 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     async def return_object_task_try(self, key, ob):
-        host = ob.uri.host
-        ob_str = ob.to_store_str()
         social_api = self.kernel.get_dep(Dependencies.SOCIAL_API)
-        res = await social_api.remote_req('fdb', 'return', host, uri_str
-                    = key, obstr = ob_str)
+        if ob is not None:
+            host = ob.uri.host
+            ob_str = ob.to_store_str()
+            res = await social_api.remote_req('fdb', 'return', host,
+                        uri_str = key, obstr = ob_str)
+        else:
+            uri_ob = self.parse_uri(key)
+            host = uri_ob.host
+            gCon.log(f"===================== returned no mod {key} which is {host} ========")
+            res = await social_api.remote_req('fdb', 'return_no_mod', host,
+                        uri_str = key)
 
 
     def new_ob_from_uri(self, t_id, registrar, uri, fields):
@@ -540,7 +561,7 @@ class FederatedStore(Dependency, LifespanAware):
         return remote_ob_str
 
 
-    async def return_object_received(self, t_id, uri_str, obstr):
+    async def return_object_received(self, t_id, uri_str, obstr = None):
         rctx = await self._uri_read_str_impl(t_id, uri_str, only_local = True,
                                      internal_read = True, must_lock = True)
         if rctx.fob.ob.state != EObState.LENT:
@@ -575,6 +596,8 @@ class FederatedStore(Dependency, LifespanAware):
 
         ob_type = rctx.uri_ob.ob_type
         registrar = self.fact.get_registrar(ob_type)
+        if rctx.uri_ob.host is None:
+            rctx.uri_ob.host = self.hostname
         rctx.fob = str_to_fob(rctx.uri_ob, registrar, t_ob_str,
                               rctx.must_lock)
 

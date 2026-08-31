@@ -328,11 +328,15 @@ class FederatedObject:
         pass
 
 
-    def returned_object(self, obstr):
-        gCon.log(f"[green]Object {self.uri.unparse()} returned[/green]")
-        ob = json.loads(obstr)
-        obs = FObSerialized(**ob)
-        self.ob = obs
+    def returned_object(self, obstr = None):
+        if obstr is not None:
+            gCon.log(f"[green]Object {self.uri.unparse()} returned[/green]")
+            ob = json.loads(obstr)
+            obs = FObSerialized(**ob)
+            self.ob = obs
+        else:
+            gCon.log(f"[green]Object {self.uri.unparse()} returned without modification[/green]")
+            self.ob.fields = self.ob.fields['backup']
         self.ob.state = EObState.PRESENT
         self.modified = True
 
@@ -610,6 +614,11 @@ class FederatedObject:
         if new_ob is None:
             new_link = None
         else:
+            if par.typecol == FObColType.URI:
+                if new_ob().uri.host is None:
+                    raise FdbException(
+                     EFdbErrors.EFDB_LOCAL_URI_UNEXPECTED_HERE,
+                     new_ob().uri.host)
             new_link = new_ob().uri.unparse(
                 par.typecol == FObColType.LOCAL_URI)
        
