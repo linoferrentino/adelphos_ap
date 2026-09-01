@@ -45,14 +45,18 @@ class ObjectCalls:
         gCon.log(f"Adding object in family's agora {family_ob().ob.fields}")
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
+        agora_ob = await fu.family_get_your_agora(kernel,
+                            family_ob, t_id)
+
+        object_id = agora_ob().get_scalar('next_object_id')
+        agora_ob().set_scalar('next_object_id', object_id + 1)
+
         object_ob = ObjectCalls._create_object_from_pars(kernel, family_ob,
-                    pars, t_id)
+                    object_id, pars, t_id)
         gCon.log(f"Created the object {object_ob().ob.fields}")
 
         object_ob().set_link('family_src', family_ob)
 
-        agora_ob = await fu.family_get_your_agora(kernel,
-                            family_ob, t_id)
         agora_ob().add_link('offers', object_ob)
 
         await ObjectCalls._export_object_in_upper_agorai(kernel,
@@ -69,8 +73,6 @@ class ObjectCalls:
     @staticmethod
     async def _export_object_in_upper_agorai(kernel, family_ob, cur_price,
                             object_ob, t_id):
-        #upper_family = family_ob().get_scalar('upper_family')
-
         upper_family_ob = await fu.family_get_upper_family(kernel,
                         family_ob, t_id, maybe = True)
 
@@ -85,8 +87,6 @@ class ObjectCalls:
         if new_price_db > export_trust:
             return
 
-        object_ob().add_scalar('prices', new_price)
-
         agora_upper = await fu.family_get_your_agora(kernel,
                             upper_family_ob, t_id)
         agora_upper().add_link('offers', object_ob)
@@ -96,44 +96,16 @@ class ObjectCalls:
 
 
     @staticmethod
-    async def _check_equity_OOO(fdb, family_ob, level_price, t_id, price_array):
-        price_array.append(level_price)
-        #fam_equity = family_ob().get_scalar('equity')
-
-        upper_family = family_ob().get_scalar('upper_family')
-        if upper_family is None:
-            return
-            #if level_price < (2 * fam_equity):
-            #    return
-
-            #raise AdelphosCoreException(ECoreErrno.EEQUITY_OVERFLOW, f"""
-#Price of object {level_price} is greater than
-#two times your family's equity {fam_equity}, and no upper level is possible.
-#Lower the price or increase your family's equity
-#(if you are the boss), or consider joining other families in a larger group.""")
-
-        family_ob = await fdb.uri_read_str(t_id, upper_family,
-                                           must_lock = True)
-        tax = family_ob().get_scalar('import_export_tax')
-        level_price *= tax
-        await _check_equity(fdb, family_ob, level_price, t_id, price_array)
-
-
-    @staticmethod
-    def _create_object_from_pars(kernel, family_ob, pars, t_id):
+    def _create_object_from_pars(kernel, family_ob, object_id, pars, t_id):
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-        ob_name = "".join(pars['description'].split())
-        ob_name = re.sub(r"\W", "_", ob_name)
-        ob_name += "_" + family_ob().uri.name
+        ob_name = f"{object_id}_" + family_ob().uri.name
         gCon.log(f"Create an object with name {ob_name}")
         ob_uri = AdelphosUri.create_uri(EAdelphosType.OBJECT_TYPE, ob_name)
 
-        price_array = list()
-        price_array.append(pars['price'])
-
         object_ob = fdb.new_ob_uri(t_id, ob_uri, fields = {
-            'prices' : price_array ,
-            'description' : pars['description']
+            'price' : pars['price'],
+            'title' : pars['title'],
+            'description' : pars['description'],
             })
 
         return object_ob

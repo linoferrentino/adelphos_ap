@@ -250,8 +250,10 @@ standard_cli_api = """
 
           - name: put_ad
             pars:
-              description:
+              title:
                 required: true
+              description:
+                required: false
               price:
                 par_type: float
                 required: true
@@ -282,14 +284,18 @@ standard_cli_api = """
                 required: true
                 validator: _v_ >= 0
 
-          - name: buy_object_desc
+          - name: buy_object_title
             pars:
               uplevel:
                 par_type: int
                 required: true
                 validator: _v_ > 0
-              ad_desc:
+              ad_title:
                 required: true
+              dry_run:
+                required: false
+                par_type: bool
+                default: true
 
 
       family:

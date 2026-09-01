@@ -16,6 +16,7 @@ from app.sdc.Dependencies import Dependencies
 import app.core.sys.sys_calls_utils as scu
 import app.core.sys.agora_utils as au
 import app.core.sys.object_utils as ou
+import app.core.sys.ecommerce_utils as ecut
 from app.core.model.AdelphosUri import EAdelphosType
 from app.core.model.AdelphosUri import AdelphosUri
 from app.logging import gCon
@@ -35,6 +36,11 @@ async def family_get_upper_family(kernel, family_ob, t_id, *,
                                   maybe = False):
     return await ou.object_get_field_uri_locked(kernel, family_ob,
                      'upper_family', t_id, maybe = maybe)
+
+
+async def family_get_chain_alias_family_to(kernel,
+            alias_ob, family_ob, t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
 
 async def family_associate_with_family(kernel, pars, t_id):
@@ -70,13 +76,15 @@ async def family_associate_with_family(kernel, pars, t_id):
     agora_src = await family_get_your_agora(kernel, family_src_ob, t_id)
     agora_dst = await family_get_your_agora(kernel, family_dst_ob, t_id)
 
-    tax_src = family_src_ob().get_scalar('import_export_tax')
+    tax_src = await ecut.get_total_tax_chain_str(kernel,
+                pars['family_src_chain'], t_id)
     export_trust = family_src_ob().get_scalar('my_trust')
 
     await au.copy_ads_from_lower_agora(kernel, agora_src, export_trust,
                                        tax_src, agora_ob, t_id)
 
-    tax_dst = family_dst_ob().get_scalar('import_export_tax')
+    tax_dst = await ecut.get_total_tax_chain_str(kernel,
+                pars['family_dst_chain'], t_id)
     export_trust = family_dst_ob().get_scalar('my_trust')
     await au.copy_ads_from_lower_agora(kernel, agora_dst, export_trust,
                                        tax_dst, agora_ob, t_id)

@@ -15,6 +15,15 @@ from app.logging import gCon
 from app.sdc.Dependencies import Dependencies
 
 import app.misc.trust_utils as tutils 
+import app.core.sys.family_utils as fu
+
+
+async def remove_object_from_export_chain(kernel, chain_exports, offer_ob,
+                                          t_id):
+    for family in chain_exports:
+        agora_family = await fu.family_get_your_agora(kernel, family,
+                                                      t_id)
+        agora_family().remove_link('offers', offer_ob)
 
 
 async def copy_ads_from_lower_agora(kernel, agora_lower, export_trust,
@@ -24,15 +33,14 @@ async def copy_ads_from_lower_agora(kernel, agora_lower, export_trust,
 
     for uri_lower in list_lower:
         ob_list = await fdb.uri_read_str(t_id, uri_lower, must_lock = True)
-        lower_price = ob_list().get_as_list('prices')[-1]
+        lower_price = ob_list().get_scalar('price')
         upper_price = tax * lower_price
 
         upper_price_db = tutils.abs_to_db(upper_price)
         if upper_price_db > export_trust:
-            gCon.log(f"the object {ob_list().get_scalar('description')} has a price {upper_price_db} > of export trust {export_trust}, ignored.")
+            gCon.log(f"the object {ob_list().get_scalar('title')} has a price {upper_price_db} > of export trust {export_trust}, ignored.")
             continue
 
-        ob_list().add_scalar('prices', upper_price)
         gCon.log(f"Adding lower uri {uri_lower} --> {ob_list().uri}")
         agora_upper().add_link('offers', ob_list)
 

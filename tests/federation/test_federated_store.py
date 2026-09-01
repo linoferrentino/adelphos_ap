@@ -311,6 +311,63 @@ async def a_test_create_alias(fdb1_loc):
     assert fob().get_scalar('equity') == 99.2
 
 
+def test_uri_remove(fdb1_loc):
+    run_coro_in_loop(a_test_uri_remove, (fdb1_loc,))
+
+
+async def a_test_uri_remove(fdb1_loc):
+    t1uri = FederatedUriTest('t_uri_set', 'tj1')
+    t_id = fdb1_loc.begin_transaction()
+    fob = fdb1_loc.new_ob_uri(t_id, t1uri)
+    tmember_uri = FederatedUriTest('t_member', 'member_lino', host = LOCALHOST)
+    tbob_uri = FederatedUriTest('t_member', 'member_bob', host = LOCALHOST)
+    fob_dep = fdb1_loc.new_ob_uri(t_id, tmember_uri, fields = {
+        'name' : 'lino'
+        })
+    fob().add_link('followers', fob_dep)
+    fob().add_link('members', fob_dep)
+
+    fdb1_loc.commit_transaction(t_id)
+
+    t_id = fdb1_loc.begin_transaction()
+    fob = await fdb1_loc.uri_read_ob(t_id, t1uri,
+                                    must_lock = True)
+    assert fob() is not None
+
+    mem_list = fob().get_as_list('followers')
+    assert len(mem_list) == 1
+    assert mem_list[0] == tmember_uri.unparse(force_local = True)
+
+    fob_dep = await fdb1_loc.uri_read_ob(t_id, tmember_uri,
+                                              must_lock = True)
+    fob().remove_link('followers', fob_dep)
+    fob_dep_bob = fdb1_loc.new_ob_uri(t_id, tbob_uri, fields = {
+        'name' : 'bob'
+        })
+
+    with pytest.raises(FdbException) as fex:
+        fob().remove_link('followers', fob_dep_bob)
+    assert fex.value.errno == EFdbErrors.EFDB_NO_SUCH_OB
+
+    fdb1_loc.commit_transaction(t_id)
+
+    t_id = fdb1_loc.begin_transaction()
+    fob = await fdb1_loc.uri_read_ob(t_id, t1uri,
+                                    must_lock = True)
+    assert fob() is not None
+
+    mem_list = fob().get_as_list('followers')
+    assert len(mem_list) == 0
+
+    with pytest.raises(FdbException) as fex:
+        fob = await fdb1_loc.uri_read_ob(t_id, tbob_uri,
+                                    must_lock = True)
+    assert fex.value.errno == EFdbErrors.EFDB_NO_SUCH_OB
+    fob_dep = await fdb1_loc.uri_read_ob(t_id, tmember_uri,
+                                              must_lock = True)
+    assert fob_dep() is not None
+
+
 def test_uri_set(fdb1_loc):
     run_coro_in_loop(a_test_uri_set, (fdb1_loc,))
 

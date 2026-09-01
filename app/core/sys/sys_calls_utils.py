@@ -20,6 +20,10 @@ from app.core.AdelphosCoreException import AdelphosCoreException
 
 from app.logging import gCon
 
+async def get_family_str_in_session(kernel, pars, t_id):
+    family_uri = pars['_session'].family_uri
+    return family_uri.unparse()
+
 
 async def get_family_in_session(kernel, pars, t_id):
     family = pars['_session'].family
@@ -27,7 +31,6 @@ async def get_family_in_session(kernel, pars, t_id):
     family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
     family_ob = await fdb.uri_read_ob(t_id, family_uri, must_lock = True,
                                       only_local = True)
-
     return family_ob
 
 
@@ -67,6 +70,16 @@ async def get_family_chain_up(kernel, pars, t_id):
     return chain
 
 
+async def get_family_chain_up_from_to_str(kernel,
+                family_uri_src, family_to_ob, t_id):
+    chain_obs = await get_family_chain_up_from_to(kernel,
+                family_uri_src, family_to_ob, t_id)
+    chain_str = list()
+    for chain_ob in chain_obs:
+        chain_str.append(chain_ob().uri.unparse())
+    return chain_str
+ 
+
 async def get_family_chain_up_from_to(kernel,
                 family_uri_src, family_to_ob, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
@@ -75,12 +88,16 @@ async def get_family_chain_up_from_to(kernel,
 
     chain = list()
     while family_uri_src != family_uri_dst:
+        gCon.log(f"Doing iteration! {family_uri_src} != {family_uri_dst}")
 
         family_ob = await fdb.uri_read_str(t_id, family_uri_src,
                                            must_lock = True)
         chain.append(family_ob)
         family_uri_src = family_ob().uri.unparse()
         family_uri_src = family_ob().get_scalar('upper_family')
+        if family_uri_src is None:
+            raise AdelphosCoreException(ECoreErrno.EINVALID_CHAIN,
+              f"Invalid chain requested: {family_uri_dst} unreacheable")
 
     chain.append(family_to_ob)
     return chain

@@ -532,7 +532,33 @@ class FederatedObject:
         self.ob.fields[key] = copy.deepcopy(new_list)
         self.modified = True
 
+    @ensure_lock
+    @enforce_schema_not_scalar_scalar
+    @enforce_uri_type
+    def remove_link(self, key, ob):
+        schema = self.registrar.pars
+        par = schema.get(key)
+        cur_value = self.ob.fields[key]
 
+        uri_str = ob().uri.unparse(par.typecol == FObColType.LOCAL_URI)
+
+        if par.cardinality == FObCardType.SET:
+            if cur_value is None:
+                raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB,
+                    f"Object {uri_str} not found")
+            else:
+                cur_set = set(cur_value)
+                if uri_str not in cur_set:
+                    raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB,
+                        f"Object {uri_str} not found")
+                cur_set.remove(uri_str)
+                ob()._dec_ref_ob()
+            self.ob.fields[key] = list(cur_set)
+            self.modified = True
+        else:
+            raise Exception("TO DO")
+
+ 
     @ensure_lock
     @enforce_schema_not_scalar_scalar
     @enforce_uri_type
@@ -557,11 +583,8 @@ class FederatedObject:
             self.ob.fields[key] = list(cur_set)
             self.modified = True
 
-        elif par.cardinality == FObCardType.ARRAY:
-            raise Exception("TO DO")
-
         else:
-            raise Exception("TO DO 1")
+            raise Exception("TO DO")
 
 
     def downvote_uri(self, uri_to_downvote, tx_ob):

@@ -15,10 +15,15 @@ from app.core.ECoreErrno import ECoreErrno
 import tests.t_utils as tu
 
 
-def ws_create_object_ad(ws, description, price,
+def ws_create_object_ad(ws, title, price, *,
+    description = None,
     exp_errno_code = ECoreErrno.DONE_OK):
 
-    ws.send_text(f"object.put_ad description '{description}' price {price}")
+    cmd = f"object.put_ad title '{title}' price {price}"
+    if description is not None:
+        cmd += f" description '{description}'"
+
+    ws.send_text(cmd)
     data = tu.ws_assert_code(ws, exp_errno_code)
     return data
 

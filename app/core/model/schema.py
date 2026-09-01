@@ -23,8 +23,6 @@ uri_constructor: app.core.model.AdelphosUri.AdelphosUri
 
 types:
 
-
-
 classes:
 
     - uri_prefix: {EAdelphosType.ALIAS_TYPE}
@@ -114,11 +112,6 @@ classes:
           cardinality: scalar
           required: false
 
-        - name: inbox
-          type: uri
-          cardinality: set
-          required: false
-
 
     - uri_prefix: {EAdelphosType.AGORA_TYPE}
       can_be_root: false
@@ -151,6 +144,12 @@ classes:
           cardinality: set
           required: false
 
+        - name: next_object_id
+          type: int
+          required: false
+          cardinality: scalar
+          default: 1
+
 
     - uri_prefix: {EAdelphosType.OBJECT_TYPE}
       can_be_root: false
@@ -167,24 +166,28 @@ classes:
           cardinality: scalar
           required: false
 
-        - name: description
+        - name: title
           type: str
           cardinality: scalar
           required: true
 
-        - name: prices
+        - name: description
+          type: str
+          cardinality: scalar
+          required: false
+
+        - name: price
           type: real
-          cardinality: array
+          cardinality: scalar
           required: true
-          minimum_cardinality: 1
 
         - name: routing_exports
-          type: str
+          type: json
           cardinality: array
           required: false
 
         - name: routing_imports
-          type: str
+          type: json
           cardinality: array
           required: false
 

@@ -243,6 +243,10 @@ classes:
           cardinality: set
           required: true
           minimum_cardinality: 1
+        - name: followers
+          type: local_uri 
+          cardinality: set
+          required: false
 
 
     - uri_prefix: t_member

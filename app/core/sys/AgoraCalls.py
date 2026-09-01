@@ -23,6 +23,9 @@ from app.core.AdelphosCoreException import AdelphosCoreException
 import app.core.sys.sys_calls_utils as scu
 import app.core.sys.family_utils as fu
 import app.misc.trust_utils as tutils
+import app.core.sys.ecommerce_utils as ecut
+import app.core.sys.task_utils as tku
+import app.core.sys.agora_utils as au
 
 
 class AgoraCalls:
@@ -43,7 +46,7 @@ class AgoraCalls:
 
     @staticmethod
     @active_login
-    async def _sys_call_buy_object_desc(kernel, session, pars):
+    async def _sys_call_buy_object_title(kernel, session, pars):
         pars['_session'] = session
         return await AgoraCalls._agora_buy_object_safe(kernel, pars)
 
@@ -65,8 +68,8 @@ class AgoraCalls:
         if pars.get('index_ad') is not None:
             return await AgoraCalls._get_offer_from_pars_idx(fdb,
                     offers, pars['index_ad'], t_id)
-        return await AgoraCalls._get_offer_from_pars_desc(fdb,
-                offers, pars['ad_desc'], t_id)
+        return await AgoraCalls._get_offer_from_pars_title(fdb,
+                offers, pars['ad_title'], t_id)
 
 
     @staticmethod
@@ -80,17 +83,17 @@ class AgoraCalls:
 
 
     @staticmethod
-    async def _get_offer_from_pars_desc(fdb, offers, par_desc, t_id):
+    async def _get_offer_from_pars_title(fdb, offers, par_title, t_id):
         for offer in offers:
             offer_ob = await fdb.uri_read_str(t_id, offer,
                                               must_lock = True)
-            desc = offer_ob().get_scalar('description')
-            gCon.log(f"object has description {desc}")
-            if re.search(par_desc, desc) is not None:
+            title = offer_ob().get_scalar('title')
+            gCon.log(f"object has title {title}")
+            if re.search(par_title, title) is not None:
                 gCon.log(f"found!")
                 return offer_ob
         raise AdelphosCoreException(ECoreErrno.ENO_SUCH_OBJECT,
-                    f"no object with description {par_desc} found")
+                    f"no object with title {par_title} found")
 
 
     @staticmethod
@@ -116,25 +119,35 @@ class AgoraCalls:
 
         chain_exports = await scu.get_family_chain_up_from_to(kernel,
                     offer_ob().get_scalar('family_src'), family_lev_ob, t_id)
+        if len(chain_exports) != len(chain_imports):
+            raise Exception("This version of adelphos handles symmetric chains: internal error")
 
-        #gCon.log(f"The export chain is {chain_exports}")
+        global_export_tax = ecut.get_total_tax_up(chain_exports)
+        gCon.log(f"The export tax total is {global_export_tax}")
 
-        import_family = chain_imports[-2]
-        gCon.log(f"This is the last family that wants to import {import_family().ob.fields}")
-        balance = import_family().get_scalar('balance')
-        price_in_agora = offer_ob().get_as_list('prices')[pars['uplevel']]
-        gCon.log(f"The balance is {balance} price in agora is {price_in_agora}")
-        balance -= price_in_agora
+        price = offer_ob().get_scalar('price')
+        agora_exported_price = price * global_export_tax
+        gCon.log(f"The object price is {price} in agora is {agora_exported_price}")
 
-        if balance >= 0:
-            return
+        ecut.distribuite_losses_to_imports(kernel, agora_exported_price,
+                                           chain_imports, t_id)
 
-        balance_abs = abs(balance)
-        balance_db = tutils.abs_to_db(balance_abs)
+        ecut.distribuite_gains_to_exports(kernel, agora_exported_price,
+                                          chain_exports, t_id)
 
-        gCon.log(f"The new balance will be {balance} which is {balance_db}db")
+        family_originator = chain_exports[0]
+        agora_origin = await fu.family_get_your_agora(kernel, family_originator,
+                                                      t_id)
+        agora_origin().add_link('export_box', offer_ob)
 
-        #if balance_db < import_family()
+        family_originator_boss = await fu.family_get_your_boss(kernel,
+                    family_originator, t_id)
+
+        await tku.add_task_to_alias(kernel, family_originator_boss,
+                        'export_item', pars, t_id)
+
+        await au.remove_object_from_export_chain(kernel, chain_exports,
+                    offer_ob, t_id)
 
 
     @staticmethod

@@ -59,7 +59,7 @@ def test_simul_fediverse_basic(simulated_fediverse):
 def _test_put_object_ad(world):
     ad1 = world.get_instance('ad1')
     ad1.push_user('bob.fam_t1')
-    oh.ws_create_object_ad(ad1.get_sock(), 'a used pair of man shoes, size 10',
+    oh.ws_create_object_ad(ad1.get_sock(), 'man sneakers, size 10',
                     12.0 )
     data = oh.ws_create_object_ad(ad1.get_sock(), "a pokemon card", 2)
     gCon.log(f"data is {data}")
@@ -70,7 +70,8 @@ def _test_put_object_after_associate(world):
     ad2 = world.get_instance('ad2')
     ad2.push_user('katy_al.fam_t2')
     data = oh.ws_create_object_ad(ad2.get_sock(),
-                "Lawrence, Son and Lovers, used", 3.10)
+                "Lawrence, Son and Lovers", 3.10,
+        description = "edition 1995, some marks, but in good condition")
     ad2.pop_user()
 
 
@@ -123,10 +124,10 @@ def _test_buy_object_level_one_ok(world):
     ad1 = world.get_instance('ad1')
     ad1.push_user('alice.fam_t1')
     gCon.rule("2nd buy, first I try a not existent object")
-    agoh.ws_buy_object_desc(ad1.get_sock(), 1, 'A tale of two cities',
-                    ECoreErrno.ENO_SUCH_OBJECT)
+    agoh.ws_buy_object_title(ad1.get_sock(), 1, 'A tale of two cities',
+                    code_exp = ECoreErrno.ENO_SUCH_OBJECT)
     gCon.rule("2nd buy, now I ask a real object")
-    agoh.ws_buy_object_desc(ad1.get_sock(), 1, 'Son and Lovers')
+    agoh.ws_buy_object_title(ad1.get_sock(), 1, 'Son and Lovers')
     ad1.pop_user()
 
 
@@ -134,7 +135,7 @@ def _test_buy_object_level_one_same_family(world):
     gCon.rule("1st buy, same family")
     ad1 = world.get_instance('ad1')
     ad1.push_user('alice.fam_t1')
-    agoh.ws_buy_object_desc(ad1.get_sock(), 1, 'pokemon', code_exp = 
+    agoh.ws_buy_object_title(ad1.get_sock(), 1, 'pokemon', code_exp = 
                     ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY )
     ad1.pop_user()
 

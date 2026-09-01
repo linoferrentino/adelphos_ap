@@ -21,13 +21,6 @@ class FederatedRPCs:
     @staticmethod
     async def _sys_call_return(kernel, actor_from, pars):
         await FederatedRPCs._sys_call_return_impl(kernel, actor_from, pars)
-        #uri_str = pars['uri_str']
-        #obstr = pars['obstr']
-        #fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-
-        #t_id = fdb.begin_transaction()
-        #await fdb.return_object_received(t_id, uri_str, obstr)
-        #fdb.commit_transaction(t_id)
 
 
     @staticmethod
@@ -35,6 +28,7 @@ class FederatedRPCs:
         await FederatedRPCs._sys_call_return_impl(kernel, actor_from, pars)
 
 
+    @staticmethod
     async def _sys_call_return_impl(kernel, actor_from, pars):
         uri_str = pars['uri_str']
         obstr = pars.get('obstr')

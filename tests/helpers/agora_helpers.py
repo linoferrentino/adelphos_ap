@@ -23,12 +23,14 @@ def ws_list_ads(ws, uplevel, *, code_exp = ECoreErrno.DONE_OK,
     return tu.ws_send_cmd(ws, cmd, code_exp)
 
 
-def ws_buy_object_idx(ws, uplevel, index_ad, code_exp = ECoreErrno.DONE_OK):
+def ws_buy_object_idx(ws, uplevel, index_ad, *,
+                      code_exp = ECoreErrno.DONE_OK):
     cmd = f"agora.buy_object_idx uplevel {uplevel} index_ad {index_ad}"
     return tu.ws_send_cmd(ws, cmd, code_exp)
 
 
-def ws_buy_object_desc(ws, uplevel, ad_desc, code_exp = ECoreErrno.DONE_OK):
-    cmd = f"agora.buy_object_desc uplevel {uplevel} ad_desc '{ad_desc}'"
+def ws_buy_object_title(ws, uplevel, ad_title, *,
+                        code_exp = ECoreErrno.DONE_OK):
+    cmd = f"agora.buy_object_title uplevel {uplevel} ad_title '{ad_title}'"
     return tu.ws_send_cmd(ws, cmd, code_exp)
 
