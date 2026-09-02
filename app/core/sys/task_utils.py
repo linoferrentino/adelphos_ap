@@ -32,8 +32,11 @@ def get_task_with_id(alias_ob, task_id):
 
 
 async def add_task_to_alias(kernel, alias_ob, task, pars, t_id):
-    clean_pars = { k: v for k, v 
-            in pars.items() if re.search(r'^_', k) is None }
+    if isinstance(pars, dict):
+        clean_pars = { k: v for k, v 
+                in pars.items() if re.search(r'^_', k) is None }
+    else:
+        clean_pars = str(pars)
 
     id_task = uuid.uuid4()
 

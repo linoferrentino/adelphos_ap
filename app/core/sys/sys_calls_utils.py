@@ -74,11 +74,15 @@ async def get_family_chain_up_from_to_str(kernel,
                 family_uri_src, family_to_ob, t_id):
     chain_obs = await get_family_chain_up_from_to(kernel,
                 family_uri_src, family_to_ob, t_id)
+    return transform_chain_ob_to_str(chain_obs)
+
+
+def transform_chain_ob_to_str(chain_obs):
     chain_str = list()
     for chain_ob in chain_obs:
         chain_str.append(chain_ob().uri.unparse())
     return chain_str
- 
+
 
 async def get_family_chain_up_from_to(kernel,
                 family_uri_src, family_to_ob, t_id):

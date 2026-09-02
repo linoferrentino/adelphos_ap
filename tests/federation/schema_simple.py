@@ -235,6 +235,15 @@ classes:
           default: banana
 
 
+    - uri_prefix: t_uri_empty_set
+      can_be_root: true
+      columns:
+        - name: followers
+          type: local_uri 
+          cardinality: set
+          required: false
+
+
     - uri_prefix: t_uri_set
       can_be_root: true
       columns:

@@ -124,7 +124,8 @@ class SysCallGateway(Dependency, SyncLifespanAware):
                     case 'str':
                         val_final = val_str
                     case 'bool':
-                        val_final = False if val_str == 'False' else True
+                        val_final = False if (re.match('[Ff]alse',
+                                val_str) is not None) else True
                     case 'float':
                         val_final = float(val_str)
                     case 'int':

@@ -144,6 +144,11 @@ classes:
           cardinality: set
           required: false
 
+        - name: routing_table
+          type: json 
+          cardinality: array
+          required: false
+
         - name: next_object_id
           type: int
           required: false
@@ -156,12 +161,12 @@ classes:
 
       columns:
 
-        - name: family_src 
+        - name: adelphos_from
           type: uri
           cardinality: scalar
           required: true
 
-        - name: recipient
+        - name: adelphos_to
           type: uri
           cardinality: scalar
           required: false

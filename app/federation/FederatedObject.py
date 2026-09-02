@@ -295,8 +295,7 @@ class FederatedObject:
             raise FdbException(EFdbErrors.EFDB_NO_LOCK_ON_OB)
  
 
-    @staticmethod
-    def enforce_def(col_name, col_val, col_def, before_commit = False):
+    def enforce_def(self, col_name, col_val, col_def, before_commit = False):
         if col_def.cardinality == FObCardType.SCALAR:
             FederatedObject.enforce_scalar(col_name, col_val, col_def, before_commit)
         else:
@@ -308,6 +307,7 @@ class FederatedObject:
                     raise FdbException(EFdbErrors.EFDB_REQUIRED_FIELD_MISSING,
                                     col_name)
                 else:
+                    self.ob.fields[col_name] = list() 
                     return
                
             if isinstance(col_val, list) == False:
@@ -415,7 +415,7 @@ class FederatedObject:
         schema = self.registrar.pars
         for col_name, col_def in schema.items():
             col_field = self.ob.fields.get(col_name)
-            FederatedObject.enforce_def(col_name, col_field, col_def, True)
+            self.enforce_def(col_name, col_field, col_def, True)
 
 
     def _enforce_schema_init(self, fields):
@@ -437,7 +437,7 @@ class FederatedObject:
                                        col_name) 
                 else:
                     FederatedObject._enforce_not_uri(col_name, col_def.typecol)
-                    FederatedObject.enforce_def(col_name, col_field, col_def)
+                    self.enforce_def(col_name, col_field, col_def)
                 col_val = col_field
 
             else:
@@ -453,6 +453,11 @@ class FederatedObject:
     def to_store_str(self):
         store_str = json.dumps(asdict(self.ob))
         return store_str
+
+
+    def fields_to_str(self):
+        fields_str = json.dumps(self.ob.fields)
+        return fields_str
 
 
     @enforce_schema_scalar_read
@@ -531,6 +536,7 @@ class FederatedObject:
     def set_list(self, key, new_list):
         self.ob.fields[key] = copy.deepcopy(new_list)
         self.modified = True
+
 
     @ensure_lock
     @enforce_schema_not_scalar_scalar

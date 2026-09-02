@@ -55,7 +55,9 @@ class ObjectCalls:
                     object_id, pars, t_id)
         gCon.log(f"Created the object {object_ob().ob.fields}")
 
-        object_ob().set_link('family_src', family_ob)
+        alias_ob = await scu.get_alias_in_session(kernel, pars, t_id)
+
+        object_ob().set_link('adelphos_from', alias_ob)
 
         agora_ob().add_link('offers', object_ob)
 

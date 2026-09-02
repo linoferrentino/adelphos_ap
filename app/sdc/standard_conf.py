@@ -283,6 +283,10 @@ standard_cli_api = """
                 par_type: int
                 required: true
                 validator: _v_ >= 0
+              dry_run:
+                required: false
+                par_type: bool
+                default: true
 
           - name: buy_object_title
             pars:

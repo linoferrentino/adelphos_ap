@@ -26,6 +26,9 @@ import app.misc.trust_utils as tutils
 import app.core.sys.ecommerce_utils as ecut
 import app.core.sys.task_utils as tku
 import app.core.sys.agora_utils as au
+import app.core.sys.alias_utils as alu
+import app.core.sys.offer_utils as offu
+import app.core.sys.routing_utils as ru
 
 
 class AgoraCalls:
@@ -47,6 +50,7 @@ class AgoraCalls:
     @staticmethod
     @active_login
     async def _sys_call_buy_object_title(kernel, session, pars):
+        gCon.log(f"Object buy with pars {pars}")
         pars['_session'] = session
         return await AgoraCalls._agora_buy_object_safe(kernel, pars)
 
@@ -112,13 +116,19 @@ class AgoraCalls:
 
         offer_ob = await AgoraCalls._get_offer_from_pars(fdb, offers,
                                 pars, t_id)
+        offer_uri = offer_ob().uri.unparse()
 
-        if offer_ob().get_scalar('family_src') == chain_imports[0]().uri.unparse():
+        alias_uri_str = offer_ob().get_scalar('adelphos_from')
+        family_from_ob = await alu.alias_get_your_family(
+                kernel, alias_uri_str, t_id)
+        family_from_src = family_from_ob().uri.unparse()
+
+        if family_from_src == chain_imports[0]().uri.unparse():
             raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
                        f"The object {offer_ob().get_scalar('description')} is originated by your family.")
 
         chain_exports = await scu.get_family_chain_up_from_to(kernel,
-                    offer_ob().get_scalar('family_src'), family_lev_ob, t_id)
+                    family_from_src, family_lev_ob, t_id)
         if len(chain_exports) != len(chain_imports):
             raise Exception("This version of adelphos handles symmetric chains: internal error")
 
@@ -127,7 +137,7 @@ class AgoraCalls:
 
         price = offer_ob().get_scalar('price')
         agora_exported_price = price * global_export_tax
-        gCon.log(f"The object price is {price} in agora is {agora_exported_price}")
+        gCon.log(f"The price is {price} in agora is {agora_exported_price}")
 
         ecut.distribuite_losses_to_imports(kernel, agora_exported_price,
                                            chain_imports, t_id)
@@ -140,14 +150,66 @@ class AgoraCalls:
                                                       t_id)
         agora_origin().add_link('export_box', offer_ob)
 
-        family_originator_boss = await fu.family_get_your_boss(kernel,
-                    family_originator, t_id)
+        adelphos_from = await offu.offer_get_adelphos_from(kernel,
+                                offer_ob, t_id)
 
-        await tku.add_task_to_alias(kernel, family_originator_boss,
-                        'export_item', pars, t_id)
+        adelphos_to_uri = pars['_session'].alias_uri
+        adelphos_to = await alu.alias_get_from_uri(kernel, adelphos_to_uri,
+                                                   t_id)
+        offer_ob().set_link('adelphos_to', adelphos_to)
+
+        chain_exports_str = scu.transform_chain_ob_to_str(chain_exports)
+        chain_imports_str = scu.transform_chain_ob_to_str(
+                reversed(chain_imports))
+
+        gCon.log(f"chain_exports {chain_exports_str}")
+        gCon.log(f"chain_imports {chain_imports_str}")
+
+        assert chain_imports_str[0] == chain_exports_str[-1]
+        chain_imports_str.pop(0)
+        chain_exports_str.pop(0)
+
+        export_steps = AgoraCalls._transform_imp_exp_chain_into_tracking_steps(
+                chain_exports_str)
+
+        import_steps = AgoraCalls._transform_imp_exp_chain_into_tracking_steps(
+                chain_imports_str)
+
+        offer_ob().set_list('routing_exports', export_steps)
+        offer_ob().set_list('routing_imports', import_steps)
+
+        chain_imports.pop()
+        initial_pin = await ru.distribute_routing_PINs(kernel, offer_uri,
+                       chain_exports, reversed(chain_imports), t_id)
+
+        next_step_boss = await fu.family_get_your_boss(kernel,
+                        chain_exports[1], t_id)
+
+        task_par = {
+                'pin_to_give' : initial_pin,
+                'offer_uri' : offer_uri,
+                'export_to' : chain_exports_str[0],
+                'export_referent' : next_step_boss().uri.unparse(),
+                'offer_title' : offer_ob().get_scalar('title'),
+                'offer_desc' : offer_ob().get_scalar('description'),
+        }
+
+        await tku.add_task_to_alias(kernel, adelphos_from,
+                        'export_item', task_par, t_id)
 
         await au.remove_object_from_export_chain(kernel, chain_exports,
                     offer_ob, t_id)
+
+
+    def _transform_imp_exp_chain_into_tracking_steps(chain):
+        tasks = list()
+        for chain_item in chain:
+            tracking_step = {
+                    'family_to' : chain_item,
+                    'completed' : None
+                    }
+            tasks.append(tracking_step)
+        return tasks
 
 
     @staticmethod

@@ -48,12 +48,10 @@ def test_simul_fediverse_basic(simulated_fediverse):
         _test_put_object_after_associate,
         _test_list_uplevel_two_ok,
         _test_buy_object_level_one_same_family,
-        _test_buy_object_level_one_ok))
+        _test_buy_object_level_one_ok,
+        _test_first_task_done_ok,
+        ))
 
-    #    _test_buy_object_level_one_same_family))
-    # ,
-    #    _test_buy_object_level_one_ok,
-    #    ))
 
 
 def _test_put_object_ad(world):
@@ -118,6 +116,21 @@ def _test_list_uplevel_two_ok(world):
     _test_len_get_list(world, 'ad1', 'alice.fam_t1', 2, uplevel = 1,
                        only_uri = False)
 
+
+def _test_first_task_done_ok(world):
+    ad2 = world.get_instance('ad2')
+    data = ad2.push_user('john_al.fam_t2')
+    tasks = data['res']['tasks']
+    assert len(tasks) == 0
+    ad2.pop_user()
+
+    data = ad2.push_user('katy_al.fam_t2')
+    gCon.log(f"data of katy is {data}")
+    tasks = data['res']['tasks']
+    assert len(tasks) == 1
+    gCon.log(f"task of katy is {tasks[0]}")
+    ad2.pop_user()
+ 
 
 def _test_buy_object_level_one_ok(world):
     gCon.rule("2nd buy, will do it")

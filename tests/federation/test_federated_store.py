@@ -311,6 +311,24 @@ async def a_test_create_alias(fdb1_loc):
     assert fob().get_scalar('equity') == 99.2
 
 
+def test_uri_empty_set(fdb1_loc):
+    run_coro_in_loop(a_test_uri_empty_set, (fdb1_loc,))
+
+
+async def a_test_uri_empty_set(fdb1_loc):
+    t1uri = FederatedUriTest('t_uri_empty_set', 'tj1')
+    t_id = fdb1_loc.begin_transaction()
+    fob = fdb1_loc.new_ob_uri(t_id, t1uri)
+    fdb1_loc.commit_transaction(t_id)
+    t_id = fdb1_loc.begin_transaction()
+    fob = await fdb1_loc.uri_read_ob(t_id, t1uri,
+                                    must_lock = True)
+    assert fob() is not None
+    followers = fob().get_as_list('followers')
+    assert followers is not None
+    assert len(followers) == 0
+   
+
 def test_uri_remove(fdb1_loc):
     run_coro_in_loop(a_test_uri_remove, (fdb1_loc,))
 
