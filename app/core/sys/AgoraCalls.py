@@ -49,10 +49,23 @@ class AgoraCalls:
 
     @staticmethod
     @active_login
+    async def _sys_call_received_pin(kernel, session, pars):
+        pars['_session'] = session
+        return await AgoraCalls._agora_received_pin_safe(kernel, pars)
+
+
+    @staticmethod
+    @active_login
     async def _sys_call_buy_object_title(kernel, session, pars):
         gCon.log(f"Object buy with pars {pars}")
         pars['_session'] = session
         return await AgoraCalls._agora_buy_object_safe(kernel, pars)
+
+
+    @staticmethod
+    @federated_transaction(raise_if_fail = True)
+    async def _agora_received_pin_safe(kernel, pars, t_id):
+        return await AgoraCalls._agora_received_pin_impl(kernel, pars, t_id)
 
 
     @staticmethod
@@ -98,6 +111,11 @@ class AgoraCalls:
                 return offer_ob
         raise AdelphosCoreException(ECoreErrno.ENO_SUCH_OBJECT,
                     f"no object with title {par_title} found")
+
+
+    @staticmethod
+    async def _agora_received_pin_impl(kernel, pars, t_id):
+        gCon.log(f"received pin {pars['pin']}")
 
 
     @staticmethod

@@ -288,6 +288,13 @@ standard_cli_api = """
                 par_type: bool
                 default: true
 
+          - name: received_pin
+            pars:
+              pin:
+                par_type: int
+                required: true
+                validator: _v_ > 0
+
           - name: buy_object_title
             pars:
               uplevel:

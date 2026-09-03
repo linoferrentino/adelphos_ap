@@ -34,3 +34,7 @@ def ws_buy_object_title(ws, uplevel, ad_title, *,
     cmd = f"agora.buy_object_title uplevel {uplevel} ad_title '{ad_title}' dry_run false"
     return tu.ws_send_cmd(ws, cmd, code_exp)
 
+
+def ws_pin_received(ws, pin, *, code_exp = ECoreErrno.DONE_OK):
+    cmd = f"agora.received_pin pin {pin}"
+    return tu.ws_send_cmd(ws, cmd, code_exp)

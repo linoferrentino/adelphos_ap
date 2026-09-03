@@ -129,6 +129,13 @@ def _test_first_task_done_ok(world):
     tasks = data['res']['tasks']
     assert len(tasks) == 1
     gCon.log(f"task of katy is {tasks[0]}")
+    pin_to_give = tasks[0]['pars']['pin_to_give']
+    gCon.log(f"Pin to give is {pin_to_give}")
+    ad2.pop_user()
+
+    ad2.push_user('john_al.fam_t2')
+    data = agoh.ws_pin_received(ad2.get_sock(), pin_to_give)
+    gCon.log(f"got {data}")
     ad2.pop_user()
  
 

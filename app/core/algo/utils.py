@@ -27,12 +27,18 @@ def federated_transaction(raise_if_fail):
 
     def commit_or_die_maybe(func):
 
-        #async def internal_commit(kernel, pars, **kwargs):
         async def internal_commit(kernel, pars):
             fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
             t_id = fdb.begin_transaction()
             try:
                 res = await func(kernel, pars, t_id)
+                if ((pars.get('dry_run') is not None) and 
+                    (pars['dry_run'] == True)):
+                        fdb.rollback_transaction(t_id)
+                        return {
+                            'res' : 'operation canceled as requested',
+                            'original_res' : res
+                        }
                 fdb.commit_transaction(t_id)
                 return res if res is not None else ECoreErrno.DONE_OK
             except AdelphosCoreException as ex:
