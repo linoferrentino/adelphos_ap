@@ -45,6 +45,11 @@ classes:
           cardinality: array
           required: false
 
+        - name: routing_data
+          type: json 
+          cardinality: array
+          required: false
+
 
     - uri_prefix: {EAdelphosType.FAMILY_TYPE}
       can_be_root: true
@@ -124,7 +129,7 @@ classes:
           required: false
           default: not set
 
-        - name: family
+        - name: carrier
           type: uri
           cardinality: scalar
           required: true

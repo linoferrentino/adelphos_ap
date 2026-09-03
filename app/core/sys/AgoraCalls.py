@@ -65,7 +65,8 @@ class AgoraCalls:
     @staticmethod
     @federated_transaction(raise_if_fail = True)
     async def _agora_received_pin_safe(kernel, pars, t_id):
-        return await AgoraCalls._agora_received_pin_impl(kernel, pars, t_id)
+        return await _agora_received_pin_impl(kernel, pars, t_id,
+                                action = 'search')
 
 
     @staticmethod
@@ -112,10 +113,6 @@ class AgoraCalls:
         raise AdelphosCoreException(ECoreErrno.ENO_SUCH_OBJECT,
                     f"no object with title {par_title} found")
 
-
-    @staticmethod
-    async def _agora_received_pin_impl(kernel, pars, t_id):
-        gCon.log(f"received pin {pars['pin']}")
 
 
     @staticmethod
@@ -247,5 +244,37 @@ class AgoraCalls:
             ob_offers.append(offer_ob().ob.fields)
 
         return ob_offers
+
+
+async def _agora_received_pin_impl(kernel, pars, t_id, *, action):
+    gCon.log(f"received pin {pars['pin']}")
+    alias_ob = await scu.get_alias_in_session(kernel, pars, t_id)
+    routing_data = alias_ob().get_as_list('routing_data')
+    gCon.log(f"my routing data {routing_data}")
+    idx = 0
+    for routing_step in routing_data:
+        if routing_step['pin_to_receive'] != pars['pin']:
+            idx += 1
+            continue
+        res = await _do_correct_pin_rcvd(kernel,
+            pars, routing_step, t_id)
+        if action == 'confirm':
+            gCon.log(f"Removing index {idx}")
+            routing_data.pop(idx)
+            alias_ob().set_list('routing_data', routing_data)
+        return res
+    raise AdelphosCoreException(ECoreErrno.ENO_SUCH_PIN,
+        f"You have no PIN {pars['pin']}")
+
+
+async def _do_correct_pin_rcvd(kernel, pars, routing_step,
+                               t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    gCon.log(f"correct PIN, to unlock {routing_step['unlock_pin_to_give']}")
+    offer_ob = await fdb.uri_read_str(t_id, routing_step['offer_uri'])
+    title = offer_ob().get_scalar('title')
+    return {
+            'res': f"OK, you can receive the object {title}" 
+    }
 
 

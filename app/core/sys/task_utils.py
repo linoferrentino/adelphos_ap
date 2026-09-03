@@ -53,7 +53,7 @@ async def add_task_to_alias(kernel, alias_ob, task, pars, t_id):
     alias_ob().add_scalar('tasks', task_ob)
 
     await su.out_msg_to_alias_ob(kernel, alias_ob, f"""
-You have a new task {task} with parameters {pars}
-Login to adelphos to accept it.""", t_id)
+You have a new task {task} 
+Login to adelphos to see its details.""", t_id)
  
 

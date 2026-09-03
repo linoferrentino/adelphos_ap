@@ -98,7 +98,8 @@ def add_default_agora(fdb, family_ob, alias_ob, t_id, *, location = None):
         fields['location'] = location
     agora_ob = fdb.new_ob(t_id, EAdelphosType.AGORA_TYPE,
                     agora_name, fields = fields)
-    agora_ob().set_link('family', family_ob)
+    #agora_ob().set_link('family', family_ob)
+    agora_ob().set_link('carrier', alias_ob)
     family_ob().set_link('agora', agora_ob)
 
     return agora_ob

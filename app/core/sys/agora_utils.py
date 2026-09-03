@@ -16,6 +16,12 @@ from app.sdc.Dependencies import Dependencies
 
 import app.misc.trust_utils as tutils 
 import app.core.sys.family_utils as fu
+import app.core.sys.object_utils as ou
+
+
+async def agora_get_your_carrier(kernel, family_ob, t_id):
+    return await ou.object_get_field_uri_locked(kernel, family_ob,
+                                                'carrier', t_id)
 
 
 async def remove_object_from_export_chain(kernel, chain_exports, offer_ob,
