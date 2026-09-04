@@ -39,7 +39,23 @@ class RootApi:
     @staticmethod
     async def _sys_call_play_script(kernel, session, pars):
         gCon.log(f"Playing the script {pars['script_path']}")
-        
+        with open (f"tests/scripts/{pars['script_path']}") as script:
+            for line in script:
+                line = line.strip()
+                if len(line) == 0:
+                    continue
+                exp = None
+                if line[0] == '#':
+                    continue
+                if "==>" in line:
+                    (data, exp) = line.split("==>")
+                else:
+                    data = line
+                gCon.log(f"Play line {data} with exp {exp}")
+                response = await session.client.direct_gateway_call(data)
+                gCon.log(f"result {response}")
+
+
 
     @sudo_cmd
     @staticmethod

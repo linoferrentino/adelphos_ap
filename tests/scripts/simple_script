@@ -1,8 +1,8 @@
 # comment
-# next line empty, will be skipped
+# line with only spaces: skipped
 
-root.add_user bob
-root.add_user alice
+root.add_user user bob
+root.add_user user alice
 
-root.add_user alice => 99
+root.add_user user alice ==> app,2
 

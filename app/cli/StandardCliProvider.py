@@ -71,13 +71,18 @@ class StandardCliClient:
         await self.websocket.send_text(response_str)
 
 
+    async def direct_gateway_call(self, data):
+        response = await self.cli_api.sys_call_gateway_msg(self.session, data)
+        if isinstance(response, dict):
+            response = json.dumps(response)
+        return response
+
+
     async def _internal_serve(self):
 
         while True:
             data = await self.websocket.receive_text()
-            response = await self.cli_api.sys_call_gateway_msg(self.session, data)
-            if isinstance(response, dict):
-                response = json.dumps(response)
+            response = await self.direct_gateway_call(data)
             await self._out_final_str(response)
 
 
