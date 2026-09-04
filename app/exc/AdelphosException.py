@@ -42,6 +42,7 @@ class AdErrno(IntEnum):
     ESESSION_ALREADY_PUSHED = 19
     ENOSESSION = 20
     EVALIDATOR_EXCEPTION = 21
+    EUNKOWN_PARAMETERS_GIVEN = 22
 
 
 class AdelphosException(AdelphosBaseException):

@@ -160,7 +160,6 @@ class SimulFediverse:
             inst_setup = world_setup.get(f"{k}_setup")
             if inst_setup is None:
                 continue
-            gCon.log(f"{k} -> instance {inst_setup}")
             action(v, inst_setup)
 
 
@@ -172,6 +171,8 @@ class SimulFediverse:
     @staticmethod
     def _install_alias_for_instance(instance, inst_setup):
         families = inst_setup['families']
+        if families is None:
+            return
         for family in families:
             SimulFediverse._install_family(instance, family)
 

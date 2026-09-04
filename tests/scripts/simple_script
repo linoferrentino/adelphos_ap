@@ -1,0 +1,8 @@
+# comment
+# next line empty, will be skipped
+
+root.add_user bob
+root.add_user alice
+
+root.add_user alice => 99
+

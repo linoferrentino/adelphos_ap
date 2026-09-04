@@ -12,6 +12,7 @@
 ######################################################
 
 
+import re
 import app.consts as CNST
 from app.exc.AdelphosException import AdErrno
 from app.core.AdelphosCoreException import AdelphosBaseException
@@ -47,8 +48,8 @@ f"dbg.sndpost to @adelphos@{remote_host} msg '{msg}' from {user_from}")
             AdelphosBaseException.parse_exc_str(msg.content)
         if exp_detail is None:
             return
-        assert exp_detail == \
-            AdelphosBaseException.parse_detail(msg.content)
+        parsed_detail = AdelphosBaseException.parse_detail(msg.content)
+        assert re.search(exp_detail, parsed_detail) is not None
 
 
 def send_to_daemon_ctx(test1, test2, host2, msg, user_from):

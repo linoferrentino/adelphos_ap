@@ -136,6 +136,8 @@ def _test_first_task_done_ok(world):
     ad2.push_user('john_al.fam_t2')
     data = agoh.ws_pin_received(ad2.get_sock(), pin_to_give)
     gCon.log(f"got {data}")
+    data = agoh.ws_pin_confirm(ad2.get_sock(), pin_to_give)
+    gCon.log(f"got {data}")
     ad2.pop_user()
  
 
@@ -233,6 +235,7 @@ def test_invite_member(get_routable_app):
                               AdErrno.USER_DOES_NOT_EXIST)
             fh.ws_invite_user_raw(ws1, f'mari@{host2}@invalid', code_mary,
                               AdErrno.EINVALID_HANDLE)
+            fh.ws_invite_user_extra_par(ws1, f'@mari@{host2}', code_mary)
 
             fh.ws_invite_user_macro(ws1, f'@mary@{host2}', code_mary,
                                     mary_inbox)

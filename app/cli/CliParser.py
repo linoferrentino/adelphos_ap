@@ -40,6 +40,21 @@ class CliParser:
         return self.cmd_dict[param]
 
 
+    def get_and_pop_par(self, param):
+        par = self.cmd_dict[param]
+        del self.cmd_dict[param]
+        return par
+
+
+    def npars(self):
+        return len(self.cmd_dict)
+
+
+    def par_list(self):
+        par_list = [ x for x in self.cmd_dict.keys()]
+        return par_list
+    
+
     def get_param_safe(self, param, default = None):
         par_value = self.cmd_dict.get(param)
         
@@ -50,10 +65,5 @@ class CliParser:
             return default
 
         raise AdelphosException(AdErrno.EREQUIRED_PARAMETER_MISSING, param)
-
-
-    def get_bool_param_safe(self, param, default = None):
-        parstr = self.get_param_safe(param, default)
-        return bool(parstr)
 
 

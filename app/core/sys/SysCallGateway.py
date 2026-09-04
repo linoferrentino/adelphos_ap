@@ -119,7 +119,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         kwargs = dict()
         for par in syscall.pars:
             try:
-                val_str = cp.get_par(par.name)
+                val_str = cp.get_and_pop_par(par.name)
                 match par.par_type:
                     case 'str':
                         val_final = val_str
@@ -147,6 +147,11 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
             kwargs[par.name] = val_final
 
+        if cp.npars() != 0:
+            extra_pars = cp.par_list()
+            gCon.log(f"[red]extra pars {extra_pars}[/red]")
+            raise AdelphosException(
+                AdErrno.EUNKOWN_PARAMETERS_GIVEN, f"extra pars {extra_pars}")
         return kwargs
 
 

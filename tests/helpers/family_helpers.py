@@ -21,9 +21,13 @@ import tests.social.social_tests as stests
 
 def ws_invite_user_raw(ws, user_handle, invite_code, 
                    code_exp = AdErrno.DONE_OK):
-
     tu.ws_send_cmd(ws, f"family.invite user_handle {user_handle} \
 invite_code {invite_code}", code_exp)
+
+
+def ws_invite_user_extra_par(ws, user_handle, invite_code):
+    tu.ws_send_cmd(ws, f"family.invite user_handle {user_handle} \
+invite_code {invite_code} badpar 129", AdErrno.EUNKOWN_PARAMETERS_GIVEN)
 
 
 def ws_invite_user_macro(ws, user_handle, invite_code, user_inbox):

@@ -37,6 +37,12 @@ class RootApi:
 
     @sudo_cmd
     @staticmethod
+    async def _sys_call_play_script(kernel, session, pars):
+        gCon.log(f"Playing the script {pars['script_path']}")
+        
+
+    @sudo_cmd
+    @staticmethod
     async def _sys_call_allow_remote(kernel, session, pars):
         host = pars['host']
         social_api = kernel.get_dep(Dependencies.SOCIAL_API)

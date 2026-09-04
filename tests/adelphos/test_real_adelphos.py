@@ -206,20 +206,25 @@ def test_real_alias_create_sync(get_routable_app):
 
         user_ob = test1.app.routable.get_dep(
                 Dependencies.SOCIAL).login_user(user_ok)
-        msg_bad1 = "alias.create name linoxferre password secret equity 10"
+        msg_bad1 = "alias.create name linoxferre password secret"
 
         stests.post_to_daemon_and_check(test1, host2, msg_bad1, user_ob,
             ECoreErrno.EINVALID_ALIAS_SYNTAX, 'linoxferre')
 
-        msg_bad_syn = "aliascreate name linoxferre password secret equity 10"
+        msg_bad_extrapar = "alias.create name lino.ferre password secret badpar  99"
+        stests.post_to_daemon_and_check(test1, host2, msg_bad_extrapar, user_ob,
+            AdErrno.EUNKOWN_PARAMETERS_GIVEN, 'badpar')
+
+        msg_bad_syn = "aliascreate name linoxferre password secret"
         stests.post_to_daemon_and_check(test1, host2, msg_bad_syn, user_ob,
             AdErrno.EINVALID_SYNTAX)
 
-        msg_ok = "alias.create name lino.ferre password secret equity 10"
+        msg_ok = "alias.create name lino.ferre password secret"
         stests.post_to_daemon_and_check(test1, host2, msg_ok, user_ob,
             "Alias created, you can login, now.")
 
-        msg_duplicate_family = "alias.create name basso.ferre password secret99 equity 10"
+        msg_duplicate_family = "alias.create name basso.ferre password secret99"
+
         stests.post_to_daemon_and_check(test1, host2, msg_duplicate_family,
                 user_ob, ECoreErrno.EDUPLICATED_FAMILY)
 

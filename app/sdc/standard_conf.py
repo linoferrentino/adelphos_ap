@@ -213,19 +213,14 @@ standard_cli_api = """
             pars:
               user:
                 required: true
-              trust_from:
-                required: false
-                default: 5.0
-                par_type: float
-                validator: _v_ > 0
-              trust_to:
-                required: false
-                default: 5.0
-                par_type: float
-                validator: _v_ > 0
               alias:
                 required: true
               password:
+                required: true
+
+          - name: play_script
+            pars:
+              script_path:
                 required: true
 
 
@@ -294,6 +289,15 @@ standard_cli_api = """
                 par_type: int
                 required: true
                 validator: _v_ > 0
+
+
+          - name: confirm_pin
+            pars:
+              pin:
+                par_type: int
+                required: true
+                validator: _v_ > 0
+
 
           - name: buy_object_title
             pars:
@@ -451,11 +455,6 @@ standard_inbox_api = """
                     required: true
                 password:
                     required: true
-                trust_to:
-                    required: false 
-                    par_type: float
-                    default: 5.0 
-                    validator: _v_ > 0
                 location:
                     required: false
                     default: no location given
