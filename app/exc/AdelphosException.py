@@ -43,6 +43,7 @@ class AdErrno(IntEnum):
     ENOSESSION = 20
     EVALIDATOR_EXCEPTION = 21
     EUNKOWN_PARAMETERS_GIVEN = 22
+    ESCRIPT_ERROR = 23
 
 
 class AdelphosException(AdelphosBaseException):

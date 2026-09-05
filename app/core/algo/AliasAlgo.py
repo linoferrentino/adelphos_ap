@@ -79,9 +79,6 @@ class AliasAlgo:
                 else 5.0
         user_handle = pars['user_handle']
 
-        #if equity <= 0:
-        #    raise AdelphosCoreException(ECoreErrno.EINVALID_TRUST, equity)
-
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
 

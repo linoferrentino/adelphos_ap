@@ -11,6 +11,8 @@
 #
 ######################################################
 
+import re
+import json
 from app.logging import gCon
 
 from app.exc.AdelphosException import AdelphosException
@@ -38,22 +40,7 @@ class RootApi:
     @sudo_cmd
     @staticmethod
     async def _sys_call_play_script(kernel, session, pars):
-        gCon.log(f"Playing the script {pars['script_path']}")
-        with open (f"tests/scripts/{pars['script_path']}") as script:
-            for line in script:
-                line = line.strip()
-                if len(line) == 0:
-                    continue
-                exp = None
-                if line[0] == '#':
-                    continue
-                if "==>" in line:
-                    (data, exp) = line.split("==>")
-                else:
-                    data = line
-                gCon.log(f"Play line {data} with exp {exp}")
-                response = await session.client.direct_gateway_call(data)
-                gCon.log(f"result {response}")
+        await _root_play_script(kernel, session, pars)
 
 
 
@@ -91,32 +78,84 @@ class RootApi:
     @sudo_cmd
     @staticmethod
     async def _sys_call_add_user(kernel, session, pars):
-        await RootApi._add_user_impl(kernel, session, pars)
+        await _get_user_impl(kernel, session, pars, create = True)
 
-
-    async def _add_user_impl(kernel, session, pars):
-        social = kernel.get_dep(Dependencies.SOCIAL)
-        user = pars['user']
-        local_user = social.local_user_get(user, create_if_not_exists = False)
-        if local_user is not None:
-            raise AdelphosException(AdErrno.USER_ALREADY_EXISTING, user)
-        local_user = social.local_user_get(user, create_if_not_exists = True)
-        return local_user
- 
 
     @sudo_cmd
     @staticmethod
     async def _sys_call_add_user_alias(kernel, session, pars):
-        local_user = await RootApi._add_user_impl(kernel, session, pars)
+        await _sys_call_add_user_alias_impl(kernel, session, pars,
+                                create = True)
 
-        alias = pars['alias']
 
-        (alias_name, family) = au.split_alias(alias, True)
+    @sudo_cmd
+    @staticmethod
+    async def _sys_call_add_alias(kernel, session, pars):
+        await _sys_call_add_user_alias_impl(kernel, session, pars,
+                                create = False)
 
-        pars['actor_id'] = local_user.actor_dto.act.actor_id
-        pars['alias_name'] = alias_name
-        pars['family']  = family
-        pars['user_handle'] = local_user.actor_dto.get_social_handle()
 
-        await AliasAlgo.alias_create(kernel, pars) 
+
+async def _sys_call_add_user_alias_impl(kernel, session, pars,
+                                        *, create = True):
+    local_user = await _get_user_impl(kernel, session, pars, create = create)
+
+    alias = pars['alias']
+
+    (alias_name, family) = au.split_alias(alias, True)
+
+    pars['actor_id'] = local_user.actor_dto.act.actor_id
+    pars['alias_name'] = alias_name
+    pars['family']  = family
+    pars['user_handle'] = local_user.actor_dto.get_social_handle()
+
+    await AliasAlgo.alias_create(kernel, pars) 
+
+
+async def _get_user_impl(kernel, session, pars, *, create = False):
+    social = kernel.get_dep(Dependencies.SOCIAL)
+    user = pars['user']
+    local_user = social.local_user_get(user, create_if_not_exists = False)
+    if create == False and local_user is None:
+        raise AdelphosException(AdErrno.USER_DOES_NOT_EXIST, user)
+    elif create == False:
+        return local_user
+    if local_user is not None:
+        raise AdelphosException(AdErrno.USER_ALREADY_EXISTING, user)
+    local_user = social.local_user_get(user, create_if_not_exists = True)
+    return local_user
+
+
+async def _root_play_line(kernel, session, pars, line):
+    line = line.strip()
+    if len(line) == 0:
+        return
+    if line[0] == '#':
+        return
+    if "==>" in line:
+        (data, exps) = line.split("==>")
+        exp = json.loads(exps)
+    else:
+        data = line
+        exp = {
+                'errno' : 0
+        }
+    gCon.log(f"Play line {data} with exp {exp}")
+    res_str = await session.client.direct_gateway_call(data)
+    gCon.log(f"result {res_str}")
+    res_ob = json.loads(res_str)
+    if (res_ob['errno'] != exp['errno']):
+        raise AdelphosException(AdErrno.ESCRIPT_ERROR, res_str)
+    exp_re = exp.get('res_re')
+    if exp_re is None:
+        return
+    if re.search(exp_re, res_ob['res']) is None:
+        raise AdelphosException(AdErrno.ESCRIPT_ERROR, f"Not found {exp_re} in {res_ob['res']}")
+
+
+async def _root_play_script(kernel, session, pars):
+    gCon.log(f"Playing the script {pars['script_path']}")
+    with open (f"tests/scripts/{pars['script_path']}.as") as script:
+        for line in script:
+            await _root_play_line(kernel, session, pars, line)
 
