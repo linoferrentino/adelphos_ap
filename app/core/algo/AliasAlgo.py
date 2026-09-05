@@ -87,7 +87,9 @@ class AliasAlgo:
         if is_present_family is True:
             if pars.get('maybe') == True:
                 return
-            raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY)
+            gCon.log(f"Family already present")
+            raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY,
+                        f"family {family} already present in this host")
 
         family_ob = fdb.new_ob_uri(t_id, family_uri, fields = {
             'my_trust' : tutils.abs_to_db(my_trust),

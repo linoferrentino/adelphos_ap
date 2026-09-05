@@ -23,6 +23,7 @@ class RawPresenter(CliPresenter):
 
 
     def present_to_user_ok(self, sys_call_out):
+        gCon.log(f"Sys_call_out {sys_call_out}")
         match sys_call_out['context']:
             case 'math' | 'sapi' | 'alias' | 'fdb' :
                 return sys_call_out

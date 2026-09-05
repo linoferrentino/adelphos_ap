@@ -62,7 +62,7 @@ class RootApi:
 
     @staticmethod
     async def _sys_call_pop_alias(kernel, session, pars):
-        session.client.pop_session()
+        return session.client.pop_session()
 
 
     @sudo_cmd
@@ -84,14 +84,14 @@ class RootApi:
     @sudo_cmd
     @staticmethod
     async def _sys_call_add_user_alias(kernel, session, pars):
-        await _sys_call_add_user_alias_impl(kernel, session, pars,
+        return await _sys_call_add_user_alias_impl(kernel, session, pars,
                                 create = True)
 
 
     @sudo_cmd
     @staticmethod
     async def _sys_call_add_alias(kernel, session, pars):
-        await _sys_call_add_user_alias_impl(kernel, session, pars,
+        return await _sys_call_add_user_alias_impl(kernel, session, pars,
                                 create = False)
 
 
@@ -109,7 +109,7 @@ async def _sys_call_add_user_alias_impl(kernel, session, pars,
     pars['family']  = family
     pars['user_handle'] = local_user.actor_dto.get_social_handle()
 
-    await AliasAlgo.alias_create(kernel, pars) 
+    return await AliasAlgo.alias_create_safe(kernel, pars) 
 
 
 async def _get_user_impl(kernel, session, pars, *, create = False):
@@ -127,11 +127,6 @@ async def _get_user_impl(kernel, session, pars, *, create = False):
 
 
 async def _root_play_line(kernel, session, pars, line):
-    line = line.strip()
-    if len(line) == 0:
-        return
-    if line[0] == '#':
-        return
     if "==>" in line:
         (data, exps) = line.split("==>")
         exp = json.loads(exps)
@@ -140,7 +135,7 @@ async def _root_play_line(kernel, session, pars, line):
         exp = {
                 'errno' : 0
         }
-    gCon.log(f"Play line {data} with exp {exp}")
+    gCon.log(f"Play line |{data}| with exp |{exp}|")
     res_str = await session.client.direct_gateway_call(data)
     gCon.log(f"result {res_str}")
     res_ob = json.loads(res_str)
@@ -156,6 +151,22 @@ async def _root_play_line(kernel, session, pars, line):
 async def _root_play_script(kernel, session, pars):
     gCon.log(f"Playing the script {pars['script_path']}")
     with open (f"tests/scripts/{pars['script_path']}.as") as script:
+        multiline = False
+        long_line = ""
         for line in script:
-            await _root_play_line(kernel, session, pars, line)
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            if line[0] == '#':
+                continue
+            if line[-1] == "\\":
+                multiline = True
+                long_line += line[:-1]
+                continue
+            if multiline:
+                long_line += line
+            else:
+                long_line = line
+                
+            await _root_play_line(kernel, session, pars, long_line)
 

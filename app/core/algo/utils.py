@@ -42,6 +42,7 @@ def federated_transaction(raise_if_fail):
                 fdb.commit_transaction(t_id)
                 return res if res is not None else ECoreErrno.DONE_OK
             except AdelphosCoreException as ex:
+                traceback.print_exc()
                 fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return -ex.errno

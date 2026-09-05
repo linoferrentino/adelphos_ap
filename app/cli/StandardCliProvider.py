@@ -95,6 +95,7 @@ class StandardCliClient:
             except WebSocketDisconnect as wds:
                 pass
             except Exception as ex:
+                gCon.log(f"[red]Exception[/red]")
                 traceback.print_exc()
                 await self._process_exception(ex)
             break
@@ -106,8 +107,10 @@ class StandardCliClient:
         try:
             await self._internal_serve()
         except AdelphosException as err:
+            gCon.log(f"[red]AdelphosException exception[/red]")
             await self._process_exception(err)
         except AdelphosCoreException as errcore:
+            gCon.log(f"[red]Core exception[/red]")
             await self._process_exception(errcore)
 
 
