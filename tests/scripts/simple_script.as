@@ -14,7 +14,13 @@ root.alias_join_family alias alice family fam_bob user \
 	alice password alice_pass ==> { "errno" : 0, \
 	"res_re" : "Created alias #al#alice.fam_bob@www.adelphos.it" }
 
-#root.alias_join_family alias alice family fam_bob user \
-#	alice password alice_pass ==> { "errno" : 0, \
-#	"res_re" : "Created alias #al#alice.fam_bob@www.adelphos.it" }
+root.alias_join_family alias alice family fam_bob user \
+	alice password alice_pass ==> { "errno" : 23, \
+	"res_re" : "alias alice already present" }
+
+root.add_user user john
+root.add_user user mary
+
+root.add_alias alias john.smith user john password jpass
+root.alias_join_family alias mary family smith user mary password mpass
 

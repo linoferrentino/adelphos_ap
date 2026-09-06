@@ -117,8 +117,15 @@ class AliasAlgo:
 
         gCon.log(f"Adding alias {fields}")
 
-        alias_ob = fdb.new_ob(t_id, EAdelphosType.ALIAS_TYPE, 
-                                      name, family = family, fields = fields)
+        alias_uri = AdelphosUri(EAdelphosType.ALIAS_TYPE, name,
+                                family = family)
+
+        is_present_alias = fdb.is_present_local_uri(t_id, alias_uri)
+        if is_present_alias:
+            raise AdelphosCoreException(ECoreErrno.EDUPLICATED_ALIAS_IN_FAMILY,
+                            f"alias {name} already present in {family}")
+
+        alias_ob = fdb.new_ob_uri(t_id, alias_uri, fields = fields)
 
         family_ob().add_link('members', alias_ob)
         return alias_ob
