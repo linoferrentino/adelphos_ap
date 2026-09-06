@@ -254,26 +254,26 @@ class SimulFediverse:
             with_stat += f" list_inst[{ix}][1] as li_{ix},  "
         with_stat += " ):"
         with_stat += """
-          with ("""
+    with ("""
         for ix in range(0, len(list_inst)):
             with_stat += f" li_{ix}.websocket_connect(CNST.WS_ROUTE) as ws_{ix}, \n"
 
         with_stat += " ):"
         with_stat += """
-            for ix in range(0, len(list_inst)):
-                name_inst = list_inst[ix][0]
-                self._inst[name_inst].sock = eval('ws_' + str(ix))
+        for ix in range(0, len(list_inst)):
+            name_inst = list_inst[ix][0]
+            self._inst[name_inst].sock = eval('ws_' + str(ix))
 
-            self._upgrade_sockets()
-            self._do_accepts_instances()
-            self._do_setup_world(world_conf)
+        self._upgrade_sockets()
+        self._do_accepts_instances()
+        self._do_setup_world(world_conf)
 
-            from collections.abc import Iterable
-            if isinstance(testcase, Iterable):
-                for tc in testcase:
-                    tc(self)
-            else:
-                testcase(self)
+        from collections.abc import Iterable
+        if isinstance(testcase, Iterable):
+            for tc in testcase:
+                tc(self)
+        else:
+            testcase(self)
 
         """
         gCon.log(f"The test to run is \n{with_stat}")

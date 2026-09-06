@@ -15,6 +15,9 @@ import re
 import json
 from app.logging import gCon
 
+from app.core.model.AdelphosUri import EAdelphosType
+from app.core.model.AdelphosUri import AdelphosUri
+from app.core.algo.utils import federated_transaction
 from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
 from app.sdc.Dependencies import Dependencies
@@ -95,7 +98,31 @@ class RootApi:
                                 create = False)
 
 
+    @sudo_cmd
+    @staticmethod
+    async def _sys_call_alias_join_family(kernel, session, pars):
+        pars['_session'] = session
+        return await _alias_join_family_safe(kernel, pars)
 
+
+@federated_transaction(raise_if_fail = True)
+async def _alias_join_family_safe(kernel, pars, t_id):
+
+    family = pars['family']
+    user_handle = pars['user']
+    alias = pars['alias']
+    password = pars['password']
+
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
+    family_ob = await fdb.uri_read_ob(t_id, family_uri, must_lock = True)
+
+    alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, 
+        user_handle, alias, family, password, t_id)
+    return f"Created alias {alias_ob().uri.unparse()}"
+
+
+ 
 async def _sys_call_add_user_alias_impl(kernel, session, pars,
                                         *, create = True):
     local_user = await _get_user_impl(kernel, session, pars, create = create)
@@ -127,6 +154,7 @@ async def _get_user_impl(kernel, session, pars, *, create = False):
 
 
 async def _root_play_line(kernel, session, pars, line):
+    gCon.log(f"processing ->{line}<-")
     if "==>" in line:
         (data, exps) = line.split("==>")
         exp = json.loads(exps)
@@ -169,4 +197,6 @@ async def _root_play_script(kernel, session, pars):
                 long_line = line
                 
             await _root_play_line(kernel, session, pars, long_line)
+            long_line = ""
+
 

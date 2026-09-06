@@ -82,7 +82,7 @@ class AliasAlgo:
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
 
-        is_present_family = await fdb.is_present_uri_str(t_id, family_uri)
+        is_present_family = fdb.is_present_local_uri(t_id, family_uri)
 
         if is_present_family is True:
             if pars.get('maybe') == True:

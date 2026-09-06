@@ -10,3 +10,11 @@ root.add_alias alias bob.fam_bob user bob password bob_pass
 root.add_alias alias alice.fam_bob user alice password alice_pass ==> \
 	{ "errno" : 1, "res_re" : "fam_bob already present" }
 
+root.alias_join_family alias alice family fam_bob user \
+	alice password alice_pass ==> { "errno" : 0, \
+	"res_re" : "Created alias #al#alice.fam_bob@www.adelphos.it" }
+
+#root.alias_join_family alias alice family fam_bob user \
+#	alice password alice_pass ==> { "errno" : 0, \
+#	"res_re" : "Created alias #al#alice.fam_bob@www.adelphos.it" }
+

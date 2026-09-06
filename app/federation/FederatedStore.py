@@ -436,13 +436,17 @@ class FederatedStore(Dependency, LifespanAware):
         return t_ob
 
 
-    async def is_present_uri_str(self, t_id, uri):
+    def is_present_local_uri(self, t_id, uri):
         t_ob = self.get_tob_safe(t_id)
-        return self.is_present_uri(t_ob, uri)
+        return self.is_present_local_uri_ob(t_ob, uri)
 
 
-    def is_present_uri(self, t_ob, uri):
-        key_uri = uri.unparse()
+    def is_present_local_uri_ob(self, t_ob, uri):
+        local_uri = self.remove_localhost(uri)
+        if local_uri.host is not None:
+            return False
+        
+        key_uri = local_uri.unparse(True)
 
         exists_trx = t_ob.exists_ob(key_uri)
 
@@ -454,7 +458,7 @@ class FederatedStore(Dependency, LifespanAware):
 
     def ensure_uri_not_existing(self, t_ob, uri):
 
-        exists_trx = self.is_present_uri(t_ob, uri)
+        exists_trx = self.is_present_local_uri_ob(t_ob, uri)
 
         if exists_trx == True:
             raise FdbException(EFdbErrors.EFDB_URI_EXISTS, uri)

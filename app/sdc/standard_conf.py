@@ -227,6 +227,17 @@ standard_cli_api = """
               password:
                 required: true
 
+          - name: alias_join_family
+            pars:
+              alias:
+                required: true
+              user:
+                required: true
+              family:
+                required: true
+              password:
+                required: true
+
           - name: play_script
             pars:
               script_path:
