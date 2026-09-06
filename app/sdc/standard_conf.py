@@ -243,6 +243,28 @@ standard_cli_api = """
               script_path:
                 required: true
 
+          - name: do_association
+            pars:
+              import_export_tax:
+                par_type: float
+                required: false
+                default: 1.02
+              family_dest:
+                required: true
+              family_source:
+                required: true 
+              upper_name:
+                required: false
+              location:
+                required: false
+              brotherhood_ratio:
+                par_type: float
+                required: false
+                default: 0.9
+              force:
+                par_type: bool
+                required: false
+                default: false
 
       task:
         class: app.core.sys.TaskCalls.TaskCalls
@@ -349,10 +371,6 @@ standard_cli_api = """
                 required: true
               family_dest:
                 required: true
-              change_ratio:
-                par_type: float
-                required: false
-                default: 1.0
               family_source:
                 required: false
 
@@ -369,10 +387,6 @@ standard_cli_api = """
                 required: false
               location:
                 required: false
-              change_ratio:
-                par_type: float
-                required: false
-                default: 1.0
               brotherhood_ratio:
                 par_type: float
                 required: false

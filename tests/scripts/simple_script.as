@@ -24,3 +24,7 @@ root.add_user user mary
 root.add_alias alias john.smith user john password jpass
 root.alias_join_family alias mary family smith user mary password mpass
 
+#root.do_association family_source #fa#fam_bob@www.adelphos.it \
+#	family_dest #fa#smith@www.adelphos.it location \
+#	"Wall Street 5th" 
+

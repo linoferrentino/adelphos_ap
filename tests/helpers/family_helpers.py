@@ -49,7 +49,7 @@ def ws_invite_user_macro(ws, user_handle, invite_code, user_inbox):
 
 def ws_associate_with_family(ws, family_dest, import_export_tax, *, 
             location = None, family_source = None,
-            upper_name = None, change_ratio = None,
+            upper_name = None, 
             brotherhood_ratio = None,
             code_exp = ECoreErrno.DONE_OK):
     cmd = f"family.associate \
@@ -60,8 +60,6 @@ import_export_tax {import_export_tax} family_dest {family_dest}"
         cmd += f" family_source {family_source}"
     if upper_name is not None:
         cmd += f" upper_name {upper_name}"
-    if change_ratio is not None:
-        cmd += f" change_ratio {change_ratio}"
     if brotherhood_ratio is not None:
         cmd += f" brotherhood_ratio {brotherhood_ratio}"
     return tu.ws_send_cmd(ws, cmd, code_exp)

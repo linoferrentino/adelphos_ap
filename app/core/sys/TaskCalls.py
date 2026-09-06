@@ -66,7 +66,7 @@ class TaskCalls:
     @staticmethod
     async def _accept_associate_family(kernel, pars, t_id):
         gCon.log(f"I will accept the task {pars}")
-        return await fu.family_associate_with_family(kernel, pars, t_id)
+        return await fu.family_associate_2nd_half(kernel, pars, t_id)
 
 
     @staticmethod

@@ -43,7 +43,7 @@ async def family_get_chain_alias_family_to(kernel,
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
 
-async def family_associate_with_family(kernel, pars, t_id):
+async def family_associate_2nd_half(kernel, pars, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
     family_src_ob = await scu.get_family_source(kernel, pars, t_id)

@@ -23,6 +23,8 @@ from app.exc.AdelphosException import AdErrno
 from app.sdc.Dependencies import Dependencies
 from app.core.algo.AliasAlgo import AliasAlgo
 from app.core.sys.AliasCalls import AliasCalls
+import app.core.sys.FamilyCalls as fcalls
+import app.core.sys.family_utils as fu
 import app.misc.alias_utils as au
 
 
@@ -31,6 +33,8 @@ def sudo_cmd(func):
     async def check_root(kernel, session, pars):
         if (session.is_logged_root() == False):
             raise AdelphosException(AdErrno.EPERM, "You need to be root.")
+        if (pars.get('force') == True):
+            pars['_unsafe'] = True
 
         return await func(kernel, session, pars)
     
@@ -103,6 +107,20 @@ class RootApi:
     async def _sys_call_alias_join_family(kernel, session, pars):
         pars['_session'] = session
         return await _alias_join_family_safe(kernel, pars)
+
+
+    @sudo_cmd
+    @staticmethod
+    async def _sys_call_do_association(kernel, session, pars):
+        pars['_session'] = session
+        gCon.log(f"do association with pars {pars}")
+        await _do_association_safe(kernel, pars)
+
+
+@federated_transaction(raise_if_fail = True)
+async def _do_association_safe(kernel, pars, t_id):
+    await fcalls._family_associate_first_half(kernel, pars, t_id)
+    await fu.family_associate_2nd_half(kernel, pars, t_id)
 
 
 @federated_transaction(raise_if_fail = True)

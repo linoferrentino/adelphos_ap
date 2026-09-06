@@ -80,42 +80,7 @@ f"""You have been invited to join adelphos by @{session.alias_family}@{this_host
 
     @staticmethod
     async def _family_associate_impl(kernel, pars, t_id):
-        family_src_ob = await scu.get_family_source(kernel, pars, t_id)
-        scu.ensure_logged_alias_is_boss(family_src_ob, pars)
-
-        family_session_str = await scu.get_family_str_in_session(kernel,
-                                pars, t_id)
-        gCon.log(f"The family session str {family_session_str}")
-
-        family_dst_ob = await scu.get_family_dest(kernel, pars, t_id)
-
-        level_src = family_src_ob().get_scalar('level')
-        level_dst = family_dst_ob().get_scalar('level')
-
-        if level_src != level_dst:
-            raise AdelphosCoreException(ECoreErrno.EDIFFERENT_LEVELS,
-              f"Family src level {level_src} family_dst level {level_dst}")
-
-        family_src_chain = await scu.get_family_chain_up_from_to_str(kernel,
-                family_session_str, family_src_ob, t_id)
-
-        gCon.log(f"The family src chain is {family_src_chain}")
-
-        scu.ensure_family_not_associated(family_src_ob)
-        scu.ensure_family_not_associated(family_dst_ob)
-
-        boss_ob = await fu.family_get_your_boss(kernel, family_dst_ob, t_id)
-
-        family_boss_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE,
-              boss_ob().uri.family, host = boss_ob().uri.host)
-
-        family_dst_chain = await scu.get_family_chain_up_from_to_str(kernel,
-                family_boss_uri.unparse(), family_dst_ob, t_id)
-        gCon.log(f"The family_dst_chain is {family_dst_chain}")
-
-        pars['family_src_chain'] = family_src_chain
-        pars['family_dst_chain'] = family_dst_chain
-
+        boss_ob = await _family_associate_first_half(kernel, pars, t_id)
         await tku.add_task_to_alias(kernel, boss_ob, 'associate_family',
                                   pars, t_id)
 
@@ -139,5 +104,46 @@ f"""You have been invited to join adelphos by @{session.alias_family}@{this_host
         }
 
         family_ob().set_scalar('invite', invite_ob)
+
+
+async def _family_associate_first_half(kernel, pars, t_id):
+    family_src_ob = await scu.get_family_source(kernel, pars, t_id)
+    if pars['_session'].is_logged_root() is False:
+        scu.ensure_logged_alias_is_boss(family_src_ob, pars)
+
+    family_session_str = await scu.get_family_str_in_session(kernel,
+                            pars, t_id)
+    gCon.log(f"The family session str {family_session_str}")
+
+    family_dst_ob = await scu.get_family_dest(kernel, pars, t_id)
+
+    level_src = family_src_ob().get_scalar('level')
+    level_dst = family_dst_ob().get_scalar('level')
+
+    if level_src != level_dst:
+        raise AdelphosCoreException(ECoreErrno.EDIFFERENT_LEVELS,
+          f"Family src level {level_src} family_dst level {level_dst}")
+
+    family_src_chain = await scu.get_family_chain_up_from_to_str(kernel,
+            family_session_str, family_src_ob, t_id)
+
+    gCon.log(f"The family src chain is {family_src_chain}")
+
+    scu.ensure_family_not_associated(family_src_ob)
+    scu.ensure_family_not_associated(family_dst_ob)
+
+    boss_ob = await fu.family_get_your_boss(kernel, family_dst_ob, t_id)
+
+    family_boss_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE,
+          boss_ob().uri.family, host = boss_ob().uri.host)
+
+    family_dst_chain = await scu.get_family_chain_up_from_to_str(kernel,
+            family_boss_uri.unparse(), family_dst_ob, t_id)
+    gCon.log(f"The family_dst_chain is {family_dst_chain}")
+
+    pars['family_src_chain'] = family_src_chain
+    pars['family_dst_chain'] = family_dst_chain
+
+    return boss_ob
 
 
