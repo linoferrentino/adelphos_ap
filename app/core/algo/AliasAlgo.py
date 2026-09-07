@@ -78,6 +78,7 @@ class AliasAlgo:
         my_trust = pars['my_trust'] if hasattr(pars, 'my_trust') \
                 else 5.0
         user_handle = pars['user_handle']
+        location = pars['location']
 
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
@@ -93,13 +94,13 @@ class AliasAlgo:
 
         family_ob = fdb.new_ob_uri(t_id, family_uri, fields = {
             'my_trust' : tutils.abs_to_db(my_trust),
-            'level' : 0
+            'level' : 0,
             })
 
         alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, 
                         user_handle, alias_name, family, password, t_id)
 
-        fu.add_default_agora(fdb, family_ob, alias_ob, t_id)
+        fu.add_default_agora(fdb, family_ob, alias_ob, location, t_id)
 
         family_ob().set_link('boss', alias_ob)
 

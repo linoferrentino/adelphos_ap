@@ -217,6 +217,8 @@ standard_cli_api = """
                 required: true
               password:
                 required: true
+              location:
+                required: true
 
           - name: add_alias
             pars:
@@ -225,6 +227,8 @@ standard_cli_api = """
               alias:
                 required: true
               password:
+                required: true
+              location:
                 required: true
 
           - name: alias_join_family
@@ -254,9 +258,11 @@ standard_cli_api = """
               family_source:
                 required: true 
               upper_name:
-                required: false
+                required: true
+                validator: len("_v_") > 3
               location:
-                required: false
+                required: true
+                validator: len("_v_") > 3
               brotherhood_ratio:
                 par_type: float
                 required: false
@@ -384,9 +390,11 @@ standard_cli_api = """
               family_source:
                 required: false
               upper_name:
-                required: false
+                required: true
+                validator: len("_v_") > 3
               location:
-                required: false
+                required: true
+                validator: len("_v_") > 3
               brotherhood_ratio:
                 par_type: float
                 required: false
@@ -490,8 +498,7 @@ standard_inbox_api = """
                 password:
                     required: true
                 location:
-                    required: false
-                    default: no location given
+                    required: true
  
           - name: join_family
             pars:

@@ -103,6 +103,7 @@ def _test_associate_with_family_denied(world):
     ad2 = world.get_instance('ad2')
     ad2.push_user('katy_al.fam_t2')
     fh.ws_associate_with_family(ad2.get_sock(), "impossibile", 0.99,
+                'name_upper', 'location_upper',
                 code_exp = ECoreErrno.EDENIED)
     ad2.pop_user()
 
@@ -167,8 +168,7 @@ def _test_associate_with_family_ok(world):
     ad2.push_user('john_al.fam_t2')
     fh.ws_associate_with_family(ad2.get_sock(),
                 '#fa#fam_t1@www.ad1.com', 1.02,
-                location = 'East Of London 33', upper_name =
-                                'london_east_33')
+                'london_east_33', 'East Of London 33')
     ad2.pop_user()
 
     ad1 = world.get_instance('ad1')
@@ -209,7 +209,8 @@ def test_invite_member(get_routable_app):
             ah.ws_upgrade_socket_to_local_root(test2, ws2,
                                 tconf.adelphos_testable_2_conf)
 
-            ah.ws_create_user_alias(ws1, 'john', 'jh.fam1', 'pass10')
+            ah.ws_create_user_alias(ws1, 'john', 'jh.fam1', 'pass10',
+                                    'a_location')
 
             social2 = test2.app.routable.get_dep(
                     Dependencies.SOCIAL)

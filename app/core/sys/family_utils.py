@@ -56,6 +56,7 @@ async def family_associate_2nd_half(kernel, pars, t_id):
     new_level = family_src_ob().get_scalar('level') + 1
 
     upper_family_name = pars['upper_name']
+    gCon.log(f"upper_family_name |{upper_family_name}|")
 
     family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, upper_family_name)
 
@@ -68,8 +69,8 @@ async def family_associate_2nd_half(kernel, pars, t_id):
     family_ob().add_link('members', family_src_ob)
     family_ob().add_link('members', family_dst_ob)
 
-    agora_ob = add_default_agora(fdb, family_ob, boss_ob, t_id, location = 
-                      pars['location'])
+    agora_ob = add_default_agora(fdb, family_ob, boss_ob, pars['location'],
+                                 t_id)
     family_src_ob().set_link('upper_family', family_ob)
     family_dst_ob().set_link('upper_family', family_ob)
 
@@ -90,15 +91,14 @@ async def family_associate_2nd_half(kernel, pars, t_id):
                                        tax_dst, agora_ob, t_id)
 
 
-def add_default_agora(fdb, family_ob, alias_ob, t_id, *, location = None):
+def add_default_agora(fdb, family_ob, alias_ob, location, t_id):
     agora_name = family_ob().uri.name + "_main_agora"
 
-    fields = {}
-    if location is not None:
-        fields['location'] = location
+    fields = {
+       'location': location
+    }
     agora_ob = fdb.new_ob(t_id, EAdelphosType.AGORA_TYPE,
                     agora_name, fields = fields)
-    #agora_ob().set_link('family', family_ob)
     agora_ob().set_link('carrier', alias_ob)
     family_ob().set_link('agora', agora_ob)
 

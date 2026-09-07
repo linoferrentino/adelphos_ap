@@ -126,8 +126,7 @@ classes:
         - name: location
           type: str
           cardinality: scalar
-          required: false
-          default: not set
+          required: true
 
         - name: carrier
           type: uri

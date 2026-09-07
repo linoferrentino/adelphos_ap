@@ -127,11 +127,12 @@ def test_create_root_user(get_routable_app):
         ah.ws_alias_login_in_app(test1, local_root, websocket, 
                                  'root.admins', root_pass)
 
-        ah.ws_create_user_alias(websocket, 'john', 'john.smith', 'john11')
+        ah.ws_create_user_alias(websocket, 'john', 'john.smith', 'john11',
+                            'Bruxelles')
         ah.ws_alias_logout(websocket)
         ah.ws_alias_login_in_app(test1, 'john', websocket, 
                                  'john.smith', 'john11')
-        websocket.send_text('root.add_user_alias user xxo alias cannot.work password zzz')
+        websocket.send_text('root.add_user_alias user xxo alias cannot.work password zzz location ppp')
         tu.ws_assert_code(websocket, AdErrno.EPERM)
         ah.ws_alias_logout(websocket)
         ah.ws_alias_login_in_app(test1, local_root, websocket, 
@@ -206,24 +207,24 @@ def test_real_alias_create_sync(get_routable_app):
 
         user_ob = test1.app.routable.get_dep(
                 Dependencies.SOCIAL).login_user(user_ok)
-        msg_bad1 = "alias.create name linoxferre password secret"
+        msg_bad1 = "alias.create name linoxferre password secret location 'munich'"
 
         stests.post_to_daemon_and_check(test1, host2, msg_bad1, user_ob,
             ECoreErrno.EINVALID_ALIAS_SYNTAX, 'linoxferre')
 
-        msg_bad_extrapar = "alias.create name lino.ferre password secret badpar  99"
+        msg_bad_extrapar = "alias.create name lino.ferre password secret badpar  99 location 'munich'"
         stests.post_to_daemon_and_check(test1, host2, msg_bad_extrapar, user_ob,
             AdErrno.EUNKOWN_PARAMETERS_GIVEN, 'badpar')
 
-        msg_bad_syn = "aliascreate name linoxferre password secret"
+        msg_bad_syn = "aliascreate name linoxferre password secret location 'munich'"
         stests.post_to_daemon_and_check(test1, host2, msg_bad_syn, user_ob,
             AdErrno.EINVALID_SYNTAX)
 
-        msg_ok = "alias.create name lino.ferre password secret"
+        msg_ok = "alias.create name lino.ferre password secret location 'munich'"
         stests.post_to_daemon_and_check(test1, host2, msg_ok, user_ob,
             "Alias created, you can login, now.")
 
-        msg_duplicate_family = "alias.create name basso.ferre password secret99"
+        msg_duplicate_family = "alias.create location 'munich' name basso.ferre password secret99"
 
         stests.post_to_daemon_and_check(test1, host2, msg_duplicate_family,
                 user_ob, ECoreErrno.EDUPLICATED_FAMILY)

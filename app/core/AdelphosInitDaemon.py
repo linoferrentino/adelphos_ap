@@ -50,6 +50,7 @@ class AdelphosInitDaemon(Daemon):
             'alias_name' : 'root',
             'family' : 'admins',
             'password' : root_password,
+            'location' : "root's home",
             'maybe' : True
         }
 

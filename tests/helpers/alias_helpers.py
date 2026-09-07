@@ -37,8 +37,9 @@ def ws_alias_login_in_app(wrapper, social_user, ws, alias, password):
     ws_alias_login(user_inbox, ws, alias, password)
 
 
-def ws_create_user_alias(ws, user, alias, password):
-    ws.send_text(f"root.add_user_alias user {user} alias {alias} password {password}")
+def ws_create_user_alias(ws, user, alias, password, location):
+    ws.send_text(f"root.add_user_alias user {user} alias {alias} \
+password {password} location '{location}'")
     tu.ws_assert_code(ws, AdErrno.DONE_OK)
 
 

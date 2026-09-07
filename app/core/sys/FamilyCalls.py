@@ -107,13 +107,20 @@ f"""You have been invited to join adelphos by @{session.alias_family}@{this_host
 
 
 async def _family_associate_first_half(kernel, pars, t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+
     family_src_ob = await scu.get_family_source(kernel, pars, t_id)
+    src_boss_ob = await fu.family_get_your_boss(kernel, family_src_ob,
+                                                t_id)
+    src_boss_family = src_boss_ob().uri.family
+    family_root_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, src_boss_family,
+                host = src_boss_ob().uri.host)
+    gCon.log(f"the root family is {family_root_uri}")
+    family_root = await fdb.uri_read_ob(t_id, family_root_uri,
+                                        must_lock = True)
+
     if pars['_session'].is_logged_root() is False:
         scu.ensure_logged_alias_is_boss(family_src_ob, pars)
-
-    family_session_str = await scu.get_family_str_in_session(kernel,
-                            pars, t_id)
-    gCon.log(f"The family session str {family_session_str}")
 
     family_dst_ob = await scu.get_family_dest(kernel, pars, t_id)
 
@@ -125,7 +132,7 @@ async def _family_associate_first_half(kernel, pars, t_id):
           f"Family src level {level_src} family_dst level {level_dst}")
 
     family_src_chain = await scu.get_family_chain_up_from_to_str(kernel,
-            family_session_str, family_src_ob, t_id)
+            family_root_uri.unparse(), family_src_ob, t_id)
 
     gCon.log(f"The family src chain is {family_src_chain}")
 

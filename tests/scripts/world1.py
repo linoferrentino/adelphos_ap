@@ -55,6 +55,7 @@ fixture_1_yaml = """
         boss: alice
         balance: 33.92
         my_trust: 115
+        location: fam_t1_loc
 
       - name: fam_t2
         members: 
@@ -65,6 +66,7 @@ fixture_1_yaml = """
         boss: tom
         balance: 102.92
         my_trust: 150
+        location: fam_t2_loc
 
 
   ad2_setup:
@@ -81,6 +83,7 @@ fixture_1_yaml = """
         boss: john_al
         balance: 239.19
         my_trust: 250
+        location: ad2_fam_t2
    
 
   ad3_setup:
@@ -101,6 +104,7 @@ fixture_1_yaml = """
         boss: john_a3
         balance: 63.44
         my_trust: 99
+        location: ad3_fam_t3
 
 
 """
