@@ -17,6 +17,15 @@ from app.core.model.AdelphosUri import EAdelphosType
 from app.core.model.AdelphosUri import AdelphosUri
 
 
+async def alias_ob_get_your_family(kernel, alias_ob, t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE,
+            alias_ob().uri.family, host = alias_ob().uri.host)
+    family_ob = await fdb.uri_read_ob(t_id, family_uri,
+                                      must_lock = True)
+    return family_ob
+
+
 async def alias_get_your_family(kernel, alias_uri_str, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     alias_uri = fdb.parse_uri(alias_uri_str)

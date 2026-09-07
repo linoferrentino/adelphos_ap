@@ -70,6 +70,26 @@ async def get_total_tax_chain_str(kernel, chain, t_id):
     return total_tax
 
 
+def distribuite_hearts_to_exports(kernel, hearts_given, chain_exports):
+    db_delta = -0.03 + ( 0.01 * hearts_given)
+    gCon.log(f"Giving {db_delta} of system trust to the export chain")
+
+    for export_family in reversed(chain_exports[:-1]):
+        old_system_trust = export_family().get_scalar('system_trust')
+        new_trust = old_system_trust + db_delta
+        export_family().set_scalar('system_trust', new_trust)
+
+
+def distribuite_hearts_to_imports(kernel, hearts_given, chain_imports):
+    db_delta = -0.03 + ( 0.01 * hearts_given)
+    gCon.log(f"Giving {db_delta} of my trust to the import chain")
+
+    for import_family in reversed(chain_imports[:-1]):
+        old_trust = import_family().get_scalar('my_trust')
+        new_trust = old_trust + db_delta
+        import_family().set_scalar('my_trust', new_trust)
+
+
 def distribuite_gains_to_exports(kernel, price, chain_exports, t_id):
     export_family = chain_exports[-2]
     balance = export_family().get_scalar('balance')

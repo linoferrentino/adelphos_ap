@@ -376,6 +376,8 @@ class FederatedStore(Dependency, LifespanAware):
 
     async def _fdb_worker(self):
         self.fdbtg = TaskGroup()
+        if hasattr(self, 'stop_signal') == False:
+            return
         async with self.fdbtg:
             while self.run_enabled:
                 async with self.stop_signal:
@@ -412,10 +414,11 @@ class FederatedStore(Dependency, LifespanAware):
 
     async def stop_async(self):
         self.run_enabled = False
-        async with self.stop_signal:
-            self.stop_signal.notify_all()
-        await self.ses_worker
-        self.db.close()
+        if hasattr(self, 'stop_signal') == True:
+            async with self.stop_signal:
+                self.stop_signal.notify_all()
+            await self.ses_worker
+            self.db.close()
         self.fact.reset()
 
 

@@ -33,3 +33,23 @@ root.do_association family_source #fa#fam_bob@www.adelphos.it \
 	upper_name wall_street_family \
 	location "Wall Street 5th" 
 
+root.put_object as_adelphos #al#john.smith@www.adelphos.it \
+title 'Joyce Ulysses' \
+description 'used in good condition' price 4.32
+
+root.buy_object as_adelphos #al#mary.smith@www.adelphos.it \
+object_uri #ob#1_smith@www.adelphos.it hearts_given 5 ==> \
+	{ "errno" : 18 }
+
+root.add_user user jack
+root.add_alias alias jack_al.morrison user jack password jpass \
+	location 'Siena, via Dante 3'
+
+root.buy_object as_adelphos #al#jack_al.morrison@www.adelphos.it \
+object_uri #ob#1_smith@www.adelphos.it hearts_given 5  ==> \
+	{ "errno" : 10 }
+
+root.buy_object as_adelphos #al#bob.fam_bob@www.adelphos.it \
+object_uri #ob#1_smith@www.adelphos.it hearts_given 5 
+
+

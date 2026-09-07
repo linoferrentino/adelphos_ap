@@ -111,6 +111,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
     async def sys_call_handler_call_try(self, context, syscall, param, kwargs):
         kwargs['_unsafe'] = False
+        kwargs['_param'] = param
         msg_out = await syscall.handler(self.kernel, param, kwargs)
         return msg_out
 

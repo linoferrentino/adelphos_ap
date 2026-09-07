@@ -26,6 +26,9 @@ from app.core.sys.AliasCalls import AliasCalls
 import app.core.sys.FamilyCalls as fcalls
 import app.core.sys.family_utils as fu
 import app.misc.alias_utils as au
+import app.core.sys.alias_utils as autils
+import app.core.sys.offer_utils as ofutils
+import app.core.sys.ecommerce_utils as ecut
 
 
 def sudo_cmd(func):
@@ -49,6 +52,17 @@ class RootApi:
     async def _sys_call_play_script(kernel, session, pars):
         await _root_play_script(kernel, session, pars)
 
+
+    @sudo_cmd
+    @staticmethod
+    async def _sys_call_buy_object(kernel, session, pars):
+        await _root_buy_object_safe(kernel, pars)
+
+
+    @sudo_cmd
+    @staticmethod
+    async def _sys_call_put_object(kernel, session, pars):
+        await _root_put_object_safe(kernel, pars)
 
 
     @sudo_cmd
@@ -116,6 +130,33 @@ class RootApi:
         gCon.log(f"do association with pars {pars}")
         await _do_association_safe(kernel, pars)
 
+
+@federated_transaction(raise_if_fail = True)
+async def _root_buy_object_safe(kernel, pars, t_id):
+    as_adelphos_uri_str = pars['as_adelphos']
+    object_uri = pars['object_uri']
+ 
+    (exp_chain, imp_chain) = await ofutils.offer_buy_impl(kernel,
+            object_uri, as_adelphos_uri_str, t_id)
+
+    hearts_given = pars['hearts_given']
+    ecut.distribuite_hearts_to_imports(kernel, hearts_given, exp_chain)
+    ecut.distribuite_hearts_to_exports(kernel, hearts_given, imp_chain)
+
+   
+@federated_transaction(raise_if_fail = True)
+async def _root_put_object_safe(kernel, pars, t_id):
+    gCon.log(f"Add object with pars {pars}")
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    as_adelphos_uri_str = pars['as_adelphos']
+    alias_ob = await fdb.uri_read_str(t_id, as_adelphos_uri_str,
+                                      must_lock = True)
+    family_ob = await autils.alias_get_your_family(kernel,
+            as_adelphos_uri_str, t_id)
+    gCon.log(f"aliasob {alias_ob} family {family_ob}")
+    await ofutils.object_put_ad_in_agora_impl(kernel, family_ob,
+            alias_ob, pars, t_id)
+    
 
 @federated_transaction(raise_if_fail = True)
 async def _do_association_safe(kernel, pars, t_id):

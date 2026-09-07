@@ -21,12 +21,12 @@ from app.core.AdelphosCoreException import AdelphosCoreException
 from app.logging import gCon
 
 async def get_family_str_in_session(kernel, pars, t_id):
-    family_uri = pars['_session'].family_uri
+    family_uri = pars['_param'].family_uri
     return family_uri.unparse()
 
 
 async def get_family_in_session(kernel, pars, t_id):
-    family = pars['_session'].family
+    family = pars['_param'].family
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
     family_ob = await fdb.uri_read_ob(t_id, family_uri, must_lock = True,
@@ -38,7 +38,7 @@ async def get_family_source(kernel, pars, t_id):
     family_source = pars.get('family_source')
     if family_source is None:
         family_ob = await get_family_in_session(kernel, pars, t_id)
-        pars['family_source'] = pars['_session'].family_uri.unparse()
+        pars['family_source'] = pars['_param'].family_uri.unparse()
         return family_ob
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     family_ob = await fdb.uri_read_str(t_id, family_source,
@@ -113,7 +113,7 @@ async def get_family_uplevel(kernel, pars, t_id):
 
 
 async def get_alias_in_session(kernel, pars, t_id):
-    alias_uri = pars['_session'].alias_uri
+    alias_uri = pars['_param'].alias_uri
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     alias_ob = await fdb.uri_read_ob(t_id, alias_uri, must_lock = True,
                                      only_local = True)
@@ -121,7 +121,7 @@ async def get_alias_in_session(kernel, pars, t_id):
 
 
 def ensure_logged_alias_is_boss(family_ob, pars):
-    logged_alias = pars['_session'].alias_uri.unparse()
+    logged_alias = pars['_param'].alias_uri.unparse()
     boss_uri = family_ob().get_scalar('boss')
     if boss_uri != logged_alias:
         raise AdelphosCoreException(ECoreErrno.EDENIED, f"You are {logged_alias} not {boss_uri}")

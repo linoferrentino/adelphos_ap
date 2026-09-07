@@ -247,6 +247,30 @@ standard_cli_api = """
               script_path:
                 required: true
 
+          - name: buy_object
+            pars:
+              as_adelphos:
+                required: true
+              object_uri:
+                required: true
+              hearts_given:
+                par_type: int
+                required: true
+                validator: ((_v_ >= 0) and (_v_ <= 5))
+
+
+          - name: put_object
+            pars:
+              as_adelphos:
+                required: true
+              title:
+                required: true
+              description:
+                required: true
+              price:
+                required: true
+                par_type: float 
+
           - name: do_association
             pars:
               import_export_tax:
@@ -271,6 +295,7 @@ standard_cli_api = """
                 par_type: bool
                 required: false
                 default: false
+            
 
       task:
         class: app.core.sys.TaskCalls.TaskCalls
