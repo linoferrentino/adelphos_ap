@@ -32,6 +32,12 @@ from app.federation.FdbException import EFdbErrors
 
 import weakref
 
+class EUpgradeAction(IntEnum):
+    ADD_COLUMN = 0
+    DEL_COLUMN = 1
+    RENAME_COLUMN = 2
+    RECOMPUTE_COLUMN = 3
+ 
 
 def str_to_fobs(str_ob):
     ob = json.loads(str_ob)
@@ -40,6 +46,7 @@ def str_to_fobs(str_ob):
 
 
 def str_to_fob(uri_ob, registrar, str_ob, locked = False):
+    gCon.log(f"[blue]str_to_fob {str_ob}[/blue]")
     obs = str_to_fobs(str_ob)
     fob = FederatedObject(uri_ob, registrar, ob = obs, locked = locked)
     return fob
@@ -188,6 +195,7 @@ FDB_RESERVED_PREFIX = "_fdb_"
 
 REF_COUNT_COLUMN = f"{FDB_RESERVED_PREFIX}ref_count"
 VERSION_COLUMN   = f"{FDB_RESERVED_PREFIX}version"
+CID_COLUMN   = f"{FDB_RESERVED_PREFIX}cid"
 
 
 @dataclass
@@ -276,18 +284,57 @@ class FederatedObject:
 
             self.ob = FObSerialized(EObState.PRESENT)
             self.ob.fields[REF_COUNT_COLUMN] = ref_count
-            self.ob.fields[VERSION_COLUMN] = 0
+            self.ob.fields[VERSION_COLUMN] = 0 
+            self.ob.fields[CID_COLUMN] = registrar.version
             self._enforce_schema_init(fields)
             self.modified = True
         else:
             self.ob = ob
-            self.modified = False
+            self._check_version()
 
         if locked:
             self.ts_locked = True 
         else:
             assert ob is not None
             self.ts_locked = False
+
+
+    def _apply_step(self, step):
+        match step.action:
+            case EUpgradeAction.ADD_COLUMN:
+                self.ob.fields[step.new_name] = step.default_value
+            case _:
+                raise Exception(f"TO do {step.action}")
+
+
+    def _upgrade_version(self):
+       while self.ob.fields[CID_COLUMN] != self.registrar.version:
+            gCon.log(f"upgrading from version {self.ob.fields[CID_COLUMN]}")
+            key = f"from_{self.ob.fields[CID_COLUMN]}"
+            gCon.log(f"Searching key {key}")
+            upgrade_steps = self.registrar.upgrades.get(key)
+            if upgrade_steps is None:
+                raise FdbException(EFdbErrors.EFDB_UNDEFINED_UPGRADE,
+                    f"Cannot upgrade object to object {self.registrar.version}")
+            gCon.log(f"executing steps {upgrade_steps}")
+
+            for upgrade_step in upgrade_steps:
+                self._apply_step(upgrade_step)
+
+            self.modified = True
+            self.ob.fields[CID_COLUMN] = self.ob.fields[CID_COLUMN] + 1
+
+
+    def _check_version(self):
+        self.modified = False
+        if (self.ob.state == EObState.LENT):
+            return 
+        if self.ob.fields[CID_COLUMN] == self.registrar.version:
+            return
+        if self.ob.fields[CID_COLUMN] > self.registrar.version:
+            raise FdbException(EFdbErrors.EFDB_SCHEMA_DOWNGRADE_NOT_SUPPORTED,
+                    f"object {self.ob.fields} has a newer version.")
+        self._upgrade_version()
 
 
     def enforce_lock(self):
@@ -499,6 +546,12 @@ class FederatedObject:
         cur_value = self.ob.fields[key]
         gCon.log(f"get_set {key} return {cur_value}")
         return set(cur_value)
+
+
+    @enforce_set
+    def is_in_set(self, key, item):
+        key_set = self.get_set(key)
+        return item in key_set
 
 
     @enforce_set

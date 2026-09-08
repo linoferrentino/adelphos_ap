@@ -33,8 +33,10 @@ async def offer_get_adelphos_from(kernel, offer_ob, t_id):
              'adelphos_from', t_id)
 
 
-async def offer_hearts_given(kernel, exp_chain, imp_chain, hearts_given, t_id):
-    pass
+async def is_offer_in_family_agora(kernel, offer_uri, family_ob, t_id):
+    agora_ob = await fu.family_get_your_agora(kernel,
+                    family_ob, t_id)
+    return agora_ob().is_in_set('offers', offer_uri)
 
 
 async def offer_buy_impl(kernel, object_uri, buyer_uri, t_id):
@@ -52,6 +54,12 @@ async def offer_buy_impl(kernel, object_uri, buyer_uri, t_id):
                 seller_family, buyer_family, t_id)
     gCon.log(f"export chain {exp_chain}")
     gCon.log(f"import chain {imp_chain}")
+
+    common_family = exp_chain[-1]
+    if await is_offer_in_family_agora(kernel, object_uri,
+                        common_family, t_id) == False:
+        raise AdelphosCoreException(ECoreErrno.EOBJECT_NOT_EXPORTED,
+                                    f"{object_uri} not exported")
 
     if len(exp_chain) == 1:
         raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,

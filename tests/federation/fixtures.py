@@ -64,34 +64,31 @@ def federated_db_local(request):
 
 @pytest.fixture
 def fdb1_loc(federated_db_local):
-
     yield from federated_db_local(FIRST_HOST, schema_simple_yaml)
-
-
-@pytest.fixture
-def fdb_host(federated_db_local):
-
-    def get_db_in_host(host):
-        yield from federated_db_local(host, schema_simple_yaml)
-
-    return get_db_in_host
-
 
 
 @pytest.fixture(params = ['mem', 'sqlite'])
 def federated_db(request):
 
-    def _build_a_federated_db(host, conf_kernel, schema_yaml):
+    def _build_a_federated_db(host, conf_kernel, schema_yaml, **kwargs):
 
         _inline_schema_ = "{}"
         _db_type_ = request.param
 
-        gCon.log(f"db type {_db_type_}")
+        gCon.log(f"db type {_db_type_} kwargs {kwargs}")
 
-        complete_conf = conf_kernel.format(
-            _inline_schema_ = _inline_schema_,
-            _db_type_ = _db_type_,
-            _hostname_ = host)
+        kwargs['_inline_schema_'] = _inline_schema_
+        kwargs['_db_type_'] = _db_type_
+        kwargs['_hostname_'] = host
+
+        gCon.log(f"now kwargs are {kwargs}")
+
+        complete_conf = conf_kernel.format(**kwargs)
+
+        #complete_conf = conf_kernel.format(
+        #    _inline_schema_ = _inline_schema_,
+        #    _db_type_ = _db_type_,
+        #    _hostname_ = host)
 
         kernel_conf = yaml.safe_load(complete_conf)
 

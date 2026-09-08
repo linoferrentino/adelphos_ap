@@ -98,6 +98,36 @@ conf:
 """ + stdcnf.social_api
 
 
+mocked_federated_store_kernel_template = """
+
+modules:
+
+    fed_db:
+      constructor: tests.testers.MockedFederatedStore.MockedFederatedStore
+      args: 
+        schema:  {_inline_schema_}
+        db_type: {_db_type_}
+        start_db: {_start_db_}
+        stop_db: {_stop_db_}
+
+    router:
+      constructor: app.AdelphosRouter.AdelphosRouter
+
+conf:
+
+    general:
+      debug: true 
+      host:  {_hostname_}
+      root_path: /api
+
+    fed_db:
+      db_name: ':memory:'
+      db_type: mem
+      
+
+"""
+
+
 federated_store_kernel_template = """
 
 modules:

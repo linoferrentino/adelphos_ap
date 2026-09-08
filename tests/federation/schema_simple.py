@@ -70,7 +70,9 @@ types:
 
 classes:
     - uri_prefix: err_prefix
+      version: 0
       can_be_root: true 
+      version: 0
       columns:
         - name: _fdb_impossible
           type: int
@@ -90,6 +92,7 @@ classes:
 
     - uri_prefix: cloned_error
       can_be_root: true 
+      version: 0
       columns:
         - name: age 
           type: int
@@ -98,6 +101,7 @@ classes:
 
     - uri_prefix: cloned_error
       can_be_root: true 
+      version: 0
       columns:
         - name: age 
           type: int
@@ -117,6 +121,7 @@ classes:
 
     - uri_prefix: person
       can_be_root: true 
+      version: 0
       columns:
         - name: age 
           type: int
@@ -129,6 +134,64 @@ classes:
           required: true
 
 """
+
+
+schema_old_version = f"""
+
+uri_constructor: 'tests.federation.schema_simple.FederatedUriTest'
+
+types:
+
+
+classes:
+
+    - uri_prefix: person
+      can_be_root: true 
+      version: 0
+      columns:
+        - name: age 
+          type: int
+          cardinality: scalar
+          required: true
+
+
+"""
+
+schema_new_version = f"""
+
+uri_constructor: 'tests.federation.schema_simple.FederatedUriTest'
+
+types:
+
+
+classes:
+
+    - uri_prefix: person
+      can_be_root: true 
+      version: 1
+      columns:
+        - name: age 
+          type: int
+          cardinality: scalar
+          required: true
+
+        - name: address
+          type: str
+          cardinality: scalar
+          required: true
+
+      schema_upgrades:
+
+        from_0:
+          - action: add_col
+            name: address
+            default: 'no address given'
+            
+
+"""
+
+
+
 
 schema_simple_yaml = f"""
 
@@ -147,6 +210,7 @@ types:
 classes:
     - uri_prefix: '{TYPE_T1}'
       can_be_root: true 
+      version: 0
       columns:
         - name: 'key_int'
           type: 'int'
@@ -176,11 +240,13 @@ classes:
 
     - uri_prefix: '{TYPE_T2}'
       can_be_root: false
+      version: 0
       columns: []
 
 
     - uri_prefix: conflict_c
       can_be_root: true
+      version: 0
       columns:
         - name: name
           type: str
@@ -197,6 +263,7 @@ classes:
 
     - uri_prefix: t_json
       can_be_root: false
+      version: 0
       columns:
         - name: ob_json
           type: json
@@ -206,6 +273,7 @@ classes:
 
     - uri_prefix: t_json_array
       can_be_root: true 
+      version: 0
       columns:
         - name: tasks
           type: json
@@ -215,6 +283,7 @@ classes:
 
     - uri_prefix: p_enum
       can_be_root: true
+      version: 0
       columns:
         - name: name
           type: str
@@ -237,6 +306,7 @@ classes:
 
     - uri_prefix: t_uri_empty_set
       can_be_root: true
+      version: 0
       columns:
         - name: followers
           type: local_uri 
@@ -246,6 +316,7 @@ classes:
 
     - uri_prefix: t_uri_set
       can_be_root: true
+      version: 0
       columns:
         - name: members
           type: local_uri 
@@ -260,6 +331,7 @@ classes:
 
     - uri_prefix: t_member
       can_be_root: false
+      version: 0
       columns:
         - name: name 
           type: str
@@ -269,6 +341,7 @@ classes:
 
     - uri_prefix: al_uri
       can_be_root: true
+      version: 0
       columns:
         - name: trust_lines
           type: uri
@@ -278,6 +351,7 @@ classes:
 
     - uri_prefix: test_no_uri
       can_be_root: true 
+      version: 0
       columns:
         - name: need_uri 
           type: uri
@@ -287,6 +361,7 @@ classes:
 
     - uri_prefix: test_no_ref
       can_be_root: false
+      version: 0
       columns:
         - name: need_uri 
           type: uri
@@ -296,6 +371,7 @@ classes:
 
     - uri_prefix: tline
       can_be_root: false
+      version: 0
       columns:
         - name: equity
           type: real
@@ -306,6 +382,7 @@ classes:
 
     - uri_prefix: al
       can_be_root: true
+      version: 0
       columns:
         - name: equity
           type: real

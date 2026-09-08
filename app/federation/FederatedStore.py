@@ -388,6 +388,10 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     async def start_async(self):
+        await self._start_async_maybe(True)
+
+
+    async def _start_async_maybe(self, start_db):
 
         config = self.conf.get_conf(Dependencies.FEDERATED_DB)
 
@@ -407,19 +411,24 @@ class FederatedStore(Dependency, LifespanAware):
         if self.schema is None:
             raise Exception('loading of schema not yet supported')
 
-        self.db = self._create_db(self.db_type, self.db_name)
+        if (start_db):
+            self.db = self._create_db(self.db_type, self.db_name)
+            self.db.open()
         self.fact.parse_schema(self.schema)
-        self.db.open()
 
 
     async def stop_async(self):
+        await self._stop_async_maybe(True)
+
+
+    async def _stop_async_maybe(self, stop_db):
         self.run_enabled = False
-        if hasattr(self, 'stop_signal') == True:
-            async with self.stop_signal:
-                self.stop_signal.notify_all()
-            await self.ses_worker
-            self.db.close()
+        async with self.stop_signal:
+            self.stop_signal.notify_all()
+        await self.ses_worker
         self.fact.reset()
+        if stop_db:
+            self.db.close()
 
 
     def is_local_uri(self, uri):

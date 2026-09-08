@@ -27,6 +27,7 @@ classes:
 
     - uri_prefix: {EAdelphosType.ALIAS_TYPE}
       can_be_root: false 
+      version: 0
 
       columns:
 
@@ -53,6 +54,7 @@ classes:
 
     - uri_prefix: {EAdelphosType.FAMILY_TYPE}
       can_be_root: true
+      version: 0
 
       columns:
 
@@ -120,6 +122,7 @@ classes:
 
     - uri_prefix: {EAdelphosType.AGORA_TYPE}
       can_be_root: false
+      version: 0
 
       columns:
 
@@ -162,6 +165,7 @@ classes:
 
     - uri_prefix: {EAdelphosType.OBJECT_TYPE}
       can_be_root: false
+      version: 0
 
       columns:
 

@@ -31,7 +31,6 @@ from tests.federation.schema_simple import TYPE_T1, TYPE_T2
 from tests.federation.schema_simple import FederatedUriTest
 from app.sdc.Dependencies import Dependencies
 from tests.federation.fixtures import fdb1_loc
-from tests.federation.fixtures import fdb_host
 from tests.federation.fixtures import federated_db_local
 from tests.federation.fixtures import federated_db
 from app.transport.bridge.loop import run_coro_in_loop
@@ -39,6 +38,7 @@ from tests.federation.schema_simple import schema_simple_yaml
 from tests.federation.schema_simple import schema_reserved_error
 from tests.federation.schema_simple import schema_duplicated_class
 from tests.federation.schema_simple import schema_duplicated_column
+import tests.federation.schema_simple as schs
 import tests.adelphoi_test_config as tconf
 
 
@@ -386,6 +386,27 @@ async def a_test_uri_remove(fdb1_loc):
     assert fob_dep() is not None
 
 
+def test_is_in_set(fdb1_loc):
+    run_coro_in_loop(a_test_is_in_set, (fdb1_loc,))
+
+
+async def a_test_is_in_set(fdb1_loc):
+    t1uri = FederatedUriTest('t_uri_set', 'tj1')
+    t_id = fdb1_loc.begin_transaction()
+    fob = fdb1_loc.new_ob_uri(t_id, t1uri)
+    tmember_uri = FederatedUriTest('t_member', 'member_lino', host = LOCALHOST)
+    fob_dep = fdb1_loc.new_ob_uri(t_id, tmember_uri, fields = {
+        'name' : 'lino'
+        })
+    fob().add_link('members', fob_dep)
+
+    fdb1_loc.commit_transaction(t_id)
+    t_id = fdb1_loc.begin_transaction()
+
+    fob_set = await fdb1_loc.uri_read_ob(t_id, t1uri)
+    assert fob_set().is_in_set('members', tmember_uri.unparse(True))
+ 
+
 def test_uri_set(fdb1_loc):
     run_coro_in_loop(a_test_uri_set, (fdb1_loc,))
 
@@ -553,6 +574,50 @@ async def a_test_json_field(fdb1_loc):
     with pytest.raises(FdbException) as fex:
         await fob().set_scalar('ob_json', obj)
     assert fex.value.errno == EFdbErrors.EFDB_NO_LOCK_ON_OB
+
+
+def test_open_close_db(federated_db):
+    old_db_w = federated_db(FIRST_HOST,
+                tconf.mocked_federated_store_kernel_template,
+                schs.schema_old_version, _start_db_ = True,
+                _stop_db_ = False)
+
+    new_db_w = federated_db(FIRST_HOST,
+                tconf.mocked_federated_store_kernel_template,
+                schs.schema_new_version, _start_db_ = False,
+                _stop_db_ = True)
+
+    old_db = old_db_w.app.routable.get_dep(Dependencies.FEDERATED_DB)
+    new_db = new_db_w.app.routable.get_dep(Dependencies.FEDERATED_DB)
+    with old_db_w:
+        run_coro_in_loop(a_test_create_old_data, (old_db,))
+
+    old_db_db = old_db.get_db()
+
+    with new_db_w:
+        new_db.set_db(old_db_db)
+        run_coro_in_loop(a_test_read_old_data, (new_db,))
+
+
+async def a_test_read_old_data(new_db):
+    t_id_1 = new_db.begin_transaction()
+    told_person = FederatedUriTest('person', 'bob')
+    old_person = await new_db.uri_read_ob(t_id_1, told_person)
+    assert old_person() is not None
+    assert old_person().get_scalar('age') == 54
+    assert old_person().get_scalar('address') == 'no address given'
+    new_db.commit_transaction(t_id_1)
+
+
+async def a_test_create_old_data(old_db):
+
+    t_id_1 = old_db.begin_transaction()
+    told_person = FederatedUriTest('person', 'bob')
+    old_person = old_db.new_ob_uri(t_id_1, told_person, fields = {
+        'age' : 54
+    })
+    old_db.commit_transaction(t_id_1)
+
 
 
 def test_impossibile_column(federated_db):

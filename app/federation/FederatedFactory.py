@@ -17,19 +17,33 @@ import re
 from app.federation.FdbException import FdbException
 from app.federation.FdbException import EFdbErrors
 from app.federation.FederatedObject import FObColumnDefinition,\
-        FObColType, FObCardType, FederatedEnum, FDB_RESERVED_PREFIX 
+        FObColType, FObCardType, FederatedEnum, FDB_RESERVED_PREFIX, \
+        EUpgradeAction
 from dataclasses import dataclass
 from dataclasses import field
 import app.misc.utils as misc
 from app.logging import gCon
+from enum import IntEnum
 
+
+   
 
 @dataclass
 class FederatedFactoryRegistrar:
     
     can_be_root : bool
+    version: int
     pars: dict = field(default_factory = dict)
+    upgrades: dict = field(default_factory = dict)
 
+
+@dataclass
+class FederatedFactoryUpgradeStep:
+    action: EUpgradeAction
+    old_name: str
+    new_name: str
+    default_value: str
+    
 
 class FederatedFactory:
 
@@ -107,14 +121,41 @@ class FederatedFactory:
         registrar.pars[col_name] = col_def
 
 
+    def _build_upgrades(self, upgrades, registrar):
+        gCon.log(f"adding upgrade {upgrades}")
+        list_upgrades = list()
+        for upgrade_step in upgrades:
+            old_name = None
+            match upgrade_step['action']:
+                case 'add_col':
+                    action = EUpgradeAction.ADD_COLUMN
+                    new_name = upgrade_step['name']
+                    default_value = upgrade_step['default']
+                case _:
+                    raise Exception(f"todo {upgrade_step['action']}")
+            upstep = FederatedFactoryUpgradeStep(action,
+                            old_name, new_name, default_value)
+            list_upgrades.append(upstep)
+        return list_upgrades
+
+
     def _add_class(self, class_ob):
         uri_prefix = class_ob['uri_prefix']
         can_be_root = class_ob['can_be_root']
-        registrar = FederatedFactoryRegistrar(can_be_root)
+        version = class_ob['version']
+        registrar = FederatedFactoryRegistrar(can_be_root, version)
 
         col_array = class_ob ['columns']
         for col in col_array:
             self._add_column(col, registrar)
+
+        upgrades = class_ob.get('schema_upgrades')
+        if upgrades is not None:
+            for upgrade, upgrade_def in upgrades.items():
+                upgrade_steps = self._build_upgrades(upgrade_def, registrar)
+                registrar.upgrades[upgrade] = upgrade_steps
+
+        #gCon.log(f"The final registrar is {registrar}")
 
         self._register_ob_type(uri_prefix, registrar)
 
