@@ -53,7 +53,7 @@ async def family_associate_2nd_half(kernel, pars, t_id):
 
     gCon.log(f"family src {family_src_ob().ob.fields} dst {family_dst_ob().ob.fields}")
 
-    new_level = family_src_ob().get_scalar('level') + 1
+    new_level = await family_src_ob().get_scalar('level', t_id) + 1
 
     upper_family_name = pars['upper_name']
     gCon.log(f"upper_family_name |{upper_family_name}|")
@@ -79,14 +79,14 @@ async def family_associate_2nd_half(kernel, pars, t_id):
 
     tax_src = await ecut.get_total_tax_chain_str(kernel,
                 pars['family_src_chain'], t_id)
-    export_trust = family_src_ob().get_scalar('my_trust')
+    export_trust = await family_src_ob().get_scalar('my_trust', t_id)
 
     await au.copy_ads_from_lower_agora(kernel, agora_src, export_trust,
                                        tax_src, agora_ob, t_id)
 
     tax_dst = await ecut.get_total_tax_chain_str(kernel,
                 pars['family_dst_chain'], t_id)
-    export_trust = family_dst_ob().get_scalar('my_trust')
+    export_trust = await family_dst_ob().get_scalar('my_trust', t_id)
     await au.copy_ads_from_lower_agora(kernel, agora_dst, export_trust,
                                        tax_dst, agora_ob, t_id)
 

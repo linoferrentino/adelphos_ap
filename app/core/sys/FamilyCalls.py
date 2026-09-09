@@ -92,9 +92,9 @@ f"""You have been invited to join adelphos by @{session.alias_family}@{this_host
 
         family_ob = await scu.get_family_in_session(kernel, pars, t_id)
 
-        scu.ensure_logged_alias_is_boss(family_ob, pars)
+        await scu.ensure_logged_alias_is_boss(family_ob, pars, t_id)
 
-        invite_ob = family_ob().get_scalar('invite')
+        invite_ob = await family_ob().get_scalar('invite', t_id)
         if invite_ob is not None:
             raise AdelphosCoreException(ECoreErrno.EINVITE_ALREADY_PRESENT,
                                         json.dumps(invite_ob))
@@ -120,12 +120,12 @@ async def _family_associate_first_half(kernel, pars, t_id):
                                         must_lock = True)
 
     if pars['_session'].is_logged_root() is False:
-        scu.ensure_logged_alias_is_boss(family_src_ob, pars)
+        await scu.ensure_logged_alias_is_boss(family_src_ob, pars, t_id)
 
     family_dst_ob = await scu.get_family_dest(kernel, pars, t_id)
 
-    level_src = family_src_ob().get_scalar('level')
-    level_dst = family_dst_ob().get_scalar('level')
+    level_src = await family_src_ob().get_scalar('level', t_id)
+    level_dst = await family_dst_ob().get_scalar('level', t_id)
 
     if level_src != level_dst:
         raise AdelphosCoreException(ECoreErrno.EDIFFERENT_LEVELS,
@@ -136,8 +136,8 @@ async def _family_associate_first_half(kernel, pars, t_id):
 
     gCon.log(f"The family src chain is {family_src_chain}")
 
-    scu.ensure_family_not_associated(family_src_ob)
-    scu.ensure_family_not_associated(family_dst_ob)
+    await scu.ensure_family_not_associated(family_src_ob, t_id)
+    await scu.ensure_family_not_associated(family_dst_ob, t_id)
 
     boss_ob = await fu.family_get_your_boss(kernel, family_dst_ob, t_id)
 

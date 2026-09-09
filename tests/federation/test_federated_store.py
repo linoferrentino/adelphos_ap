@@ -57,18 +57,18 @@ async def a_test_new_object_f(fdb1_loc):
 
     fob1 = fdb1_loc.new_ob(t_id, TYPE_T1, "ob1", fields = fields)
     assert fob1() is not None
-    val_int = fob1().get_scalar('key_int')
+    val_int = await fob1().get_scalar('key_int', t_id)
     assert val_int == 99
-    val_str = fob1().get_scalar('key_str')
+    val_str = await fob1().get_scalar('key_str', t_id)
     assert val_str is None
-    val_int = fob1().get_scalar('int_none')
+    val_int = await fob1().get_scalar('int_none', t_id)
     assert val_int is None
-    val_int = fob1().get_scalar('int_def')
+    val_int = await fob1().get_scalar('int_def', t_id)
     assert val_int == 101
 
     with pytest.raises(FdbException) as fex:
         #with pytest.raises(KeyError) as fex:
-        val_str = fob1().get_scalar('key_str111')
+        val_str = await fob1().get_scalar('key_str111', t_id)
     assert fex.value.errno == EFdbErrors.EFDB_UNKNOWN_COLUMN
     del fex
 
@@ -80,10 +80,10 @@ async def a_test_new_object_f(fdb1_loc):
     t1uri_1 = FederatedUriTest(TYPE_T1, 'ob1', host = LOCALHOST1)
     t_id = fdb1_loc.begin_transaction()
     fob1 = await fdb1_loc.uri_read_no_lock(t_id, t1uri)
-    val_int = fob1().get_scalar('key_int')
+    val_int = await fob1().get_scalar('key_int', t_id)
     assert val_int == 99
     fob1 = await fdb1_loc.uri_read_no_lock(t_id, t1uri_1)
-    val_int = fob1().get_scalar('key_int')
+    val_int = await fob1().get_scalar('key_int', t_id)
     assert val_int == 99
 
     with pytest.raises(FdbException) as fex:
@@ -231,20 +231,20 @@ async def a_test_write_over_rollback(fdb1_loc):
     t1uri = FederatedUriTest(TYPE_T1, 'a')
     t_id = fdb1_loc.begin_transaction()
     fob_get = await fdb1_loc.uri_read_lock(t_id, t1uri)
-    val = fob_get().get_scalar('key1')
+    val = await fob_get().get_scalar('key1', t_id)
     assert val == 'val1'
     fob_get().set_scalar('key1', 'val1_new')
-    val = fob_get().get_scalar('key1')
+    val = await fob_get().get_scalar('key1', t_id)
     assert val == 'val1_new'
     fdb1_loc.rollback_transaction(t_id)
 
     # this should not be possible
     with pytest.raises(AttributeError):
-        fob_get().get_scalar('key1')
+        await fob_get().get_scalar('key1', t_id)
 
     t_id = fdb1_loc.begin_transaction()
     fob_get = await fdb1_loc.uri_read_no_lock(t_id, t1uri)
-    val = fob_get().get_scalar('key1')
+    val = await fob_get().get_scalar('key1', t_id)
     assert val == 'val1'
     
 
@@ -260,7 +260,7 @@ async def a_test_after_transaction(fdb1_loc):
     t1uri = FederatedUriTest(TYPE_T1, 'a')
     t_id = fdb1_loc.begin_transaction()
     fob_get = await fdb1_loc.uri_read_no_lock(t_id, t1uri)
-    val = fob_get().get_scalar('key1')
+    val = await fob_get().get_scalar('key1', t_id)
     assert val == 'val1'
     assert t1uri == fob_get().uri
 
@@ -308,7 +308,7 @@ async def a_test_create_alias(fdb1_loc):
 
     fob = fdb1_loc.new_ob_uri(t_id, t1uri, fields = { 'equity' : 99.2 })
 
-    assert fob().get_scalar('equity') == 99.2
+    assert await fob().get_scalar('equity', t_id) == 99.2
 
 
 def test_uri_empty_set(fdb1_loc):
@@ -445,12 +445,12 @@ async def a_test_uri_set(fdb1_loc):
 
     fob = await fdb1_loc.uri_read_no_lock(t_id, tmember_uri)
     assert fob() is not None
-    assert fob().get_scalar('name') == 'lino'
+    assert await fob().get_scalar('name', t_id) == 'lino'
 
     fob_set = await fdb1_loc.uri_read_no_lock(t_id, t1uri)
 
     with pytest.raises(FdbException) as fex:
-        set_members = fob_set().get_scalar('members')
+        set_members = await fob_set().get_scalar('members', t_id)
     assert fex.value.errno == EFdbErrors.EFDB_SCALAR_EXPECTED
 
     set_members = fob_set().get_set('members')
@@ -510,10 +510,10 @@ async def a_test_enum_field(fdb1_loc):
             'preferred_fruit' : 'apple',
         })
 
-    pref_fruit = fob().get_scalar('preferred_fruit')
+    pref_fruit = await fob().get_scalar('preferred_fruit', t_id)
     assert pref_fruit == 'apple'
 
-    pref_fruit = fob().get_scalar('second_preferred_fruit')
+    pref_fruit = await fob().get_scalar('second_preferred_fruit', t_id)
     assert pref_fruit == 'banana'
 
     fdb1_loc.commit_transaction(t_id)
@@ -522,10 +522,10 @@ async def a_test_enum_field(fdb1_loc):
     fob = await fdb1_loc.uri_read_no_lock(t_id, t1uri)
     assert fob() is not None
 
-    pref_fruit = fob().get_scalar('preferred_fruit')
+    pref_fruit = await fob().get_scalar('preferred_fruit', t_id)
     assert pref_fruit == 'apple'
 
-    pref_fruit = fob().get_scalar('second_preferred_fruit')
+    pref_fruit = await fob().get_scalar('second_preferred_fruit', t_id)
     assert pref_fruit == 'banana'
 
 
@@ -553,7 +553,7 @@ async def a_test_json_field(fdb1_loc):
         'ob_json' : obj
         })
 
-    obj_get = fob().get_scalar('ob_json')
+    obj_get = await fob().get_scalar('ob_json', t_id)
     assert id(obj_get) == id(obj)
 
     fob().add_ref()
@@ -563,7 +563,7 @@ async def a_test_json_field(fdb1_loc):
     fob = await fdb1_loc.uri_read_no_lock(t_id, t1uri)
     assert fob() is not None
 
-    obj_get = fob().get_scalar('ob_json')
+    obj_get = await fob().get_scalar('ob_json', t_id)
     assert obj_get == obj
     assert obj_get['a'] == 19
 
@@ -603,8 +603,8 @@ async def a_test_transient_field(transient_db):
     t_id_1 = transient_db.begin_transaction()
     t_person_ob = await transient_db.uri_read_ob(t_id_1,
             transient_uri, must_lock = True)
-    n_friends = t_person_ob().get_scalar('num_of_friends')
-    n_age = t_person_ob().get_scalar('age')
+    n_friends = await t_person_ob().get_scalar('num_of_friends', t_id_1)
+    n_age = await t_person_ob().get_scalar('age', t_id_1)
     assert n_friends == 77
 
 
@@ -636,8 +636,8 @@ async def a_test_read_old_data(new_db):
     told_person = FederatedUriTest('person', 'bob')
     old_person = await new_db.uri_read_ob(t_id_1, told_person)
     assert old_person() is not None
-    assert old_person().get_scalar('age') == 54
-    assert old_person().get_scalar('address') == 'no address given'
+    assert await old_person().get_scalar('age', t_id_1) == 54
+    assert await old_person().get_scalar('address', t_id_1) == 'no address given'
     new_db.commit_transaction(t_id_1)
 
 
@@ -762,7 +762,7 @@ async def a_test_update_after_tx(fdb1_loc):
     t_id_1 = fdb1_loc.begin_transaction()
     fob = await fdb1_loc.uri_read_ob(t_id_1, ob_uri)
     assert fob() is not None
-    balance = fob().get_scalar('balance')
+    balance = await fob().get_scalar('balance', t_id_1)
     assert balance == 193
     fdb1_loc.rollback_transaction(t_id_1)
     assert fob() is None
@@ -774,7 +774,7 @@ async def a_test_update_after_tx(fdb1_loc):
     fdb1_loc.rollback_transaction(t_id_1)
     assert fob() is None
     
-    balance = detached_ob.get_scalar('balance')
+    balance = await detached_ob.get_scalar('balance', t_id_1)
     assert balance == 193
     detached_uri = detached_ob.uri
     #local_uri = fdb1_loc.remove_localhost(ob_uri)
@@ -789,7 +789,7 @@ async def a_test_update_after_tx(fdb1_loc):
     t_id_1 = fdb1_loc.begin_transaction()
     fob = await fdb1_loc.uri_read_ob(t_id_1, ob_uri)
     assert fob().ob.state == EObState.PRESENT
-    balance = detached_ob.get_scalar('balance')
+    balance = await detached_ob.get_scalar('balance', t_id_1)
     assert balance == 1010
 
 

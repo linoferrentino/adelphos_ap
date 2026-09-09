@@ -39,12 +39,12 @@ async def copy_ads_from_lower_agora(kernel, agora_lower, export_trust,
 
     for uri_lower in list_lower:
         ob_list = await fdb.uri_read_str(t_id, uri_lower, must_lock = True)
-        lower_price = ob_list().get_scalar('price')
+        lower_price = await ob_list().get_scalar('price', t_id)
         upper_price = tax * lower_price
 
         upper_price_db = tutils.abs_to_db(upper_price)
         if upper_price_db > export_trust:
-            gCon.log(f"the object {ob_list().get_scalar('title')} has a price {upper_price_db} > of export trust {export_trust}, ignored.")
+            gCon.log(f"the object {await ob_list().get_scalar('title', t_id)} has a price {upper_price_db} > of export trust {export_trust}, ignored.")
             continue
 
         gCon.log(f"Adding lower uri {uri_lower} --> {ob_list().uri}")

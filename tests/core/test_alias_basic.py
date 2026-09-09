@@ -96,7 +96,7 @@ async def a_test_add_dup_family(w_local):
       'force' : False
     }
     res = await AliasCalls.login(kernel, pars)
-    assert res.get_scalar('actor_handle') == lino_handle
+    assert res.ob.fields['actor_handle'] == lino_handle
 
     pars['password'] = 'pass1'
     res = await AliasCalls.login(kernel, pars)

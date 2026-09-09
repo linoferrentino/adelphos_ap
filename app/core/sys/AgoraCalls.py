@@ -119,7 +119,7 @@ class AgoraCalls:
         for offer in offers:
             offer_ob = await fdb.uri_read_str(t_id, offer,
                                               must_lock = True)
-            title = offer_ob().get_scalar('title')
+            title = await offer_ob().get_scalar('title', t_id)
             gCon.log(f"object has title {title}")
             if re.search(par_title, title) is not None:
                 gCon.log(f"found!")
@@ -147,31 +147,31 @@ class AgoraCalls:
                                 pars, t_id)
         offer_uri = offer_ob().uri.unparse()
 
-        alias_uri_str = offer_ob().get_scalar('adelphos_from')
+        alias_uri_str = await offer_ob().get_scalar('adelphos_from', t_id)
         family_from_ob = await alu.alias_get_your_family(
                 kernel, alias_uri_str, t_id)
         family_from_src = family_from_ob().uri.unparse()
 
         if family_from_src == chain_imports[0]().uri.unparse():
             raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
-                       f"The object {offer_ob().get_scalar('description')} is originated by your family.")
+                       f"The object {await offer_ob().get_scalar('description', t_id)} is originated by your family.")
 
         chain_exports = await scu.get_family_chain_up_from_to(kernel,
                     family_from_src, family_lev_ob, t_id)
         if len(chain_exports) != len(chain_imports):
             raise Exception("This version of adelphos handles symmetric chains: internal error")
 
-        global_export_tax = ecut.get_total_tax_up(chain_exports)
+        global_export_tax = await ecut.get_total_tax_up(chain_exports, t_id)
         gCon.log(f"The export tax total is {global_export_tax}")
 
-        price = offer_ob().get_scalar('price')
+        price = await offer_ob().get_scalar('price', t_id)
         agora_exported_price = price * global_export_tax
         gCon.log(f"The price is {price} in agora is {agora_exported_price}")
 
-        ecut.distribuite_losses_to_imports(kernel, agora_exported_price,
+        await ecut.distribuite_losses_to_imports(kernel, agora_exported_price,
                                            chain_imports, t_id)
 
-        ecut.distribuite_gains_to_exports(kernel, agora_exported_price,
+        await ecut.distribuite_gains_to_exports(kernel, agora_exported_price,
                                           chain_exports, t_id)
 
         family_originator = chain_exports[0]
@@ -219,8 +219,8 @@ class AgoraCalls:
                 'offer_uri' : offer_uri,
                 'export_to' : chain_exports_str[0],
                 'export_referent' : next_step_boss().uri.unparse(),
-                'offer_title' : offer_ob().get_scalar('title'),
-                'offer_desc' : offer_ob().get_scalar('description'),
+                'offer_title' : await offer_ob().get_scalar('title', t_id),
+                'offer_desc' : await offer_ob().get_scalar('description', t_id),
         }
 
         await tku.add_task_to_alias(kernel, adelphos_from,
@@ -244,7 +244,7 @@ class AgoraCalls:
     @staticmethod
     async def _agora_list_ads_impl(kernel, pars, t_id):
         family_lev_ob = await scu.get_family_uplevel(kernel, pars, t_id)
-        agora_uri = family_lev_ob().get_scalar('agora')
+        agora_uri = await family_lev_ob().get_scalar('agora', t_id)
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         agora_ob = await fdb.uri_read_str(t_id, agora_uri, must_lock = True)
         offers = agora_ob().get_as_list('offers')
@@ -288,7 +288,7 @@ async def _do_correct_pin_confirm(kernel, pars, routing_step,
                                t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     offer_ob = await fdb.uri_read_str(t_id, routing_step['offer_uri'])
-    title = offer_ob().get_scalar('title')
+    title = await offer_ob().get_scalar('title', t_id)
     return {
             'res': f"OK, you can now route the object {title}. It is in your hands" 
     }
@@ -299,7 +299,7 @@ async def _do_correct_pin_rcvd(kernel, pars, routing_step,
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     gCon.log(f"correct PIN, to unlock {routing_step['unlock_pin_to_give']}")
     offer_ob = await fdb.uri_read_str(t_id, routing_step['offer_uri'])
-    title = offer_ob().get_scalar('title')
+    title = await offer_ob().get_scalar('title', t_id)
     return {
             'res': f"OK, you can receive the object {title}" 
     }

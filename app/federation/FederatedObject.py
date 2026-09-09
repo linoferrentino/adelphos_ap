@@ -124,12 +124,12 @@ def enforce_schema_not_scalar_not_scalar(func):
 
 
 def check_transient(func):
-    def _inner_check_transient(self, key, *args):
+    async def _inner_check_transient(self, key, *args):
         schema = self.registrar.pars
         par = schema.get(key)
         if par.transient == True:
             gCon.log(f"call the hook")
-            self.ob.fields[key] = par.transient_hook(
+            self.ob.fields[key] = await par.transient_hook(
                 self.registrar.factory.fdb, self, None)
 
         res = func(self, key, *args)
@@ -532,9 +532,9 @@ class FederatedObject:
 
 
     @enforce_schema_scalar_read
-    def get_scalar(self, key, maybe = False):
+    async def get_scalar(self, key, t_id, maybe = False):
         gCon.log(f"get scalar {key} fields {self.ob.fields}")
-        return self._get_key_val_raw(key, maybe)
+        return await self._get_key_val_raw(key, maybe)
 
 
     @check_transient

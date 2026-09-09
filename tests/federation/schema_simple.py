@@ -138,7 +138,7 @@ classes:
 """
 
 
-def num_of_friends(fdb, fob, t_id):
+async def num_of_friends(fdb, fob, t_id):
     gCon.log(f"num_of_friends returns 77 fdb {fdb} ob {fob}")
     return 77 
 

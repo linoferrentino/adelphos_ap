@@ -45,16 +45,26 @@ class AliasCalls:
 
     @staticmethod
     async def _sys_call_login(kernel, session, pars):
-        login = pars['login']
-        password = pars['password']
-
-        await AliasCalls._session_login(kernel, session, login, password)
+        #await AliasCalls._session_login(kernel, session, login, password)
+        await AliasCalls.session_login_safe(kernel, pars)
 
         return "Login OK, check your Mastodon inbox to get the token."
 
 
     @staticmethod
-    async def _session_login(kernel, session, login, password, force = False):
+    @federated_transaction(raise_if_fail = True)
+    async def session_login_safe(kernel, pars, t_id):
+        login = pars['login']
+        password = pars['password']
+        session = pars['_param']
+
+        await AliasCalls._session_login(kernel, session, login, password, 
+                                        t_id)
+
+
+    @staticmethod
+    async def _session_login(kernel, session, login, password, t_id,
+                             force = False):
         (alias, family) = au.split_alias(login)
         pars = {
           'alias' : alias,
@@ -62,8 +72,8 @@ class AliasCalls:
           'password': password,
           'force' : force,
         }
-        alias_ob = await AliasCalls.login_safe(kernel, pars)
-        actor_handle = alias_ob.get_scalar('actor_handle')
+        alias_ob = await AliasCalls._login_impl(kernel, pars, t_id)
+        actor_handle = await alias_ob.get_scalar('actor_handle', t_id)
         social_dao = kernel.get_dep(Dependencies.SOCIAL_DAO)
         actor_dto = social_dao.actor_get_from_actor_handle(actor_handle)
         token = session.login_start(alias, family, actor_dto, alias_ob,
@@ -122,13 +132,14 @@ class AliasCalls:
                                         f"{alias}.{family}")
 
         if force == False:
-            password_hashed = alias_ob().get_scalar('password')
+            password_hashed = await alias_ob().get_scalar('password', t_id)
 
             ph = PasswordHasher()
             try:
                 res = ph.verify(password_hashed, password)
             except:
-                raise AdelphosCoreException(ECoreErrno.EINVALID_USER_OR_PASSWORD,
+                raise AdelphosCoreException(
+                        ECoreErrno.EINVALID_USER_OR_PASSWORD,
                                         f"{alias}.{family}")
 
         return alias_ob().detach()

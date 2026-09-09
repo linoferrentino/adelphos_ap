@@ -63,19 +63,19 @@ async def offer_buy_impl(kernel, object_uri, buyer_uri, t_id):
 
     if len(exp_chain) == 1:
         raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
-             f"The object '{offer_ob().get_scalar('title')}' is originated by your family.")
+             f"The object '{await offer_ob().get_scalar('title', t_id)}' is originated by your family.")
 
-    global_export_tax = ecut.get_total_tax_up(exp_chain)
+    global_export_tax = await ecut.get_total_tax_up(exp_chain, t_id)
     gCon.log(f"The export tax total is {global_export_tax}")
 
-    price = offer_ob().get_scalar('price')
+    price = await offer_ob().get_scalar('price', t_id)
     agora_exported_price = price * global_export_tax
     gCon.log(f"The price is {price} in agora is {agora_exported_price}")
 
-    ecut.distribuite_losses_to_imports(kernel, agora_exported_price,
+    await ecut.distribuite_losses_to_imports(kernel, agora_exported_price,
                                        imp_chain, t_id)
 
-    ecut.distribuite_gains_to_exports(kernel, agora_exported_price,
+    await ecut.distribuite_gains_to_exports(kernel, agora_exported_price,
                                       exp_chain, t_id)
 
     await au.remove_object_from_export_chain(kernel, exp_chain,
@@ -121,7 +121,7 @@ async def object_put_ad_in_agora_impl(kernel, family_ob, alias_ob,
     agora_ob = await fu.family_get_your_agora(kernel,
                         family_ob, t_id)
 
-    object_id = agora_ob().get_scalar('next_object_id')
+    object_id = await agora_ob().get_scalar('next_object_id', t_id)
     agora_ob().set_scalar('next_object_id', object_id + 1)
 
     object_ob = _create_object_from_pars(kernel, family_ob,
@@ -151,8 +151,8 @@ async def _export_object_in_upper_agorai(kernel, family_ob, cur_price,
     if upper_family_ob is None:
         return
 
-    export_trust = family_ob().get_scalar('my_trust')
-    tax = family_ob().get_scalar('import_export_tax')
+    export_trust = await family_ob().get_scalar('my_trust', t_id)
+    tax = await family_ob().get_scalar('import_export_tax', t_id)
 
     new_price = tax * cur_price
     new_price_db = tutils.abs_to_db(new_price)

@@ -18,7 +18,7 @@ from app.sdc.Dependencies import Dependencies
 async def object_get_field_uri_locked(kernel, ob, field_uri, t_id,
                         *, maybe = False):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-    uri = ob().get_scalar(field_uri)
+    uri = await ob().get_scalar(field_uri, t_id)
     if uri is None:
         if maybe == True:
             return None

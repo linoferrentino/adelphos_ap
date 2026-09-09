@@ -61,7 +61,7 @@ async def get_family_chain_up(kernel, pars, t_id):
     uplevel = pars['uplevel']
     chain.append(family_ob)
     for lev in range(0, uplevel):
-        family_uri = family_ob().get_scalar('upper_family')
+        family_uri = await family_ob().get_scalar('upper_family', t_id)
         if family_uri is None:
             raise AdelphosCoreException(ECoreErrno.EUPLEVEL_NOT_FOUND,
                                         f"lev {lev+1} not found")
@@ -98,7 +98,7 @@ async def get_family_chain_up_from_to(kernel,
                                            must_lock = True)
         chain.append(family_ob)
         family_uri_src = family_ob().uri.unparse()
-        family_uri_src = family_ob().get_scalar('upper_family')
+        family_uri_src = await family_ob().get_scalar('upper_family', t_id)
         if family_uri_src is None:
             raise AdelphosCoreException(ECoreErrno.EINVALID_CHAIN,
               f"Invalid chain requested: {family_uri_dst} unreacheable")
@@ -120,15 +120,15 @@ async def get_alias_in_session(kernel, pars, t_id):
     return alias_ob
 
 
-def ensure_logged_alias_is_boss(family_ob, pars):
+async def ensure_logged_alias_is_boss(family_ob, pars, t_id):
     logged_alias = pars['_param'].alias_uri.unparse()
-    boss_uri = family_ob().get_scalar('boss')
+    boss_uri = await family_ob().get_scalar('boss', t_id)
     if boss_uri != logged_alias:
         raise AdelphosCoreException(ECoreErrno.EDENIED, f"You are {logged_alias} not {boss_uri}")
 
 
-def ensure_family_not_associated(family_ob):
-    upper_family = family_ob().get_scalar('upper_family')
+async def ensure_family_not_associated(family_ob, t_id):
+    upper_family = await family_ob().get_scalar('upper_family', t_id)
     if upper_family is not None:
         raise AdelphosCoreException(ECoreErrno.EALREADY_ASSOCIATED,
           f"Family {family_ob().uri} is already associated to {upper_family}")

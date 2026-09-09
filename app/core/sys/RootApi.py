@@ -89,11 +89,8 @@ class RootApi:
     @sudo_cmd
     @staticmethod
     async def _sys_call_push_alias(kernel, session, pars):
-        alias = pars['alias']
-        alias_session = session.client.push_session(alias)
-        await AliasCalls._session_login(kernel, alias_session,
-                                        alias, None, True)
-        return alias_session.get_alias_ob().ob.fields
+        return await _push_alias_safe(kernel, pars)
+
 
 
     @sudo_cmd
@@ -132,6 +129,16 @@ class RootApi:
 
 
 @federated_transaction(raise_if_fail = True)
+async def _push_alias_safe(kernel, pars, t_id):
+    alias = pars['alias']
+    session = pars['_param']
+    alias_session = session.client.push_session(alias)
+    await AliasCalls._session_login(kernel, alias_session,
+                                    alias, None, t_id, True)
+    return alias_session.get_alias_ob().ob.fields
+
+
+@federated_transaction(raise_if_fail = True)
 async def _root_buy_object_safe(kernel, pars, t_id):
     as_adelphos_uri_str = pars['as_adelphos']
     object_uri = pars['object_uri']
@@ -140,8 +147,10 @@ async def _root_buy_object_safe(kernel, pars, t_id):
             object_uri, as_adelphos_uri_str, t_id)
 
     hearts_given = pars['hearts_given']
-    ecut.distribuite_hearts_to_imports(kernel, hearts_given, exp_chain)
-    ecut.distribuite_hearts_to_exports(kernel, hearts_given, imp_chain)
+    await ecut.distribuite_hearts_to_imports(kernel,
+                                             hearts_given, exp_chain, t_id)
+    await ecut.distribuite_hearts_to_exports(kernel,
+                                             hearts_given, imp_chain, t_id)
 
    
 @federated_transaction(raise_if_fail = True)

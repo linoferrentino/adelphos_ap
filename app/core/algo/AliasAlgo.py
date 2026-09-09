@@ -170,7 +170,7 @@ class AliasAlgo:
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
         family_ob = await fdb.uri_read_lock(t_id, family_uri)
 
-        invite_ob = family_ob().get_scalar('invite')
+        invite_ob = await family_ob().get_scalar('invite', t_id)
         if invite_ob is None:
              raise AdelphosCoreException(ECoreErrno.ECANNOT_FIND_INVITE,
                                         family)
