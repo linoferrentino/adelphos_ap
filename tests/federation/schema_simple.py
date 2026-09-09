@@ -24,6 +24,8 @@ from app.federation.FederatedFactory import FederatedFactoryRegistrar
 from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
 
+from app.logging import gCon
+
 TYPE_T1 = "TYPE_T1"
 TYPE_T2 = "TYPE_T2"
 
@@ -134,6 +136,41 @@ classes:
           required: true
 
 """
+
+
+def num_of_friends(fdb, fob, t_id):
+    gCon.log(f"num_of_friends returns 77 fdb {fdb} ob {fob}")
+    return 77 
+
+
+schema_transient_field = f"""
+
+uri_constructor: 'tests.federation.schema_simple.FederatedUriTest'
+
+types:
+
+
+classes:
+
+    - uri_prefix: person
+      can_be_root: true 
+      version: 0
+      columns:
+
+        - name: age 
+          type: int
+          cardinality: scalar
+          required: true
+
+        - name: num_of_friends
+          type: int
+          cardinality: scalar
+          transient_func: tests.federation.schema_simple.num_of_friends
+          transient_age: 3h
+
+
+"""
+
 
 
 schema_old_version = f"""

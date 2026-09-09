@@ -46,7 +46,6 @@ def str_to_fobs(str_ob):
 
 
 def str_to_fob(uri_ob, registrar, str_ob, locked = False):
-    gCon.log(f"[blue]str_to_fob {str_ob}[/blue]")
     obs = str_to_fobs(str_ob)
     fob = FederatedObject(uri_ob, registrar, ob = obs, locked = locked)
     return fob
@@ -124,9 +123,28 @@ def enforce_schema_not_scalar_not_scalar(func):
     return _inner_enforce
 
 
+def check_transient(func):
+    def _inner_check_transient(self, key, *args):
+        schema = self.registrar.pars
+        par = schema.get(key)
+        if par.transient == True:
+            gCon.log(f"call the hook")
+            self.ob.fields[key] = par.transient_hook(
+                self.registrar.factory.fdb, self, None)
+
+        res = func(self, key, *args)
+
+        if par.transient == True:
+            del self.ob.fields[key]
+        return res
+
+    return _inner_check_transient
+
+
 
 def enforce_schema_scalar_read(func):
     def _inner_enforce(self, key, *args):
+        gCon.log("enforce_schema_scalar_read")
         schema = self.registrar.pars
         par = schema.get(key)
         if par is None:
@@ -266,6 +284,10 @@ class FObColumnDefinition:
     required : bool
     default_value : object
     minimum_cardinality: int
+    read_only: bool
+    transient: bool
+    transient_hook: callable
+    transient_age: int
 
 
 class FederatedObject:
@@ -470,12 +492,19 @@ class FederatedObject:
         schema = self.registrar.pars
 
         for field in fields.keys():
+            gCon.log(f"checking field {field}")
             if field not in schema:
                 raise FdbException(EFdbErrors.EFDB_EXTRA_FIELD, field)
+            col_def = schema[field]
+            if col_def.transient:
+                raise FdbException(EFdbErrors.EFDB_TRANSIENT_FIELD, field)
 
         for col_name, col_def in schema.items():
 
             col_field = fields.get(col_name)
+            if col_def.transient:
+                continue
+
             if col_def.required:
                 
                 if col_field is None:
@@ -502,21 +531,20 @@ class FederatedObject:
         return store_str
 
 
-    def fields_to_str(self):
-        fields_str = json.dumps(self.ob.fields)
-        return fields_str
-
-
     @enforce_schema_scalar_read
     def get_scalar(self, key, maybe = False):
-        if maybe == False:
+        gCon.log(f"get scalar {key} fields {self.ob.fields}")
+        return self._get_key_val_raw(key, maybe)
+
+
+    @check_transient
+    def _get_key_val_raw(self, key, maybe):
+        try:
             return self.ob.fields[key]
-        val = self.ob.fields.get(key)
-        if val is not None:
-            return val
-        if maybe == True:
-            return None
-        raise AttributeError(key)
+        except AttributeError as ex:
+            if maybe == True:
+                return None
+            raise ex
 
 
     def detach(self):
@@ -535,8 +563,9 @@ class FederatedObject:
     def add_ref(self):
         self._inc_ref_ob()
 
-    @ensure_lock
+
     @enforce_schema
+    @ensure_lock
     def set_link(self, key, new_ob):
         self._compare_and_swap_link_impl(key, None, new_ob)
 
@@ -584,16 +613,16 @@ class FederatedObject:
         return list(cur_value)
                 
 
-    @ensure_lock
     @enforce_schema_not_scalar_not_scalar
+    @ensure_lock
     def set_list(self, key, new_list):
         self.ob.fields[key] = copy.deepcopy(new_list)
         self.modified = True
 
 
-    @ensure_lock
     @enforce_schema_not_scalar_scalar
     @enforce_uri_type
+    @ensure_lock
     def remove_link(self, key, ob):
         schema = self.registrar.pars
         par = schema.get(key)

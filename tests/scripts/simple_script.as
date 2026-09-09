@@ -37,6 +37,10 @@ root.put_object as_adelphos #al#john.smith@www.adelphos.it \
 title 'Joyce Ulysses' \
 description 'used in good condition' price 4.32
 
+root.put_object as_adelphos #al#john.smith@www.adelphos.it \
+title 'iPhone 14' \
+description 'battery low' price 232.35
+
 root.buy_object as_adelphos #al#mary.smith@www.adelphos.it \
 object_uri #ob#1_smith@www.adelphos.it hearts_given 5 ==> \
 	{ "errno" : 18 }
@@ -51,5 +55,10 @@ object_uri #ob#1_smith@www.adelphos.it hearts_given 5  ==> \
 
 root.buy_object as_adelphos #al#bob.fam_bob@www.adelphos.it \
 object_uri #ob#1_smith@www.adelphos.it hearts_given 5 
+
+root.buy_object as_adelphos #al#bob.fam_bob@www.adelphos.it \
+object_uri #ob#2_smith@www.adelphos.it hearts_given 5  ==> \
+	{ "errno" : 24 }
+
 
 

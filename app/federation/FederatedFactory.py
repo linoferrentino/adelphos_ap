@@ -25,12 +25,14 @@ import app.misc.utils as misc
 from app.logging import gCon
 from enum import IntEnum
 
+from app.misc.utils import import_string
+
 
    
 
 @dataclass
 class FederatedFactoryRegistrar:
-    
+    factory: object
     can_be_root : bool
     version: int
     pars: dict = field(default_factory = dict)
@@ -99,6 +101,24 @@ class FederatedFactory:
         return enum_val
 
 
+    @staticmethod
+    def _transform_age_str(age_str):
+        unit_measure = age_str[-1]
+        val = age_str[:-1]
+        match unit_measure:
+            case 'h' | 'H':
+                return int(val) * 3600
+            case 'd' | 'D':
+                return int(val) * 86400
+            case 's' | 'S':
+                return int(val)
+            case 'm' | 'M':
+                return int(val) * 60
+            case _:
+                raise FdbException(EFdbErrors.EFDB_SCHEMA_SYNTAX_ERROR,
+                        f"val {age_str} not understood")
+
+
     def _add_column(self, col, registrar):
         col_name = col['name']
 
@@ -113,11 +133,31 @@ class FederatedFactory:
         sub_type = self._get_subtype(col, col_type_id)
         cardinality_str = col['cardinality']
         cardinality_id = FederatedFactory.translate_cardinality(cardinality_str)
-        required = col.get('required', True)
-        def_value = col.get('default') 
+        transient_age_str = col.get('transient_age')
+        transient_field = False
+        def_value = None
+        required = False
+        read_only = False
+        transient_age = None
+        transient_hook = None
+
+        if transient_age_str is not None:
+            transient_field = True
+            transient_func = col['transient_func']
+            read_only = True
+            transient_age = FederatedFactory._transform_age_str(
+                    transient_age_str)
+            transient_hook = import_string(transient_func)
+        else:
+            required = col.get('required', True)
+            read_only = col.get('read_only', False)
+            def_value = col.get('default') 
+
         minimum_cardinality = col.get('minimum_cardinality', 0)
         col_def = FObColumnDefinition(col_type_id, sub_type, cardinality_id,
-                                      required, def_value, minimum_cardinality)
+              required, def_value, minimum_cardinality, read_only,
+              transient_field, transient_hook, transient_age)
+        #gCon.log(f"col {col_name} -> def {col_def}")
         registrar.pars[col_name] = col_def
 
 
@@ -143,7 +183,7 @@ class FederatedFactory:
         uri_prefix = class_ob['uri_prefix']
         can_be_root = class_ob['can_be_root']
         version = class_ob['version']
-        registrar = FederatedFactoryRegistrar(can_be_root, version)
+        registrar = FederatedFactoryRegistrar(self, can_be_root, version)
 
         col_array = class_ob ['columns']
         for col in col_array:
@@ -154,8 +194,6 @@ class FederatedFactory:
             for upgrade, upgrade_def in upgrades.items():
                 upgrade_steps = self._build_upgrades(upgrade_def, registrar)
                 registrar.upgrades[upgrade] = upgrade_steps
-
-        #gCon.log(f"The final registrar is {registrar}")
 
         self._register_ob_type(uri_prefix, registrar)
 
@@ -171,7 +209,8 @@ class FederatedFactory:
         self._add_enums(enums)
 
 
-    def parse_schema(self, schema):
+    def parse_schema(self, fdb, schema):
+        self.fdb = fdb
         uri_constructor_str = schema['uri_constructor']
         self.uri_constructor = misc.import_string(uri_constructor_str)
 

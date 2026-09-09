@@ -576,6 +576,38 @@ async def a_test_json_field(fdb1_loc):
     assert fex.value.errno == EFdbErrors.EFDB_NO_LOCK_ON_OB
 
 
+def test_transient_field(federated_db):
+    transient_db_w = federated_db(FIRST_HOST,
+                tconf.federated_store_kernel_template,
+                schs.schema_transient_field)
+
+    with transient_db_w:
+        transient_db = transient_db_w.app.routable.get_dep(
+                Dependencies.FEDERATED_DB)
+        run_coro_in_loop(a_test_transient_field, (transient_db,))
+
+
+async def a_test_transient_field(transient_db):
+    t_id_1 = transient_db.begin_transaction()
+    transient_uri = FederatedUriTest('person', 'bob')
+    transient_uri_al = FederatedUriTest('person', 'alice')
+    t_person_ob = transient_db.new_ob_uri(t_id_1, transient_uri, fields = {
+        'age' : 54
+    })
+    with pytest.raises(FdbException) as fdbex:
+        t_person_alice = transient_db.new_ob_uri(t_id_1, transient_uri_al,
+               fields = { 'age' : 19, 'num_of_friends' : 22})
+    assert fdbex.value.errno == EFdbErrors.EFDB_TRANSIENT_FIELD
+
+    transient_db.commit_transaction(t_id_1)
+    t_id_1 = transient_db.begin_transaction()
+    t_person_ob = await transient_db.uri_read_ob(t_id_1,
+            transient_uri, must_lock = True)
+    n_friends = t_person_ob().get_scalar('num_of_friends')
+    n_age = t_person_ob().get_scalar('age')
+    assert n_friends == 77
+
+
 def test_open_close_db(federated_db):
     old_db_w = federated_db(FIRST_HOST,
                 tconf.mocked_federated_store_kernel_template,

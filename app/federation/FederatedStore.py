@@ -414,7 +414,7 @@ class FederatedStore(Dependency, LifespanAware):
         if (start_db):
             self.db = self._create_db(self.db_type, self.db_name)
             self.db.open()
-        self.fact.parse_schema(self.schema)
+        self.fact.parse_schema(self, self.schema)
 
 
     async def stop_async(self):

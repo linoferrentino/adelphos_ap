@@ -71,23 +71,24 @@ async def get_total_tax_chain_str(kernel, chain, t_id):
 
 
 def distribuite_hearts_to_exports(kernel, hearts_given, chain_exports):
-    db_delta = -0.03 + ( 0.01 * hearts_given)
-    gCon.log(f"Giving {db_delta} of system trust to the export chain")
 
-    for export_family in reversed(chain_exports[:-1]):
-        old_system_trust = export_family().get_scalar('system_trust')
-        new_trust = old_system_trust + db_delta
-        export_family().set_scalar('system_trust', new_trust)
+    _distribute_hearts_to_chain(kernel, hearts_given, chain_exports,
+                            'system_trust')
+
+
+def _distribute_hearts_to_chain(kernel, hearts_given, chain, trust_field):
+    db_delta = -0.03 + ( 0.01 * hearts_given)
+    gCon.log(f"Giving {db_delta} of trust {trust_field} to chain")
+
+    for export_family in reversed(chain[:-1]):
+        old_trust = export_family().get_scalar(trust_field)
+        new_trust = old_trust + db_delta
+        export_family().set_scalar(trust_field, new_trust)
 
 
 def distribuite_hearts_to_imports(kernel, hearts_given, chain_imports):
-    db_delta = -0.03 + ( 0.01 * hearts_given)
-    gCon.log(f"Giving {db_delta} of my trust to the import chain")
-
-    for import_family in reversed(chain_imports[:-1]):
-        old_trust = import_family().get_scalar('my_trust')
-        new_trust = old_trust + db_delta
-        import_family().set_scalar('my_trust', new_trust)
+    _distribute_hearts_to_chain(kernel, hearts_given, chain_imports,
+                            'my_trust')
 
 
 def distribuite_gains_to_exports(kernel, price, chain_exports, t_id):

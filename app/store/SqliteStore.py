@@ -26,7 +26,9 @@ class KeyValueStore(dict):
     def __init__(self, filename):
         gCon.log(f"[blue]opening federated db {filename}[/blue]")
         self.conn = sqlite3.connect(filename)
-        self.conn.execute("CREATE TABLE IF NOT EXISTS kv (key text unique, value text)")
+        self.conn.execute("""
+CREATE TABLE IF NOT EXISTS kv (key text primary key, value text) without rowid
+""")
 
 
     def close(self):
