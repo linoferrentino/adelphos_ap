@@ -139,8 +139,10 @@ classes:
 
 
 async def num_of_friends(fdb, fob, t_id):
-    gCon.log(f"num_of_friends returns 77 fdb {fdb} ob {fob}")
-    return 77 
+    age = await fob().get_scalar('age', t_id)
+    nfriends = (age + 10) / 2
+    gCon.log(f"The object has {age} years, so {nfriends} friends")
+    return int(nfriends)
 
 
 schema_transient_field = f"""

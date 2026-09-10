@@ -23,8 +23,8 @@ from app.core.AdelphosCoreException import AdelphosCoreException
 from app.core.ECoreErrno import ECoreErrno
 
 
-def get_task_with_id(alias_ob, task_id):
-    tasks = alias_ob.get_as_list('tasks')
+async def get_task_with_id(alias_ob, task_id, t_id):
+    tasks = await alias_ob.get_as_list('tasks', t_id)
     for task in tasks:
         if task['id'] == task_id:
             return task

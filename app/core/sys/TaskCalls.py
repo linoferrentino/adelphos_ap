@@ -26,8 +26,7 @@ class TaskCalls:
     @staticmethod
     @active_login
     async def _sys_call_accept(kernel, session, pars):
-        task = tu.get_task_with_id(session.get_alias_ob(), pars['task_id'])
-        pars['_task'] = task
+        #pars['_task'] = task
         pars['_session'] = session
         await TaskCalls._accept_safe(kernel, pars)
 
@@ -40,7 +39,10 @@ class TaskCalls:
 
     @staticmethod
     async def _accept_impl(kernel, pars, t_id):
-        task = pars['_task']
+        session = pars['_param']
+        task = await tu.get_task_with_id(session.get_alias_ob(),
+                        pars['task_id'], t_id)
+        #task = pars['_task']
         match task['task']:
             case 'associate_family':
                 return await TaskCalls._accept_associate_family(

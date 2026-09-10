@@ -123,16 +123,57 @@ def enforce_schema_not_scalar_not_scalar(func):
     return _inner_enforce
 
 
+def reification(func):
+
+    async def _inner_reification(self, key, t_id):
+        schema = self.registrar.pars
+        par = schema.get(key)
+
+        if ((par.typecol != FObColType.URI) and
+            (par.typecol != FObColType.LOCAL_URI)):
+            raise FdbException(EFdbErrors.EFDB_URI_EXPECTED,
+                    f"column {key} is not an URI")
+
+        gCon.log(f"I have to reificate {key}")
+        fdb = self.registrar.factory.fdb 
+        val = await func(self, key, t_id)
+
+        if par.cardinality == FObCardType.SCALAR:
+            gCon.log(f"Reification of uri {val}")
+            val_ob = await fdb.uri_read_str(t_id, val)
+            return val_ob
+
+        if par.cardinality == FObCardType.SET:
+            val = set(val)
+        ob_list = list()
+
+        gCon.log(f"Reification of uri list {val}")
+        for val_uri in val:
+            gCon.log(f"reification of {val_uri}")
+            val_ob = await fdb.uri_read_str(t_id, val_uri)
+            ob_list.append(val_ob)
+
+        if par.cardinality == FObCardType.SET:
+            return set(ob_list)
+        return ob_list
+
+
+    return _inner_reification
+
+
+
+
 def check_transient(func):
-    async def _inner_check_transient(self, key, *args):
+
+    async def _inner_check_transient(self, key, maybe, t_id):
         schema = self.registrar.pars
         par = schema.get(key)
         if par.transient == True:
-            gCon.log(f"call the hook")
-            self.ob.fields[key] = await par.transient_hook(
-                self.registrar.factory.fdb, self, None)
+            fdb = self.registrar.factory.fdb 
+            self.ob.fields[key] = await fdb.get_transient_field(
+                    self, key, par, t_id)
 
-        res = func(self, key, *args)
+        res = func(self, key, maybe)
 
         if par.transient == True:
             del self.ob.fields[key]
@@ -144,7 +185,7 @@ def check_transient(func):
 
 def enforce_schema_scalar_read(func):
     def _inner_enforce(self, key, *args):
-        gCon.log("enforce_schema_scalar_read")
+        #gCon.log("enforce_schema_scalar_read")
         schema = self.registrar.pars
         par = schema.get(key)
         if par is None:
@@ -160,6 +201,7 @@ def enforce_schema_scalar_read(func):
 
 def enforce_schema_not_scalar_read(func):
     def _inner_enforce(self, key, *args):
+        gCon.log(f"_inner_enforce {key}")
         schema = self.registrar.pars
         par = schema.get(key)
         if par is None:
@@ -492,7 +534,6 @@ class FederatedObject:
         schema = self.registrar.pars
 
         for field in fields.keys():
-            gCon.log(f"checking field {field}")
             if field not in schema:
                 raise FdbException(EFdbErrors.EFDB_EXTRA_FIELD, field)
             col_def = schema[field]
@@ -533,8 +574,7 @@ class FederatedObject:
 
     @enforce_schema_scalar_read
     async def get_scalar(self, key, t_id, maybe = False):
-        gCon.log(f"get scalar {key} fields {self.ob.fields}")
-        return await self._get_key_val_raw(key, maybe)
+        return await self._get_key_val_raw(key, maybe, t_id)
 
 
     @check_transient
@@ -571,15 +611,14 @@ class FederatedObject:
 
 
     @enforce_set
-    def get_set(self, key):
-        cur_value = self.ob.fields[key]
-        gCon.log(f"get_set {key} return {cur_value}")
+    async def get_set(self, key, t_id):
+        cur_value = await self._get_key_val_raw(key, True, t_id)
         return set(cur_value)
 
 
     @enforce_set
-    def is_in_set(self, key, item):
-        key_set = self.get_set(key)
+    async def is_in_set(self, key, item, t_id):
+        key_set = await self.get_set(key, t_id)
         return item in key_set
 
 
@@ -606,12 +645,18 @@ class FederatedObject:
         
 
     @enforce_schema_not_scalar_read
-    def get_as_list(self, key):
-        cur_value = self.ob.fields.get(key)
+    async def get_as_list(self, key, t_id):
+        #cur_value = self.ob.fields.get(key)
+        cur_value = await self._get_key_val_raw(key, True, t_id)
         if cur_value is None:
             return []
         return list(cur_value)
-                
+
+
+    @reification
+    async def get_as_object_list(self, key, t_id):
+        return await self.get_as_list(key, t_id)
+
 
     @enforce_schema_not_scalar_not_scalar
     @ensure_lock

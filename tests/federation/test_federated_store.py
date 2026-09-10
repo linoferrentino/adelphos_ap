@@ -324,7 +324,7 @@ async def a_test_uri_empty_set(fdb1_loc):
     fob = await fdb1_loc.uri_read_ob(t_id, t1uri,
                                     must_lock = True)
     assert fob() is not None
-    followers = fob().get_as_list('followers')
+    followers = await fob().get_as_list('followers', t_id)
     assert followers is not None
     assert len(followers) == 0
    
@@ -352,7 +352,7 @@ async def a_test_uri_remove(fdb1_loc):
                                     must_lock = True)
     assert fob() is not None
 
-    mem_list = fob().get_as_list('followers')
+    mem_list = await fob().get_as_list('followers', t_id)
     assert len(mem_list) == 1
     assert mem_list[0] == tmember_uri.unparse(force_local = True)
 
@@ -374,7 +374,7 @@ async def a_test_uri_remove(fdb1_loc):
                                     must_lock = True)
     assert fob() is not None
 
-    mem_list = fob().get_as_list('followers')
+    mem_list = await fob().get_as_list('followers', t_id)
     assert len(mem_list) == 0
 
     with pytest.raises(FdbException) as fex:
@@ -404,7 +404,7 @@ async def a_test_is_in_set(fdb1_loc):
     t_id = fdb1_loc.begin_transaction()
 
     fob_set = await fdb1_loc.uri_read_ob(t_id, t1uri)
-    assert fob_set().is_in_set('members', tmember_uri.unparse(True))
+    assert await fob_set().is_in_set('members', tmember_uri.unparse(True), t_id)
  
 
 def test_uri_set(fdb1_loc):
@@ -453,7 +453,7 @@ async def a_test_uri_set(fdb1_loc):
         set_members = await fob_set().get_scalar('members', t_id)
     assert fex.value.errno == EFdbErrors.EFDB_SCALAR_EXPECTED
 
-    set_members = fob_set().get_set('members')
+    set_members = await fob_set().get_set('members', t_id)
     assert len(set_members) == 1
     member = list(set_members)[0]
     gCon.log(f"Deleting uri {member} from {set_members}")
@@ -463,14 +463,14 @@ async def a_test_uri_set(fdb1_loc):
     fob_member = await fdb1_loc.uri_read_no_lock(t_id, uri_ob)
     assert fob_member() is not None
 
-    set_members = fob_set().get_set('members')
+    set_members = await fob_set().get_set('members', t_id)
     assert len(set_members) == 1
  
     with pytest.raises(FdbException) as fex:
         fob_set().remove_set('members', fob_member)
     assert fex.value.errno == EFdbErrors.EFDB_NO_LOCK_ON_OB
 
-    set_members = fob_set().get_set('members')
+    set_members = await fob_set().get_set('members', t_id)
     assert len(set_members) == 1
 
     fob_lock = await fdb1_loc.uri_read_lock(t_id, uri_ob)
@@ -600,13 +600,23 @@ async def a_test_transient_field(transient_db):
     assert fdbex.value.errno == EFdbErrors.EFDB_TRANSIENT_FIELD
 
     transient_db.commit_transaction(t_id_1)
+
     t_id_1 = transient_db.begin_transaction()
     t_person_ob = await transient_db.uri_read_ob(t_id_1,
             transient_uri, must_lock = True)
     n_friends = await t_person_ob().get_scalar('num_of_friends', t_id_1)
     n_age = await t_person_ob().get_scalar('age', t_id_1)
-    assert n_friends == 77
+    assert n_friends == 32
+    n_friends = await t_person_ob().get_scalar('num_of_friends', t_id_1)
+    assert n_friends == 32
+    transient_db.rollback_transaction(t_id_1)
 
+    t_id_1 = transient_db.begin_transaction()
+    t_person_ob = await transient_db.uri_read_ob(t_id_1,
+            transient_uri, must_lock = True)
+    n_friends = await t_person_ob().get_scalar('num_of_friends', t_id_1)
+    assert n_friends == 32
+ 
 
 def test_open_close_db(federated_db):
     old_db_w = federated_db(FIRST_HOST,
@@ -723,7 +733,7 @@ async def a_test_add_json_array(fdb1_loc):
     t_id_1 = fdb1_loc.begin_transaction()
     fob = await fdb1_loc.uri_read_ob(t_id_1, ob_uri, must_lock = True)
 
-    tasks = fob().get_as_list('tasks')
+    tasks = await fob().get_as_list('tasks', t_id_1)
     assert len(tasks) == 0
 
     task_ob = {
@@ -738,7 +748,7 @@ async def a_test_add_json_array(fdb1_loc):
 
     t_id_1 = fdb1_loc.begin_transaction()
     fob = await fdb1_loc.uri_read_ob(t_id_1, ob_uri, must_lock = True)
-    tasks = fob().get_as_list('tasks')
+    tasks = await fob().get_as_list('tasks', t_id_1)
 
     assert len(tasks) == 2
     assert tasks[0]['msg'] == '1st task'
@@ -881,7 +891,7 @@ async def a_test_remote_uri(fdb1, fdb2):
 
     assert local is not None
 
-    trust_lines = local().get_as_list('trust_lines')
+    trust_lines = await local().get_as_list('trust_lines', tid2)
     gCon.log(f"trust lines are {trust_lines}")
     assert len(trust_lines) == 1
 

@@ -26,6 +26,7 @@ from enum import IntEnum
 from enum import StrEnum
 from enum import auto
 from datetime import datetime
+import datetime as dt
 from app.sdc.Dependency import Dependency
 from app.sdc.Dependencies import Dependencies
 from app.federation.LifespanAware import LifespanAware
@@ -339,11 +340,17 @@ class FedStore_ReadCtx:
     t_id : uuid
     maybe: bool  = False
     uri_str: str = None
-    must_lock: bool = False 
+    must_lock: bool = False
     only_local: bool = False
     internal_read: bool = False
     tob : FederatedTransaction = None
     fob : FederatedObject = None
+
+
+@dataclass
+class CachedTransientValue:
+    value: object
+    expire_time: datetime
 
  
 class FederatedStore(Dependency, LifespanAware):
@@ -363,6 +370,7 @@ class FederatedStore(Dependency, LifespanAware):
         self.transactions = {}
         self.fact = FederatedFactory()
         self.hostname = kernel.conf().get_host()
+        self.transient_db = dict()
 
 
     def _create_db(self, db_type, db_name):
@@ -385,6 +393,31 @@ class FederatedStore(Dependency, LifespanAware):
             while self.background_tasks > 0:
                 gCon.log(f"{self.background_tasks} tasks still running.")
                 await asyncio.sleep(0.5)
+
+
+    async def get_transient_field(self, ob, key, par, t_id):
+        gCon.log(f"manage par {par}, key {key} for object {ob}, tid {t_id}")
+        uri_ob = ob.uri.unparse()
+        key_transient = f"_transient_{uri_ob}#{key}"
+        gCon.log(f"searching transient key {key_transient}")
+        transient_item = self.transient_db.get(key_transient)
+        now = datetime.now()
+
+        if transient_item is not None:
+            time_delta = now - transient_item.expire_time
+            tot_seconds = time_delta.total_seconds()
+            if tot_seconds < 0:
+                gCon.log(f"found the transient value! {tot_seconds}")
+                return transient_item.value
+            gCon.log(f"value is expired")
+
+        value = await par.transient_hook(self, weakref.ref(ob), t_id)
+        dt_val = dt.timedelta(seconds = par.transient_age)
+        expire_date = now + dt_val
+        gCon.log(f"Item will expire on {expire_date}")
+        item = CachedTransientValue(value, expire_date) 
+        self.transient_db[key_transient] = item
+        return value
 
 
     async def start_async(self):

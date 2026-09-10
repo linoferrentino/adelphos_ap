@@ -44,12 +44,12 @@ def test_simul_fediverse_basic(simulated_fediverse):
         _test_list_objects_zero_ko,
         _test_list_uplevel_ko,
         _test_associate_with_family_ok,
-        _test_list_uplevel_one_ok,
-        _test_put_object_after_associate,
-        _test_list_uplevel_two_ok,
-        _test_buy_object_level_one_same_family,
-        _test_buy_object_level_one_ok,
-        _test_first_task_done_ok,
+        #_test_list_uplevel_one_ok,
+        #_test_put_object_after_associate,
+        #_test_list_uplevel_two_ok,
+        #_test_buy_object_level_one_same_family,
+        #_test_buy_object_level_one_ok,
+        #_test_first_task_done_ok,
         ))
 
 

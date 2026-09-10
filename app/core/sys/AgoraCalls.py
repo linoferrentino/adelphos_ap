@@ -244,10 +244,12 @@ class AgoraCalls:
     @staticmethod
     async def _agora_list_ads_impl(kernel, pars, t_id):
         family_lev_ob = await scu.get_family_uplevel(kernel, pars, t_id)
-        agora_uri = await family_lev_ob().get_scalar('agora', t_id)
+        #agora_uri = await family_lev_ob().get_scalar('agora', t_id)
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-        agora_ob = await fdb.uri_read_str(t_id, agora_uri, must_lock = True)
-        offers = agora_ob().get_as_list('offers')
+
+        #agora_ob = await fdb.uri_read_str(t_id, agora_uri, must_lock = True)
+        offers = await family_lev_ob().get_as_list('offers_deep', t_id)
+
         if pars['get_only_uri'] == True:
             return offers
 

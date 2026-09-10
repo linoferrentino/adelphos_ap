@@ -119,6 +119,12 @@ classes:
           cardinality: scalar
           required: false
 
+        - name: offers_deep
+          type: uri
+          cardinality: set
+          transient_func: app.core.sys.family_utils.family_get_offers_deep
+          transient_age: 1h
+
 
     - uri_prefix: {EAdelphosType.AGORA_TYPE}
       can_be_root: false
