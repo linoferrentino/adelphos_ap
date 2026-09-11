@@ -174,6 +174,12 @@ classes:
           cardinality: scalar
           default: 1
 
+        - name: prices_uri_titles
+          type: json
+          cardinality: array
+          transient_func: app.core.sys.family_utils.agora_get_price_offers
+          transient_age: 15m
+
 
     - uri_prefix: {EAdelphosType.OBJECT_TYPE}
       can_be_root: false

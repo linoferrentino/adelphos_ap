@@ -24,34 +24,56 @@ from app.logging import gCon
 import app.misc.trust_utils as tutils
 
 
+async def agora_get_price_offers(fdb, fob, t_id):
+    gCon.log(f"[green]get the price offers for this family *not recursive* for {fob().uri.unparse()}[/green]")
+    #agora_ob = await family_get_your_agora(fdb.kernel, fob, t_id) 
+    offers_list = await fob().get_as_object_list('offers', t_id)
+    exp_list = list()
+    for offer in offers_list:
+        off_j = {
+                'price' : await offer().get_scalar('price', t_id),
+                'uri' : offer().uri.unparse(),
+                'title' : await offer().get_scalar('title', t_id),
+        }
+        exp_list.append(off_j)
+    return exp_list
+
+
 async def family_get_offers_exp_r(fdb, fob, t_id):
     gCon.log(f"[red]get Recursive EXP offers for {fob().uri.unparse()}[/red]")
-    agora_ob = await family_get_your_agora(fdb.kernel, fob, t_id) 
     gCon.log("[blue]============================== BEFORE OBJECT SET[/blue]")
-    offers_set = await agora_ob().get_as_object_set('offers', t_id)
+    agora_ob = await family_get_your_agora(fdb.kernel, fob, t_id) 
+    offers_set = await agora_ob().get_as_list('prices_uri_titles', t_id)
     gCon.log("[blue]============================== after OBJECT SET[/blue]")
     exp_list = list()
     level = await fob().get_scalar('level', t_id)
 
     if (level != 0):
-        raise Exception("TODO")
-        pass
+        members_list = await fob().get_as_object_list('members', t_id)
+        gCon.log(f"fam members are {members_list}")
+
+        for member in members_list:
+            gCon.log(f"asking the exported list for {member().uri.unparse()}")
+            exp_set = await member().get_as_list('offers_exp_r', t_id)
+            offers_set.extend(exp_set)
+
     
     exp_trust = await fob().get_scalar('my_trust', t_id)
     tax = await fob().get_scalar('import_export_tax', t_id)
     for offer in offers_set:
-        price_offer = await offer().get_scalar('price', t_id)
+        price_offer = offer['price']
         price_total = price_offer * tax
         price_offer_db = tutils.abs_to_db(price_offer)
         gCon.log(f"price {price_offer_db} exp_trust {exp_trust}")
         if price_offer_db < exp_trust:
             off_j = {
                     'price' : price_total,
-                    'uri' : offer().uri.unparse()
+                    'uri' : offer['uri'],
+                    'title' : offer['title'],
             }
             exp_list.append(off_j)
         else:
-            title = await offer().get_scalar('title', t_id)
+            title = offer['title']
             gCon.log(f"offer {title} cannot be exported.")
 
     gCon.log(f"family {fob().uri.unparse()} return {exp_list}")

@@ -60,5 +60,32 @@ root.buy_object as_adelphos #al#bob.fam_bob@www.adelphos.it \
 object_uri #ob#2_smith@www.adelphos.it hearts_given 5  ==> \
 	{ "errno" : 24 }
 
+root.do_association family_source #fa#fam_bob@www.adelphos.it \
+	family_dest #fa#morrison@www.adelphos.it \
+	upper_name second_level \
+	location "Central Park"  ==> { "errno" : 16 }
+
+root.do_association family_source #fa#wall_street_family@www.adelphos.it \
+	family_dest #fa#morrison@www.adelphos.it \
+	upper_name second_level \
+	location "Central Park" ==> { "errno" : 15 }
+
+root.add_user user maria
+root.add_alias alias maria_al.rossi user maria password mpass \
+	location 'Pisa, via Manzoni 33'
+
+root.do_association family_source #fa#morrison@www.adelphos.it \
+	family_dest #fa#rossi@www.adelphos.it \
+	upper_name tuscany \
+	location "Pisa, via Manzoni 33"
+
+root.do_association family_source #fa#tuscany@www.adelphos.it \
+	family_dest #fa#wall_street_family@www.adelphos.it \
+	upper_name america_tuscany \
+	location "Florence, via Verdi 1"
+
+root.push_alias alias maria_al.rossi
+
+agora.list_ads uplevel 2 ==> { "errno" : 0}
 
 
