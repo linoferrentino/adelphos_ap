@@ -97,6 +97,10 @@ class SimulatedInstance:
         return self.mod(Dependencies.SOCIAL).local_user_get(user)
 
 
+    def get_fdb(self):
+        return self.mod(Dependencies.FEDERATED_DB)
+
+
 class SimulFediverse:
     
 
@@ -273,6 +277,7 @@ class SimulFediverse:
         from collections.abc import Iterable
         if isinstance(testcase, Iterable):
             for tc in testcase:
+                gCon.rule(f"testing {tc}")
                 tc(self)
         else:
             testcase(self)

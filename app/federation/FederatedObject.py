@@ -616,6 +616,11 @@ class FederatedObject:
         return set(cur_value)
 
 
+    @reification
+    async def get_as_object_set(self, key, t_id):
+        return await self.get_set(key, t_id)
+
+
     @enforce_set
     async def is_in_set(self, key, item, t_id):
         key_set = await self.get_set(key, t_id)

@@ -44,12 +44,12 @@ def test_simul_fediverse_basic(simulated_fediverse):
         _test_list_objects_zero_ko,
         _test_list_uplevel_ko,
         _test_associate_with_family_ok,
-        #_test_list_uplevel_one_ok,
-        #_test_put_object_after_associate,
-        #_test_list_uplevel_two_ok,
-        #_test_buy_object_level_one_same_family,
-        #_test_buy_object_level_one_ok,
-        #_test_first_task_done_ok,
+        _test_list_uplevel_one_ok,
+        _test_put_object_after_associate,
+        _test_list_uplevel_two_ok,
+        _test_buy_object_level_one_same_family,
+        _test_buy_object_level_one_ok,
+        _test_first_task_done_ok,
         ))
 
 
@@ -114,8 +114,14 @@ def _test_list_uplevel_one_ok(world):
 
 
 def _test_list_uplevel_two_ok(world):
+    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 1, uplevel = 1,
+                       only_uri = False)
+    gCon.rule(f"_test_list_uplevel_two_ok phase 2")
+    ad1 = world.get_instance('ad1')
+    ad1.get_fdb().empty_cache()
     _test_len_get_list(world, 'ad1', 'alice.fam_t1', 2, uplevel = 1,
                        only_uri = False)
+
 
 
 def _test_first_task_done_ok(world):

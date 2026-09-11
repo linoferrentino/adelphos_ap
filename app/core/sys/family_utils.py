@@ -24,34 +24,60 @@ from app.logging import gCon
 import app.misc.trust_utils as tutils
 
 
+async def family_get_offers_exp_r(fdb, fob, t_id):
+    gCon.log(f"[red]get Recursive EXP offers for {fob().uri.unparse()}[/red]")
+    agora_ob = await family_get_your_agora(fdb.kernel, fob, t_id) 
+    gCon.log("[blue]============================== BEFORE OBJECT SET[/blue]")
+    offers_set = await agora_ob().get_as_object_set('offers', t_id)
+    gCon.log("[blue]============================== after OBJECT SET[/blue]")
+    exp_list = list()
+    level = await fob().get_scalar('level', t_id)
+
+    if (level != 0):
+        raise Exception("TODO")
+        pass
+    
+    exp_trust = await fob().get_scalar('my_trust', t_id)
+    tax = await fob().get_scalar('import_export_tax', t_id)
+    for offer in offers_set:
+        price_offer = await offer().get_scalar('price', t_id)
+        price_total = price_offer * tax
+        price_offer_db = tutils.abs_to_db(price_offer)
+        gCon.log(f"price {price_offer_db} exp_trust {exp_trust}")
+        if price_offer_db < exp_trust:
+            off_j = {
+                    'price' : price_total,
+                    'uri' : offer().uri.unparse()
+            }
+            exp_list.append(off_j)
+        else:
+            title = await offer().get_scalar('title', t_id)
+            gCon.log(f"offer {title} cannot be exported.")
+
+    gCon.log(f"family {fob().uri.unparse()} return {exp_list}")
+    return exp_list
+
+
 async def family_get_offers_deep(fdb, fob, t_id):
     gCon.log(f"[red]get Recursive offers for {fob().uri.unparse()}[/red]")
     agora_ob = await family_get_your_agora(fdb.kernel, fob, t_id) 
     offers_set = await agora_ob().get_set('offers', t_id)
-
     level = await fob().get_scalar('level', t_id)
     gCon.log(f"lev {level} offers set is {offers_set}")
+
     if (level == 0):
         return offers_set
-    
+
     members_list = await fob().get_as_object_list('members', t_id)
     gCon.log(f"fam members are {members_list}")
 
     for member in members_list:
         gCon.log(f"Adding the member {member} type {type(member)}")
-        offers_deep = await member().get_as_object_list('offers_deep', t_id)
-        exp_trust = await member().get_scalar('my_trust', t_id)
-
-        for offer in offers_deep:
-            price_offer = await offer().get_scalar('price', t_id)
-            price_offer_db = tutils.abs_to_db(price_offer)
-            gCon.log(f"price {price_offer_db} exp_trust {exp_trust}")
-            if price_offer_db < exp_trust:
-                offers_set.add(offer)
-            else:
-                title = await offer().get_scalar('title', t_id)
-                gCon.log(f"offer {title} cannot be exported.")
-
+        offers_deep_j = await member().get_as_list('offers_exp_r', t_id)
+        gCon.log(f"++++++++++++++++++++++++++++++ {offers_deep_j}")
+        for offer in offers_deep_j:
+            offers_set.add(offer['uri'])
+    gCon.log(f"!!!!!!!!!!!!!!!!!!!!!!!!! return {offers_set}")
     return offers_set
 
 

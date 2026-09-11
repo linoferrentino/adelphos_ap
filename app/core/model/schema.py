@@ -123,7 +123,13 @@ classes:
           type: uri
           cardinality: set
           transient_func: app.core.sys.family_utils.family_get_offers_deep
-          transient_age: 1h
+          transient_age: 15m
+
+        - name: offers_exp_r
+          type: json
+          cardinality: array
+          transient_func: app.core.sys.family_utils.family_get_offers_exp_r
+          transient_age: 15m
 
 
     - uri_prefix: {EAdelphosType.AGORA_TYPE}

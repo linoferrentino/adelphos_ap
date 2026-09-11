@@ -778,7 +778,7 @@ async def a_test_update_after_tx(fdb1_loc):
     assert fob() is None
     
     t_id_1 = fdb1_loc.begin_transaction()
-    fob = await fdb1_loc.uri_read_ob(t_id_1, ob_uri)
+    fob = await fdb1_loc.uri_read_ob(t_id_1, ob_uri, must_lock = False)
     assert fob() is not None
     detached_ob = fob().detach()
     fdb1_loc.rollback_transaction(t_id_1)

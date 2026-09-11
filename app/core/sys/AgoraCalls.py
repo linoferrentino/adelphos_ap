@@ -133,6 +133,7 @@ class AgoraCalls:
     async def _agora_buy_object_impl(kernel, pars, t_id):
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         chain_imports = await scu.get_family_chain_up(kernel, pars, t_id)
+        gCon.log(f"the chain imports are {chain_imports}")
 
         if len(chain_imports) < 2:
             raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
@@ -140,8 +141,7 @@ class AgoraCalls:
 
         family_lev_ob = chain_imports[-1] 
 
-        agora_ob = await fu.family_get_your_agora(kernel, family_lev_ob, t_id)
-        offers = agora_ob().get_as_list('offers')
+        offers = await family_list_ads(kernel, family_lev_ob, True, t_id)
 
         offer_ob = await AgoraCalls._get_offer_from_pars(fdb, offers,
                                 pars, t_id)
@@ -226,8 +226,8 @@ class AgoraCalls:
         await tku.add_task_to_alias(kernel, adelphos_from,
                         'export_item', task_par, t_id)
 
-        await au.remove_object_from_export_chain(kernel, chain_exports,
-                    offer_ob, t_id)
+        #await au.remove_object_from_export_chain(kernel, chain_exports,
+        #            offer_ob, t_id)
 
 
     def _transform_imp_exp_chain_into_tracking_steps(chain):
@@ -244,28 +244,34 @@ class AgoraCalls:
     @staticmethod
     async def _agora_list_ads_impl(kernel, pars, t_id):
         family_lev_ob = await scu.get_family_uplevel(kernel, pars, t_id)
-        #agora_uri = await family_lev_ob().get_scalar('agora', t_id)
-        fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
-        #agora_ob = await fdb.uri_read_str(t_id, agora_uri, must_lock = True)
-        offers = await family_lev_ob().get_as_list('offers_deep', t_id)
+        return await family_list_ads(kernel, family_lev_ob, 
+                                     pars['get_only_uri'], t_id)
 
-        if pars['get_only_uri'] == True:
-            return offers
 
-        ob_offers = []
-        for offer in offers:
-            offer_ob = await fdb.uri_read_str(t_id, offer,
-                                              must_lock = False)
-            ob_offers.append(offer_ob().ob.fields)
+async def family_list_ads(kernel, family_lev_ob, get_only_uri, t_id):
 
-        return ob_offers
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    offers = await family_lev_ob().get_as_list('offers_deep', t_id)
+
+    if get_only_uri == True:
+        gCon.log("I get Only the uri")
+        return offers
+
+    ob_offers = []
+    for offer in offers:
+        gCon.log(f"_agora_list_ads_impl: get the objet for uri {offer}")
+        offer_ob = await fdb.uri_read_str(t_id, offer,
+                                          must_lock = False)
+        ob_offers.append(offer_ob().ob.fields)
+
+    return ob_offers
 
 
 async def _agora_received_pin_impl(kernel, pars, t_id, *, action):
     gCon.log(f"received pin {pars['pin']}")
     alias_ob = await scu.get_alias_in_session(kernel, pars, t_id)
-    routing_data = alias_ob().get_as_list('routing_data')
+    routing_data = await alias_ob().get_as_list('routing_data', t_id)
     idx = 0
     for routing_step in routing_data:
         if routing_step['pin_to_receive'] != pars['pin']:

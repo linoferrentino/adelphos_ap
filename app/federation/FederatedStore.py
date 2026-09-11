@@ -306,14 +306,14 @@ class FederatedTransaction:
         if self.deleted_uris.get(rctx.uri_str) is not None:
             raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB)
 
-        if rctx.must_lock:
-            exist_val = self.locked_uris.get(rctx.uri_str)
-            if exist_val is not None:
-                return exist_val
-        else:
+        if rctx.must_lock == False:
             exist_val = self.read_uris.get(rctx.uri_str)
             if exist_val is not None:
                 return exist_val
+
+        exist_val = self.locked_uris.get(rctx.uri_str)
+        if exist_val is not None:
+            return exist_val
 
         maybe_created = self.created_uris.get(rctx.uri_str)
         if maybe_created is not None:
@@ -340,7 +340,7 @@ class FedStore_ReadCtx:
     t_id : uuid
     maybe: bool  = False
     uri_str: str = None
-    must_lock: bool = False
+    must_lock: bool = True
     only_local: bool = False
     internal_read: bool = False
     tob : FederatedTransaction = None
@@ -407,7 +407,7 @@ class FederatedStore(Dependency, LifespanAware):
             time_delta = now - transient_item.expire_time
             tot_seconds = time_delta.total_seconds()
             if tot_seconds < 0:
-                gCon.log(f"found the transient value! {tot_seconds}")
+                gCon.log(f"found the transient value! {transient_item.value}")
                 return transient_item.value
             gCon.log(f"value is expired")
 
@@ -418,6 +418,11 @@ class FederatedStore(Dependency, LifespanAware):
         item = CachedTransientValue(value, expire_date) 
         self.transient_db[key_transient] = item
         return value
+
+
+    def empty_cache(self):
+        gCon.log("empty cache")
+        self.transient_db = dict()
 
 
     async def start_async(self):
