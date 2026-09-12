@@ -37,15 +37,9 @@ class AgoraCalls:
     @active_login
     async def _sys_call_list_ads(kernel, session, pars):
         pars['_session'] = session
+        gCon.rule("_sys_call_list_ads")
         return await AgoraCalls._agora_list_ads_safe(kernel, pars)
  
-
-    @staticmethod
-    @active_login
-    async def _sys_call_buy_object_idx(kernel, session, pars):
-        pars['_session'] = session
-        return await AgoraCalls._agora_buy_object_safe(kernel, pars)
-
 
     @staticmethod
     @active_login
@@ -97,9 +91,6 @@ class AgoraCalls:
 
     @staticmethod
     async def _get_offer_from_pars(fdb, offers, pars, t_id):
-        if pars.get('index_ad') is not None:
-            return await AgoraCalls._get_offer_from_pars_idx(fdb,
-                    offers, pars['index_ad'], t_id)
         return await AgoraCalls._get_offer_from_pars_title(fdb,
                 offers, pars['ad_title'], t_id)
 
@@ -117,16 +108,12 @@ class AgoraCalls:
     @staticmethod
     async def _get_offer_from_pars_title(fdb, offers, par_title, t_id):
         for offer in offers:
-            offer_ob = await fdb.uri_read_str(t_id, offer,
-                                              must_lock = True)
-            title = await offer_ob().get_scalar('title', t_id)
-            gCon.log(f"object has title {title}")
-            if re.search(par_title, title) is not None:
+            gCon.log(f"Processing offer {offer}")
+            if re.search(par_title, offer['title']) is not None:
                 gCon.log(f"found!")
-                return offer_ob
+                return offer
         raise AdelphosCoreException(ECoreErrno.ENO_SUCH_OBJECT,
                     f"no object with title {par_title} found")
-
 
 
     @staticmethod
@@ -141,11 +128,17 @@ class AgoraCalls:
 
         family_lev_ob = chain_imports[-1] 
 
-        offers = await family_list_ads(kernel, family_lev_ob, True, t_id)
+        offers = await family_list_ads(kernel, family_lev_ob, t_id)
 
-        offer_ob = await AgoraCalls._get_offer_from_pars(fdb, offers,
+        offer = await AgoraCalls._get_offer_from_pars(fdb, offers,
                                 pars, t_id)
-        offer_uri = offer_ob().uri.unparse()
+
+        offer_ob = await fdb.uri_read_str(t_id, offer['uri'])
+
+        offer_uri = offer['uri']
+        agora_exported_price = offer['price']
+        gCon.log(f"The offer {offer_uri} has a price {agora_exported_price}")
+        #offer_uri = offer_ob().uri.unparse()
 
         alias_uri_str = await offer_ob().get_scalar('adelphos_from', t_id)
         family_from_ob = await alu.alias_get_your_family(
@@ -161,17 +154,17 @@ class AgoraCalls:
         if len(chain_exports) != len(chain_imports):
             raise Exception("This version of adelphos handles symmetric chains: internal error")
 
-        global_export_tax = await ecut.get_total_tax_up(chain_exports, t_id)
-        gCon.log(f"The export tax total is {global_export_tax}")
+        #global_export_tax = await ecut.get_total_tax_up(chain_exports, t_id)
+        #gCon.log(f"The export tax total is {global_export_tax}")
 
-        price = await offer_ob().get_scalar('price', t_id)
-        agora_exported_price = price * global_export_tax
-        gCon.log(f"The price is {price} in agora is {agora_exported_price}")
+        #price = await offer_ob().get_scalar('price', t_id)
+        #agora_exported_price = price * global_export_tax
+        #gCon.log(f"The price is {price} in agora is {agora_exported_price}")
 
-        await ecut.distribuite_losses_to_imports(kernel, agora_exported_price,
+        await ecut.distribute_losses_to_imports(kernel, agora_exported_price,
                                            chain_imports, t_id)
 
-        await ecut.distribuite_gains_to_exports(kernel, agora_exported_price,
+        await ecut.distribute_gains_to_exports(kernel, agora_exported_price,
                                           chain_exports, t_id)
 
         family_originator = chain_exports[0]
@@ -226,9 +219,6 @@ class AgoraCalls:
         await tku.add_task_to_alias(kernel, adelphos_from,
                         'export_item', task_par, t_id)
 
-        #await au.remove_object_from_export_chain(kernel, chain_exports,
-        #            offer_ob, t_id)
-
 
     def _transform_imp_exp_chain_into_tracking_steps(chain):
         tasks = list()
@@ -245,27 +235,14 @@ class AgoraCalls:
     async def _agora_list_ads_impl(kernel, pars, t_id):
         family_lev_ob = await scu.get_family_uplevel(kernel, pars, t_id)
 
-        return await family_list_ads(kernel, family_lev_ob, 
-                                     pars['get_only_uri'], t_id)
+        return await family_list_ads(kernel, family_lev_ob, t_id)
 
 
-async def family_list_ads(kernel, family_lev_ob, get_only_uri, t_id):
+async def family_list_ads(kernel, family_lev_ob, t_id):
 
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     offers = await family_lev_ob().get_as_list('offers_deep', t_id)
-
-    if get_only_uri == True:
-        gCon.log("I get Only the uri")
-        return offers
-
-    ob_offers = []
-    for offer in offers:
-        gCon.log(f"_agora_list_ads_impl: get the objet for uri {offer}")
-        offer_ob = await fdb.uri_read_str(t_id, offer,
-                                          must_lock = False)
-        ob_offers.append(offer_ob().ob.fields)
-
-    return ob_offers
+    return offers
 
 
 async def _agora_received_pin_impl(kernel, pars, t_id, *, action):

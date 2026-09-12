@@ -34,6 +34,7 @@ async def agora_get_price_offers(fdb, fob, t_id):
                 'price' : await offer().get_scalar('price', t_id),
                 'uri' : offer().uri.unparse(),
                 'title' : await offer().get_scalar('title', t_id),
+                'description' : await offer().get_scalar('description', t_id),
         }
         exp_list.append(off_j)
     return exp_list
@@ -41,10 +42,8 @@ async def agora_get_price_offers(fdb, fob, t_id):
 
 async def family_get_offers_exp_r(fdb, fob, t_id):
     gCon.log(f"[red]get Recursive EXP offers for {fob().uri.unparse()}[/red]")
-    gCon.log("[blue]============================== BEFORE OBJECT SET[/blue]")
     agora_ob = await family_get_your_agora(fdb.kernel, fob, t_id) 
     offers_set = await agora_ob().get_as_list('prices_uri_titles', t_id)
-    gCon.log("[blue]============================== after OBJECT SET[/blue]")
     exp_list = list()
     level = await fob().get_scalar('level', t_id)
 
@@ -70,6 +69,7 @@ async def family_get_offers_exp_r(fdb, fob, t_id):
                     'price' : price_total,
                     'uri' : offer['uri'],
                     'title' : offer['title'],
+                    'description' : offer['description'],
             }
             exp_list.append(off_j)
         else:
@@ -81,11 +81,12 @@ async def family_get_offers_exp_r(fdb, fob, t_id):
 
 
 async def family_get_offers_deep(fdb, fob, t_id):
-    gCon.log(f"[red]get Recursive offers for {fob().uri.unparse()}[/red]")
+    gCon.log(f"[blue]get Recursive offers for {fob().uri.unparse()}[/blue]")
     agora_ob = await family_get_your_agora(fdb.kernel, fob, t_id) 
     offers_set = await agora_ob().get_set('offers', t_id)
     level = await fob().get_scalar('level', t_id)
     gCon.log(f"lev {level} offers set is {offers_set}")
+    offers_result = list()
 
     if (level == 0):
         return offers_set
@@ -98,9 +99,12 @@ async def family_get_offers_deep(fdb, fob, t_id):
         offers_deep_j = await member().get_as_list('offers_exp_r', t_id)
         gCon.log(f"++++++++++++++++++++++++++++++ {offers_deep_j}")
         for offer in offers_deep_j:
+            if offer['uri'] in offers_set:
+                continue
             offers_set.add(offer['uri'])
-    gCon.log(f"!!!!!!!!!!!!!!!!!!!!!!!!! return {offers_set}")
-    return offers_set
+            offers_result.append(offer)
+    gCon.log(f"!!!!!!!!!!!!!!!!!!!!!!!!! return {offers_result}")
+    return offers_result
 
 
 async def family_get_your_boss(kernel, family_ob, t_id):

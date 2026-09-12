@@ -49,6 +49,24 @@ root.add_user user jack
 root.add_alias alias jack_al.morrison user jack password jpass \
 	location 'Siena, via Dante 3'
 
+root.put_object as_adelphos #al#jack_al.morrison@www.adelphos.it \
+title 'bluetooth speaker' \
+description 'red and working perfectly' price 11.99
+
+
+root.put_object as_adelphos #al#jack_al.morrison@www.adelphos.it \
+title 'a spiderman mug' \
+description 'for children' price 3.25
+
+root.push_alias alias jack_al.morrison
+
+agora.list_ads uplevel 0 ==> { "errno" : 0, \
+	"eval_exp" : "(len(res_ob['res']) == 2)" \
+}
+
+root.pop_alias
+
+
 root.buy_object as_adelphos #al#jack_al.morrison@www.adelphos.it \
 object_uri #ob#1_smith@www.adelphos.it hearts_given 5  ==> \
 	{ "errno" : 10 }
@@ -79,6 +97,19 @@ root.do_association family_source #fa#morrison@www.adelphos.it \
 	upper_name tuscany \
 	location "Pisa, via Manzoni 33"
 
+root.push_alias alias maria_al.rossi
+
+agora.list_ads uplevel 0 ==> { "errno" : 0, \
+	"eval_exp" : "len(res_ob['res']) == 0" \
+}
+
+agora.list_ads uplevel 1 ==> { "errno" : 0, \
+	"eval_exp" : "len(res_ob['res']) == 1" \
+}
+
+root.pop_alias
+
+
 root.do_association family_source #fa#tuscany@www.adelphos.it \
 	family_dest #fa#wall_street_family@www.adelphos.it \
 	upper_name america_tuscany \
@@ -86,6 +117,38 @@ root.do_association family_source #fa#tuscany@www.adelphos.it \
 
 root.push_alias alias maria_al.rossi
 
-agora.list_ads uplevel 2 ==> { "errno" : 0}
+agora.list_ads uplevel 2 ==> { "errno" : 0, \
+	"eval_exp" : "len(res_ob['res']) == 1" \
+}
+
+root.pop_alias
+
+root.put_object as_adelphos #al#john.smith@www.adelphos.it \
+title 'Ms. Dalloway' \
+description 'used in good condition' price 3.32
+
+root.push_alias alias maria_al.rossi
+
+agora.list_ads uplevel 2 ==> { "errno" : 0, \
+	"eval_exp" : "len(res_ob['res']) == 1" \
+}
+
+root.pop_alias
+
+root.clear_cache
+
+root.push_alias alias maria_al.rossi
+
+agora.list_ads uplevel 1 ==> { "errno" : 0, \
+	"eval_exp" : "len(res_ob['res']) == 1" \
+}
+
+agora.list_ads uplevel 2 ==> { "errno" : 0, \
+	"eval_exp" : "len(res_ob['res']) == 2" \
+}
+
+agora.buy_object_title uplevel 2 ad_title Dalloway
+
+root.pop_alias
 
 

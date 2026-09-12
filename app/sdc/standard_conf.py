@@ -204,6 +204,8 @@ standard_cli_api = """
 
           - name: pop_alias
 
+          - name: clear_cache
+
           - name: add_user
             pars:
               user:
@@ -336,25 +338,6 @@ standard_cli_api = """
                 par_type: int
                 required: true
                 validator: _v_ >= 0
-              get_only_uri:
-                par_type: bool
-                required: false
-                default: false
-
-          - name: buy_object_idx
-            pars:
-              uplevel:
-                par_type: int
-                required: true
-                validator: _v_ > 0
-              index_ad:
-                par_type: int
-                required: true
-                validator: _v_ >= 0
-              dry_run:
-                required: false
-                par_type: bool
-                default: true
 
           - name: received_pin
             pars:

@@ -49,9 +49,11 @@ async def is_offer_exported(kernel, offer_ob, exp_chain, t_id):
 
 
 async def is_object_still_available(kernel, object_uri, seller_family, t_id):
-    agora_ob = await fu.family_get_your_agora(kernel,
-                    seller_family, t_id)
-    return await agora_ob().is_in_set('offers', object_uri, t_id)
+    #raise Exception("To do")
+    #agora_ob = await fu.family_get_your_agora(kernel,
+    #                seller_family, t_id)
+    #return await agora_ob().is_in_set('offers', object_uri, t_id)
+    pass
 
 
 async def offer_buy_impl(kernel, object_uri, buyer_uri, t_id):
@@ -94,10 +96,10 @@ async def offer_buy_impl(kernel, object_uri, buyer_uri, t_id):
     #agora_exported_price = price * global_export_tax
     gCon.log(f"The price is {price} in agora is {agora_exported_price}")
 
-    await ecut.distribuite_losses_to_imports(kernel, agora_exported_price,
+    await ecut.distribute_losses_to_imports(kernel, agora_exported_price,
                                        imp_chain, t_id)
 
-    await ecut.distribuite_gains_to_exports(kernel, agora_exported_price,
+    await ecut.distribute_gains_to_exports(kernel, agora_exported_price,
                                       exp_chain, t_id)
 
     await au.remove_object_from_agora(kernel, seller_family, offer_ob, t_id)

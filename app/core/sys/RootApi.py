@@ -55,6 +55,13 @@ class RootApi:
 
     @sudo_cmd
     @staticmethod
+    async def _sys_call_clear_cache(kernel, session, pars):
+        fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+        fdb.empty_cache()
+
+
+    @sudo_cmd
+    @staticmethod
     async def _sys_call_buy_object(kernel, session, pars):
         await _root_buy_object_safe(kernel, pars)
 
@@ -222,7 +229,7 @@ async def _get_user_impl(kernel, session, pars, *, create = False):
 
 
 async def _root_play_line(kernel, session, pars, line):
-    gCon.log(f"processing ->{line}<-")
+    gCon.rule(f"processing ->{line[:50]}<-")
     if "==>" in line:
         (data, exps) = line.split("==>")
         exp = json.loads(exps)
@@ -237,6 +244,14 @@ async def _root_play_line(kernel, session, pars, line):
     res_ob = json.loads(res_str)
     if (res_ob['errno'] != exp['errno']):
         raise AdelphosException(AdErrno.ESCRIPT_ERROR, res_str)
+    eval_exp = exp.get('eval_exp')
+    if eval_exp is not None:
+        gCon.log(f"evaluating {eval_exp}")
+        eval_result = eval(eval_exp)
+        if eval_result != True:
+            raise AdelphosException(AdErrno.ESCRIPT_ERROR,
+                    f"failing of {eval_exp}")
+       
     exp_re = exp.get('res_re')
     if exp_re is None:
         return

@@ -396,10 +396,8 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     async def get_transient_field(self, ob, key, par, t_id):
-        gCon.log(f"manage par {par}, key {key} for object {ob}, tid {t_id}")
         uri_ob = ob.uri.unparse()
         key_transient = f"_transient_{uri_ob}#{key}"
-        gCon.log(f"searching transient key {key_transient}")
         transient_item = self.transient_db.get(key_transient)
         now = datetime.now()
 
@@ -407,14 +405,14 @@ class FederatedStore(Dependency, LifespanAware):
             time_delta = now - transient_item.expire_time
             tot_seconds = time_delta.total_seconds()
             if tot_seconds < 0:
-                gCon.log(f"found the transient value! {transient_item.value}")
+                gCon.log(f"[green]found the transient value! {key_transient}[/green]")
                 return transient_item.value
             gCon.log(f"value is expired")
 
+        gCon.log(f"[red]Computing transient key {key_transient}[/red]")
         value = await par.transient_hook(self, weakref.ref(ob), t_id)
         dt_val = dt.timedelta(seconds = par.transient_age)
         expire_date = now + dt_val
-        gCon.log(f"Item will expire on {expire_date}")
         item = CachedTransientValue(value, expire_date) 
         self.transient_db[key_transient] = item
         return value

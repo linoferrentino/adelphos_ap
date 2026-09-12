@@ -201,7 +201,6 @@ def enforce_schema_scalar_read(func):
 
 def enforce_schema_not_scalar_read(func):
     def _inner_enforce(self, key, *args):
-        gCon.log(f"_inner_enforce {key}")
         schema = self.registrar.pars
         par = schema.get(key)
         if par is None:
