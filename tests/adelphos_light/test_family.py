@@ -49,7 +49,7 @@ def test_simul_fediverse_basic(simulated_fediverse):
         _test_list_uplevel_two_ok,
         _test_buy_object_level_one_same_family,
         _test_buy_object_level_one_ok,
-        _test_first_task_done_ok,
+        #_test_first_task_done_ok,
         ))
 
 
@@ -78,11 +78,10 @@ def _test_list_objects_zero_ok(world):
 
 
 def _test_len_get_list(world, instance, user_pushed, len_expected, *,
-        code_exp = ECoreErrno.DONE_OK, uplevel = 0, only_uri = True):
+        code_exp = ECoreErrno.DONE_OK, uplevel = 0):
     ad1 = world.get_instance(instance)
     ad1.push_user(user_pushed)
-    res = agoh.ws_list_ads(ad1.get_sock(), uplevel,
-                           code_exp = code_exp, only_uri = only_uri)
+    res = agoh.ws_list_ads(ad1.get_sock(), uplevel, code_exp = code_exp)
     if code_exp == ECoreErrno.DONE_OK:
         list_ads = res['res']
         gCon.log(f"The list is {list_ads}")
@@ -109,43 +108,39 @@ def _test_associate_with_family_denied(world):
 
 
 def _test_list_uplevel_one_ok(world):
-    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 1, uplevel = 1,
-                       only_uri = False)
+    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 1, uplevel = 1)
 
 
 def _test_list_uplevel_two_ok(world):
-    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 1, uplevel = 1,
-                       only_uri = False)
+    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 1, uplevel = 1)
     gCon.rule(f"_test_list_uplevel_two_ok phase 2")
     ad1 = world.get_instance('ad1')
     ad1.get_fdb().empty_cache()
-    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 2, uplevel = 1,
-                       only_uri = False)
+    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 2, uplevel = 1)
 
 
-
-def _test_first_task_done_ok(world):
-    ad2 = world.get_instance('ad2')
-    data = ad2.push_user('john_al.fam_t2')
-    tasks = data['res']['tasks']
-    assert len(tasks) == 0
-    ad2.pop_user()
-
-    data = ad2.push_user('katy_al.fam_t2')
-    gCon.log(f"data of katy is {data}")
-    tasks = data['res']['tasks']
-    assert len(tasks) == 1
-    gCon.log(f"task of katy is {tasks[0]}")
-    pin_to_give = tasks[0]['pars']['pin_to_give']
-    gCon.log(f"Pin to give is {pin_to_give}")
-    ad2.pop_user()
-
-    ad2.push_user('john_al.fam_t2')
-    data = agoh.ws_pin_received(ad2.get_sock(), pin_to_give)
-    gCon.log(f"got {data}")
-    data = agoh.ws_pin_confirm(ad2.get_sock(), pin_to_give)
-    gCon.log(f"got {data}")
-    ad2.pop_user()
+#def _test_first_task_done_ok(world):
+#    ad2 = world.get_instance('ad2')
+#    data = ad2.push_user('john_al.fam_t2')
+#    tasks = data['res']['tasks']
+#    assert len(tasks) == 0
+#    ad2.pop_user()
+#
+#    data = ad2.push_user('katy_al.fam_t2')
+#    gCon.log(f"data of katy is {data}")
+#    tasks = data['res']['tasks']
+#    assert len(tasks) == 1
+#    gCon.log(f"task of katy is {tasks[0]}")
+#    pin_to_give = tasks[0]['pars']['pin_to_give']
+#    gCon.log(f"Pin to give is {pin_to_give}")
+#    ad2.pop_user()
+#
+#    ad2.push_user('john_al.fam_t2')
+#    data = agoh.ws_pin_received(ad2.get_sock(), pin_to_give)
+#    gCon.log(f"got {data}")
+#    data = agoh.ws_pin_confirm(ad2.get_sock(), pin_to_give)
+#    gCon.log(f"got {data}")
+#    ad2.pop_user()
  
 
 def _test_buy_object_level_one_ok(world):

@@ -366,7 +366,7 @@ standard_cli_api = """
               dry_run:
                 required: false
                 par_type: bool
-                default: true
+                default: false
 
 
       family:

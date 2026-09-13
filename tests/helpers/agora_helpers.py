@@ -17,9 +17,8 @@ from app.core.ECoreErrno import ECoreErrno
 from app.logging import gCon
 
 
-def ws_list_ads(ws, uplevel, *, code_exp = ECoreErrno.DONE_OK,
-                only_uri = True):
-    cmd = f"agora.list_ads uplevel {uplevel} get_only_uri {only_uri}"
+def ws_list_ads(ws, uplevel, *, code_exp = ECoreErrno.DONE_OK):
+    cmd = f"agora.list_ads uplevel {uplevel}"
     return tu.ws_send_cmd(ws, cmd, code_exp)
 
 

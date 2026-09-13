@@ -127,6 +127,10 @@ root.put_object as_adelphos #al#john.smith@www.adelphos.it \
 title 'Ms. Dalloway' \
 description 'used in good condition' price 3.32
 
+root.put_object as_adelphos #al#john.smith@www.adelphos.it \
+title 'Misery' \
+description 'a bit scratched, missing two pages' price 0.88 
+
 root.push_alias alias maria_al.rossi
 
 agora.list_ads uplevel 2 ==> { "errno" : 0, \
@@ -144,10 +148,13 @@ agora.list_ads uplevel 1 ==> { "errno" : 0, \
 }
 
 agora.list_ads uplevel 2 ==> { "errno" : 0, \
-	"eval_exp" : "len(res_ob['res']) == 2" \
+	"eval_exp" : "len(res_ob['res']) == 3" \
 }
 
-agora.buy_object_title uplevel 2 ad_title Dalloway
+agora.buy_object_title uplevel 2 ad_title Dalloway \
+	==> { "errno" : 20 }
+
+agora.buy_object_title uplevel 2 ad_title Misery 
 
 root.pop_alias
 

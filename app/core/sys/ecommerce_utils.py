@@ -95,8 +95,9 @@ async def distribuite_hearts_to_imports(kernel, hearts_given, chain_imports,
 
 
 async def distribute_gains_to_exports(kernel, price, chain_exports, t_id):
-
+    gCon.log("[blue]{==================================== start gain distribution[/blue]")
     await _distribute_delta_to_chain(kernel, price, chain_exports, t_id)
+    gCon.log("[blue]{==================================== end gain distribution[/blue]")
 
 
 async def _distribute_delta_to_chain(kernel, delta, family_chain, t_id):
@@ -114,8 +115,8 @@ async def _distribute_delta_to_chain(kernel, delta, family_chain, t_id):
 
     containing_family_uri = containing_family().uri.unparse()
     tax_rate = await inner_family().get_scalar('import_export_tax', t_id)
-    tax_amount = abs(tax_rate * delta)
-    gCon.log(f"the {exp_imp} family {containing_family_uri} has a tax gain of {tax_amount}")
+    tax_amount = abs((tax_rate - 1) * delta)
+    gCon.log(f"the {exp_imp} family {containing_family_uri} has a tax rate {tax_rate} delta {delta} gain of {tax_amount}")
     await _change_family_balance(containing_family, tax_amount, t_id)
 
     delta = delta - tax_amount
@@ -130,8 +131,9 @@ async def _distribute_delta_to_chain(kernel, delta, family_chain, t_id):
     count_members = len(members_list)
     
     balance_to_members = (delta * brotherhood_ratio)
-    balance_to_member = balance_to_members / (count_members - 1)
-    balance_to_tx_family = delta - balance_to_members
+    balance_to_member = balance_to_members / (count_members)
+    overall_brotherhood_amount = balance_to_member * (count_members - 1)
+    balance_to_tx_family = delta - overall_brotherhood_amount 
 
     gCon.log(f"This family has {count_members} members who will take {balance_to_member} from the price each")
     gCon.log(f"The transaction family will take {balance_to_tx_family}")
@@ -141,7 +143,7 @@ async def _distribute_delta_to_chain(kernel, delta, family_chain, t_id):
             gCon.log(f"this is the {exp_imp} family {member().uri.unparse()}")
             family_chain = family_chain[:-1]
             await _distribute_delta_to_chain(member,
-                            balance_to_tx_family, chain_imports, t_id)
+                            balance_to_tx_family, family_chain, t_id)
         else:
             gCon.log(f"this is another family {member().uri.unparse()}")
             await _change_family_balance(member, balance_to_member, t_id)
@@ -149,51 +151,17 @@ async def _distribute_delta_to_chain(kernel, delta, family_chain, t_id):
 
 async def _change_family_balance(family, delta_balance, t_id):
     balance = await family().get_scalar('balance', t_id)
+    old_bal = balance
     balance += delta_balance 
     await validate_balance_in_family(family, balance, t_id)
     family().set_scalar('balance', balance)
-    gCon.log(f"The family {family().uri.name} has a new balance {balance}")
+    gCon.log(f"[yellow]{family().uri.name} --> Balance: {old_bal} + {delta_balance} = {balance}[/yellow]")
 
 
 async def distribute_losses_to_imports(kernel, price, chain_imports, t_id):
-    import_family = chain_imports[-2]
-    await _change_family_balance(import_family, -1 * price, t_id)
-
-    if len(chain_imports) == 2:
-        return
-
-    containing_family = chain_imports[-2]
-
-    for importing_family in reversed(chain_imports[:-2]):
-        containing_family_uri = containing_family().uri.unparse()
-        tax = await containing_family().get_scalar('import_export_tax', t_id)
-        brotherhood_ratio = await containing_family().get_scalar('brotherhood_ratio', t_id)
-        new_price = price * tax
-        gCon.log(f"the new price is {new_price} ratio {brotherhood_ratio}")
-        uri_family = importing_family().uri.unparse()
-        gCon.log(f"Distributing loss {new_price} to uri {uri_family} from {containing_family_uri} using the members")
-
-        members_list = await containing_family().get_as_object_list(
-                'members', t_id)
-        count_members = len(members_list)
-        
-        balance_to_members = (new_price * brotherhood_ratio) / count_members
-        balance_to_import_family = (price - balance_to_members)
-
-        gCon.log(f"This family has {count_members} members who will take {balance_to_members} from the price each")
-        gCon.log(f"The importing family will take {balance_to_import_family}")
-
-        for member in members_list:
-            if member == importing_family:
-                gCon.log(f"this is the importing family {member().uri.unparse()}")
-                chain_imports = chain_imports[:-1]
-                await distribute_losses_to_imports(member,
-                                balance_to_import_family, chain_imports, t_id)
-            else:
-                gCon.log(f"this is another family {member().uri.unparse()}")
-                await _change_family_balance(member, -1 * balance_to_members,
-                                             t_id)
-
-        
+    gCon.log("[red]{==================================== start loss distribution[/red]")
+    await _distribute_delta_to_chain(kernel, price * (-1.0), 
+                                     chain_imports, t_id)
+    gCon.log("[red]==================================== end loss distribution}[/red]")
 
 

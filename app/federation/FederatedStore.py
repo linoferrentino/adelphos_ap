@@ -110,13 +110,13 @@ class FederatedTransaction:
 
     def _do_updates(self):
         for k,v in self.locked_uris.items():
-            #gCon.log(f"{k} -> {v} check update")
+            gCon.log(f"{k} -> {v} check update")
             if ((v.ob.state == EObState.PRESENT) and
                 (v.ob.fields[REF_COUNT_COLUMN] == 0)):
                 self._delete_ob(k, v)
                 continue
             if v.modified == False and v.ob.state != EObState.BORROWED:
-                #gCon.log("not modified")
+                gCon.log("not modified")
                 continue
             self._update_uri_str(k, v)
             if self.do_mod_db == False:
