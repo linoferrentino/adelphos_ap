@@ -151,7 +151,7 @@ async def object_put_ad_in_agora_impl(kernel, family_ob, alias_ob,
                 object_id, pars, t_id)
     gCon.log(f"Created the object {object_ob().ob.fields}")
 
-    object_ob().set_link('adelphos_from', alias_ob)
+    await object_ob().set_link('adelphos_from', alias_ob, t_id)
 
     agora_ob().add_link('offers', object_ob)
 

@@ -84,13 +84,13 @@ class AgoraCalls:
     @staticmethod
     @federated_transaction(raise_if_fail = True)
     async def _agora_buy_object_safe(kernel, pars, t_id):
-        return await AgoraCalls._agora_buy_object_impl(kernel, pars, t_id)
+        return await _agora_buy_object_impl(kernel, pars, t_id)
 
 
-    @staticmethod
-    async def _get_offer_from_pars(fdb, offers, pars, t_id):
-        return await AgoraCalls._get_offer_from_pars_title(fdb,
-                offers, pars['ad_title'], t_id)
+    #@staticmethod
+    #async def _get_offer_from_pars(fdb, offers, pars, t_id):
+    #    return await AgoraCalls._get_offer_from_pars_title(fdb,
+    #            offers, pars['ad_title'], t_id)
 
 
     @staticmethod
@@ -103,129 +103,134 @@ class AgoraCalls:
         return offer_ob
 
 
-    @staticmethod
-    async def _get_offer_from_pars_title(fdb, offers, par_title, t_id):
-        for offer in offers:
-            gCon.log(f"Processing offer {offer}")
-            if re.search(par_title, offer['title']) is not None:
-                gCon.log(f"found!")
-                return offer
-        raise AdelphosCoreException(ECoreErrno.ENO_SUCH_OBJECT,
-                    f"no object with title {par_title} found")
-
-
-    @staticmethod
-    async def _agora_buy_object_impl(kernel, pars, t_id):
-        fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-        chain_imports = await scu.get_family_chain_up(kernel, pars, t_id)
-        gCon.log(f"the chain imports are {chain_imports}")
-
-        if len(chain_imports) < 2:
-            raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
-                        "You cannot buy in your family")
-
-        family_lev_ob = chain_imports[-1] 
-
-        offers = await family_list_ads(kernel, family_lev_ob, t_id)
-
-        offer = await AgoraCalls._get_offer_from_pars(fdb, offers,
-                                pars, t_id)
-
-        offer_ob = await fdb.uri_read_str(t_id, offer['uri'])
-
-        offer_uri = offer['uri']
-        agora_exported_price = offer['price']
-        gCon.log(f"The offer {offer_uri} has a price {agora_exported_price}")
-
-        alias_uri_str = await offer_ob().get_scalar('adelphos_from', t_id)
-        family_from_ob = await alu.alias_get_your_family(
-                kernel, alias_uri_str, t_id)
-        family_from_src = family_from_ob().uri.unparse()
-
-        if family_from_src == chain_imports[0]().uri.unparse():
-            raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
-                       f"The object {await offer_ob().get_scalar('description', t_id)} is originated by your family.")
-
-        chain_exports = await scu.get_family_chain_up_from_to(kernel,
-                    family_from_src, family_lev_ob, t_id)
-        if len(chain_exports) != len(chain_imports):
-            raise Exception("This version of adelphos handles symmetric chains: internal error")
-
-        await ecut.distribute_losses_to_imports(kernel, agora_exported_price,
-                                           chain_imports, t_id)
-
-        await ecut.distribute_gains_to_exports(kernel, agora_exported_price,
-                                          chain_exports, t_id)
-
-        #family_originator = chain_exports[0]
-        #agora_origin = await fu.family_get_your_agora(kernel, family_originator,
-        #                                              t_id)
-        #agora_origin().add_link('export_box', offer_ob)
-
-        #adelphos_from = await offu.offer_get_adelphos_from(kernel,
-        #                        offer_ob, t_id)
-
-        #adelphos_to_uri = pars['_session'].alias_uri
-        #adelphos_to = await alu.alias_get_from_uri(kernel, adelphos_to_uri,
-        #                                           t_id)
-        #offer_ob().set_link('adelphos_to', adelphos_to)
-
-        #chain_exports_str = scu.transform_chain_ob_to_str(chain_exports)
-        #chain_imports_str = scu.transform_chain_ob_to_str(
-        #        reversed(chain_imports))
-
-        #gCon.log(f"chain_exports {chain_exports_str}")
-        #gCon.log(f"chain_imports {chain_imports_str}")
-
-        #assert chain_imports_str[0] == chain_exports_str[-1]
-        #chain_imports_str.pop(0)
-        #chain_exports_str.pop(0)
-
-        #export_steps = AgoraCalls._transform_imp_exp_chain_into_tracking_steps(
-        #        chain_exports_str)
-
-        #import_steps = AgoraCalls._transform_imp_exp_chain_into_tracking_steps(
-        #        chain_imports_str)
-
-        #offer_ob().set_list('routing_exports', export_steps)
-        #offer_ob().set_list('routing_imports', import_steps)
-
-        #chain_imports.pop()
-        #initial_pin = await ru.distribute_routing_PINs(kernel, offer_uri,
-        #               chain_exports, reversed(chain_imports), t_id)
-
-        #next_step_boss = await fu.family_get_your_boss(kernel,
-        #                chain_exports[1], t_id)
-
-        #task_par = {
-        #        'pin_to_give' : initial_pin,
-        #        'offer_uri' : offer_uri,
-        #        'export_to' : chain_exports_str[0],
-        #        'export_referent' : next_step_boss().uri.unparse(),
-        #        'offer_title' : await offer_ob().get_scalar('title', t_id),
-        #        'offer_desc' : await offer_ob().get_scalar('description', t_id),
-        #}
-
-        #await tku.add_task_to_alias(kernel, adelphos_from,
-        #                'export_item', task_par, t_id)
-
-
-    def _transform_imp_exp_chain_into_tracking_steps(chain):
-        tasks = list()
-        for chain_item in chain:
-            tracking_step = {
-                    'family_to' : chain_item,
-                    'completed' : None
-                    }
-            tasks.append(tracking_step)
-        return tasks
-
 
     @staticmethod
     async def _agora_list_ads_impl(kernel, pars, t_id):
         family_lev_ob = await scu.get_family_uplevel(kernel, pars, t_id)
 
         return await family_list_ads(kernel, family_lev_ob, t_id)
+
+
+async def _get_offer_from_pars_title(fdb, offers, par_title, t_id):
+    for offer in offers:
+        gCon.log(f"Processing offer {offer}")
+        if re.search(par_title, offer['title']) is not None:
+            gCon.log(f"found!")
+            return offer
+    raise AdelphosCoreException(ECoreErrno.ENO_SUCH_OBJECT,
+                f"no object with title {par_title} found")
+
+
+async def _get_object_title(kernel, family_lev_ob, ad_title, t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+
+    offers = await family_list_ads(kernel, family_lev_ob, t_id)
+
+    offer = await _get_offer_from_pars_title(fdb, offers,
+                            ad_title, t_id)
+
+    offer_ob = await fdb.uri_read_str(t_id, offer['uri'])
+
+    return (offer, offer_ob)
+
+
+async def _agora_buy_object_impl(kernel, pars, t_id):
+
+    uplevel = pars['uplevel']
+    ad_title = pars['ad_title']
+
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    chain_imports = await scu.get_family_chain_up(kernel, pars, t_id)
+    #gCon.log(f"the chain imports are {chain_imports}")
+
+    if len(chain_imports) < 2:
+        raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
+                    "You cannot buy in your family")
+
+    family_lev_ob = chain_imports[-1] 
+
+    (offer, offer_ob) = await _get_object_title(kernel, family_lev_ob,
+                                                ad_title, t_id)
+
+    offer_uri = offer['uri']
+    agora_exported_price = offer['price']
+    gCon.log(f"The offer {offer_uri} has a price {agora_exported_price}")
+
+    alias_uri_str = await offer_ob().get_scalar('adelphos_from', t_id)
+    family_from_ob = await alu.alias_get_your_family(
+            kernel, alias_uri_str, t_id)
+    family_from_src = family_from_ob().uri.unparse()
+
+    if family_from_src == chain_imports[0]().uri.unparse():
+        raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
+                   f"The object {await offer_ob().get_scalar('description', t_id)} is originated by your family.")
+
+    chain_exports = await scu.get_family_chain_up_from_to(kernel,
+                family_from_src, family_lev_ob, t_id)
+    if len(chain_exports) != len(chain_imports):
+        raise Exception("This version of adelphos handles symmetric chains: internal error")
+
+    await ecut.distribute_losses_to_imports(kernel, agora_exported_price,
+                                       chain_imports, t_id)
+
+    await ecut.distribute_gains_to_exports(kernel, agora_exported_price,
+                                      chain_exports, t_id)
+
+    await au.remove_object_from_agora(kernel, chain_exports[0],
+                                      offer_ob, t_id)
+
+
+    #family_originator = chain_exports[0]
+    #agora_origin = await fu.family_get_your_agora(kernel, family_originator,
+    #                                              t_id)
+    #agora_origin().add_link('export_box', offer_ob)
+
+    #adelphos_from = await offu.offer_get_adelphos_from(kernel,
+    #                        offer_ob, t_id)
+
+    #adelphos_to_uri = pars['_session'].alias_uri
+    #adelphos_to = await alu.alias_get_from_uri(kernel, adelphos_to_uri,
+    #                                           t_id)
+    #offer_ob().set_link('adelphos_to', adelphos_to)
+
+    #chain_exports_str = scu.transform_chain_ob_to_str(chain_exports)
+    #chain_imports_str = scu.transform_chain_ob_to_str(
+    #        reversed(chain_imports))
+
+    #gCon.log(f"chain_exports {chain_exports_str}")
+    #gCon.log(f"chain_imports {chain_imports_str}")
+
+    #assert chain_imports_str[0] == chain_exports_str[-1]
+    #chain_imports_str.pop(0)
+    #chain_exports_str.pop(0)
+
+    #export_steps = AgoraCalls._transform_imp_exp_chain_into_tracking_steps(
+    #        chain_exports_str)
+
+    #import_steps = AgoraCalls._transform_imp_exp_chain_into_tracking_steps(
+    #        chain_imports_str)
+
+    #offer_ob().set_list('routing_exports', export_steps)
+    #offer_ob().set_list('routing_imports', import_steps)
+
+    #chain_imports.pop()
+    #initial_pin = await ru.distribute_routing_PINs(kernel, offer_uri,
+    #               chain_exports, reversed(chain_imports), t_id)
+
+    #next_step_boss = await fu.family_get_your_boss(kernel,
+    #                chain_exports[1], t_id)
+
+    #task_par = {
+    #        'pin_to_give' : initial_pin,
+    #        'offer_uri' : offer_uri,
+    #        'export_to' : chain_exports_str[0],
+    #        'export_referent' : next_step_boss().uri.unparse(),
+    #        'offer_title' : await offer_ob().get_scalar('title', t_id),
+    #        'offer_desc' : await offer_ob().get_scalar('description', t_id),
+    #}
+
+    #await tku.add_task_to_alias(kernel, adelphos_from,
+    #                'export_item', task_par, t_id)
 
 
 async def family_list_ads(kernel, family_lev_ob, t_id):

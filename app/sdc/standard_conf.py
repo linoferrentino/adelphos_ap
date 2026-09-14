@@ -249,11 +249,16 @@ standard_cli_api = """
               script_path:
                 required: true
 
-          - name: buy_object
+
+          - name: buy_object_title
             pars:
               as_adelphos:
                 required: true
-              object_uri:
+              uplevel:
+                par_type: int
+                required: true
+                validator: _v_ >= 0
+              ad_title:
                 required: true
               hearts_given:
                 par_type: int

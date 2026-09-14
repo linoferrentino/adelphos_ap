@@ -75,11 +75,13 @@ class AliasCalls:
         alias_ob = await AliasCalls._login_impl(kernel, pars, t_id)
         actor_handle = await alias_ob.get_scalar('actor_handle', t_id)
         social_dao = kernel.get_dep(Dependencies.SOCIAL_DAO)
+        gCon.log(f"login {alias} has social handle {actor_handle}")
         actor_dto = social_dao.actor_get_from_actor_handle(actor_handle)
         token = session.login_start(alias, family, actor_dto, alias_ob,
                                     force)
 
         if force == True:
+            gCon.log(f"forced login with pars {pars}")
             return
 
         social = kernel.get_dep(Dependencies.SOCIAL)

@@ -93,7 +93,7 @@ class FederatedTransaction:
         for k,v in self.created_uris.items():
             if v.ob.fields[REF_COUNT_COLUMN] == 0:
                 gCon.log(f"will prepare {k} to oblivion")
-                v.prepare_to_oblivion(self)
+                v.prepare_to_oblivion_sync(self)
                 continue
             present_str = self.fdb.db.get_maybe(k)
             if present_str is not None:
@@ -133,9 +133,10 @@ class FederatedTransaction:
 
 
     def _delete_ob(self, key_str, ob):
-        ob.prepare_to_oblivion(self)
+        ob.prepare_to_oblivion_sync(self)
         if self.do_mod_db == False:
             return
+        gCon.log(f"{self.fdb.hostname} -> object goes into oblivion {key_str}")
         self.fdb.db.del_key(key_str)
 
 
@@ -207,6 +208,7 @@ class FederatedTransaction:
        
 
     def t_commit(self):
+        gCon.rule(f"[green] {self.fdb.hostname} -> START COMMIT {self.tid}[/green]")
         try:
             self._check_read_consistency()
 
@@ -222,6 +224,7 @@ class FederatedTransaction:
 
             self.fdb.db.commit()
             self._remove_all_maps()
+            gCon.rule(f"[green] {self.fdb.hostname} !!!!!COMMIT!!!{self.tid}[/green]")
             return
 
         except FdbException as fdbex:
@@ -231,6 +234,7 @@ class FederatedTransaction:
             traceback.print_exc()
             fdex = FdbException(EFdbErrors.EFDB_INTERNAL_ERROR, str(ex)) 
 
+        gCon.rule(f"[red] {self.fdb.hostname} !!!!!COMMIT ABORTED!!!!!{self.tid}[/red]")
         self.fdb.db.rollback()
         raise fdex
 
@@ -272,14 +276,15 @@ class FederatedTransaction:
         return None
 
 
-    def downvote_deleted_ob(self, uri_str_complete):
+    def _downvote_deleted_ob_impl(self, uri_str_complete):
         uri_ob = self.fdb.parse_uri(uri_str_complete)
         uri_ob_local = self.fdb.remove_localhost(uri_ob)
         uri_str = uri_ob_local.unparse()
+        #uri_str = uri_ob.unparse()
         gCon.log(f"I have to search {uri_str} to downvote")
 
         if self.deleted_uris.get(uri_str) is not None:
-            return
+            return False 
 
         if self.read_uris.get(uri_str) is not None:
             raise FdbException(EFdbErrors.EFDB_NO_LOCK_ON_OB, uri_str)
@@ -287,18 +292,26 @@ class FederatedTransaction:
         locked_ob = self.locked_uris.get(uri_str)
         if locked_ob is not None:
             gCon.log(f"Found object to downvote {uri_str}")
-            locked_ob._dec_ref_ob()
+            locked_ob.dec_ref_ob()
             self.chain_deletes = True
-            return
+            return True
 
         created_ob = self.created_uris.get(uri_str)
         if created_ob is not None:
             gCon.log(f"Found created object to downvote {uri_str}")
-            created_ob._dec_ref_ob()
+            created_ob.dec_ref_ob()
             self.chain_deletes = True
-            return
+            return True
 
-        raise FdbException(EFdbErrors.EFDB_MISSING_LINK_TO_DELETED_OB, uri_str)
+        gCon.log(f"No {uri_str} to downvote. locked: {len(self.locked_uris)}")
+        return False
+
+
+    def downvote_deleted_ob_sync(self, uri_str_complete):
+        res = self._downvote_deleted_ob_impl(uri_str_complete)
+        if res == False:
+            raise FdbException(EFdbErrors.EFDB_MISSING_LINK_TO_DELETED_OB,
+                uri_str_complete)
 
 
     def get_ob(self, rctx):
@@ -393,6 +406,12 @@ class FederatedStore(Dependency, LifespanAware):
             while self.background_tasks > 0:
                 gCon.log(f"{self.background_tasks} tasks still running.")
                 await asyncio.sleep(0.5)
+
+
+    async def downvote_uri(self, uri, t_id):
+        gCon.log(f"database will decrement {uri} type {type(uri)}")
+        downvote_ob = await self.uri_read_str(t_id, uri)
+        await downvote_ob()._dec_ref_ob(t_id)
 
 
     async def get_transient_field(self, ob, key, par, t_id):

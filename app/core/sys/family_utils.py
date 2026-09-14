@@ -158,14 +158,14 @@ async def family_associate_2nd_half(kernel, pars, t_id):
         'my_trust' : trust_in_tot,
         })
 
-    family_ob().set_link('boss', boss_ob)
+    await family_ob().set_link('boss', boss_ob, t_id)
     family_ob().add_link('members', family_src_ob)
     family_ob().add_link('members', family_dst_ob)
 
-    agora_ob = add_default_agora(fdb, family_ob, boss_ob, pars['location'],
+    agora_ob = await add_default_agora(fdb, family_ob, boss_ob, pars['location'],
                                  t_id)
-    family_src_ob().set_link('upper_family', family_ob)
-    family_dst_ob().set_link('upper_family', family_ob)
+    await family_src_ob().set_link('upper_family', family_ob, t_id)
+    await family_dst_ob().set_link('upper_family', family_ob, t_id)
 
     #agora_src = await family_get_your_agora(kernel, family_src_ob, t_id)
     #agora_dst = await family_get_your_agora(kernel, family_dst_ob, t_id)
@@ -184,7 +184,7 @@ async def family_associate_2nd_half(kernel, pars, t_id):
     #                                   tax_dst, agora_ob, t_id)
 
 
-def add_default_agora(fdb, family_ob, alias_ob, location, t_id):
+async def add_default_agora(fdb, family_ob, alias_ob, location, t_id):
     agora_name = family_ob().uri.name + "_main_agora"
 
     fields = {
@@ -192,8 +192,8 @@ def add_default_agora(fdb, family_ob, alias_ob, location, t_id):
     }
     agora_ob = fdb.new_ob(t_id, EAdelphosType.AGORA_TYPE,
                     agora_name, fields = fields)
-    agora_ob().set_link('carrier', alias_ob)
-    family_ob().set_link('agora', agora_ob)
+    await agora_ob().set_link('carrier', alias_ob, t_id)
+    await family_ob().set_link('agora', agora_ob, t_id)
 
     return agora_ob
 

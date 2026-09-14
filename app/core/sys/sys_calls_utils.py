@@ -60,6 +60,7 @@ async def get_family_chain_up(kernel, pars, t_id):
     family_ob = await get_family_in_session(kernel, pars, t_id)
     uplevel = pars['uplevel']
     chain.append(family_ob)
+    gCon.log(f"Starting chain up from {family_ob().uri.unparse()}")
     for lev in range(0, uplevel):
         family_uri = await family_ob().get_scalar('upper_family', t_id)
         if family_uri is None:

@@ -23,12 +23,14 @@ from app.exc.AdelphosException import AdErrno
 from app.sdc.Dependencies import Dependencies
 from app.core.algo.AliasAlgo import AliasAlgo
 from app.core.sys.AliasCalls import AliasCalls
+
 import app.core.sys.FamilyCalls as fcalls
 import app.core.sys.family_utils as fu
 import app.misc.alias_utils as au
 import app.core.sys.alias_utils as autils
 import app.core.sys.offer_utils as ofutils
 import app.core.sys.ecommerce_utils as ecut
+import app.core.sys.AgoraCalls as ac
 
 
 def sudo_cmd(func):
@@ -62,8 +64,8 @@ class RootApi:
 
     @sudo_cmd
     @staticmethod
-    async def _sys_call_buy_object(kernel, session, pars):
-        await _root_buy_object_safe(kernel, pars)
+    async def _sys_call_buy_object_title(kernel, session, pars):
+        await _root_buy_object_title_safe(kernel, pars)
 
 
     @sudo_cmd
@@ -90,7 +92,8 @@ class RootApi:
 
     @staticmethod
     async def _sys_call_pop_alias(kernel, session, pars):
-        return session.client.pop_session()
+        popped_session = session.client.pop_session()
+        return popped_session.get_alias_ob().ob.fields
 
 
     @sudo_cmd
@@ -139,25 +142,48 @@ class RootApi:
 async def _push_alias_safe(kernel, pars, t_id):
     alias = pars['alias']
     session = pars['_param']
-    alias_session = session.client.push_session(alias)
-    await AliasCalls._session_login(kernel, alias_session,
-                                    alias, None, t_id, True)
+    alias_session = await _push_alias_impl(kernel, session, alias, t_id)
     return alias_session.get_alias_ob().ob.fields
 
 
-@federated_transaction(raise_if_fail = True)
-async def _root_buy_object_safe(kernel, pars, t_id):
-    as_adelphos_uri_str = pars['as_adelphos']
-    object_uri = pars['object_uri']
- 
-    (exp_chain, imp_chain) = await ofutils.offer_buy_impl(kernel,
-            object_uri, as_adelphos_uri_str, t_id)
+async def _push_alias_impl(kernel, session, alias, t_id):
+    gCon.log(f"pushing alias {alias}")
+    alias_session = session.client.push_session(alias)
+    await AliasCalls._session_login(kernel, alias_session,
+                                    alias, None, t_id, True)
+    return alias_session
 
-    hearts_given = pars['hearts_given']
-    await ecut.distribuite_hearts_to_imports(kernel,
-                                             hearts_given, exp_chain, t_id)
-    await ecut.distribuite_hearts_to_exports(kernel,
-                                             hearts_given, imp_chain, t_id)
+
+@federated_transaction(raise_if_fail = True)
+async def _root_buy_object_title_safe(kernel, pars, t_id):
+    as_adelphos_uri_str = pars['as_adelphos']
+    object_title = pars['ad_title']
+    session = pars['_param']
+    gCon.log(f"before push session is {session}") 
+
+    alias_session = await _push_alias_impl(kernel, session,
+                            as_adelphos_uri_str, t_id)
+    pars['_param'] = alias_session
+    gCon.log(f"after push session is {alias_session} with family {alias_session.family}") 
+
+    session = pars['_param']
+    gCon.log(f"after push session is {session}") 
+
+    family = session.family
+
+    try:
+        await ac._agora_buy_object_impl(kernel, pars, t_id)
+    finally:
+        session.client.pop_session()
+ 
+    #(exp_chain, imp_chain) = await ofutils.offer_buy_impl(kernel,
+    #        object_uri, as_adelphos_uri_str, t_id)
+
+    #hearts_given = pars['hearts_given']
+    #await ecut.distribuite_hearts_to_imports(kernel,
+    #                                         hearts_given, exp_chain, t_id)
+    #await ecut.distribuite_hearts_to_exports(kernel,
+    #                                         hearts_given, imp_chain, t_id)
 
    
 @federated_transaction(raise_if_fail = True)
@@ -184,11 +210,16 @@ async def _do_association_safe(kernel, pars, t_id):
 async def _alias_join_family_safe(kernel, pars, t_id):
 
     family = pars['family']
-    user_handle = pars['user']
+    user = pars['user']
     alias = pars['alias']
     password = pars['password']
 
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+
+    host = kernel.conf().get_host()
+
+    user_handle = f"@{user}@{host}"
+
     family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
     family_ob = await fdb.uri_read_ob(t_id, family_uri, must_lock = True)
 

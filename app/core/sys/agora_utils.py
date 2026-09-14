@@ -26,7 +26,7 @@ async def agora_get_your_carrier(kernel, family_ob, t_id):
 
 async def remove_object_from_agora(kernel, seller_family, offer_ob, t_id):
     agora_family = await fu.family_get_your_agora(kernel, seller_family, t_id)
-    agora_family().remove_link('offers', offer_ob)
+    await agora_family().remove_link('offers', offer_ob, t_id)
 
 
 

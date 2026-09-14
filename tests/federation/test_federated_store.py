@@ -112,7 +112,7 @@ async def a_fdb1_link_a(fdb1_loc):
     fob2 = fdb1_loc.new_ob(t_id, TYPE_T2, 'a')
 
     fob1 = await fdb1_loc.uri_read_lock(t_id, t1uri)
-    fob1().compare_and_swap_link('uses', None, fob2)
+    await fob1().compare_and_swap_link('uses', None, fob2, t_id)
 
     fdb1_loc.commit_transaction(t_id)
 
@@ -155,7 +155,7 @@ async def a_test_link2(fdb1_loc):
     fob1 = await fdb1_loc.uri_read_lock(t_id, t1uri)
     fob2_old = await fdb1_loc.uri_read_lock(t_id, t2uri_old)
     fob2_new = fdb1_loc.new_ob_uri(t_id, t2uri_new)
-    fob1().compare_and_swap_link('uses', fob2_old, fob2_new)
+    await fob1().compare_and_swap_link('uses', fob2_old, fob2_new, t_id)
 
     fdb1_loc.commit_transaction(t_id)
 
@@ -205,7 +205,7 @@ async def a_test_link1(fdb1_loc):
     fob2 = fdb1_loc.new_ob_uri(t_id, t2uri)
     fob2_b = fdb1_loc.new_ob_uri(t_id, t2urib)
     fob1 = await fdb1_loc.uri_read_lock(t_id, t1uri)
-    fob1().compare_and_swap_link('uses', None, fob2)
+    await fob1().compare_and_swap_link('uses', None, fob2, t_id)
     fdb1_loc.commit_transaction(t_id)
 
     t_id = fdb1_loc.begin_transaction()
@@ -358,13 +358,13 @@ async def a_test_uri_remove(fdb1_loc):
 
     fob_dep = await fdb1_loc.uri_read_ob(t_id, tmember_uri,
                                               must_lock = True)
-    fob().remove_link('followers', fob_dep)
+    await fob().remove_link('followers', fob_dep, t_id)
     fob_dep_bob = fdb1_loc.new_ob_uri(t_id, tbob_uri, fields = {
         'name' : 'bob'
         })
 
     with pytest.raises(FdbException) as fex:
-        fob().remove_link('followers', fob_dep_bob)
+        await fob().remove_link('followers', fob_dep_bob, t_id)
     assert fex.value.errno == EFdbErrors.EFDB_NO_SUCH_OB
 
     fdb1_loc.commit_transaction(t_id)
@@ -479,7 +479,7 @@ async def a_test_uri_set(fdb1_loc):
 
     fob_set_lock = await fdb1_loc.uri_read_lock(t_id, t1uri)
 
-    fob_set_lock().remove_set('members', fob_lock)
+    await fob_set_lock().remove_set('members', fob_lock, t_id)
 
     with pytest.raises(FdbException) as fex:
         fdb1_loc.commit_transaction(t_id)
@@ -931,7 +931,7 @@ async def a_test_no_ref_downlink(fdb1_loc):
     assert fob().ref_count == 0
     assert fob_root().ref_count == 1
 
-    fob().set_link('need_uri', fob_root)
+    await fob().set_link('need_uri', fob_root, t_id)
 
     assert fob().ref_count == 0
     assert fob_root().ref_count == 2

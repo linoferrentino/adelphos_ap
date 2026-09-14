@@ -212,16 +212,6 @@ classes:
           cardinality: scalar
           required: true
 
-        - name: routing_exports
-          type: json
-          cardinality: array
-          required: false
-
-        - name: routing_imports
-          type: json
-          cardinality: array
-          required: false
-
 
 
 """

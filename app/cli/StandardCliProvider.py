@@ -51,6 +51,7 @@ class StandardCliClient:
             raise AdelphosException(AdErrno.ENOSESSION)
         self.session = self.save_session
         self.save_session = None
+        return self.session
 
 
     def push_session(self, alias):

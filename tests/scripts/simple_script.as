@@ -41,8 +41,8 @@ root.put_object as_adelphos #al#john.smith@www.adelphos.it \
 title 'iPhone 14' \
 description 'battery low' price 232.35
 
-root.buy_object as_adelphos #al#mary.smith@www.adelphos.it \
-object_uri #ob#1_smith@www.adelphos.it hearts_given 5 ==> \
+root.buy_object_title as_adelphos mary.smith \
+uplevel 0 ad_title Joyce hearts_given 5 ==> \
 	{ "errno" : 18 }
 
 root.add_user user jack
@@ -66,17 +66,18 @@ agora.list_ads uplevel 0 ==> { "errno" : 0, \
 
 root.pop_alias
 
+root.buy_object_title as_adelphos jack_al.morrison \
+uplevel 2 ad_title Joyce hearts_given 5  ==> \
+	{ "errno" : 14 }
 
-root.buy_object as_adelphos #al#jack_al.morrison@www.adelphos.it \
-object_uri #ob#1_smith@www.adelphos.it hearts_given 5  ==> \
-	{ "errno" : 10 }
+root.buy_object_title as_adelphos bob.fam_bob \
+uplevel 1 ad_title Joyce hearts_given 5 
 
-root.buy_object as_adelphos #al#bob.fam_bob@www.adelphos.it \
-object_uri #ob#1_smith@www.adelphos.it hearts_given 5 
+root.clear_cache
 
-root.buy_object as_adelphos #al#bob.fam_bob@www.adelphos.it \
-object_uri #ob#2_smith@www.adelphos.it hearts_given 5  ==> \
-	{ "errno" : 24 }
+root.buy_object_title as_adelphos bob.fam_bob \
+uplevel 1 ad_title iPhone hearts_given 5  ==> \
+	{ "errno" : 19 }
 
 root.do_association family_source #fa#fam_bob@www.adelphos.it \
 	family_dest #fa#morrison@www.adelphos.it \

@@ -161,8 +161,6 @@ def reification(func):
     return _inner_reification
 
 
-
-
 def check_transient(func):
 
     async def _inner_check_transient(self, key, maybe, t_id):
@@ -180,7 +178,6 @@ def check_transient(func):
         return res
 
     return _inner_check_transient
-
 
 
 def enforce_schema_scalar_read(func):
@@ -449,6 +446,7 @@ class FederatedObject:
             self.ob.fields = self.ob.fields['backup']
         self.ob.state = EObState.PRESENT
         self.modified = True
+        self.prepared_to_oblivion = True
 
 
     def lent_to(self, social_handle):
@@ -605,8 +603,8 @@ class FederatedObject:
 
     @enforce_schema
     @ensure_lock
-    def set_link(self, key, new_ob):
-        self._compare_and_swap_link_impl(key, None, new_ob)
+    async def set_link(self, key, new_ob, t_id):
+        await self._compare_and_swap_link_impl(key, None, new_ob, t_id)
 
 
     @enforce_set
@@ -628,7 +626,7 @@ class FederatedObject:
 
     @enforce_set
     @ensure_lock
-    def remove_set(self, key, ob):
+    async def remove_set(self, key, ob, t_id):
         ob().enforce_lock()
         schema = self.registrar.pars
         par = schema.get(key)
@@ -644,7 +642,7 @@ class FederatedObject:
         uri_list = list(uri_set)
         gCon.log(f"new value {uri_list}")
         self.ob.fields[key] = uri_list
-        ob()._dec_ref_ob()
+        await ob()._dec_ref_ob(t_id)
         self.modified = True
         
 
@@ -672,7 +670,7 @@ class FederatedObject:
     @enforce_schema_not_scalar_scalar
     @enforce_uri_type
     @ensure_lock
-    def remove_link(self, key, ob):
+    async def remove_link(self, key, ob, t_id):
         schema = self.registrar.pars
         par = schema.get(key)
         cur_value = self.ob.fields[key]
@@ -689,7 +687,7 @@ class FederatedObject:
                     raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB,
                         f"Object {uri_str} not found")
                 cur_set.remove(uri_str)
-                ob()._dec_ref_ob()
+                await ob()._dec_ref_ob(t_id)
             self.ob.fields[key] = list(cur_set)
             self.modified = True
         else:
@@ -726,13 +724,89 @@ class FederatedObject:
 
     def downvote_uri(self, uri_to_downvote, tx_ob):
         gCon.log(f"need to downvote the URI {uri_to_downvote}")
-        ob_to_downvote = tx_ob.downvote_deleted_ob(uri_to_downvote)
+        ob_to_downvote = tx_ob.downvote_deleted_ob_sync(uri_to_downvote)
+        self.prepared_to_oblivion = True
 
 
-    def prepare_to_oblivion(self, tx_ob):
+    async def prepare_to_oblivion(self, t_id):
+
+        fdb = self.registrar.factory.fdb 
+        #async def gen_downvote(uri):
+        #    await fdb.downvote_uri(uri, t_id)
+
         if hasattr(self, 'prepared_to_oblivion'):
             return 
-        gCon.log("[red]prepare to oblivion[/red]")
+        gCon.log(f"[red]prepare to oblivion >> {self.ob.fields}[/red]")
+        for par, definition in self.registrar.pars.items():
+            if ((definition.typecol != FObColType.URI)
+                and (definition.typecol != FObColType.LOCAL_URI)):
+                    continue
+            uris_to_downvote = self.ob.fields[par] 
+            if definition.cardinality == FObCardType.SCALAR:
+                if uris_to_downvote is not None:
+                    await fdb.downvote_uri(uris_to_downvote, t_id)
+                    self.prepared_to_oblivion = True
+            elif definition.cardinality == FObCardType.SET:
+                set_uri_downvoted = set(uris_to_downvote)
+                for uri_to_downvote in set_uri_downvoted:
+                    await fdb.downvote_uri(uri_to_downvote, t_id)
+                    self.prepared_to_oblivion = True
+            else:
+                raise Exception("To do")
+        gCon.log(f"=================== prepared to oblivion DONE {id(self)}")
+
+
+    async def prepare_to_oblivion_save(self, t_id):
+        if hasattr(self, 'prepared_to_oblivion'):
+            return 
+        gCon.log(f"[red]prepare to oblivion >> {self.ob.fields}[/red]")
+        fdb = self.registrar.factory.fdb 
+        for par, definition in self.registrar.pars.items():
+            if ((definition.typecol != FObColType.URI)
+                and (definition.typecol != FObColType.LOCAL_URI)):
+                    continue
+            uris_to_downvote = self.ob.fields[par] 
+            if definition.cardinality == FObCardType.SCALAR:
+                if uris_to_downvote is not None:
+                    await fdb.downvote_uri(uris_to_downvote, t_id)
+            elif definition.cardinality == FObCardType.SET:
+                set_uri_downvoted = set(uris_to_downvote)
+                for uri_to_downvote in set_uri_downvoted:
+                    await fdb.downvote_uri(uri_to_downvote, t_id)
+            else:
+                raise Exception("To do")
+        self.prepared_to_oblivion = True
+
+
+    def prepare_to_oblivion_cb(self, callback):
+        if hasattr(self, 'prepared_to_oblivion'):
+            return 
+        gCon.log(f"[red]prepare to oblivion >> {self.ob.fields}[/red]")
+        for par, definition in self.registrar.pars.items():
+            if ((definition.typecol != FObColType.URI)
+                and (definition.typecol != FObColType.LOCAL_URI)):
+                    continue
+            uris_to_downvote = self.ob.fields[par] 
+            if definition.cardinality == FObCardType.SCALAR:
+                if uris_to_downvote is not None:
+                    #self.downvote_uri(uris_to_downvote, tx_ob)
+                    callback(uri_to_downvote)
+            elif definition.cardinality == FObCardType.SET:
+                set_uri_downvoted = set(uris_to_downvote)
+                for uri_to_downvote in set_uri_downvoted:
+                    callback(uri_to_downvote)
+                    #self.downvote_uri(uri_to_downvote, tx_ob)
+            else:
+                raise Exception("To do")
+        self.prepared_to_oblivion = True
+
+
+
+    def prepare_to_oblivion_sync(self, tx_ob):
+        if hasattr(self, 'prepared_to_oblivion'):
+            gCon.log(f"Already prepared to oblivion ref {self.ob.fields[REF_COUNT_COLUMN]}")
+            return 
+        gCon.log(f"[red]{id(self)} prepare to sync oblivion >> {self.ob.fields}[/red]")
         for par, definition in self.registrar.pars.items():
             if ((definition.typecol != FObColType.URI)
                 and (definition.typecol != FObColType.LOCAL_URI)):
@@ -747,16 +821,15 @@ class FederatedObject:
                     self.downvote_uri(uri_to_downvote, tx_ob)
             else:
                 raise Exception("To do")
-        self.prepared_to_oblivion = True
 
 
     @ensure_lock
     @enforce_schema
-    def compare_and_swap_link(self, key, expected_ob, new_ob):
-        self._compare_and_swap_link_impl(key, expected_ob, new_ob)
+    async def compare_and_swap_link(self, key, expected_ob, new_ob, t_id):
+        await self._compare_and_swap_link_impl(key, expected_ob, new_ob, t_id)
         
 
-    def _compare_and_swap_link_impl(self, key, expected_ob, new_ob):
+    async def _compare_and_swap_link_impl(self, key, expected_ob, new_ob, t_id):
         schema = self.registrar.pars
         par = schema.get(key)
 
@@ -786,7 +859,7 @@ class FederatedObject:
             return
 
         if expected_ob is not None:
-            expected_ob()._dec_ref_ob()
+            await expected_ob()._dec_ref_ob(t_id)
 
         if new_ob is not None:
             new_ob()._inc_ref_ob()
@@ -796,7 +869,15 @@ class FederatedObject:
 
 
     @ensure_lock
-    def _dec_ref_ob(self):
+    async def _dec_ref_ob(self, t_id):
+        self.dec_ref_ob()
+        if self.ob.fields[REF_COUNT_COLUMN] != 0:
+            return
+        gCon.log(f"Object will __async__ prepare to oblivion")
+        await self.prepare_to_oblivion(t_id)
+
+
+    def dec_ref_ob(self):
         assert self.ob.fields[REF_COUNT_COLUMN] > 0
         self.ob.fields[REF_COUNT_COLUMN] -= 1
         self.modified = True
@@ -805,6 +886,9 @@ class FederatedObject:
     @ensure_lock
     def _inc_ref_ob(self):
         assert self.ob.fields[REF_COUNT_COLUMN] >= 0
+        if hasattr(self, 'prepared_to_oblivion'):
+            raise FdbException(EFdbErrors.EFDB_RESURECTION_NOT_ALLOWED_YET,
+                    f"{self.uri.unparse()} is dead.")
         self.ob.fields[REF_COUNT_COLUMN] += 1
         self.modified = True
 

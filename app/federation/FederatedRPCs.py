@@ -33,6 +33,7 @@ class FederatedRPCs:
         uri_str = pars['uri_str']
         obstr = pars.get('obstr')
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+        gCon.rule(f"[blue]{fdb.hostname}: _sys_call_return_impl got {uri_str} in return[/blue]")
         t_id = fdb.begin_transaction()
         await fdb.return_object_received(t_id, uri_str, obstr)
         fdb.commit_transaction(t_id)
