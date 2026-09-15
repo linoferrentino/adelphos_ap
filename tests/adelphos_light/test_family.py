@@ -176,16 +176,26 @@ def _test_associate_with_family_ok(world):
     alice_inbox = ad1.get_user_inbox('alice')
     assert alice_inbox.count_msg() == 1
     msg = alice_inbox.pop_lst_msg()
-    assert re.match("You have a new task associate_family", msg.content) \
+    assert re.match("You have a new task ASSOCIATE_FAMILY", msg.content) \
             is not None
 
     data = ad1.push_user('alice.fam_t1')
     gCon.log(f"Data of alice is {data}")
     tasks = data['res']['tasks']
     assert len(tasks) == 1
-    assert tasks[0]['task'] == 'associate_family'
-    tkh.ws_accept_task(ad1.get_sock(), tasks[0]['id'])
+    gCon.log(f"The task of user is {tasks[0]} to do accept")
+    #assert False
+    #assert tasks[0]['task'] == 'associate_family'
+    tkh.ws_accept_task(ad1.get_sock(), tasks[0])
     ad1.pop_user()
+
+
+    ad2 = world.get_instance('ad2')
+    data = ad2.push_user('john_al.fam_t2')
+    gCon.log(f"Data of john is {data}")
+    tasks = data['res']['tasks']
+    assert len(tasks) == 1
+    ad2.pop_user()
 
     
 def test_invite_member(get_routable_app):

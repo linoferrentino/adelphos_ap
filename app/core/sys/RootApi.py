@@ -168,23 +168,19 @@ async def _root_buy_object_title_safe(kernel, pars, t_id):
 
     session = pars['_param']
     gCon.log(f"after push session is {session}") 
-
-    family = session.family
+    hearts_given = pars['hearts_given']
 
     try:
-        await ac._agora_buy_object_impl(kernel, pars, t_id)
+        (exp_chain, imp_chain) = await ac._agora_buy_object_impl(
+                kernel, pars, t_id)
+
+        await ecut.distribuite_hearts_to_imports(kernel,
+                     hearts_given, exp_chain, t_id)
+        await ecut.distribuite_hearts_to_exports(kernel,
+                     hearts_given, imp_chain, t_id)
     finally:
         session.client.pop_session()
  
-    #(exp_chain, imp_chain) = await ofutils.offer_buy_impl(kernel,
-    #        object_uri, as_adelphos_uri_str, t_id)
-
-    #hearts_given = pars['hearts_given']
-    #await ecut.distribuite_hearts_to_imports(kernel,
-    #                                         hearts_given, exp_chain, t_id)
-    #await ecut.distribuite_hearts_to_exports(kernel,
-    #                                         hearts_given, imp_chain, t_id)
-
    
 @federated_transaction(raise_if_fail = True)
 async def _root_put_object_safe(kernel, pars, t_id):

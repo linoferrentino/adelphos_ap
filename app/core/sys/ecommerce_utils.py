@@ -80,7 +80,7 @@ async def distribuite_hearts_to_exports(kernel, hearts_given, chain_exports,
 async def _distribute_hearts_to_chain(kernel, hearts_given,
                                       chain, trust_field, t_id):
     db_delta = -0.03 + ( 0.01 * hearts_given)
-    gCon.log(f"Giving {db_delta} of trust {trust_field} to chain")
+    gCon.rule(f"TRUST MOD: {db_delta} of trust {trust_field} to chain")
 
     for export_family in reversed(chain[:-1]):
         old_trust = await export_family().get_scalar(trust_field, t_id)

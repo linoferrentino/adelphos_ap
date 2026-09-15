@@ -648,7 +648,6 @@ class FederatedObject:
 
     @enforce_schema_not_scalar_read
     async def get_as_list(self, key, t_id):
-        #cur_value = self.ob.fields.get(key)
         cur_value = await self._get_key_val_raw(key, True, t_id)
         if cur_value is None:
             return []
@@ -672,26 +671,34 @@ class FederatedObject:
     @ensure_lock
     async def remove_link(self, key, ob, t_id):
         schema = self.registrar.pars
+        cur_value = await self._get_key_val_raw(key, True, t_id)
         par = schema.get(key)
-        cur_value = self.ob.fields[key]
+        if cur_value is None:
+            raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB,
+                f"Object {uri_str} not found")
 
         uri_str = ob().uri.unparse(par.typecol == FObColType.LOCAL_URI)
 
         if par.cardinality == FObCardType.SET:
-            if cur_value is None:
+            cur_set = set(cur_value)
+            if uri_str not in cur_set:
                 raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB,
                     f"Object {uri_str} not found")
-            else:
-                cur_set = set(cur_value)
-                if uri_str not in cur_set:
-                    raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB,
-                        f"Object {uri_str} not found")
-                cur_set.remove(uri_str)
-                await ob()._dec_ref_ob(t_id)
+            cur_set.remove(uri_str)
             self.ob.fields[key] = list(cur_set)
-            self.modified = True
+        elif par.cardinality == FObCardType.ARRAY:
+            cur_list = list(cur_value)
+            try:
+                cur_list.remove(uri_str)
+            except ValueError:
+                raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB,
+                    f"Object {uri_str} not found")
+            self.ob.fields[key] = cur_list 
         else:
             raise Exception("TO DO")
+
+        await ob()._dec_ref_ob(t_id)
+        self.modified = True
 
  
     @ensure_lock
@@ -718,8 +725,23 @@ class FederatedObject:
             self.ob.fields[key] = list(cur_set)
             self.modified = True
 
+        elif par.cardinality == FObCardType.ARRAY:
+
+            if cur_value is None:
+                cur_list =  list()
+                cur_list.append(uri_str)
+                ob()._inc_ref_ob()
+            else:
+                cur_list = list(cur_value)
+                cur_list.append(uri_str)
+                ob()._inc_ref_ob()
+
+            self.ob.fields[key] = cur_list
+            self.modified = True
+
         else:
             raise Exception("TO DO")
+
 
 
     def downvote_uri(self, uri_to_downvote, tx_ob):
@@ -812,6 +834,8 @@ class FederatedObject:
                 and (definition.typecol != FObColType.LOCAL_URI)):
                     continue
             uris_to_downvote = self.ob.fields[par] 
+            if uris_to_downvote is None:
+                return
             if definition.cardinality == FObCardType.SCALAR:
                 if uris_to_downvote is not None:
                     self.downvote_uri(uris_to_downvote, tx_ob)
@@ -820,8 +844,10 @@ class FederatedObject:
                 for uri_to_downvote in set_uri_downvoted:
                     self.downvote_uri(uri_to_downvote, tx_ob)
             else:
-                raise Exception("To do")
-
+                list_uri_downvoted = list(uris_to_downvote)
+                for uri_to_downvote in list_uri_downvoted:
+                    self.downvote_uri(uri_to_downvote, tx_ob)
+ 
 
     @ensure_lock
     @enforce_schema

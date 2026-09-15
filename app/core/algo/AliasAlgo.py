@@ -26,6 +26,7 @@ import sys
 import app.misc.alias_utils as au
 import app.misc.trust_utils as tutils
 import app.core.sys.family_utils as fu
+import app.core.sys.task_utils as tku
 
 from app.logging import gCon
 
@@ -170,20 +171,32 @@ class AliasAlgo:
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
         family_ob = await fdb.uri_read_lock(t_id, family_uri)
 
-        invite_ob = await family_ob().get_scalar('invite', t_id)
-        if invite_ob is None:
+        boss_ob = await fu.family_get_your_boss(kernel, family_ob, t_id)
+
+        found = await tku.complete_invite_task_for_user(kernel,
+                            boss_ob, user_handle, invite_code, t_id)
+
+        if found == False:
              raise AdelphosCoreException(ECoreErrno.ECANNOT_FIND_INVITE,
                                         family)
 
-        if invite_ob['invite_code'] != invite_code:
-             raise AdelphosCoreException(ECoreErrno.EWRONG_INVITE_CODE,
-                                        family)
 
-        if invite_ob['user_handle'] != user_handle:
-             raise AdelphosCoreException(ECoreErrno.EWRONG_USER_HANDLE,
-                                        family)
+        #invite_ob = await family_ob().get_scalar('invite', t_id)
+        #if invite_ob is None:
+        #     raise AdelphosCoreException(ECoreErrno.ECANNOT_FIND_INVITE,
+        #                                family)
 
-        family_ob().set_scalar('invite', None)
+
+
+        #if invite_ob['invite_code'] != invite_code:
+        #     raise AdelphosCoreException(ECoreErrno.EWRONG_INVITE_CODE,
+        #                                family)
+
+        #if invite_ob['user_handle'] != user_handle:
+        #     raise AdelphosCoreException(ECoreErrno.EWRONG_USER_HANDLE,
+        #                                family)
+
+        #family_ob().set_scalar('invite', None)
 
         alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, 
                             user_handle, alias, family, password, t_id)

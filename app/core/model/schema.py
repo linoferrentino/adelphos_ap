@@ -23,7 +23,50 @@ uri_constructor: app.core.model.AdelphosUri.AdelphosUri
 
 types:
 
+  enums:
+
+    ETaskType:
+      - INVITE_FAMILY
+      - ASSOCIATE_FAMILY
+      - JOIN_FAMILY
+      - SHIP_OBJECT
+
+
 classes:
+
+    - uri_prefix: {EAdelphosType.TASK_TYPE}
+      can_be_root: false 
+      version: 0
+      columns:
+
+        - name: task_type
+          type: enum
+          sub_type: ETaskType
+          cardinality: scalar
+          required: true
+
+        - name: linked_ob
+          type: uri
+          cardinality: scalar
+          required: false
+
+        - name: created_on 
+          type: str 
+          cardinality: scalar
+          required: true
+
+        - name: steps
+          type: json
+          cardinality: array
+          required: true
+          minimum_cardinality: 1
+
+        - name: active_step
+          type: int 
+          cardinality: scalar
+          required: false 
+          default: 0
+
 
     - uri_prefix: {EAdelphosType.ALIAS_TYPE}
       can_be_root: false 
@@ -42,12 +85,7 @@ classes:
           required: true
 
         - name: tasks
-          type: json 
-          cardinality: array
-          required: false
-
-        - name: routing_data
-          type: json 
+          type: uri 
           cardinality: array
           required: false
 
@@ -92,11 +130,6 @@ classes:
           cardinality: scalar
           required: false
           default: 0.9
-
-        - name: invite
-          type: json 
-          cardinality: scalar
-          required: false
 
         - name: boss
           type: uri 

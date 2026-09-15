@@ -26,6 +26,7 @@ class EAdelphosType(StrEnum):
     FAMILY_TYPE = 'fa'
     AGORA_TYPE = 'ag'
     OBJECT_TYPE = 'ob'
+    TASK_TYPE   = 'tk'
 
 
 @dataclass

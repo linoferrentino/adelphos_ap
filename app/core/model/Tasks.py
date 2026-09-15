@@ -11,30 +11,43 @@
 #
 ######################################################
 
-from dataclasses import dataclass
-from app.logging import gCon
 
+from dataclasses import dataclass
+from dataclasses import field
+from app.logging import gCon
+from enum import StrEnum
+
+
+class ETaskType(StrEnum):
+    INVITE_FAMILY = 'INVITE_FAMILY'
+    ASSOCIATE_FAMILY = 'ASSOCIATE_FAMILY'
+    JOIN_FAMILY = 'join'
+    SHIP_OBJECT = 'ship'
+
+
+@dataclass
+class TaskStep:
+    desc_check_step: str
+    desc_do_step: str
+    pars: object
 
 
 @dataclass
 class Task:
-    pass
+    task_type : ETaskType
+    expiry_date: str
+    steps: list[TaskStep] = field(default_factory = list)
 
 
-class RoutingStepTask:
+@dataclass
+class InviteFediverseUserStep:
+    user_handle: str
+    invite_code: str
 
+
+@dataclass
+class ShippingObjectStep:
     pin_to_receive: int
-    unlock_pin_to_give: int
-    pin_to_give_next_step: int
-    unlocked_pin_to_receive: int
-    offer_uri: str
-    export_to: str
-    export_referent: str
-    item_title: str
-    item_desc: str
 
 
-class AcceptItemTask:
-    pin_to_receive: int
-    offer_uri: str
 

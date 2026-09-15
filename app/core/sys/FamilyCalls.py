@@ -40,7 +40,7 @@ class FamilyCalls:
     @staticmethod
     @federated_transaction(raise_if_fail = True)
     async def _family_associate_safe(kernel, pars ,t_id):
-        await FamilyCalls._family_associate_impl(kernel, pars, t_id)
+        await _family_associate_impl(kernel, pars, t_id)
 
 
     @staticmethod
@@ -63,8 +63,7 @@ class FamilyCalls:
         this_host = kernel.conf().get_host()
         social_handle = f"@{social_user}@{this_host}"
 
-        pars['_session'] = session
-        await FamilyCalls._family_add_invite_safe(kernel, pars)
+        await _family_add_invite_safe(kernel, pars)
         
         await social.out_msg_listener_to_actor(user_dto,
 f"""You have been invited to join adelphos by @{session.alias_family}@{this_host}
@@ -72,38 +71,34 @@ f"""You have been invited to join adelphos by @{session.alias_family}@{this_host
  {social_handle} family.join alias $alias_chosen invite_code {invite_code}""")
 
 
-    @staticmethod
-    @federated_transaction(raise_if_fail = True)
-    async def _family_add_invite_safe(kernel, pars ,t_id):
-        await FamilyCalls._family_add_invite_impl(kernel, pars, t_id)
+
+async def _family_associate_impl(kernel, pars, t_id):
+    (src_boss_ob, dst_boss_ob) = await _family_associate_first_half(kernel,
+                                    pars, t_id)
+
+    await tku.add_associate_family_task(kernel, src_boss_ob, dst_boss_ob,
+                                        pars, t_id)
+    return "family association request sent"
 
 
-    @staticmethod
-    async def _family_associate_impl(kernel, pars, t_id):
-        boss_ob = await _family_associate_first_half(kernel, pars, t_id)
-        await tku.add_task_to_alias(kernel, boss_ob, 'associate_family',
-                                  pars, t_id)
+@federated_transaction(raise_if_fail = True)
+async def _family_add_invite_safe(kernel, pars ,t_id):
+    await _family_add_invite_impl(kernel, pars, t_id)
 
 
-    @staticmethod
-    async def _family_add_invite_impl(kernel, pars, t_id):
-        user_handle = pars['user_handle']
-        invite_code = pars['invite_code']
 
-        family_ob = await scu.get_family_in_session(kernel, pars, t_id)
+async def _family_add_invite_impl(kernel, pars, t_id):
+    user_handle = pars['user_handle']
+    invite_code = pars['invite_code']
 
-        await scu.ensure_logged_alias_is_boss(family_ob, pars, t_id)
+    family_ob = await scu.get_family_in_session(kernel, pars, t_id)
 
-        invite_ob = await family_ob().get_scalar('invite', t_id)
-        if invite_ob is not None:
-            raise AdelphosCoreException(ECoreErrno.EINVITE_ALREADY_PRESENT,
-                                        json.dumps(invite_ob))
-        invite_ob = {
-                'user_handle' : user_handle,
-                'invite_code' : invite_code,
-        }
+    await scu.ensure_logged_alias_is_boss(family_ob, pars, t_id)
 
-        family_ob().set_scalar('invite', invite_ob)
+    alias_ob = await scu.get_alias_in_session(kernel, pars, t_id)
+
+    await tku.add_invite_to_fediverse_user_task(kernel, alias_ob,
+                user_handle, invite_code, t_id)
 
 
 async def _family_associate_first_half(kernel, pars, t_id):
@@ -151,6 +146,6 @@ async def _family_associate_first_half(kernel, pars, t_id):
     pars['family_src_chain'] = family_src_chain
     pars['family_dst_chain'] = family_dst_chain
 
-    return boss_ob
+    return (src_boss_ob, boss_ob)
 
 

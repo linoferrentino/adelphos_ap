@@ -116,8 +116,7 @@ async def get_family_uplevel(kernel, pars, t_id):
 async def get_alias_in_session(kernel, pars, t_id):
     alias_uri = pars['_param'].alias_uri
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-    alias_ob = await fdb.uri_read_ob(t_id, alias_uri, must_lock = True,
-                                     only_local = True)
+    alias_ob = await fdb.uri_read_ob(t_id, alias_uri, only_local = True)
     return alias_ob
 
 
