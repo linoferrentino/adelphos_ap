@@ -93,17 +93,22 @@ class AliasAlgo:
             raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY,
                         f"family {family} already present in this host")
 
+        gCon.log("+++++++++++++++++++++++ starting family")
         family_ob = fdb.new_ob_uri(t_id, family_uri, fields = {
             'my_trust' : tutils.abs_to_db(my_trust),
             'level' : 0,
             })
 
+        gCon.log("+++++++++++++++++++++++ starting family 1")
         alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, 
                         user_handle, alias_name, family, password, t_id)
 
+        gCon.log("+++++++++++++++++++++++ starting family 2")
         await fu.add_default_agora(fdb, family_ob, alias_ob, location, t_id)
 
+        gCon.log("+++++++++++++++++++++++ starting family 3")
         await family_ob().set_link('boss', alias_ob, t_id)
+        gCon.log("+++++++++++++++++++++++ starting family 4")
 
 
     @staticmethod
@@ -179,24 +184,6 @@ class AliasAlgo:
         if found == False:
              raise AdelphosCoreException(ECoreErrno.ECANNOT_FIND_INVITE,
                                         family)
-
-
-        #invite_ob = await family_ob().get_scalar('invite', t_id)
-        #if invite_ob is None:
-        #     raise AdelphosCoreException(ECoreErrno.ECANNOT_FIND_INVITE,
-        #                                family)
-
-
-
-        #if invite_ob['invite_code'] != invite_code:
-        #     raise AdelphosCoreException(ECoreErrno.EWRONG_INVITE_CODE,
-        #                                family)
-
-        #if invite_ob['user_handle'] != user_handle:
-        #     raise AdelphosCoreException(ECoreErrno.EWRONG_USER_HANDLE,
-        #                                family)
-
-        #family_ob().set_scalar('invite', None)
 
         alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, 
                             user_handle, alias, family, password, t_id)

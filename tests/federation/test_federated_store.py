@@ -316,6 +316,7 @@ def test_uri_empty_set(fdb1_loc):
 
 
 async def a_test_uri_empty_set(fdb1_loc):
+    gCon.rule("a_test_uri_empty_set")
     t1uri = FederatedUriTest('t_uri_empty_set', 'tj1')
     t_id = fdb1_loc.begin_transaction()
     fob = fdb1_loc.new_ob_uri(t_id, t1uri)

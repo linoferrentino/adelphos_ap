@@ -21,33 +21,35 @@ from enum import StrEnum
 class ETaskType(StrEnum):
     INVITE_FAMILY = 'INVITE_FAMILY'
     ASSOCIATE_FAMILY = 'ASSOCIATE_FAMILY'
-    JOIN_FAMILY = 'join'
-    SHIP_OBJECT = 'ship'
+    JOIN_FAMILY = 'JOIN_FAMILY'
+    SHIP_OBJECT = 'SHIP_OBJECT'
 
 
 @dataclass
 class TaskStep:
-    desc_check_step: str
-    desc_do_step: str
+    alias_dikastes: str
+    desc_dikastes: str
+    alias_diakonos: str
+    desc_diakonos: str
     pars: object
 
 
-@dataclass
-class Task:
-    task_type : ETaskType
-    expiry_date: str
-    steps: list[TaskStep] = field(default_factory = list)
-
-
-@dataclass
-class InviteFediverseUserStep:
-    user_handle: str
-    invite_code: str
-
-
-@dataclass
-class ShippingObjectStep:
-    pin_to_receive: int
+#@dataclass
+#class Task:
+#    task_type : ETaskType
+#    expiry_date: str
+#    steps: list[TaskStep] = field(default_factory = list)
+#
+#
+#@dataclass
+#class InviteFediverseUserStep:
+#    user_handle: str
+#    invite_code: str
+#
+#
+#@dataclass
+#class ShippingObjectStep:
+#    pin_to_receive: int
 
 
 

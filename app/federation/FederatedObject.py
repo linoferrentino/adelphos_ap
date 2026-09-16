@@ -70,7 +70,7 @@ def enforce_schema_scalar(func):
         if par.cardinality != FObCardType.SCALAR:
             raise FdbException(EFdbErrors.EFDB_SCALAR_EXPECTED, key)
 
-        FederatedObject.enforce_scalar(key, val, par, False)
+        val = FederatedObject.enforce_scalar(key, val, par, False)
 
         return func(self, key, val, *args)
 
@@ -99,7 +99,7 @@ def enforce_schema_not_scalar_scalar(func):
         if par.cardinality == FObCardType.SCALAR:
             raise FdbException(EFdbErrors.EFDB_SCALAR_UNEXPECTED, key)
 
-        FederatedObject.enforce_scalar(key, val, par, False)
+        val = FederatedObject.enforce_scalar(key, val, par, False)
 
         return func(self, key, val, *args)
 
@@ -115,10 +115,13 @@ def enforce_schema_not_scalar_not_scalar(func):
         if par.cardinality == FObCardType.SCALAR:
             raise FdbException(EFdbErrors.EFDB_SCALAR_UNEXPECTED, key)
 
+        val_new = []
         for val_item in val:
-            FederatedObject.enforce_scalar(key, val_item, par, False)
+            val_item = FederatedObject.enforce_scalar(key, val_item,
+                            par, False)
+            val_new.append(val_item)
 
-        return func(self, key, val, *args)
+        return func(self, key, val_new, *args)
 
     return _inner_enforce
 
@@ -128,7 +131,8 @@ def reification(func):
     async def _inner_reification(self, key, t_id):
         schema = self.registrar.pars
         par = schema.get(key)
-
+        if par is None:
+            raise FdbException(EFdbErrors.EFDB_UNKNOWN_COLUMN, key)
         if ((par.typecol != FObColType.URI) and
             (par.typecol != FObColType.LOCAL_URI)):
             raise FdbException(EFdbErrors.EFDB_URI_EXPECTED,
@@ -232,7 +236,7 @@ def enforce_schema(func):
         if par.cardinality != FObCardType.SCALAR:
             raise FdbException(EFdbErrors.EFDB_SCALAR_UNEXPECTED, key)
 
-        FederatedObject.enforce_scalar(key, val, par, False)
+        val = FederatedObject.enforce_scalar(key, val, par, False)
 
         return func(self, key, val, *args)
 
@@ -348,6 +352,7 @@ class FederatedObject:
             self.ob.fields[CID_COLUMN] = registrar.version
             self._enforce_schema_init(fields)
             self.modified = True
+            gCon.log(f"Created object with fields {self.ob.fields}")
         else:
             self.ob = ob
             self._check_version()
@@ -394,6 +399,10 @@ class FederatedObject:
         if self.ob.fields[CID_COLUMN] > self.registrar.version:
             raise FdbException(EFdbErrors.EFDB_SCHEMA_DOWNGRADE_NOT_SUPPORTED,
                     f"object {self.ob.fields} has a newer version.")
+        if (self.ob.state == EObState.BORROWED):
+            raise FdbException(
+                EFdbErrors.EFDB_UPGRADE_REMOTE_OBJECT_NOT_ALLOWED,
+                f"object {self.ob.fields} has an older version, but is remote.")
         self._upgrade_version()
 
 
@@ -404,30 +413,37 @@ class FederatedObject:
 
     def enforce_def(self, col_name, col_val, col_def, before_commit = False):
         if col_def.cardinality == FObCardType.SCALAR:
-            FederatedObject.enforce_scalar(col_name, col_val, col_def, before_commit)
-        else:
+            col_val = FederatedObject.enforce_scalar(col_name, col_val, col_def, before_commit)
+            return col_val
 
-            if col_val is None:
-                if before_commit == False:
-                    return
-                elif col_def.required == True:
-                    raise FdbException(EFdbErrors.EFDB_REQUIRED_FIELD_MISSING,
-                                    col_name)
-                else:
-                    self.ob.fields[col_name] = list() 
-                    return
-               
-            if isinstance(col_val, list) == False:
-                #gCon.log(f"col_val {col_val} is {type(col_val)}")
-                raise FdbException(EFdbErrors.EFDB_ITEARABLE_EXPECTED, col_val)
+        if col_val is None:
+            if before_commit == False:
+                new_val = list() 
+                return new_val
 
-            if col_def.minimum_cardinality is not None:
-                if len(col_val) < col_def.minimum_cardinality:
-                    raise FdbException(EFdbErrors.EFDB_CARDINALITY_LOWER,
-           f"{col_name} len {len(col_val)} < {col_def.minimum_cardinality}")
+            if col_def.transient:
+                return
+         
+            if col_def.required == True:
+                raise FdbException(EFdbErrors.EFDB_REQUIRED_FIELD_MISSING,
+                                col_name)
+            msg = f"what? {col_name} = {col_val} {self.ob.fields}"
+            raise FdbException(EFDB_INTERNAL_ERROR,
+                               f"fdb internal error {msg}")
+           
+        if isinstance(col_val, list) == False:
+            raise FdbException(EFdbErrors.EFDB_ITEARABLE_EXPECTED, col_val)
 
-            for val in col_val:
-                FederatedObject.enforce_scalar(col_name, val, col_def, before_commit)
+        if col_def.minimum_cardinality is not None:
+            if len(col_val) < col_def.minimum_cardinality:
+                raise FdbException(EFdbErrors.EFDB_CARDINALITY_LOWER,
+       f"{col_name} len {len(col_val)} < {col_def.minimum_cardinality}")
+
+        new_val = list()
+        for val in col_val:
+            val_1 = FederatedObject.enforce_scalar(col_name, val, col_def, before_commit)
+            new_val.append(val_1)
+        return new_val
 
 
     @staticmethod
@@ -497,6 +513,10 @@ class FederatedObject:
             case _:
                 raise FdbException(EFdbErrors.EFDB_INVALID_VAL_TYPE, col_name)
 
+        if exp_type == dict:
+            if dataclasses.is_dataclass(col_val):
+                col_val = asdict(col_val)
+
         if isinstance(col_val, exp_type) == False:
             raise FdbException(EFdbErrors.EFDB_INVALID_VAL_TYPE, 
             f"exp {exp_type} found {type(col_val)} in {col_name}")
@@ -504,6 +524,8 @@ class FederatedObject:
         match col_type:
             case FObColType.ENUM:
                 col_def.sub_type.enforce_type(col_val, before_commit)
+
+        return col_val
 
 
     @staticmethod
@@ -527,7 +549,6 @@ class FederatedObject:
 
 
     def _enforce_schema_init(self, fields):
-
         schema = self.registrar.pars
 
         for field in fields.keys():
@@ -538,7 +559,6 @@ class FederatedObject:
                 raise FdbException(EFdbErrors.EFDB_TRANSIENT_FIELD, field)
 
         for col_name, col_def in schema.items():
-
             col_field = fields.get(col_name)
             if col_def.transient:
                 continue
@@ -551,7 +571,7 @@ class FederatedObject:
                                        col_name) 
                 else:
                     FederatedObject._enforce_not_uri(col_name, col_def.typecol)
-                    self.enforce_def(col_name, col_field, col_def)
+                    col_field = self.enforce_def(col_name, col_field, col_def)
                 col_val = col_field
 
             else:
@@ -559,7 +579,10 @@ class FederatedObject:
                     FederatedObject._enforce_not_uri(col_name, col_def.typecol)
                     col_val = col_field
                 else:
-                    col_val = col_def.default_value 
+                    if col_def.cardinality == FObCardType.SCALAR:
+                        col_val = col_def.default_value 
+                    else:
+                        col_val = list()
 
             self.ob.fields[col_name] = col_val
 
@@ -610,6 +633,7 @@ class FederatedObject:
     @enforce_set
     async def get_set(self, key, t_id):
         cur_value = await self._get_key_val_raw(key, True, t_id)
+        gCon.log(f"get_set {key} val {cur_value} fields {self.ob.fields}")
         return set(cur_value)
 
 

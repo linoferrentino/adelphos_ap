@@ -84,7 +84,12 @@ classes:
           cardinality: scalar
           required: true
 
-        - name: tasks
+        - name: tasks_as_dikastes
+          type: uri 
+          cardinality: array
+          required: false
+
+        - name: tasks_as_diakonos
           type: uri 
           cardinality: array
           required: false
@@ -184,7 +189,7 @@ classes:
         - name: offers
           type: uri
           cardinality: set
-          required: false
+          required: false 
 
         - name: export_box
           type: uri

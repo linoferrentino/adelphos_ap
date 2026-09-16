@@ -44,17 +44,21 @@ async def _accept_safe(kernel, pars, t_id):
 
 async def _accept_impl(kernel, pars, t_id):
     session = pars['_param']
-    task = await tu.get_task_with_id(kernel, session.get_alias_ob(),
-                    pars['task_id'], t_id)
-    #task = pars['_task']
+    task = await tu.get_task_as_dikastes_with_id(kernel,
+                    session.get_alias_ob(), pars['task_id'], t_id)
+
+    gCon.log(f"=== Task is {task().ob.fields}")
+
     task_type = await task().get_scalar('task_type', t_id)
+    active_step_idx = await task().get_scalar('active_step', t_id)
+
     match task_type:
         case ETaskType.ASSOCIATE_FAMILY:
             steps = await task().get_as_list('steps', t_id)
-            step_zero = steps[0]
-            gCon.log(f"step zero is {step_zero}")
+            active_step = steps[active_step_idx]
+            gCon.log(f"active step is {active_step}")
             return await _accept_associate_family(
-                kernel, step_zero['pars'], t_id)
+                kernel, active_step['pars'], t_id)
         case _ :
             raise Exception(f"Internal error: task type {task_type} unknown")
     await _remove_task(kernel, pars, task, t_id)
