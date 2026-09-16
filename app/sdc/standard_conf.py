@@ -420,6 +420,10 @@ standard_cli_api = """
 
           - name: whoami
 
+          - name: tasks_as_dikastes
+
+          - name: tasks_as_diakonos
+
           - name: logout
 
           - name: login

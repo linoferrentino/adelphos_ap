@@ -28,6 +28,8 @@ from app.api.UserSession import active_login
 from app.exc.AdelphosException import AdErrno
 from app.exc.AdelphosException import AdelphosException
 
+import app.core.sys.sys_calls_utils as scu
+
 
 class AliasCalls:
 
@@ -45,7 +47,6 @@ class AliasCalls:
 
     @staticmethod
     async def _sys_call_login(kernel, session, pars):
-        #await AliasCalls._session_login(kernel, session, login, password)
         await AliasCalls.session_login_safe(kernel, pars)
 
         return "Login OK, check your Mastodon inbox to get the token."
@@ -72,7 +73,7 @@ class AliasCalls:
           'password': password,
           'force' : force,
         }
-        alias_ob = await AliasCalls._login_impl(kernel, pars, t_id)
+        alias_ob = await _login_impl(kernel, pars, t_id)
         actor_handle = await alias_ob.get_scalar('actor_handle', t_id)
         social_dao = kernel.get_dep(Dependencies.SOCIAL_DAO)
         gCon.log(f"login {alias} has social handle {actor_handle}")
@@ -108,42 +109,69 @@ class AliasCalls:
     @staticmethod
     @federated_transaction(raise_if_fail = False)
     async def login(kernel, pars, t_id):
-        return await AliasCalls._login_impl(kernel, pars, t_id)
+        return await _login_impl(kernel, pars, t_id)
 
 
     @staticmethod
     @federated_transaction(raise_if_fail = True)
     async def login_safe(kernel, pars, t_id):
-        return await AliasCalls._login_impl(kernel, pars, t_id)
+        return await _login_impl(kernel, pars, t_id)
 
 
     @staticmethod
-    async def _login_impl(kernel, pars, t_id):
-        alias = pars['alias']
-        family = pars['family']
-        password = pars['password']
-        force = pars['force']
+    @active_login
+    async def _sys_call_tasks_as_dikastes(kernel, session, pars):
+        pars['_as_role'] = 'dikastes'
+        return await _get_tasks_of_type_safe(kernel, pars)
 
-        alias_uri = AdelphosUri(EAdelphosType.ALIAS_TYPE, alias, family = family)
-        fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
-        alias_ob = await fdb.uri_read_no_lock(t_id, alias_uri, True)
+    @staticmethod
+    @active_login
+    async def _sys_call_tasks_as_diakonos(kernel, session, pars):
+        pars['_as_role'] = 'diakonos'
+        return await _get_tasks_of_type_safe(kernel, pars)
 
-        if alias_ob is None:
-            raise AdelphosCoreException(ECoreErrno.EINVALID_USER_OR_PASSWORD,
-                                        f"{alias}.{family}")
 
-        if force == False:
-            password_hashed = await alias_ob().get_scalar('password', t_id)
+@federated_transaction(raise_if_fail = True)
+async def _get_tasks_of_type_safe(kernel, pars, t_id):
+    return await _get_tasks_of_type_impl(kernel, pars, t_id)
 
-            ph = PasswordHasher()
-            try:
-                res = ph.verify(password_hashed, password)
-            except:
-                raise AdelphosCoreException(
-                        ECoreErrno.EINVALID_USER_OR_PASSWORD,
-                                        f"{alias}.{family}")
 
-        return alias_ob().detach()
+async def _get_tasks_of_type_impl(kernel, pars, t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    myself = await scu.get_alias_in_session(kernel, pars, t_id)
+    as_role = pars['_as_role']
+    tasks = await myself().get_as_detached_list(f"tasks_as_{as_role}", t_id)
+    gCon.log(f"tasks as {as_role} for user {myself().uri.unparse()} are {tasks}")
+    return tasks
+
+
+async def _login_impl(kernel, pars, t_id):
+    alias = pars['alias']
+    family = pars['family']
+    password = pars['password']
+    force = pars['force']
+
+    alias_uri = AdelphosUri(EAdelphosType.ALIAS_TYPE, alias, family = family)
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+
+    alias_ob = await fdb.uri_read_no_lock(t_id, alias_uri, True)
+
+    if alias_ob is None:
+        raise AdelphosCoreException(ECoreErrno.EINVALID_USER_OR_PASSWORD,
+                                    f"{alias}.{family}")
+
+    if force == False:
+        password_hashed = await alias_ob().get_scalar('password', t_id)
+
+        ph = PasswordHasher()
+        try:
+            res = ph.verify(password_hashed, password)
+        except:
+            raise AdelphosCoreException(
+                    ECoreErrno.EINVALID_USER_OR_PASSWORD,
+                                    f"{alias}.{family}")
+
+    return alias_ob().detach()
 
 

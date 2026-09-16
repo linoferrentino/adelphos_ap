@@ -20,6 +20,18 @@ from app.core.ECoreErrno import ECoreErrno
 import app.misc.alias_utils as au
 
 
+def ws_alias_get_tasks_as_dikastes(ws, *,
+           code_exp = ECoreErrno.DONE_OK):
+    cmd = "alias.tasks_as_dikastes"
+    return tu.ws_send_cmd(ws, cmd, code_exp)
+
+
+def ws_alias_get_tasks_as_diakonos(ws, *,
+           code_exp = ECoreErrno.DONE_OK):
+    cmd = "alias.tasks_as_diakonos"
+    return tu.ws_send_cmd(ws, cmd, code_exp)
+
+
 def ws_upgrade_socket_to_local_root(wrapper, ws, conf):
     root_pass = conf['_root_password_']
     local_root = au.get_local_alias(conf['_root_handle_'])

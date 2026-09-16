@@ -159,7 +159,6 @@ async def _root_buy_object_title_safe(kernel, pars, t_id):
     as_adelphos_uri_str = pars['as_adelphos']
     object_title = pars['ad_title']
     session = pars['_param']
-    gCon.log(f"before push session is {session}") 
 
     alias_session = await _push_alias_impl(kernel, session,
                             as_adelphos_uri_str, t_id)
@@ -167,7 +166,6 @@ async def _root_buy_object_title_safe(kernel, pars, t_id):
     gCon.log(f"after push session is {alias_session} with family {alias_session.family}") 
 
     session = pars['_param']
-    gCon.log(f"after push session is {session}") 
     hearts_given = pars['hearts_given']
 
     try:

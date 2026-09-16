@@ -34,22 +34,3 @@ class TaskStep:
     pars: object
 
 
-#@dataclass
-#class Task:
-#    task_type : ETaskType
-#    expiry_date: str
-#    steps: list[TaskStep] = field(default_factory = list)
-#
-#
-#@dataclass
-#class InviteFediverseUserStep:
-#    user_handle: str
-#    invite_code: str
-#
-#
-#@dataclass
-#class ShippingObjectStep:
-#    pin_to_receive: int
-
-
-

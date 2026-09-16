@@ -126,43 +126,65 @@ def enforce_schema_not_scalar_not_scalar(func):
     return _inner_enforce
 
 
-def reification(func):
 
-    async def _inner_reification(self, key, t_id):
-        schema = self.registrar.pars
-        par = schema.get(key)
-        if par is None:
-            raise FdbException(EFdbErrors.EFDB_UNKNOWN_COLUMN, key)
-        if ((par.typecol != FObColType.URI) and
-            (par.typecol != FObColType.LOCAL_URI)):
-            raise FdbException(EFdbErrors.EFDB_URI_EXPECTED,
-                    f"column {key} is not an URI")
+def reification(detach):
 
-        gCon.log(f"I have to reificate {key}")
-        fdb = self.registrar.factory.fdb 
-        val = await func(self, key, t_id)
+    def _reification(func):
 
-        if par.cardinality == FObCardType.SCALAR:
-            gCon.log(f"Reification of uri {val}")
-            val_ob = await fdb.uri_read_str(t_id, val)
-            return val_ob
-
-        if par.cardinality == FObCardType.SET:
-            val = set(val)
-        ob_list = list()
-
-        gCon.log(f"Reification of uri list {val}")
-        for val_uri in val:
-            gCon.log(f"reification of {val_uri}")
-            val_ob = await fdb.uri_read_str(t_id, val_uri)
-            ob_list.append(val_ob)
-
-        if par.cardinality == FObCardType.SET:
-            return set(ob_list)
-        return ob_list
+        async def _inner_reification_do(self, key, t_id):
+            data = await _inner_reification(self, key, t_id)
+            gCon.log(f"_inner_reification_do called! detach {detach}")
+            if detach == False:
+                return data
+            gCon.log(f"====== will detach {data}")
+            if isinstance(data, Iterable) == False:
+                return data().detach()
+            val = list()
+            for val_item in data:
+                val_detached = val_item().detach()
+                gCon.log(f"val_detached is {val_detached.ob.fields}")
+                val.append(val_detached.ob.fields)
+            return val
 
 
-    return _inner_reification
+        async def _inner_reification(self, key, t_id):
+            schema = self.registrar.pars
+            par = schema.get(key)
+            if par is None:
+                raise FdbException(EFdbErrors.EFDB_UNKNOWN_COLUMN, key)
+            if ((par.typecol != FObColType.URI) and
+                (par.typecol != FObColType.LOCAL_URI)):
+                raise FdbException(EFdbErrors.EFDB_URI_EXPECTED,
+                        f"column {key} is not an URI")
+
+            gCon.log(f"I have to reificate {key}")
+            fdb = self.registrar.factory.fdb 
+            val = await func(self, key, t_id)
+
+            if par.cardinality == FObCardType.SCALAR:
+                gCon.log(f"Reification of uri {val}")
+                val_ob = await fdb.uri_read_str(t_id, val, must_lock = 
+                                            not detach)
+                return val_ob
+
+            if par.cardinality == FObCardType.SET:
+                val = set(val)
+            ob_list = list()
+
+            gCon.log(f"Reification of uri list {val}")
+            for val_uri in val:
+                gCon.log(f"reification of {val_uri}")
+                val_ob = await fdb.uri_read_str(t_id, val_uri, must_lock =
+                                                not detach)
+                ob_list.append(val_ob)
+
+            if par.cardinality == FObCardType.SET:
+                return set(ob_list)
+            return ob_list
+
+        return _inner_reification_do
+
+    return _reification
 
 
 def check_transient(func):
@@ -678,8 +700,13 @@ class FederatedObject:
         return list(cur_value)
 
 
-    @reification
+    @reification(detach = False)
     async def get_as_object_list(self, key, t_id):
+        return await self.get_as_list(key, t_id)
+
+
+    @reification(detach = True)
+    async def get_as_detached_list(self, key, t_id):
         return await self.get_as_list(key, t_id)
 
 
@@ -800,52 +827,6 @@ class FederatedObject:
             else:
                 raise Exception("To do")
         gCon.log(f"=================== prepared to oblivion DONE {id(self)}")
-
-
-    async def prepare_to_oblivion_save(self, t_id):
-        if hasattr(self, 'prepared_to_oblivion'):
-            return 
-        gCon.log(f"[red]prepare to oblivion >> {self.ob.fields}[/red]")
-        fdb = self.registrar.factory.fdb 
-        for par, definition in self.registrar.pars.items():
-            if ((definition.typecol != FObColType.URI)
-                and (definition.typecol != FObColType.LOCAL_URI)):
-                    continue
-            uris_to_downvote = self.ob.fields[par] 
-            if definition.cardinality == FObCardType.SCALAR:
-                if uris_to_downvote is not None:
-                    await fdb.downvote_uri(uris_to_downvote, t_id)
-            elif definition.cardinality == FObCardType.SET:
-                set_uri_downvoted = set(uris_to_downvote)
-                for uri_to_downvote in set_uri_downvoted:
-                    await fdb.downvote_uri(uri_to_downvote, t_id)
-            else:
-                raise Exception("To do")
-        self.prepared_to_oblivion = True
-
-
-    def prepare_to_oblivion_cb(self, callback):
-        if hasattr(self, 'prepared_to_oblivion'):
-            return 
-        gCon.log(f"[red]prepare to oblivion >> {self.ob.fields}[/red]")
-        for par, definition in self.registrar.pars.items():
-            if ((definition.typecol != FObColType.URI)
-                and (definition.typecol != FObColType.LOCAL_URI)):
-                    continue
-            uris_to_downvote = self.ob.fields[par] 
-            if definition.cardinality == FObCardType.SCALAR:
-                if uris_to_downvote is not None:
-                    #self.downvote_uri(uris_to_downvote, tx_ob)
-                    callback(uri_to_downvote)
-            elif definition.cardinality == FObCardType.SET:
-                set_uri_downvoted = set(uris_to_downvote)
-                for uri_to_downvote in set_uri_downvoted:
-                    callback(uri_to_downvote)
-                    #self.downvote_uri(uri_to_downvote, tx_ob)
-            else:
-                raise Exception("To do")
-        self.prepared_to_oblivion = True
-
 
 
     def prepare_to_oblivion_sync(self, tx_ob):

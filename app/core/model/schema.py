@@ -191,21 +191,6 @@ classes:
           cardinality: set
           required: false 
 
-        - name: export_box
-          type: uri
-          cardinality: set
-          required: false
-
-        - name: import_box 
-          type: uri
-          cardinality: set
-          required: false
-
-        - name: routing_table
-          type: json 
-          cardinality: array
-          required: false
-
         - name: next_object_id
           type: int
           required: false

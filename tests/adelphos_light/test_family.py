@@ -172,6 +172,19 @@ def _test_associate_with_family_ok(world):
                 'london_east_33', 'East Of London 33')
     ad2.pop_user()
 
+    ad2 = world.get_instance('ad2')
+    data = ad2.push_user('john_al.fam_t2')
+    gCon.log(f"Data of john is {data}")
+    tasks = data['res']['tasks_as_diakonos']
+    assert len(tasks) == 1
+    data = ah.ws_alias_get_tasks_as_dikastes(ad2.get_sock())
+    gCon.log(f"john's dikastes tasks are {data}")
+    assert len(data['res']) == 0 
+    data = ah.ws_alias_get_tasks_as_diakonos(ad2.get_sock())
+    gCon.log(f"john's diakonos tasks are {data}")
+    assert len(data['res']) == 1 
+    ad2.pop_user()
+
     ad1 = world.get_instance('ad1')
     alice_inbox = ad1.get_user_inbox('alice')
     assert alice_inbox.count_msg() == 1
