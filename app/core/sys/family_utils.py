@@ -167,22 +167,6 @@ async def family_associate_2nd_half(kernel, pars, t_id):
     await family_src_ob().set_link('upper_family', family_ob, t_id)
     await family_dst_ob().set_link('upper_family', family_ob, t_id)
 
-    #agora_src = await family_get_your_agora(kernel, family_src_ob, t_id)
-    #agora_dst = await family_get_your_agora(kernel, family_dst_ob, t_id)
-
-    #tax_src = await ecut.get_total_tax_chain_str(kernel,
-    #            pars['family_src_chain'], t_id)
-    #export_trust = await family_src_ob().get_scalar('my_trust', t_id)
-
-    #await au.copy_ads_from_lower_agora(kernel, agora_src, export_trust,
-    #                                   tax_src, agora_ob, t_id)
-
-    #tax_dst = await ecut.get_total_tax_chain_str(kernel,
-    #            pars['family_dst_chain'], t_id)
-    #export_trust = await family_dst_ob().get_scalar('my_trust', t_id)
-    #await au.copy_ads_from_lower_agora(kernel, agora_dst, export_trust,
-    #                                   tax_dst, agora_ob, t_id)
-
 
 async def add_default_agora(fdb, family_ob, alias_ob, location, t_id):
     agora_name = family_ob().uri.name + "_main_agora"

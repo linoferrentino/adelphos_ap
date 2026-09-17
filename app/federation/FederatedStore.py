@@ -12,8 +12,8 @@
 ######################################################
 
 
-import uuid
 import copy
+import secrets
 import sys
 import threading
 import yaml
@@ -110,13 +110,11 @@ class FederatedTransaction:
 
     def _do_updates(self):
         for k,v in self.locked_uris.items():
-            gCon.log(f"{k} -> {v} check update")
             if ((v.ob.state == EObState.PRESENT) and
                 (v.ob.fields[REF_COUNT_COLUMN] == 0)):
                 self._delete_ob(k, v)
                 continue
             if v.modified == False and v.ob.state != EObState.BORROWED:
-                gCon.log("not modified")
                 continue
             self._update_uri_str(k, v)
             if self.do_mod_db == False:
@@ -350,7 +348,7 @@ class FederatedTransaction:
 class FedStore_ReadCtx:
 
     uri_ob : FederatedUri
-    t_id : uuid
+    t_id : str
     maybe: bool  = False
     uri_str: str = None
     must_lock: bool = True
@@ -727,7 +725,7 @@ class FederatedStore(Dependency, LifespanAware):
 
     def begin_transaction(self):
 
-        tid = uuid.uuid4()
+        tid = secrets.token_hex()
         tob = FederatedTransaction(tid, self)
         self.transactions[tid] = tob
         return tid

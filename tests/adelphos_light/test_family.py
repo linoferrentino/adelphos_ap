@@ -172,6 +172,15 @@ def _test_associate_with_family_ok(world):
                 'london_east_33', 'East Of London 33')
     ad2.pop_user()
 
+    ad3 = world.get_instance('ad3')
+    john_inbox = ad3.get_user_inbox('john3')
+
+    assert john_inbox.count_msg() == 1
+    msg = john_inbox.pop_lst_msg()
+    gCon.log(f"john msg is {msg.content}")
+    assert re.search(r"Pending association.*alice\.fam_t1",
+                     msg.content) is not None 
+    
     ad2 = world.get_instance('ad2')
     data = ad2.push_user('john_al.fam_t2')
     gCon.log(f"Data of john is {data}")
@@ -203,8 +212,17 @@ def _test_associate_with_family_ok(world):
     ad2 = world.get_instance('ad2')
     data = ad2.push_user('john_al.fam_t2')
     gCon.log(f"Data of john is {data}")
+    tasks = data['res']['tasks_as_dikastes']
+    assert len(tasks) == 0
     tasks = data['res']['tasks_as_diakonos']
-    assert len(tasks) == 1
+    assert len(tasks) == 0
+
+    assert john_inbox.count_msg() == 1
+    msg = john_inbox.pop_lst_msg()
+    gCon.log(f"john3 msg is {msg.content}")
+    assert re.search("has been completed", msg.content) \
+            is not None
+
     ad2.pop_user()
 
     
