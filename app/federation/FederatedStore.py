@@ -407,7 +407,6 @@ class FederatedStore(Dependency, LifespanAware):
 
 
     async def downvote_uri(self, uri, t_id):
-        gCon.log(f"database will decrement {uri} type {type(uri)}")
         downvote_ob = await self.uri_read_str(t_id, uri)
         await downvote_ob()._dec_ref_ob(t_id)
 

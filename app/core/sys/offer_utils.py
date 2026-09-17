@@ -33,109 +33,6 @@ async def offer_get_adelphos_from(kernel, offer_ob, t_id):
              'adelphos_from', t_id)
 
 
-async def is_offer_exported(kernel, offer_ob, exp_chain, t_id):
-    gCon.log(f"is_offer_exported {offer_ob().uri.unparse()}")
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-    current_price = await offer_ob().get_scalar('price', t_id)
-    for family in exp_chain:
-        current_price_db = tutils.abs_to_db(current_price)
-        cur_trust = await family().get_scalar('my_trust', t_id)
-        if cur_trust < current_price_db:
-            gCon.log(f"Cannot export! {cur_trust} < {current_price_db}")
-            return (False, current_price)
-        cur_tax = await family().get_scalar('import_export_tax', t_id)
-        current_price *= cur_tax
-    return (True, current_price)
-
-
-async def is_object_still_available(kernel, object_uri, seller_family, t_id):
-    #raise Exception("To do")
-    #agora_ob = await fu.family_get_your_agora(kernel,
-    #                seller_family, t_id)
-    #return await agora_ob().is_in_set('offers', object_uri, t_id)
-    pass
-
-
-async def offer_buy_impl(kernel, object_uri, buyer_uri, t_id):
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-    offer_ob = await fdb.uri_read_str(t_id, object_uri, must_lock = True)
-    buyer_ob = await fdb.uri_read_str(t_id, buyer_uri,
-                                      must_lock = True)
-    buyer_family = await autils.alias_ob_get_your_family(kernel,
-            buyer_ob, t_id)
-    seller_ob = await offer_get_adelphos_from(kernel, offer_ob, t_id)
-    seller_family = await autils.alias_ob_get_your_family(kernel,
-                seller_ob, t_id)
-
-    avail = await is_object_still_available(kernel, object_uri,
-                                seller_family, t_id)
-    if avail == False:
-        raise AdelphosCoreException(ECoreErrno.EOBJECT_UNAVAILABLE,
-                    f"Object {object_uri} not available any more")
-
-    gCon.log(f"you want to buy as {buyer_uri} object {object_uri}")
-    (exp_chain, imp_chain) = await get_export_import_chains(kernel,
-                seller_family, buyer_family, t_id)
-    gCon.log(f"export chain {exp_chain}")
-    gCon.log(f"import chain {imp_chain}")
-
-    if len(exp_chain) == 1:
-        raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
-             f"The object '{await offer_ob().get_scalar('title', t_id)}' is originated by your family.")
-
-    (res, agora_exported_price) =  await is_offer_exported(kernel,
-                offer_ob, exp_chain, t_id)
-    if res == False:
-        raise AdelphosCoreException(ECoreErrno.EOBJECT_NOT_EXPORTED,
-                                    f"{object_uri} not exported")
-
-    #global_export_tax = await ecut.get_total_tax_up(exp_chain, t_id)
-    #gCon.log(f"The export tax total is {global_export_tax}")
-
-    price = await offer_ob().get_scalar('price', t_id)
-    #agora_exported_price = price * global_export_tax
-    gCon.log(f"The price is {price} in agora is {agora_exported_price}")
-
-    await ecut.distribute_losses_to_imports(kernel, agora_exported_price,
-                                       imp_chain, t_id)
-
-    await ecut.distribute_gains_to_exports(kernel, agora_exported_price,
-                                      exp_chain, t_id)
-
-    await au.remove_object_from_agora(kernel, seller_family, offer_ob, t_id)
-
-    return (exp_chain, imp_chain)
-
-
-async def get_export_import_chains(kernel, seller_family, buyer_family, t_id):
-    exp_chain = list()
-    imp_chain = list()
-    exp_chain.append(seller_family)
-    imp_chain.append(buyer_family)
-    exp_cursor = seller_family().uri.unparse()
-    imp_cursor = buyer_family().uri.unparse()
-    while exp_cursor != imp_cursor:
-        gCon.log(f"{exp_cursor} != {imp_cursor} going up!")
-        (seller_family, exp_cursor) = await _make_upper_step(
-            kernel, seller_family, exp_chain, t_id)
-
-        (buyer_family, imp_cursor) = await _make_upper_step(
-            kernel, buyer_family, imp_chain, t_id)
-    gCon.log(f"Found the common family {exp_cursor}")
-    return (exp_chain, imp_chain)
-
-
-async def _make_upper_step(kernel, family, chain, t_id):
-    upper_family = await fu.family_get_upper_family(kernel,
-                    family, t_id, maybe = True)
-    if upper_family is None:
-        raise AdelphosCoreException(ECoreErrno.EINVALID_CHAIN,
-          f"Cannot buy, there is not a common agora.")
-    upper_cursor = upper_family().uri.unparse()
-    chain.append(upper_family)
-    return (upper_family, upper_cursor)
-
-
 async def object_put_ad_in_agora_impl(kernel, family_ob, alias_ob,
                                        pars ,t_id):
     gCon.log(f"Adding object in family's agora {family_ob().ob.fields}")
@@ -155,9 +52,6 @@ async def object_put_ad_in_agora_impl(kernel, family_ob, alias_ob,
 
     agora_ob().add_link('offers', object_ob)
 
-    #await _export_object_in_upper_agorai(kernel,
-    #            family_ob, pars['price'], object_ob, t_id)
-
     ob_uri = object_ob().uri.unparse()
 
     return {
@@ -165,30 +59,6 @@ async def object_put_ad_in_agora_impl(kernel, family_ob, alias_ob,
       'ob_uri' : ob_uri
     }
 
-
-#async def _export_object_in_upper_agorai(kernel, family_ob, cur_price,
-#                        object_ob, t_id):
-#    upper_family_ob = await fu.family_get_upper_family(kernel,
-#                    family_ob, t_id, maybe = True)
-#
-#    if upper_family_ob is None:
-#        return
-#
-#    export_trust = await family_ob().get_scalar('my_trust', t_id)
-#    tax = await family_ob().get_scalar('import_export_tax', t_id)
-#
-#    new_price = tax * cur_price
-#    new_price_db = tutils.abs_to_db(new_price)
-#    if new_price_db > export_trust:
-#        return
-#
-#    agora_upper = await fu.family_get_your_agora(kernel,
-#                        upper_family_ob, t_id)
-#    agora_upper().add_link('offers', object_ob)
-#
-#    await _export_object_in_upper_agorai(kernel,
-#            upper_family_ob, new_price, object_ob, t_id)
-#
 
 def _create_object_from_pars(kernel, family_ob, object_id, pars, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)

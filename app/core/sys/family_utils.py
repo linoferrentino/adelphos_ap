@@ -23,6 +23,7 @@ from app.logging import gCon
 
 import app.misc.trust_utils as tutils
 
+PHI = 1.61803398874
 
 async def agora_get_price_offers(fdb, fob, t_id):
     gCon.log(f"[green]get the price offers for this family *not recursive* for {fob().uri.unparse()}[/green]")
@@ -152,9 +153,11 @@ async def family_associate_2nd_half(kernel, pars, t_id):
     trust_in_tot = max(trust_in_src, trust_in_dst)
     gCon.log(f"trust in1 {trust_in_src} trust_in_dst {trust_in_dst}")
 
+    brotherhood_ratio = pow(PHI, new_level * (-1))
+
     family_ob = fdb.new_ob_uri(t_id, family_uri, fields = {
         'level' : new_level,
-        'brotherhood_ratio': pars['brotherhood_ratio'],
+        'brotherhood_ratio': brotherhood_ratio,
         'my_trust' : trust_in_tot,
         })
 

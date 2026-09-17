@@ -87,23 +87,6 @@ class AgoraCalls:
         await _agora_buy_object_impl(kernel, pars, t_id)
 
 
-    #@staticmethod
-    #async def _get_offer_from_pars(fdb, offers, pars, t_id):
-    #    return await AgoraCalls._get_offer_from_pars_title(fdb,
-    #            offers, pars['ad_title'], t_id)
-
-
-    @staticmethod
-    async def _get_offer_from_pars_idx(fdb, offers, par_idx, t_id):
-        if len(offers) <= par_idx:
-            raise AdelphosCoreException(ECoreErrno.EINVALID_AD_INDEX,
-                            f"This agora has only {len(offers)} ads.")
-        offer_taken = offers[par_idx]
-        offer_ob = await fdb.uri_read_str(t_id, offer_taken, must_lock = True)
-        return offer_ob
-
-
-
     @staticmethod
     async def _agora_list_ads_impl(kernel, pars, t_id):
         family_lev_ob = await scu.get_family_uplevel(kernel, pars, t_id)
@@ -141,7 +124,6 @@ async def _agora_buy_object_impl(kernel, pars, t_id):
 
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     chain_imports = await scu.get_family_chain_up(kernel, pars, t_id)
-    #gCon.log(f"the chain imports are {chain_imports}")
 
     if len(chain_imports) < 2:
         raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,

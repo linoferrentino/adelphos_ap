@@ -130,7 +130,7 @@ description 'used in good condition' price 3.32
 
 root.put_object as_adelphos #al#john.smith@www.adelphos.it \
 title 'Misery' \
-description 'a bit scratched, missing two pages' price 0.88 
+description 'a bit scratched, missing two pages' price 4.88 
 
 root.push_alias alias maria_al.rossi
 
@@ -152,10 +152,10 @@ agora.list_ads uplevel 2 ==> { "errno" : 0, \
 	"eval_exp" : "len(res_ob['res']) == 3" \
 }
 
-agora.buy_object_title uplevel 2 ad_title Dalloway \
-	==> { "errno" : 20 }
+agora.buy_object_title uplevel 2 ad_title Dalloway 
 
-agora.buy_object_title uplevel 2 ad_title Misery 
+agora.buy_object_title uplevel 2 ad_title Misery ==> \
+	{ "errno" : 21 }
 
 root.pop_alias
 

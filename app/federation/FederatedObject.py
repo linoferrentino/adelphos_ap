@@ -133,16 +133,13 @@ def reification(detach):
 
         async def _inner_reification_do(self, key, t_id):
             data = await _inner_reification(self, key, t_id)
-            gCon.log(f"_inner_reification_do called! detach {detach}")
             if detach == False:
                 return data
-            gCon.log(f"====== will detach {data}")
             if isinstance(data, Iterable) == False:
                 return data().detach()
             val = list()
             for val_item in data:
                 val_detached = val_item().detach()
-                gCon.log(f"val_detached is {val_detached.ob.fields}")
                 val.append(val_detached.ob.fields)
             return val
 
@@ -157,12 +154,10 @@ def reification(detach):
                 raise FdbException(EFdbErrors.EFDB_URI_EXPECTED,
                         f"column {key} is not an URI")
 
-            gCon.log(f"I have to reificate {key}")
             fdb = self.registrar.factory.fdb 
             val = await func(self, key, t_id)
 
             if par.cardinality == FObCardType.SCALAR:
-                gCon.log(f"Reification of uri {val}")
                 val_ob = await fdb.uri_read_str(t_id, val, must_lock = 
                                             not detach)
                 return val_ob
@@ -171,9 +166,7 @@ def reification(detach):
                 val = set(val)
             ob_list = list()
 
-            gCon.log(f"Reification of uri list {val}")
             for val_uri in val:
-                gCon.log(f"reification of {val_uri}")
                 val_ob = await fdb.uri_read_str(t_id, val_uri, must_lock =
                                                 not detach)
                 ob_list.append(val_ob)

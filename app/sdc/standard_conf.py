@@ -294,10 +294,6 @@ standard_cli_api = """
               location:
                 required: true
                 validator: len("_v_") > 3
-              brotherhood_ratio:
-                par_type: float
-                required: false
-                default: 0.9
               force:
                 par_type: bool
                 required: false
@@ -408,10 +404,6 @@ standard_cli_api = """
               location:
                 required: true
                 validator: len("_v_") > 3
-              brotherhood_ratio:
-                par_type: float
-                required: false
-                default: 0.9
 
 
       alias:

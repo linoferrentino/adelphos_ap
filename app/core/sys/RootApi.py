@@ -134,7 +134,6 @@ class RootApi:
     @staticmethod
     async def _sys_call_do_association(kernel, session, pars):
         pars['_session'] = session
-        gCon.log(f"do association with pars {pars}")
         await _do_association_safe(kernel, pars)
 
 
@@ -171,11 +170,8 @@ async def _root_buy_object_title_safe(kernel, pars, t_id):
     try:
         (exp_chain, imp_chain) = await ac._agora_buy_object_impl(
                 kernel, pars, t_id)
-
-        await ecut.distribuite_hearts_to_imports(kernel,
-                     hearts_given, exp_chain, t_id)
-        await ecut.distribuite_hearts_to_exports(kernel,
-                     hearts_given, imp_chain, t_id)
+        await ecut.complete_buy_task(kernel, hearts_given,
+                        exp_chain, imp_chain, t_id)
     finally:
         session.client.pop_session()
  
