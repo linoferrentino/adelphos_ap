@@ -41,6 +41,10 @@ async def get_task_as_dikastes_with_id(kernel, alias_ob, task_id, t_id):
 def create_step(alias_dikastes_uri, desc_dikastes, alias_diakonos_uri,
                 desc_diakonos, pars):
 
+    if (alias_dikastes_uri == alias_diakonos_uri):
+        raise AdelphosCoreException(ECoreErrno.ECORE_INVALID,
+            f"useless task for the same adelphoi {alias_diakonos_uri}")
+
     gCon.log(f"dikastes {alias_dikastes_uri} diakonos {alias_diakonos_uri} create_step with pars {pars}")
 
     if isinstance(pars, dict):
@@ -73,6 +77,27 @@ async def add_associate_family_task(kernel, src_boss_ob, dst_boss_ob,
                           steps, t_id)
 
 
+async def _create_routing_step():
+    pass
+
+
+async def add_routing_task(kernel, offer_ob,
+                           chain_exp, chain_imp, t_id):
+    gCon.log(f"add_routing task for {offer_ob().uri.name} {offer_ob().ob.fields}")
+
+    steps = list()
+    for export_step in chain_exp:
+        step = await _create_routing_step()
+        steps.append(step)
+
+    for import_step in reversed(chain_imp[:-1]):
+        step = await _create_routing_step()
+        steps.append(step)
+
+    task_ob = await create_task(kernel, ETaskType.SHIP_OBJECT,
+                          steps, t_id, linked_ob = offer_ob)
+
+
 async def add_invite_to_fediverse_user_task(kernel, alias_ob,
                     user_handle, invite_code, t_id):
 
@@ -91,7 +116,7 @@ async def add_invite_to_fediverse_user_task(kernel, alias_ob,
     task_ob = await create_task(kernel, ETaskType.INVITE_FAMILY, steps, t_id)
 
 
-async def create_task(kernel, task_type, steps, t_id):
+async def create_task(kernel, task_type, steps, t_id, *, linked_ob = None):
 
     id_task = secrets.token_hex()
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
@@ -102,6 +127,9 @@ async def create_task(kernel, task_type, steps, t_id):
          'steps' : steps,
          'created_on' : datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
     })
+
+    if linked_ob is not None:
+        await task_ob().set_link('linked_ob', linked_ob, t_id)
 
     await task_send_notices_for_active_step(kernel, task_ob, t_id)
     gCon.log(f"created task {task_ob().uri.unparse()}")

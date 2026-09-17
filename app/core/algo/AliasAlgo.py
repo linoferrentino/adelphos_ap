@@ -96,6 +96,7 @@ class AliasAlgo:
         family_ob = fdb.new_ob_uri(t_id, family_uri, fields = {
             'my_trust' : tutils.abs_to_db(my_trust),
             'level' : 0,
+            'brotherhood_ratio' : 1.0,
             })
 
         alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, 

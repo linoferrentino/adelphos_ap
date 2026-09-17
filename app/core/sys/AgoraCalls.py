@@ -25,8 +25,7 @@ import app.core.sys.family_utils as fu
 import app.misc.trust_utils as tutils
 import app.core.sys.ecommerce_utils as ecut
 import app.core.sys.task_utils as tku
-import app.core.sys.agora_utils as au
-import app.core.sys.alias_utils as alu
+import app.core.sys.agora_utils as agu
 import app.core.sys.offer_utils as offu
 import app.core.sys.routing_utils as ru
 
@@ -84,92 +83,16 @@ class AgoraCalls:
     @staticmethod
     @federated_transaction(raise_if_fail = True)
     async def _agora_buy_object_safe(kernel, pars, t_id):
-        await _agora_buy_object_impl(kernel, pars, t_id)
+        await agu._agora_buy_object_impl(kernel, pars, t_id)
 
 
     @staticmethod
     async def _agora_list_ads_impl(kernel, pars, t_id):
         family_lev_ob = await scu.get_family_uplevel(kernel, pars, t_id)
 
-        return await family_list_ads(kernel, family_lev_ob, t_id)
+        return await agu.family_list_ads(kernel, family_lev_ob, t_id)
 
 
-async def _get_offer_from_pars_title(fdb, offers, par_title, t_id):
-    for offer in offers:
-        gCon.log(f"Processing offer {offer}")
-        if re.search(par_title, offer['title']) is not None:
-            gCon.log(f"found!")
-            return offer
-    raise AdelphosCoreException(ECoreErrno.ENO_SUCH_OBJECT,
-                f"no object with title {par_title} found")
-
-
-async def _get_object_title(kernel, family_lev_ob, ad_title, t_id):
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-
-    offers = await family_list_ads(kernel, family_lev_ob, t_id)
-
-    offer = await _get_offer_from_pars_title(fdb, offers,
-                            ad_title, t_id)
-
-    offer_ob = await fdb.uri_read_str(t_id, offer['uri'])
-
-    return (offer, offer_ob)
-
-
-async def _agora_buy_object_impl(kernel, pars, t_id):
-
-    uplevel = pars['uplevel']
-    ad_title = pars['ad_title']
-
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-    chain_imports = await scu.get_family_chain_up(kernel, pars, t_id)
-
-    if len(chain_imports) < 2:
-        raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
-                    "You cannot buy in your family")
-
-    family_lev_ob = chain_imports[-1] 
-
-    (offer, offer_ob) = await _get_object_title(kernel, family_lev_ob,
-                                                ad_title, t_id)
-
-    offer_uri = offer['uri']
-    agora_exported_price = offer['price']
-    gCon.log(f"The offer {offer_uri} has a price {agora_exported_price}")
-
-    alias_uri_str = await offer_ob().get_scalar('adelphos_from', t_id)
-    family_from_ob = await alu.alias_get_your_family(
-            kernel, alias_uri_str, t_id)
-    family_from_src = family_from_ob().uri.unparse()
-
-    if family_from_src == chain_imports[0]().uri.unparse():
-        raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
-                   f"The object {await offer_ob().get_scalar('description', t_id)} is originated by your family.")
-
-    chain_exports = await scu.get_family_chain_up_from_to(kernel,
-                family_from_src, family_lev_ob, t_id)
-    if len(chain_exports) != len(chain_imports):
-        raise Exception("This version of adelphos handles symmetric chains: internal error")
-
-    await ecut.distribute_losses_to_imports(kernel, agora_exported_price,
-                                       chain_imports, t_id)
-
-    await ecut.distribute_gains_to_exports(kernel, agora_exported_price,
-                                      chain_exports, t_id)
-
-    await au.remove_object_from_agora(kernel, chain_exports[0],
-                                      offer_ob, t_id)
-
-    return (chain_exports, chain_imports)
-
-
-
-async def family_list_ads(kernel, family_lev_ob, t_id):
-
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-    offers = await family_lev_ob().get_as_list('offers_deep', t_id)
-    return offers
 
 
 async def _agora_received_pin_impl(kernel, pars, t_id, *, action):

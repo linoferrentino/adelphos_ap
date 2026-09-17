@@ -29,6 +29,7 @@ import app.core.sys.family_utils as fu
 import app.misc.alias_utils as au
 import app.core.sys.alias_utils as autils
 import app.core.sys.offer_utils as ofutils
+import app.core.sys.agora_utils as agu
 import app.core.sys.ecommerce_utils as ecut
 import app.core.sys.AgoraCalls as ac
 
@@ -166,9 +167,10 @@ async def _root_buy_object_title_safe(kernel, pars, t_id):
 
     session = pars['_param']
     hearts_given = pars['hearts_given']
+    pars['_x_skip_task'] = True
 
     try:
-        (exp_chain, imp_chain) = await ac._agora_buy_object_impl(
+        (exp_chain, imp_chain) = await agu._agora_buy_object_impl(
                 kernel, pars, t_id)
         await ecut.complete_buy_task(kernel, hearts_given,
                         exp_chain, imp_chain, t_id)

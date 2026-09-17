@@ -34,3 +34,9 @@ class TaskStep:
     pars: object
 
 
+@dataclass
+class RoutingStepData:
+    agora_dest: str
+    pin_to_give: int
+
+

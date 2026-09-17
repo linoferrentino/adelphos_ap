@@ -133,8 +133,7 @@ classes:
         - name: brotherhood_ratio 
           type: real
           cardinality: scalar
-          required: false
-          default: 0.9
+          required: true
 
         - name: boss
           type: uri 

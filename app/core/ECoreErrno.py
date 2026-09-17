@@ -43,6 +43,7 @@ class ECoreErrno(IntEnum):
     EOBJECT_NOT_AVAILABLE = 25
 
     
+    ECORE_INVALID = 9997
     EFDB = 9998
     ESYS = 9999
 
