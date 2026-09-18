@@ -54,6 +54,8 @@ from app.misc.WrapInt import W32
 import traceback
 import weakref
 
+import app.misc.utils as ut
+
 
 class FederatedTransaction:
 
@@ -608,10 +610,7 @@ class FederatedStore(Dependency, LifespanAware):
     def remove_localhost(self, uriob, enforce = False):
         if uriob.host is None:
             return uriob
-        if ((uriob.host == self.hostname) or
-            (uriob.host == '::1') or
-            (uriob.host == 'localhost') or
-            (uriob.host == '127.0.0.1')):
+        if ut.is_localhost(uriob.host, self.hostname):
             copied_uri = copy.copy(uriob)
             copied_uri.host = None
             return copied_uri

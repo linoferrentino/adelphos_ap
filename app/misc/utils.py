@@ -17,6 +17,15 @@ import importlib
 from app.logging import gCon
 
 
+def is_localhost(host_str, this_host = None):
+    if ((host_str == this_host) or
+        (host_str == '::1') or
+        (host_str == 'localhost') or
+        (host_str == '127.0.0.1')):
+        return True
+    return False
+
+
 # Source - https://stackoverflow.com/a/34963527
 # Posted by eugene, modified by community. See post 'Timeline' for change history
 # Retrieved 2026-06-19, License - CC BY-SA 4.0

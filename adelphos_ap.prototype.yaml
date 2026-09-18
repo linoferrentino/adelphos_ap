@@ -1,0 +1,30 @@
+
+general:
+
+  debug: true 
+  port: 5000
+  host: localhost 
+  root_path: /api
+  # the root user can be local.
+  root: :local:rlocal
+  root_password: super_secret
+
+social_dao:
+  db_name: ad_social.sqlite
+    
+
+fed_db:
+  db_name: ad_fdb.sqlite
+  db_type: sqlite
+ 
+social:
+  users:
+
+    - preferredusername: adelphos
+      private_key: "private_key.pem"
+      name: Adelphos daemon
+      login_shell: false
+
+    - preferredusername: rlocal
+      login_shell: true
+

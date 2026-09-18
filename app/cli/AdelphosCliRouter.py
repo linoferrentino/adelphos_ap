@@ -12,6 +12,7 @@
 ######################################################
 
 import app.consts as CNST
+import re
 
 from app.cli.CliRouter import CliRouter
 from app.logging import gCon
@@ -21,7 +22,6 @@ from starlette.routing import Route
 from starlette.routing import WebSocketRoute
 from starlette.responses import HTMLResponse
 
-#import app.sdc.s_utils as sdc
 from app.sdc.Dependencies import Dependencies
 
 
@@ -36,6 +36,11 @@ class AdelphosCliRouter(CliRouter):
 
         host = config.get_host()
         host_api = host + config.get_root_path() 
+
+        if config.is_localhost():
+            wsock_schema = "ws"
+        else:
+            wsock_schema = "wss"
 
         instance = config.get_instance()
 
@@ -177,7 +182,7 @@ class AdelphosCliRouter(CliRouter):
 
           <script>
 
-                var ws = new WebSocket("wss://{host_api}/ws");"""
+                var ws = new WebSocket("{wsock_schema}://{host_api}/ws");"""
 
         # here we have to change the string without the formatting because it
         # has the { parenthesis

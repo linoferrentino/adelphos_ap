@@ -13,6 +13,7 @@
 
 
 import traceback
+import os
 
 from dataclasses import dataclass
 from app.sdc.Dependencies import Dependencies
@@ -106,16 +107,28 @@ class BaseSocial(SocialProvider):
         user_path = root_path + f"/users/{preferredusername}"
         user_inbox = user_path + "/inbox"
 
-        private_key =  user.get('private_key')
+        private_key_file =  user.get('private_key')
 
-        if private_key is None:
+        if private_key_file is not None:
+            present_key = os.path.exists(private_key_file)
+        else:
+            present_key = False
+
+        gCon.log(f"private_key_file {private_key_file} present {present_key}")
+        if present_key is False:
+
             private_key = generate_key()
             content = private_key.private_bytes(
                 encoding=crypto_serialization.Encoding.PEM,
                 format=crypto_serialization.PrivateFormat.PKCS8,
                 encryption_algorithm=crypto_serialization.NoEncryption())
+
+            if private_key_file is not None:
+                with open(private_key_file, "wb") as f:
+                    f.write(content)
+
         else:
-            with open(private_key, "rb") as f:
+            with open(private_key_file, "rb") as f:
                 content = f.read()
                 private_key = crypto_serialization.load_pem_private_key(
                         content, password=None)

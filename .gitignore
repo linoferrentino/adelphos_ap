@@ -19,3 +19,5 @@ private_key.pem
 *.sqlite
 *.backup
 *.yaml
+
+!adelphos_ap.prototype.yaml

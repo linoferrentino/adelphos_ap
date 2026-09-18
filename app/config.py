@@ -12,12 +12,14 @@
 ######################################################
 
 
+import re
 import yaml
 from .logging import gCon
 import os
 from .logging import exit_err
 import json
 import app.consts as CNST
+import app.misc.utils as utils
 
 
 CNF_GENERAL_SECTION = "general"
@@ -33,10 +35,24 @@ class Config:
         self.config = config
 
 
+    def is_localhost(self):
+        host = self.config['conf'][CNF_GENERAL_SECTION][CNF_HOST_KEY]
+        return utils.is_localhost(host)
+
+
     def get_host(self):
         host = self.config['conf'][CNF_GENERAL_SECTION][CNF_HOST_KEY]
-        return host
+        if utils.is_localhost(host) == False:
+            return host
+        port = self.get_port()
+        return f"{host}:{port}"
 
+
+    def host_api(self):
+        host = self.get_host()
+        root_path = self.get_root_path()
+        return f"{host}{root_path}"
+        
 
     def get_port(self):
         port = self.config['conf'][CNF_GENERAL_SECTION][CNF_PORT_KEY]
