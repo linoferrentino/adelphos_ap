@@ -367,7 +367,6 @@ class FederatedObject:
             self.ob.fields[CID_COLUMN] = registrar.version
             self._enforce_schema_init(fields)
             self.modified = True
-            gCon.log(f"Created object with fields {self.ob.fields}")
         else:
             self.ob = ob
             self._check_version()

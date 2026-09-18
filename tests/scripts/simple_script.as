@@ -126,7 +126,7 @@ root.pop_alias
 
 root.put_object as_adelphos #al#john.smith@www.adelphos.it \
 title 'Ms. Dalloway' \
-description 'used in good condition' price 3.32
+description 'used in good condition' price 1.51
 
 root.put_object as_adelphos #al#john.smith@www.adelphos.it \
 title 'Misery' \
@@ -155,7 +155,7 @@ agora.list_ads uplevel 2 ==> { "errno" : 0, \
 agora.buy_object_title uplevel 2 ad_title Dalloway 
 
 agora.buy_object_title uplevel 2 ad_title Misery ==> \
-	{ "errno" : 21 }
+	{ "errno" : 20 }
 
 root.pop_alias
 

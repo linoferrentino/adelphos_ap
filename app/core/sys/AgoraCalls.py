@@ -37,20 +37,38 @@ class AgoraCalls:
     async def _sys_call_list_ads(kernel, session, pars):
         pars['_session'] = session
         return await AgoraCalls._agora_list_ads_safe(kernel, pars)
+
+
+    @staticmethod
+    @active_login
+    async def _sys_call_give_hearts(kernel, session, pars):
+        raise Exception("TODO")
+
+
+    @staticmethod
+    @active_login
+    async def _sys_call_confirm_route_step(kernel, session, pars):
+        raise Exception("TODO")
  
 
     @staticmethod
     @active_login
-    async def _sys_call_received_pin(kernel, session, pars):
-        pars['_session'] = session
-        return await AgoraCalls._agora_received_pin_safe(kernel, pars)
+    async def _sys_call_object_ready_to_ship(kernel, session, pars):
+        raise Exception("TODO")
+ 
+
+    #@staticmethod
+    #@active_login
+    #async def _sys_call_received_pin(kernel, session, pars):
+    #    pars['_session'] = session
+    #    return await AgoraCalls._agora_received_pin_safe(kernel, pars)
 
 
-    @staticmethod
-    @active_login
-    async def _sys_call_confirm_pin(kernel, session, pars):
-        pars['_session'] = session
-        return await AgoraCalls._agora_confirm_pin_safe(kernel, pars)
+    #@staticmethod
+    #@active_login
+    #async def _sys_call_confirm_pin(kernel, session, pars):
+    #    pars['_session'] = session
+    #    return await AgoraCalls._agora_confirm_pin_safe(kernel, pars)
 
 
     @staticmethod
@@ -60,18 +78,18 @@ class AgoraCalls:
         return await AgoraCalls._agora_buy_object_safe(kernel, pars)
 
 
-    @staticmethod
-    @federated_transaction(raise_if_fail = True)
-    async def _agora_received_pin_safe(kernel, pars, t_id):
-        return await _agora_received_pin_impl(kernel, pars, t_id,
-                                action = 'search')
+    #@staticmethod
+    #@federated_transaction(raise_if_fail = True)
+    #async def _agora_received_pin_safe(kernel, pars, t_id):
+    #    return await _agora_received_pin_impl(kernel, pars, t_id,
+    #                            action = 'search')
 
 
-    @staticmethod
-    @federated_transaction(raise_if_fail = True)
-    async def _agora_confirm_pin_safe(kernel, pars, t_id):
-        return await _agora_received_pin_impl(kernel, pars, t_id,
-                                              action = 'confirm')
+    #@staticmethod
+    #@federated_transaction(raise_if_fail = True)
+    #async def _agora_confirm_pin_safe(kernel, pars, t_id):
+    #    return await _agora_received_pin_impl(kernel, pars, t_id,
+    #                                          action = 'confirm')
 
 
     @staticmethod
@@ -95,48 +113,48 @@ class AgoraCalls:
 
 
 
-async def _agora_received_pin_impl(kernel, pars, t_id, *, action):
-    gCon.log(f"received pin {pars['pin']}")
-    alias_ob = await scu.get_alias_in_session(kernel, pars, t_id)
-    routing_data = await alias_ob().get_as_list('routing_data', t_id)
-    idx = 0
-    for routing_step in routing_data:
-        if routing_step['pin_to_receive'] != pars['pin']:
-            idx += 1
-            continue
-        if action == 'confirm':
-            gCon.log(f"Removing index {idx}")
-            routing_data.pop(idx)
-            gCon.log(f"NEW routing data {routing_data}")
-            alias_ob().set_list('routing_data', routing_data)
-            res = await _do_correct_pin_confirm(kernel,
-                pars, routing_step, t_id)
-        else:
-            res = await _do_correct_pin_rcvd(kernel,
-                pars, routing_step, t_id)
-        return res
-    raise AdelphosCoreException(ECoreErrno.ENO_SUCH_PIN,
-        f"You have no PIN {pars['pin']}")
-
-
-async def _do_correct_pin_confirm(kernel, pars, routing_step,
-                               t_id):
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-    offer_ob = await fdb.uri_read_str(t_id, routing_step['offer_uri'])
-    title = await offer_ob().get_scalar('title', t_id)
-    return {
-            'res': f"OK, you can now route the object {title}. It is in your hands" 
-    }
- 
-
-async def _do_correct_pin_rcvd(kernel, pars, routing_step,
-                               t_id):
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-    gCon.log(f"correct PIN, to unlock {routing_step['unlock_pin_to_give']}")
-    offer_ob = await fdb.uri_read_str(t_id, routing_step['offer_uri'])
-    title = await offer_ob().get_scalar('title', t_id)
-    return {
-            'res': f"OK, you can receive the object {title}" 
-    }
-
-
+#async def _agora_received_pin_impl(kernel, pars, t_id, *, action):
+#    gCon.log(f"received pin {pars['pin']}")
+#    alias_ob = await scu.get_alias_in_session(kernel, pars, t_id)
+#    routing_data = await alias_ob().get_as_list('routing_data', t_id)
+#    idx = 0
+#    for routing_step in routing_data:
+#        if routing_step['pin_to_receive'] != pars['pin']:
+#            idx += 1
+#            continue
+#        if action == 'confirm':
+#            gCon.log(f"Removing index {idx}")
+#            routing_data.pop(idx)
+#            gCon.log(f"NEW routing data {routing_data}")
+#            alias_ob().set_list('routing_data', routing_data)
+#            res = await _do_correct_pin_confirm(kernel,
+#                pars, routing_step, t_id)
+#        else:
+#            res = await _do_correct_pin_rcvd(kernel,
+#                pars, routing_step, t_id)
+#        return res
+#    raise AdelphosCoreException(ECoreErrno.ENO_SUCH_PIN,
+#        f"You have no PIN {pars['pin']}")
+#
+#
+#async def _do_correct_pin_confirm(kernel, pars, routing_step,
+#                               t_id):
+#    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+#    offer_ob = await fdb.uri_read_str(t_id, routing_step['offer_uri'])
+#    title = await offer_ob().get_scalar('title', t_id)
+#    return {
+#            'res': f"OK, you can now route the object {title}. It is in your hands" 
+#    }
+# 
+#
+#async def _do_correct_pin_rcvd(kernel, pars, routing_step,
+#                               t_id):
+#    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+#    gCon.log(f"correct PIN, to unlock {routing_step['unlock_pin_to_give']}")
+#    offer_ob = await fdb.uri_read_str(t_id, routing_step['offer_uri'])
+#    title = await offer_ob().get_scalar('title', t_id)
+#    return {
+#            'res': f"OK, you can receive the object {title}" 
+#    }
+#
+#

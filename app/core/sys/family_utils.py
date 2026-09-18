@@ -129,6 +129,12 @@ async def family_get_chain_alias_family_to(kernel,
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
 
+async def family_get_your_carrier_uri(kernel, family_ob, t_id):
+    agora_ob = await family_get_your_agora(kernel, family_ob, t_id)
+    carrier = await agora_ob().get_scalar('carrier', t_id)
+    return carrier
+
+
 async def family_associate_2nd_half(kernel, pars, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 

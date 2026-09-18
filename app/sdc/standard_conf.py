@@ -333,28 +333,35 @@ standard_cli_api = """
       agora:
         class: app.core.sys.AgoraCalls.AgoraCalls
         syscalls:
+
+          - name: confirm_route_step
+            pars:
+              ob_uri:
+                required: true
+              pin:
+                required: true
+
+          - name: object_ready_to_ship
+            pars:
+              ob_uri:
+                required: true
+
+          - name: give_hearts
+            pars:
+              hearts:
+                par_type: int
+                required: true
+                validator: ((_v_ >= 0) and (_v_ <= 5))
+              token:
+                required: true
+                validator: len("_v_") > 3
+
           - name: list_ads
             pars:
               uplevel:
                 par_type: int
                 required: true
                 validator: _v_ >= 0
-
-          - name: received_pin
-            pars:
-              pin:
-                par_type: int
-                required: true
-                validator: _v_ > 0
-
-
-          - name: confirm_pin
-            pars:
-              pin:
-                par_type: int
-                required: true
-                validator: _v_ > 0
-
 
           - name: buy_object_title
             pars:

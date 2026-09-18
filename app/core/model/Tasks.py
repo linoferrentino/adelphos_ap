@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from dataclasses import field
 from app.logging import gCon
 from enum import StrEnum
+from dataclasses import field
 
 
 class ETaskType(StrEnum):
@@ -38,5 +39,18 @@ class TaskStep:
 class RoutingStepData:
     agora_dest: str
     pin_to_give: int
+
+
+@dataclass
+class FeedbackStepData:
+    token: str
+
+
+@dataclass
+class RoutingTaskData:
+    chain_exports: list[str] = field(default_factory = list)
+    chain_imports: list[str] = field(default_factory = list)
+
+
 
 

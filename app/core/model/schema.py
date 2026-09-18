@@ -67,6 +67,11 @@ classes:
           required: false 
           default: 0
 
+        - name: data
+          type: json
+          cardinality: scalar
+          required: false
+
 
     - uri_prefix: {EAdelphosType.ALIAS_TYPE}
       can_be_root: false 

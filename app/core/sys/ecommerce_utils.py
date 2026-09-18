@@ -150,37 +150,21 @@ async def _distribute_delta_to_chain(kernel, delta, family_chain, t_id):
     delta = delta - tax_amount
     gCon.log(f"The new delta is {delta}")
 
-    brotherhood_ratio = await inner_family().get_scalar(
+    brotherhood_ratio = await containing_family().get_scalar(
             'brotherhood_ratio', t_id)
     uri_family = inner_family().uri.unparse()
-    gCon.log(f"Distributing {delta} to uri {uri_family} from {containing_family_uri} using the members")
+    gCon.log(f"Distributing {delta} to uri {uri_family} from {containing_family_uri} with ratio {brotherhood_ratio}")
 
-    members_list = await containing_family().get_as_object_list(
-            'members', t_id)
-    count_members = len(members_list)
-    
     balance_to_family = (delta * brotherhood_ratio)
-    #balance_to_member = balance_to_members / (count_members)
-    #overall_brotherhood_amount = balance_to_member * (count_members - 1)
     balance_to_tx_family = delta - balance_to_family
 
-    gCon.log(f"This family has {count_members} members. It will take {balance_to_family} of the total transaction")
+    gCon.log(f"This family will take {balance_to_family} of the total transaction")
     gCon.log(f"The transaction family will take {balance_to_tx_family}")
 
     await _change_family_balance(containing_family, balance_to_family, t_id)
     family_chain = family_chain[:-1]
     await _distribute_delta_to_chain(inner_family, balance_to_tx_family,
                                      family_chain, t_id)
-
-    #for member in members_list:
-    #    if member ==  inner_family:
-    #        gCon.log(f"this is the {exp_imp} family {member().uri.unparse()}")
-    #        family_chain = family_chain[:-1]
-    #        await _distribute_delta_to_chain(member,
-    #                        balance_to_tx_family, family_chain, t_id)
-    #    else:
-    #        gCon.log(f"this is another family {member().uri.unparse()}")
-    #        await _change_family_balance(member, balance_to_member, t_id)
 
 
 async def _change_family_balance(family, delta_balance, t_id):
