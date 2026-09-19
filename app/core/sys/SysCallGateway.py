@@ -144,7 +144,9 @@ class SysCallGateway(Dependency, SyncLifespanAware):
                 validator_result = eval(string_validator)
                 if validator_result != True:
                     raise AdelphosException(
-                        AdErrno.EVALIDATOR_EXCEPTION, val_final)
+                        AdErrno.EVALIDATOR_EXCEPTION,
+                        f"{val_final} does not satisfy validator \
+{string_validator}")
 
             kwargs[par.name] = val_final
 

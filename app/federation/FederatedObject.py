@@ -532,7 +532,10 @@ class FederatedObject:
                 col_val = asdict(col_val)
 
         if isinstance(col_val, exp_type) == False:
-            raise FdbException(EFdbErrors.EFDB_INVALID_VAL_TYPE, 
+            if (exp_type == float) and (type(col_val) == int):
+                col_val = float(col_val)
+            else:
+                raise FdbException(EFdbErrors.EFDB_INVALID_VAL_TYPE, 
             f"exp {exp_type} found {type(col_val)} in {col_name}")
 
         match col_type:

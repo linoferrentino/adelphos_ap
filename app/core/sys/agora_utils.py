@@ -68,6 +68,14 @@ async def _get_object_title(kernel, family_lev_ob, ad_title, t_id):
     return (offer, offer_ob)
 
 
+async def _agora_give_hearts_impl(kernel, pars, t_id):
+    token = pars['token']
+    hearts = pars['hearts']
+    alias_ob = scu.get_alias_in_session(kernel, pars, t_id)
+
+    iterate_on_all_diakonos_task()
+
+
 async def _agora_buy_object_impl(kernel, pars, t_id):
 
     uplevel = pars['uplevel']
@@ -103,12 +111,6 @@ async def _agora_buy_object_impl(kernel, pars, t_id):
     if len(chain_exports) != len(chain_imports):
         raise Exception("This version of adelphos handles symmetric chains: internal error")
 
-    await ecut.distribute_losses_to_imports(kernel, agora_exported_price,
-                                       chain_imports, t_id)
-
-    await ecut.distribute_gains_to_exports(kernel, agora_exported_price,
-                                      chain_exports, t_id)
-
     myself_ob = await scu.get_alias_in_session(kernel, pars, t_id)
     await offer_ob().set_link('adelphos_to', myself_ob, t_id)
 
@@ -116,6 +118,17 @@ async def _agora_buy_object_impl(kernel, pars, t_id):
     if (skip_task) is None or (skip_task == False):
         await tku.add_routing_task(kernel, offer_ob, chain_exports,
                                    chain_imports, t_id)
+        await ecut.distribute_losses_to_imports(kernel,
+                agora_exported_price, chain_imports, False, t_id)
+
+        await ecut.distribute_gains_to_exports(kernel,
+                agora_exported_price, chain_exports, False, t_id)
+    else:
+        await ecut.distribute_losses_to_imports(kernel,
+                agora_exported_price, chain_imports, True, t_id)
+
+        await ecut.distribute_gains_to_exports(kernel,
+                agora_exported_price, chain_exports, True, t_id)
 
     await au.remove_object_from_agora(kernel, chain_exports[0],
                                       offer_ob, t_id)

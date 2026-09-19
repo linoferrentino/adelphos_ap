@@ -16,6 +16,8 @@ from dataclasses import dataclass
 from dataclasses import field
 from app.logging import gCon
 from enum import StrEnum
+from enum import IntEnum
+from enum import auto
 from dataclasses import field
 
 
@@ -25,6 +27,10 @@ class ETaskType(StrEnum):
     JOIN_FAMILY = 'JOIN_FAMILY'
     SHIP_OBJECT = 'SHIP_OBJECT'
 
+
+#class EStepType(IntEnum):
+#    DEFAULT_STEP = auto()
+    
 
 @dataclass
 class TaskStep:

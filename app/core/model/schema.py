@@ -130,6 +130,12 @@ classes:
           required: false
           default: 0.0
 
+        - name: pending_balance
+          type: real
+          cardinality: scalar
+          required: false
+          default: 0.0
+
         - name: level
           type: int
           cardinality: scalar

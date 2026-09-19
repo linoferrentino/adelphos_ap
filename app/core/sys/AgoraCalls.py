@@ -83,3 +83,8 @@ class AgoraCalls:
         return await agu.family_list_ads(kernel, family_lev_ob, t_id)
 
 
+@federated_transaction(raise_if_fail = True)
+async def _agora_give_hearts_safe(kernel, pars, t_id):
+    await agu._agora_give_hearts_impl(kernel, pars, t_id)
+
+

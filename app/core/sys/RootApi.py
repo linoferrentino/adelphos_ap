@@ -13,11 +13,13 @@
 
 import re
 import json
+import traceback
 from app.logging import gCon
 
 from app.core.model.AdelphosUri import EAdelphosType
 from app.core.model.AdelphosUri import AdelphosUri
 from app.core.algo.utils import federated_transaction
+from app.core.AdelphosCoreException import AdelphosBaseException
 from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
 from app.sdc.Dependencies import Dependencies
@@ -267,14 +269,16 @@ async def _root_play_line(kernel, session, pars, line):
         res_str = await session.client.direct_gateway_call(data)
         gCon.log(f"result {res_str}")
         res_ob = json.loads(res_str)
-    except AdelphosException as ex:
-        gCon.log(f"Exception got {ex}")
+    except AdelphosBaseException as ex:
+        gCon.log(f"Got Adelphos exception {ex}")
+        traceback.print_exc()
         res_ob = {
            'errno' : ex.errno,
            'res' : ex.out_str
         }
     except Exception as ex:
-        gCon.log(f"Exception got {ex}")
+        gCon.log(f"Got generic exception {ex}")
+        traceback.print_exc()
         res_ob = {
            'errno' : AdErrno.ESYS,
            'res' : str(ex),

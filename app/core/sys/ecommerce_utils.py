@@ -41,7 +41,7 @@ it only to have a positive balance of {max_balance}""")
         new_balance_db = tutils.abs_to_db(abs(new_balance))
         system_trust = await family_ob().get_scalar('system_trust', t_id)
         if system_trust >= new_balance_db:
-            gCon.log(f"{family_uri} new balance_db [red]-{new_balance} = {new_balance_db}dB[/red] system_trust [red]{system_trust}[/red]")
+            gCon.log(f"{family_uri} new balance_db [red]{new_balance} = {new_balance_db}dB[/red] system_trust [red]{system_trust}[/red]")
             return
         max_balance = tutils.db_to_abs(system_trust)
 
@@ -120,13 +120,16 @@ async def distribuite_hearts_to_imports(kernel, hearts_given, chain_imports,
                             'my_trust', t_id)
 
 
-async def distribute_gains_to_exports(kernel, price, chain_exports, t_id):
+async def distribute_gains_to_exports(kernel, price, chain_exports,
+                                      is_real, t_id):
     gCon.log(f"[blue]==================================== start gain distribution {price}[/blue]")
-    await _distribute_delta_to_chain(kernel, price, chain_exports, t_id)
+    await _distribute_delta_to_chain(kernel, price, chain_exports, is_real,
+                                     t_id)
     gCon.log("[blue]{==================================== end gain distribution[/blue]")
 
 
-async def _distribute_delta_to_chain(kernel, delta, family_chain, t_id):
+async def _distribute_delta_to_chain(kernel, delta, family_chain, is_real,
+                                     t_id):
 
     exp_imp = "export" if delta > 0 else "import"
 
@@ -134,7 +137,7 @@ async def _distribute_delta_to_chain(kernel, delta, family_chain, t_id):
 
     if len(family_chain) == 2:
         gCon.log("This is the ultimate family, it takes all the delta.")
-        await _change_family_balance(top_family, delta, t_id)
+        await _change_family_balance(top_family, delta, is_real, t_id)
         return
  
     containing_family = family_chain[-2]
@@ -145,7 +148,8 @@ async def _distribute_delta_to_chain(kernel, delta, family_chain, t_id):
     tax_rate = await inner_family().get_scalar('import_export_tax', t_id)
     tax_amount = abs((tax_rate - 1) * delta)
     gCon.log(f"the {exp_imp} family {containing_family_uri} has a tax rate {tax_rate} delta {delta} gain of {tax_amount}")
-    await _change_family_balance(containing_family, tax_amount, t_id)
+    await _change_family_balance(containing_family, tax_amount, is_real,
+                                 t_id)
 
     delta = delta - tax_amount
     gCon.log(f"The new delta is {delta}")
@@ -161,25 +165,74 @@ async def _distribute_delta_to_chain(kernel, delta, family_chain, t_id):
     gCon.log(f"This family will take {balance_to_family} of the total transaction")
     gCon.log(f"The transaction family will take {balance_to_tx_family}")
 
-    await _change_family_balance(containing_family, balance_to_family, t_id)
+    await _change_family_balance(containing_family, balance_to_family,
+                                 is_real, t_id)
     family_chain = family_chain[:-1]
     await _distribute_delta_to_chain(inner_family, balance_to_tx_family,
-                                     family_chain, t_id)
+                                     family_chain, is_real, t_id)
 
 
-async def _change_family_balance(family, delta_balance, t_id):
-    balance = await family().get_scalar('balance', t_id)
-    old_bal = balance
-    balance += delta_balance 
-    await validate_balance_in_family(family, balance, t_id)
-    family().set_scalar('balance', balance)
-    gCon.log(f"[yellow]{family().uri.name} --> Balance: {old_bal} + {delta_balance} = {balance}[/yellow]")
+async def get_family_balance(family, t_id):
+
+    pending_balance = await family().get_scalar('pending_balance', t_id)
+    real_balance = await family().get_scalar('balance', t_id)
+    return (pending_balance, real_balance,
+            pending_balance + real_balance)
 
 
-async def distribute_losses_to_imports(kernel, price, chain_imports, t_id):
+async def _change_family_balance(family, delta_balance, is_real, t_id):
+
+    if delta_balance == 0.0:
+        return
+
+    (pending_balance, real_balance, total_balance) = await \
+            get_family_balance(family, t_id)
+
+    gCon.log(f"[yellow]BEFORE {family().uri.name} --> {real_balance} + {pending_balance} = {total_balance} [/yellow]")
+
+    new_balance = total_balance + delta_balance
+    await validate_balance_in_family(family, new_balance, t_id)
+
+    if is_real == False:
+        pending_balance += delta_balance
+    else:
+        if delta_balance * pending_balance < 0:
+            if abs(pending_balance) > abs(delta_balance):
+                pending_balance += delta_balance
+                real_balance -= delta_balance
+            else:
+                pending_balance = 0
+                real_balance += delta_balance
+        else:
+            if abs(pending_balance) > abs(delta_balance):
+                pending_balance -= delta_balance
+                real_balance += delta_balance
+            else:
+                pending_balance = 0
+                real_balance -= delta_balance
+
+    gCon.log(f"[yellow]AFTER {family().uri.name} --> {real_balance} + {pending_balance} = {pending_balance + real_balance} [/yellow]")
+
+   
+    family().set_scalar('pending_balance', pending_balance)
+    family().set_scalar('balance', real_balance)
+
+
+#async def _change_pending_family_balance(family, delta_balance,
+#                                         is_real, t_id):
+#    balance = await family().get_scalar('pending_balance', t_id)
+#    old_bal = balance
+#    balance += delta_balance 
+#    await validate_balance_in_family(family, balance, t_id)
+#    family().set_scalar('pending_balance', balance)
+#    gCon.log(f"[yellow]{family().uri.name} --> Pending Balance: {old_bal} + {delta_balance} = {balance}[/yellow]")
+#
+
+async def distribute_losses_to_imports(kernel, price, chain_imports, is_real,
+                                       t_id):
     gCon.log(f"[red]==================================== start loss distribution -{price}[/red]")
     await _distribute_delta_to_chain(kernel, price * (-1.0), 
-                                     chain_imports, t_id)
+                                     chain_imports, is_real, t_id)
     gCon.log("[red]==================================== end loss distribution}[/red]")
 
 
