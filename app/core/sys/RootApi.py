@@ -262,9 +262,23 @@ async def _root_play_line(kernel, session, pars, line):
                 'errno' : 0
         }
     gCon.log(f"Play line |{data}| with exp |{exp}|")
-    res_str = await session.client.direct_gateway_call(data)
-    gCon.log(f"result {res_str}")
-    res_ob = json.loads(res_str)
+
+    try:
+        res_str = await session.client.direct_gateway_call(data)
+        gCon.log(f"result {res_str}")
+        res_ob = json.loads(res_str)
+    except AdelphosException as ex:
+        gCon.log(f"Exception got {ex}")
+        res_ob = {
+           'errno' : ex.errno,
+           'res' : ex.out_str
+        }
+    except Exception as ex:
+        gCon.log(f"Exception got {ex}")
+        res_ob = {
+           'errno' : AdErrno.ESYS,
+           'res' : str(ex),
+        }
     if (res_ob['errno'] != exp['errno']):
         raise AdelphosException(AdErrno.ESCRIPT_ERROR, res_str)
     eval_exp = exp.get('eval_exp')

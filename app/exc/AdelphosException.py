@@ -45,6 +45,8 @@ class AdErrno(IntEnum):
     EUNKOWN_PARAMETERS_GIVEN = 22
     ESCRIPT_ERROR = 23
 
+    ESYS = 9999
+
 
 class AdelphosException(AdelphosBaseException):
 

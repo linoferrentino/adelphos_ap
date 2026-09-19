@@ -157,6 +157,9 @@ agora.buy_object_title uplevel 2 ad_title Dalloway
 agora.buy_object_title uplevel 2 ad_title Misery ==> \
 	{ "errno" : 20 }
 
+agora.give_hearts hearts 9 token aoieurow ==> \
+	{ "errno" : 21 }
+
 root.pop_alias
 
 

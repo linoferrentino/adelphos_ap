@@ -97,7 +97,7 @@ testable_kernel_suffix_template = """
 
       debug: true 
       port: {_port_}
-      host: localhost:{_port_} 
+      host: localhost 
       root_path: /api
       root: {_root_handle_}
       root_password: {_root_password_}

@@ -34,22 +34,24 @@ class AdelphosInitDaemon(Daemon):
         root_actor = await sg.discover_user(root_handle)
         gCon.log(f"Found the remote root actor {root_actor}")
         await self._create_root_alias(root_handle,
-                                      root_password)
+                                      root_password, True)
 
 
     async def _create_local_root(self, local_user, root_password):
         social = self.get_dep(Dependencies.SOCIAL)
         root_user = social.local_user_get(local_user, create_if_not_exists = True)
         await self._create_root_alias(root_user.actor_dto.get_social_handle(),
-                                      root_password)
+                                      root_password, False)
 
 
-    async def _create_root_alias(self, root_user, root_password):
+    async def _create_root_alias(self, root_user, root_password,
+                                 already_hashed):
         pars = {
             'user_handle' : root_user,
             'alias_name' : 'root',
             'family' : 'admins',
             'password' : root_password,
+            'already_hashed' : already_hashed,
             'location' : "root's home",
             'maybe' : True
         }

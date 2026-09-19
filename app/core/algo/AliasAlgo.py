@@ -81,6 +81,8 @@ class AliasAlgo:
         user_handle = pars['user_handle']
         location = pars['location']
 
+        already_hashed = pars.get('already_hashed')
+
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
 
@@ -100,7 +102,8 @@ class AliasAlgo:
             })
 
         alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, 
-                        user_handle, alias_name, family, password, t_id)
+                        user_handle, alias_name, family, password, t_id,
+                        already_hashed = already_hashed)
 
         await fu.add_default_agora(fdb, family_ob, alias_ob, location, t_id)
 
@@ -109,9 +112,14 @@ class AliasAlgo:
 
     @staticmethod
     async def _alias_add_in_family(fdb, family_ob, user_handle,
-                                   name, family, password, t_id):
-        ph = PasswordHasher()
-        pass_hashed = ph.hash(password)
+                                   name, family, password, t_id, *,
+                    already_hashed = False):
+
+        if already_hashed == True:
+            pass_hashed = password
+        else:
+            ph = PasswordHasher()
+            pass_hashed = ph.hash(password)
 
         fields = {
                 'actor_handle' : user_handle,
