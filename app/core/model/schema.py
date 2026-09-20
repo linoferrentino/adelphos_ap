@@ -72,6 +72,12 @@ classes:
           cardinality: scalar
           required: false
 
+        - name: state
+          type: int
+          cardinality: scalar
+          required: false
+          default: 0
+
 
     - uri_prefix: {EAdelphosType.ALIAS_TYPE}
       can_be_root: false 

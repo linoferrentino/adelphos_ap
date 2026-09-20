@@ -118,40 +118,14 @@ async def _agora_buy_object_impl(kernel, pars, t_id):
     if (skip_task) is None or (skip_task == False):
         await tku.add_routing_task(kernel, offer_ob, chain_exports,
                                    chain_imports, t_id)
-        await ecut.distribute_losses_to_imports(kernel,
-                agora_exported_price, chain_imports, False, t_id)
-
-        await ecut.distribute_gains_to_exports(kernel,
-                agora_exported_price, chain_exports, False, t_id)
+        await ecut.distribute_losses_and_gains(kernel, agora_exported_price,
+                chain_exports, chain_imports, ecut.EBMod.PENDING, t_id)
     else:
-        await ecut.distribute_losses_to_imports(kernel,
-                agora_exported_price, chain_imports, True, t_id)
-
-        await ecut.distribute_gains_to_exports(kernel,
-                agora_exported_price, chain_exports, True, t_id)
+        await ecut.distribute_losses_and_gains(kernel, agora_exported_price,
+                chain_exports, chain_imports, ecut.EBMod.REAL, t_id)
 
     await au.remove_object_from_agora(kernel, chain_exports[0],
                                       offer_ob, t_id)
-
     return (chain_exports, chain_imports)
 
 
-
-#async def copy_ads_from_lower_agora(kernel, agora_lower, export_trust,
-#              tax, agora_upper, t_id):
-#    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-#    list_lower = agora_lower().get_as_list('offers')
-#
-#    for uri_lower in list_lower:
-#        ob_list = await fdb.uri_read_str(t_id, uri_lower, must_lock = True)
-#        lower_price = await ob_list().get_scalar('price', t_id)
-#        upper_price = tax * lower_price
-#
-#        upper_price_db = tutils.abs_to_db(upper_price)
-#        if upper_price_db > export_trust:
-#            gCon.log(f"the object {await ob_list().get_scalar('title', t_id)} has a price {upper_price_db} > of export trust {export_trust}, ignored.")
-#            continue
-#
-#        gCon.log(f"Adding lower uri {uri_lower} --> {ob_list().uri}")
-#        agora_upper().add_link('offers', ob_list)
-#

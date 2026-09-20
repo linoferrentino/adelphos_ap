@@ -56,7 +56,7 @@ def create_step(alias_dikastes_uri, desc_dikastes, alias_diakonos_uri,
     else:
         clean_pars = str(pars)
 
-    step = TaskStep(alias_dikastes_uri, desc_dikastes,
+    step = TaskStep(0, alias_dikastes_uri, desc_dikastes,
                 alias_diakonos_uri, desc_diakonos, clean_pars)
 
     return step
@@ -111,7 +111,7 @@ Happy trading in adelphos!
 
 """
 
-    step = TaskStep(first_carrier, desc_dikastes,
+    step = TaskStep(0, first_carrier, desc_dikastes,
             adelphos_from, desc_diakonos, None)
 
     steps.append(step)
@@ -169,7 +169,7 @@ DO NOT share the PIN with anyone and DO NOT give the PIN to
 
 """
 
-    step = TaskStep(new_carrier, desc_dikastes,
+    step = TaskStep(0, new_carrier, desc_dikastes,
             current_carrier, desc_diakonos, rsd)
 
     steps.append(step)
@@ -251,7 +251,7 @@ Please use your judgement.
 
 """
 
-    step = TaskStep(None, None,
+    step = TaskStep(0, None, None,
             adelphos_to, desc_diakonos, fsd)
 
     steps.append(step)

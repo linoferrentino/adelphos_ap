@@ -155,7 +155,7 @@ agora.list_ads uplevel 2 ==> { "errno" : 0, \
 agora.buy_object_title uplevel 2 ad_title Dalloway 
 
 agora.buy_object_title uplevel 2 ad_title Misery ==> \
-	{ "errno" : 0 }
+	{ "errno" : 20 }
 
 agora.give_hearts hearts 9 token aoieurow ==> \
 	{ "errno" : 21 }

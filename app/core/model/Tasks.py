@@ -28,12 +28,19 @@ class ETaskType(StrEnum):
     SHIP_OBJECT = 'SHIP_OBJECT'
 
 
-#class EStepType(IntEnum):
-#    DEFAULT_STEP = auto()
-    
+class EDefaultTaskType(IntEnum):
+    DEFAULT_STATE = auto()
+
+
+class ERoutingStepType(IntEnum):
+    BEFORE_CARRIER = auto()
+    ROUTING = auto()
+    GIVE_FEEDBACK = auto()
+
 
 @dataclass
 class TaskStep:
+    task_step_type: int 
     alias_dikastes: str
     desc_dikastes: str
     alias_diakonos: str
@@ -56,7 +63,5 @@ class FeedbackStepData:
 class RoutingTaskData:
     chain_exports: list[str] = field(default_factory = list)
     chain_imports: list[str] = field(default_factory = list)
-
-
 
 

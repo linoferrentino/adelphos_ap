@@ -352,9 +352,8 @@ standard_cli_api = """
                 par_type: int
                 required: true
                 validator: ((_v_ >= 0) and (_v_ <= 5))
-              token:
+              task_id:
                 required: true
-                validator: len("_v_") > 3
 
           - name: list_ads
             pars:
