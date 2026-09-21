@@ -79,6 +79,9 @@ class UserSession:
 
         return True
 
+    @property
+    def social_user(self):
+        return f"{self.actor_dto.act.preferred_username}"
 
     @property
     def alias_family(self):

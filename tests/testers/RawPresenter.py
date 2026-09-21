@@ -23,9 +23,9 @@ class RawPresenter(CliPresenter):
 
 
     def present_to_user_ok(self, sys_call_out):
-        gCon.log(f"Sys_call_out {sys_call_out}")
         match sys_call_out['context']:
-            case 'math' | 'sapi' | 'alias' | 'fdb' :
+            case 'math' | 'sapi' | 'fdb' :
+                gCon.log(f"Sys_call_out {sys_call_out['context']} return RAW DICT")
                 return sys_call_out
             case _:
                 sys_call_str = json.dumps(sys_call_out)

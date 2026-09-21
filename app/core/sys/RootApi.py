@@ -253,8 +253,32 @@ async def _get_user_impl(kernel, session, pars, *, create = False):
     return local_user
 
 
+async def _process_meta_line(kernel, session, pars, data):
+    gCon.log(f"Process meta line {data} last res {pars['$?']}")
+    (meta_cmd, meta_args) = data.split("|")
+    meta_cmd = meta_cmd.strip()
+    meta_args = meta_args.strip()
+    gCon.log(f"meta_cmd {meta_cmd} args {meta_args}")
+    match meta_cmd:
+        case 'pop_msg':
+            user = session.social_user
+            gCon.log(f"I will store the last message of user {user}")
+            user_inbox = kernel.get_dep(Dependencies.SOCIAL).local_user_get(user)
+            msg = user_inbox.pop_lst_msg()
+            gCon.log(f"Last message is {msg}")
+            pars['$msg'] = msg
+
+        case 'set_data':
+            gCon.log(f"evaluate {meta_args} pars {pars['$?']} type {type(pars['$?'])}")
+            exec(meta_args)
+        case _:
+            raise AdelphosException(AdErrno.ESCRIPT_ERROR,
+                    f"Unrecognized meta command {meta_cmd}")
+
+
 async def _root_play_line(kernel, session, pars, line):
     gCon.rule(f"processing ->{line[:50]}<-")
+
     if "==>" in line:
         (data, exps) = line.split("==>")
         exp = json.loads(exps)
@@ -263,12 +287,20 @@ async def _root_play_line(kernel, session, pars, line):
         exp = {
                 'errno' : 0
         }
+
+    data = data.format(**pars)
+
     gCon.log(f"Play line |{data}| with exp |{exp}|")
 
+    if re.match(r"\$ ", data) is not None:
+        data = re.sub(r"\$ ", "", data)
+        await _process_meta_line(kernel, session, pars, data)
+        return
+
     try:
-        res_str = await session.client.direct_gateway_call(data)
-        gCon.log(f"result {res_str}")
-        res_ob = json.loads(res_str)
+        res_ob = await session.client.direct_gateway_call(data, dict_output = True)
+        gCon.log(f"result {res_ob} type {type(res_ob)}")
+        #res_ob = json.loads(res_str)
     except AdelphosBaseException as ex:
         gCon.log(f"Got Adelphos exception {ex}")
         traceback.print_exc()
@@ -283,6 +315,7 @@ async def _root_play_line(kernel, session, pars, line):
            'errno' : AdErrno.ESYS,
            'res' : str(ex),
         }
+    pars['$?'] = res_ob
     if (res_ob['errno'] != exp['errno']):
         raise AdelphosException(AdErrno.ESCRIPT_ERROR, res_str)
     eval_exp = exp.get('eval_exp')
@@ -297,7 +330,8 @@ async def _root_play_line(kernel, session, pars, line):
     if exp_re is None:
         return
     if re.search(exp_re, res_ob['res']) is None:
-        raise AdelphosException(AdErrno.ESCRIPT_ERROR, f"Not found {exp_re} in {res_ob['res']}")
+        raise AdelphosException(AdErrno.ESCRIPT_ERROR,
+                    f"Not found {exp_re} in {res_ob['res']}")
 
 
 async def _root_play_script(kernel, session, pars):

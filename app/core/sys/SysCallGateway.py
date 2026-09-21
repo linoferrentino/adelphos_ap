@@ -62,7 +62,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         return syscall_map
 
 
-    async def sys_call_gateway_msg(self, param, msg):
+    async def sys_call_gateway_msg(self, param, msg, *, dict_output = False):
         cp = CliParser(msg)
         ctx_cmd = cp.cmd.split('.')
         if len(ctx_cmd) != 2:
@@ -73,11 +73,21 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         kernel = self.kernel
         kwargs = self._create_params_dict_from_cmd_line(cp, syscall)
 
-        return await self.sys_call_handler_call(context, syscall, param, kwargs)
+        gCon.log(f"i3042 START SYSCALL {context} {cmd}")
+        dict_out = await self.sys_call_handler_call(context, syscall, param, kwargs)
+
+        gCon.log(f"============================ xx999 {dict_out} output {dict_output}")
+        if (dict_output == True):
+            return dict_out
+
+        presenter = self.kernel.get_dep(Dependencies.CLI_PRESENTER)
+        response_str = presenter.present_to_user_ok(dict_out)
+
+        gCon.log(f"i2349028u return {response_str} type {type(response_str)}")
+        return response_str
 
 
     async def sys_call_handler_call(self, context, syscall, param, kwargs):
-        presenter = self.kernel.get_dep(Dependencies.CLI_PRESENTER)
         try:
             msg_out = await self.sys_call_handler_call_try(
                     context, syscall, param, kwargs)
@@ -105,8 +115,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
                 'syscall' : syscall.name,
                 }
 
-        response_str = presenter.present_to_user_ok(dict_out)
-        return response_str
+        return dict_out
 
 
     async def sys_call_handler_call_try(self, context, syscall, param, kwargs):

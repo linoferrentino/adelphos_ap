@@ -296,7 +296,7 @@ class BaseSocialApiProvider(SocialApiProvider):
     async def new_post_try(self, envelope):
         inbox_api = self.kernel.get_dep(Dependencies.INBOX_API)
         out_dict = await inbox_api.sys_call_gateway_msg(envelope,
-                                                        envelope.content)
+             envelope.content, dict_output = True)
         out_msg = out_dict['res']
         return out_msg
 

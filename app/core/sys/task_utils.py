@@ -258,15 +258,6 @@ async def _create_give_hearts_step(kernel, adelphos_to, offer_ob,
 async def add_invite_to_fediverse_user_task(kernel, alias_ob,
                     user_handle, invite_code, t_id):
 
-    #    pars = {
-    #            'user_handle' : user_handle,
-    #            'invite_code' : invite_code,
-    #    }
-    #
-    #    step = create_step(None, None,
-    #            alias_ob().uri.unparse(),
-    #            f"pending invite for {user_handle} in your family.",  pars)
-
     diakonos_uri = alias_ob().uri.unparse()
     fid = FamilyInviteData(None, diakonos_uri, user_handle, invite_code)
     step = TaskStep(EDefaultTaskType.DEFAULT_STATE, fid)
@@ -363,11 +354,6 @@ async def complete_invite_task_for_user(kernel, alias_ob, user_handle,
         return True
 
     return False
-
-
-async def add_shipping_object_task(kernel, chain_exports, chain_imports, t_id):
-    pass
-
 
 
 async def complete_active_step_for_task(kernel, task_ob, active_step,

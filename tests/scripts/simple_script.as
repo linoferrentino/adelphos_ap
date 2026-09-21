@@ -154,13 +154,17 @@ agora.list_ads uplevel 2 ==> { "errno" : 0, \
 
 agora.buy_object_title uplevel 2 ad_title Dalloway 
 
+# $ pop_msg | 
+
 agora.buy_object_title uplevel 2 ad_title Misery ==> \
 	{ "errno" : 20 }
 
-agora.give_hearts hearts 9 token aoieurow ==> \
+#$ set_data | pars['task_id']  = pars['$?']['res']['task_id']
+
+agora.give_hearts hearts 9 task_id task_id ==> \
 	{ "errno" : 21 }
 
-#agora.give_hearts hearts 3 token aoieurow ==> \
+# agora.give_hearts hearts 3 task_id {task_id} ==> \
 #	{ "errno" : 26 }
 
 root.pop_alias
