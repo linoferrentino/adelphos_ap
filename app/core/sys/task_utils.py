@@ -23,7 +23,9 @@ from app.core.ECoreErrno import ECoreErrno
 from app.core.model.AdelphosUri import AdelphosUri
 from app.core.model.AdelphosUri import EAdelphosType
 from app.core.model.Tasks import ETaskType, TaskStep, \
-        RoutingStepData, FeedbackStepData, RoutingTaskData
+        RoutingStepData, FeedbackStepData, RoutingTaskData, ERoutingStepType, \
+        EDefaultTaskType, TaskStepData, GenericTaskStepData, FirstStepData, \
+        FamilyInviteData
 
 from app.logging import gCon
 from app.sdc.Dependencies import Dependencies
@@ -31,6 +33,7 @@ from app.sdc.Dependencies import Dependencies
 import app.core.sys.family_utils as fu
 import app.core.sys.social_utils as su
 import app.core.sys.sys_calls_utils as scu
+import app.core.ui.task_descs as uitk
 
 
 async def get_task_as_dikastes_with_id(kernel, alias_ob, task_id, t_id):
@@ -44,9 +47,8 @@ async def get_task_as_dikastes_with_id(kernel, alias_ob, task_id, t_id):
     raise AdelphosCoreException(ECoreErrno.ETASK_NOT_FOUND, task_id)
 
 
-def create_step(alias_dikastes_uri, desc_dikastes, alias_diakonos_uri,
-                desc_diakonos, pars):
-    gCon.log(f"dikastes {alias_dikastes_uri} diakonos {alias_diakonos_uri} create_step with pars {pars}")
+def create_step(task_step_type, dikastes_uri, diakonos_uri, pars):
+    gCon.log(f"dikastes {dikastes_uri} diakonos {diakonos_uri} create_step with pars {pars}")
 
     if dataclasses.is_dataclass(pars):
         clean_pars = asdict(pars)
@@ -56,8 +58,8 @@ def create_step(alias_dikastes_uri, desc_dikastes, alias_diakonos_uri,
     else:
         clean_pars = str(pars)
 
-    step = TaskStep(0, alias_dikastes_uri, desc_dikastes,
-                alias_diakonos_uri, desc_diakonos, clean_pars)
+    data = GenericTaskStepData(dikastes_uri, diakonos_uri, clean_pars)
+    step = TaskStep(task_step_type, data)
 
     return step
 
@@ -68,14 +70,10 @@ async def add_associate_family_task(kernel, src_boss_ob, dst_boss_ob,
     src_boss_uri = src_boss_ob().uri.unparse()
     dst_boss_uri = dst_boss_ob().uri.unparse()
 
-    step = create_step(dst_boss_uri,
-            f"You have a request for associate family from {src_boss_uri}",
-            src_boss_uri,
-            f"Pending association sent to {dst_boss_uri}.",  pars)
-
+    step = create_step(EDefaultTaskType.DEFAULT_STATE, dst_boss_uri,
+                       src_boss_uri, pars)
     steps = []
     steps.append(step)
-
     task_ob = await create_task(kernel, ETaskType.ASSOCIATE_FAMILY,
                           steps, t_id)
 
@@ -83,36 +81,37 @@ async def add_associate_family_task(kernel, src_boss_ob, dst_boss_ob,
 async def _create_first_step(kernel, offer_ob,
                 adelphos_from, first_carrier, family_origin, steps, t_id):
 
-    desc_object = await offer_ob().get_scalar('description', t_id)
-    title_object = await offer_ob().get_scalar('title', t_id)
+    #desc_object = await offer_ob().get_scalar('description', t_id)
+    #title_object = await offer_ob().get_scalar('title', t_id)
 
     adelphos_to = await offer_ob().get_scalar('adelphos_to', t_id)
 
-    desc_dikastes = f"""
-{adelphos_from} in your family has sold an item: {title_object}
+#    desc_dikastes = f"""
+#{adelphos_from} in your family has sold an item: {title_object}
+#
+#{desc_object}.
+#
+#You should take it from your family member and later route it to the upper
+#agora.
+#
+#    Mark this task completed ONLY when you have the object in your hands.
+#    
+#
+#"""
+#
+#    desc_diakonos = f"""
+#You have sold the item {title_object} to {adelphos_to}.
+#
+#Please bring it to the carrier of your family {first_carrier} as
+#soon as possible to be shipped.
+#
+#Happy trading in adelphos!
+#
+#"""
 
-{desc_object}.
-
-You should take it from your family member and later route it to the upper
-agora.
-
-    Mark this task completed ONLY when you have the object in your hands.
-    
-
-"""
-
-    desc_diakonos = f"""
-You have sold the item {title_object} to {adelphos_to}.
-
-Please bring it to the carrier of your family {first_carrier} as
-soon as possible to be shipped.
-
-Happy trading in adelphos!
-
-"""
-
-    step = TaskStep(0, first_carrier, desc_dikastes,
-            adelphos_from, desc_diakonos, None)
+    fsd = FirstStepData(first_carrier, adelphos_from)
+    step = TaskStep(ERoutingStepType.BEFORE_CARRIER, fsd)
+    gCon.log(f"adding first step {step}")
 
     steps.append(step)
 
@@ -138,39 +137,38 @@ async def _check_create_routing_step(kernel, current_carrier,
 
     pin_to_give = secrets.randbelow(100000000)
 
-    rsd = RoutingStepData(agora_uri, pin_to_give)
+    rsd = RoutingStepData(new_carrier, current_carrier, agora_uri, pin_to_give)
 
     gCon.log(f"This is the step {rsd}")
 
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-    desc_object = await offer_ob().get_scalar('description', t_id)
-    title_object = await offer_ob().get_scalar('title', t_id)
+#    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+#    desc_object = await offer_ob().get_scalar('description', t_id)
+#    title_object = await offer_ob().get_scalar('title', t_id)
+#
+#    desc_dikastes = f"""
+#You have an object to receive from {current_carrier}.
+#The title of the object is {title_object}.
+#Its description is {desc_object}.
+#{current_carrier} will give to you the PIN: {pin_to_give}
+#
+#You can mark the task completed ONLY when you have the object
+#in your hands and you receive the correct PIN. DO NOT share the
+#PIN with anyone.
+#"""
+#    location = await agora_ob().get_scalar('location', t_id)
+#
+#    desc_diakonos = f"""
+#You should carry the object {title_object} to {new_carrier}
+#in the agora {agora_uri}, located on {location}.
+#
+#You should give to {new_carrier} the object and the PIN {pin_to_give}.
+#
+#DO NOT share the PIN with anyone and DO NOT give the PIN to
+#{new_carrier} without the object, or the object without the PIN.
+#
+#"""
 
-    desc_dikastes = f"""
-You have an object to receive from {current_carrier}.
-The title of the object is {title_object}.
-Its description is {desc_object}.
-{current_carrier} will give to you the PIN: {pin_to_give}
-
-You can mark the task completed ONLY when you have the object
-in your hands and you receive the correct PIN. DO NOT share the
-PIN with anyone.
-"""
-    location = await agora_ob().get_scalar('location', t_id)
-
-    desc_diakonos = f"""
-You should carry the object {title_object} to {new_carrier}
-in the agora {agora_uri}, located on {location}.
-
-You should give to {new_carrier} the object and the PIN {pin_to_give}.
-
-DO NOT share the PIN with anyone and DO NOT give the PIN to
-{new_carrier} without the object, or the object without the PIN.
-
-"""
-
-    step = TaskStep(0, new_carrier, desc_dikastes,
-            current_carrier, desc_diakonos, rsd)
+    step = TaskStep(ERoutingStepType.ROUTING, rsd)
 
     steps.append(step)
 
@@ -227,32 +225,32 @@ async def add_routing_task(kernel, offer_ob,
 
 async def _create_give_hearts_step(kernel, adelphos_to, offer_ob,
             steps, t_id):
-    token_hearts = secrets.token_urlsafe()
-    fsd = FeedbackStepData(token_hearts)
+    #token_hearts = secrets.token_urlsafe()
 
-    title_object = await offer_ob().get_scalar('title', t_id)
+#    title_object = await offer_ob().get_scalar('title', t_id)
+#
+#    desc_diakonos = f"""
+#You have now the object {title_object}!
+#
+#Adelphos wishes that you are satisfied.
+#
+#You should now give a feedback in the form of ``hearts''.
+#You can give from 0 to 5 hearts, there is not a neutral feedback.
+#
+#0,1 and 2 hearts are negative (0 the worst)
+#3,4 and 5 hearts are positive (5 the best)
+#
+#To do this login to adelphos and issue the following command:
+#
+#    agora.give_hearts hearts $number_from_0_to_5 token {token_hearts}
+#
+#Please use your judgement.
+#
+#"""
 
-    desc_diakonos = f"""
-You have now the object {title_object}!
-
-Adelphos wishes that you are satisfied.
-
-You should now give a feedback in the form of ``hearts''.
-You can give from 0 to 5 hearts, there is not a neutral feedback.
-
-0,1 and 2 hearts are negative (0 the worst)
-3,4 and 5 hearts are positive (5 the best)
-
-To do this login to adelphos and issue the following command:
-
-    agora.give_hearts hearts $number_from_0_to_5 token {token_hearts}
-
-Please use your judgement.
-
-"""
-
-    step = TaskStep(0, None, None,
-            adelphos_to, desc_diakonos, fsd)
+    fsd = FeedbackStepData(None, adelphos_to)
+    gCon.log(f"adding give feedback step {fsd}")
+    step = TaskStep(ERoutingStepType.GIVE_FEEDBACK, fsd)
 
     steps.append(step)
 
@@ -260,14 +258,20 @@ Please use your judgement.
 async def add_invite_to_fediverse_user_task(kernel, alias_ob,
                     user_handle, invite_code, t_id):
 
-    pars = {
-            'user_handle' : user_handle,
-            'invite_code' : invite_code,
-    }
+    #    pars = {
+    #            'user_handle' : user_handle,
+    #            'invite_code' : invite_code,
+    #    }
+    #
+    #    step = create_step(None, None,
+    #            alias_ob().uri.unparse(),
+    #            f"pending invite for {user_handle} in your family.",  pars)
 
-    step = create_step(None, None,
-            alias_ob().uri.unparse(),
-            f"pending invite for {user_handle} in your family.",  pars)
+    diakonos_uri = alias_ob().uri.unparse()
+    fid = FamilyInviteData(None, diakonos_uri, user_handle, invite_code)
+    step = TaskStep(EDefaultTaskType.DEFAULT_STATE, fid)
+
+    gCon.log(f"Create the step {step}")
 
     steps = []
     steps.append(step)
@@ -310,34 +314,31 @@ async def task_send_notices_for_active_step(kernel, task_ob, t_id):
     active_step = TaskStep(**active_step_dict)
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
+    gCon.log(f"active step {active_step} type {type(active_step)}")
+
+    gCon.log(f"active step data {active_step.data} type {type(active_step.data)}")
+
     task_type = await task_ob().get_scalar('task_type', t_id)
 
-    if active_step.alias_dikastes is not None:
-        alias_dikastes_ob = await fdb.uri_read_str(t_id,
-                                active_step.alias_dikastes)
+    dikastes_uri = active_step.data['dikastes_uri']
+    if dikastes_uri is not None:
+        alias_dikastes_ob = await fdb.uri_read_str(t_id, dikastes_uri)
         alias_dikastes_ob().add_link('tasks_as_dikastes', task_ob)
 
-        desc = active_step.desc_dikastes
-        await su.out_msg_to_alias_ob(kernel, alias_dikastes_ob,
-f"""
-You have a new task {task_type} as a judge: {desc}
-Login to adelphos to mark it completed or deny it.""", t_id)
+        msg = await uitk.get_dikastes_msg_for_active_step(kernel,
+                    task_ob, active_step, t_id)
+        gCon.log(f"sending {msg} to dikastes {dikastes_uri}")
+        await su.out_msg_to_alias_ob(kernel, alias_dikastes_ob, msg, t_id)
 
-    alias_diakonos_ob = await fdb.uri_read_str(t_id,
-                        active_step.alias_diakonos)
+    diakonos_uri = active_step.data['diakonos_uri']
+    alias_diakonos_ob = await fdb.uri_read_str(t_id, diakonos_uri)
      
     alias_diakonos_ob().add_link('tasks_as_diakonos', task_ob)
-    desc = active_step.desc_diakonos 
 
-    msg = f"""You have a new task to do or to wait that someone does it,
-{task_type}: {desc}.
-"""
+    msg = await uitk.get_diakonos_msg_for_active_step(kernel,
+                    task_ob, active_step, t_id)
 
-    if active_step.alias_dikastes is not None:
-        msg += f"""
-The judge for this task is: {active_step.alias_dikastes}.
-"""
-
+    gCon.log(f"sending {msg} to diakonos {dikastes_uri}")
     await su.out_msg_to_alias_ob(kernel, alias_diakonos_ob, msg, t_id)
 
 
@@ -353,9 +354,9 @@ async def complete_invite_task_for_user(kernel, alias_ob, user_handle,
         steps = await task_ob().get_as_list('steps', t_id)
         step_zero = steps[0]
         gCon.log(f"step zero is {step_zero}")
-        if step_zero['pars']['user_handle'] != user_handle:
+        if step_zero['data']['user_handle'] != user_handle:
             continue
-        if step_zero['pars']['invite_code'] != invite_code:
+        if step_zero['data']['invite_code'] != invite_code:
             continue
         gCon.log(f"Found the task with invite code {invite_code}")
         await alias_ob().remove_link('tasks_as_diakonos', task_ob, t_id)
@@ -372,21 +373,21 @@ async def add_shipping_object_task(kernel, chain_exports, chain_imports, t_id):
 async def complete_active_step_for_task(kernel, task_ob, active_step,
                     active_step_idx, steps, t_id):
     gCon.log(f"Completed step {active_step}")
+    diakonos_uri = active_step.data['diakonos_uri']
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
-    alias_diakonos_ob = await fdb.uri_read_str(t_id,
-                        active_step.alias_diakonos)
+    alias_diakonos_ob = await fdb.uri_read_str(t_id, diakonos_uri)
     await alias_diakonos_ob().remove_link('tasks_as_diakonos', task_ob, t_id)
 
-    msg = f"""
-The task {active_step.desc_diakonos} has been completed.
-Thank you for using adelphos.
-"""
+    msg = await uitk.get_diakonos_complete_task_desc(kernel, task_ob,
+                    active_step, t_id)
+    gCon.log(f"send complete msg {msg} to {diakonos_uri}")
+
     await su.out_msg_to_alias_ob(kernel, alias_diakonos_ob, msg, t_id)
 
-    if active_step.alias_dikastes is not None:
-        alias_dikastes_ob = await fdb.uri_read_str(t_id,
-                                active_step.alias_dikastes)
+    dikastes_uri = active_step.data['dikastes_uri']
+    if dikastes_uri is not None:
+        alias_dikastes_ob = await fdb.uri_read_str(t_id, dikastes_uri)
         await alias_dikastes_ob().remove_link('tasks_as_dikastes',
                                               task_ob, t_id)
  
@@ -395,10 +396,6 @@ Thank you for using adelphos.
         return
 
     task_ob().set_scalar('active_step', active_step_idx)
-    #active_step_dict = steps[active_step_idx]
-    #active_step = TaskStep(**active_step_dict)
-    #gCon.log(f"The new idx {active_step_idx} is the step {active_step}")
-
     await task_send_notices_for_active_step(kernel, task_ob, t_id)
 
 

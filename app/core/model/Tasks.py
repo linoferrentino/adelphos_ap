@@ -35,28 +35,48 @@ class EDefaultTaskType(IntEnum):
 class ERoutingStepType(IntEnum):
     BEFORE_CARRIER = auto()
     ROUTING = auto()
+    LAST_MILE = auto()
     GIVE_FEEDBACK = auto()
+
+
+@dataclass
+class TaskStepData:
+    dikastes_uri: str
+    diakonos_uri: str
+
+
+@dataclass
+class GenericTaskStepData(TaskStepData):
+    pars: object
 
 
 @dataclass
 class TaskStep:
     task_step_type: int 
-    alias_dikastes: str
-    desc_dikastes: str
-    alias_diakonos: str
-    desc_diakonos: str
-    pars: object
+    data: TaskStepData = None
+    completed_on: str = None
 
 
 @dataclass
-class RoutingStepData:
+class RoutingStepData(TaskStepData):
     agora_dest: str
     pin_to_give: int
 
 
 @dataclass
-class FeedbackStepData:
-    token: str
+class FeedbackStepData(TaskStepData):
+    pass
+
+
+@dataclass
+class FirstStepData(TaskStepData):
+    pass
+
+
+@dataclass
+class FamilyInviteData(TaskStepData):
+    user_handle: str
+    invite_code: str
 
 
 @dataclass

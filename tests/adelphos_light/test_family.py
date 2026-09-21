@@ -153,8 +153,7 @@ def _test_associate_with_family_ok(world):
     assert john_inbox.count_msg() == 1
     msg = john_inbox.pop_lst_msg()
     gCon.log(f"john msg is {msg.content}")
-    assert re.search(r"Pending association.*alice\.fam_t1",
-                     msg.content) is not None 
+    assert re.search(r"ASSOCIATE_FAMILY.*\n.*alice\.fam_t1", msg.content) is not None 
     
     ad2 = world.get_instance('ad2')
     data = ad2.push_user('john_al.fam_t2')
@@ -173,7 +172,7 @@ def _test_associate_with_family_ok(world):
     alice_inbox = ad1.get_user_inbox('alice')
     assert alice_inbox.count_msg() == 1
     msg = alice_inbox.pop_lst_msg()
-    assert re.match("You have a new task ASSOCIATE_FAMILY", msg.content) \
+    assert re.search("judge: ASSOCIATE_FAMILY", msg.content) \
             is not None
 
     data = ad1.push_user('alice.fam_t1')
