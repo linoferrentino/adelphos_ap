@@ -208,7 +208,6 @@ class FederatedTransaction:
        
 
     def t_commit(self):
-        gCon.rule(f"[green] {self.fdb.hostname} -> START COMMIT {self.tid}[/green]")
         try:
             self._check_read_consistency()
 
@@ -224,7 +223,6 @@ class FederatedTransaction:
 
             self.fdb.db.commit()
             self._remove_all_maps()
-            gCon.rule(f"[green] {self.fdb.hostname} !!!!!COMMIT!!!{self.tid}[/green]")
             return
 
         except FdbException as fdbex:

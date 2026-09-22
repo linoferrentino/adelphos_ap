@@ -262,11 +262,10 @@ async def _process_meta_line(kernel, session, pars, data):
     match meta_cmd:
         case 'pop_msg':
             user = session.social_user
-            gCon.log(f"I will store the last message of user {user}")
             user_inbox = kernel.get_dep(Dependencies.SOCIAL).local_user_get(user)
-            msg = user_inbox.pop_lst_msg()
-            gCon.log(f"Last message is {msg}")
-            pars['$msg'] = msg
+            msg_ob = user_inbox.pop_lst_msg_ob()
+            gCon.log(f"Last message of {user} is {msg_ob}")
+            pars['$msg'] = msg_ob
 
         case 'set_data':
             gCon.log(f"evaluate {meta_args} pars {pars['$?']} type {type(pars['$?'])}")
@@ -277,7 +276,9 @@ async def _process_meta_line(kernel, session, pars, data):
 
 
 async def _root_play_line(kernel, session, pars, line):
-    gCon.rule(f"processing ->{line[:50]}<-")
+    user = session.social_user
+    alias_uri = session.alias_uri.unparse()
+    gCon.rule(f"processing ->{line[:50]}<- logged {user} | {alias_uri}")
 
     if "==>" in line:
         (data, exps) = line.split("==>")
@@ -295,12 +296,12 @@ async def _root_play_line(kernel, session, pars, line):
     if re.match(r"\$ ", data) is not None:
         data = re.sub(r"\$ ", "", data)
         await _process_meta_line(kernel, session, pars, data)
-        return
+        return session
 
     try:
-        res_ob = await session.client.direct_gateway_call(data, dict_output = True)
-        gCon.log(f"result {res_ob} type {type(res_ob)}")
-        #res_ob = json.loads(res_str)
+        (session, res_ob) = await session.client.direct_gateway_call(
+                data, dict_output = True)
+        gCon.log(f"result {res_ob} type {type(res_ob)} session {id(session)}")
     except AdelphosBaseException as ex:
         gCon.log(f"Got Adelphos exception {ex}")
         traceback.print_exc()
@@ -317,7 +318,7 @@ async def _root_play_line(kernel, session, pars, line):
         }
     pars['$?'] = res_ob
     if (res_ob['errno'] != exp['errno']):
-        raise AdelphosException(AdErrno.ESCRIPT_ERROR, res_str)
+        raise AdelphosException(AdErrno.ESCRIPT_ERROR, json.dumps(res_ob))
     eval_exp = exp.get('eval_exp')
     if eval_exp is not None:
         gCon.log(f"evaluating {eval_exp}")
@@ -328,10 +329,12 @@ async def _root_play_line(kernel, session, pars, line):
        
     exp_re = exp.get('res_re')
     if exp_re is None:
-        return
+        return session
+
     if re.search(exp_re, res_ob['res']) is None:
         raise AdelphosException(AdErrno.ESCRIPT_ERROR,
                     f"Not found {exp_re} in {res_ob['res']}")
+    return session
 
 
 async def _root_play_script(kernel, session, pars):
@@ -354,7 +357,7 @@ async def _root_play_script(kernel, session, pars):
             else:
                 long_line = line
                 
-            await _root_play_line(kernel, session, pars, long_line)
+            session = await _root_play_line(kernel, session, pars, long_line)
             long_line = ""
 
 

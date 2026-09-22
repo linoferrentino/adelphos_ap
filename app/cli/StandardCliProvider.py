@@ -75,14 +75,14 @@ class StandardCliClient:
     async def direct_gateway_call(self, data, *, dict_output = False):
         response = await self.cli_api.sys_call_gateway_msg(self.session, data,
                                     dict_output = dict_output)
-        return response
+        return (self.session, response)
 
 
     async def _internal_serve(self):
 
         while True:
             data = await self.websocket.receive_text()
-            response = await self.direct_gateway_call(data)
+            (session, response) = await self.direct_gateway_call(data)
             gCon.log(f"===================== O999 response {type(response)}")
             #if isinstance(response, dict):
             #    response = json.dumps(response)

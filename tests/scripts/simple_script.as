@@ -154,7 +154,15 @@ agora.list_ads uplevel 2 ==> { "errno" : 0, \
 
 agora.buy_object_title uplevel 2 ad_title Dalloway 
 
-# $ pop_msg | 
+root.pop_alias
+
+root.push_alias alias john.smith
+
+$ pop_msg | 
+
+root.pop_alias
+
+root.push_alias alias maria_al.rossi
 
 agora.buy_object_title uplevel 2 ad_title Misery ==> \
 	{ "errno" : 20 }

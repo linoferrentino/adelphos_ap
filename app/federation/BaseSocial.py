@@ -13,6 +13,7 @@
 
 
 import traceback
+import json
 import os
 
 from dataclasses import dataclass
@@ -70,7 +71,19 @@ class UserInbox(SocialUser):
         (self.messages, msg) = (self.messages[:-1], self.messages[-1])
         return msg
 
-    
+
+    def pop_lst_msg_ob(self):
+        msg = self.pop_lst_msg()
+        content_str = msg.content
+        content_ob = json.loads(content_str)
+        return content_ob
+
+
+    def pop_lst_hmsg(self):
+        msg_ob = self.pop_lst_msg_ob()
+        return msg_ob['hmsg']
+
+   
 class BaseSocial(SocialProvider):
 
     def __init__(self, kernel):
