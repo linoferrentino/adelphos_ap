@@ -16,6 +16,6 @@ from app.core.ECoreErrno import ECoreErrno
 import tests.t_utils as tu
 
 
-def ws_accept_task(ws, task_id, *, exp_code = ECoreErrno.DONE_OK):
-    cmd = f"task.accept task_id {task_id}"
+def ws_accept_task(ws, task_uri, *, exp_code = ECoreErrno.DONE_OK):
+    cmd = f"task.accept task_uri {task_uri}"
     return tu.ws_send_cmd(ws, cmd, exp_code)

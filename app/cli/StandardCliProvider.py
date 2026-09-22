@@ -79,13 +79,9 @@ class StandardCliClient:
 
 
     async def _internal_serve(self):
-
         while True:
             data = await self.websocket.receive_text()
             (session, response) = await self.direct_gateway_call(data)
-            gCon.log(f"===================== O999 response {type(response)}")
-            #if isinstance(response, dict):
-            #    response = json.dumps(response)
             await self._out_final_str(response)
 
 

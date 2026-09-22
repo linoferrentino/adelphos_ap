@@ -306,14 +306,27 @@ standard_cli_api = """
 
           - name: accept
             pars:
-              task_id:
+              task_uri:
                 required: true
 
           - name: decline
             pars:
-              task_id:
+              task_uri:
                 required: true
 
+          - name: first_step
+            pars:
+              task_uri:
+                required: true
+
+          - name: give_hearts
+            pars:
+              hearts:
+                par_type: int
+                required: true
+                validator: ((_v_ >= 0) and (_v_ <= 5))
+              task_uri:
+                required: true
 
       object:
         class: app.core.sys.ObjectCalls.ObjectCalls
@@ -333,27 +346,6 @@ standard_cli_api = """
       agora:
         class: app.core.sys.AgoraCalls.AgoraCalls
         syscalls:
-
-          - name: confirm_route_step
-            pars:
-              ob_uri:
-                required: true
-              pin:
-                required: true
-
-          - name: object_ready_to_ship
-            pars:
-              ob_uri:
-                required: true
-
-          - name: give_hearts
-            pars:
-              hearts:
-                par_type: int
-                required: true
-                validator: ((_v_ >= 0) and (_v_ <= 5))
-              task_id:
-                required: true
 
           - name: list_ads
             pars:

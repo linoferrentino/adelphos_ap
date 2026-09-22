@@ -73,17 +73,14 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         kernel = self.kernel
         kwargs = self._create_params_dict_from_cmd_line(cp, syscall)
 
-        gCon.log(f"i3042 START SYSCALL {context} {cmd}")
         dict_out = await self.sys_call_handler_call(context, syscall, param, kwargs)
 
-        gCon.log(f"============================ xx999 {dict_out} output {dict_output}")
         if (dict_output == True):
             return dict_out
 
         presenter = self.kernel.get_dep(Dependencies.CLI_PRESENTER)
         response_str = presenter.present_to_user_ok(dict_out)
 
-        gCon.log(f"i2349028u return {response_str} type {type(response_str)}")
         return response_str
 
 

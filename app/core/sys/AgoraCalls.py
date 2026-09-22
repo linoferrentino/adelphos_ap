@@ -35,45 +35,19 @@ class AgoraCalls:
     @staticmethod
     @active_login
     async def _sys_call_list_ads(kernel, session, pars):
-        pars['_session'] = session
         return await AgoraCalls._agora_list_ads_safe(kernel, pars)
 
 
     @staticmethod
     @active_login
-    async def _sys_call_give_hearts(kernel, session, pars):
-        pass
-
-
-    @staticmethod
-    @active_login
-    async def _sys_call_confirm_route_step(kernel, session, pars):
-        pass
- 
-
-    @staticmethod
-    @active_login
-    async def _sys_call_object_ready_to_ship(kernel, session, pars):
-        pass
- 
-
-    @staticmethod
-    @active_login
     async def _sys_call_buy_object_title(kernel, session, pars):
-        pars['_session'] = session
-        return await AgoraCalls._agora_buy_object_safe(kernel, pars)
+        return await _agora_buy_object_safe(kernel, pars)
 
 
     @staticmethod
     @federated_transaction(raise_if_fail = True)
     async def _agora_list_ads_safe(kernel, pars, t_id):
         return await AgoraCalls._agora_list_ads_impl(kernel, pars, t_id)
-
-
-    @staticmethod
-    @federated_transaction(raise_if_fail = True)
-    async def _agora_buy_object_safe(kernel, pars, t_id):
-        await agu._agora_buy_object_impl(kernel, pars, t_id)
 
 
     @staticmethod
@@ -84,7 +58,8 @@ class AgoraCalls:
 
 
 @federated_transaction(raise_if_fail = True)
-async def _agora_give_hearts_safe(kernel, pars, t_id):
-    await agu._agora_give_hearts_impl(kernel, pars, t_id)
+async def _agora_buy_object_safe(kernel, pars, t_id):
+    await agu._agora_buy_object_impl(kernel, pars, t_id)
+
 
 

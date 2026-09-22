@@ -68,12 +68,7 @@ async def _get_object_title(kernel, family_lev_ob, ad_title, t_id):
     return (offer, offer_ob)
 
 
-async def _agora_give_hearts_impl(kernel, pars, t_id):
-    token = pars['token']
-    hearts = pars['hearts']
-    alias_ob = scu.get_alias_in_session(kernel, pars, t_id)
 
-    iterate_on_all_diakonos_task()
 
 
 async def _agora_buy_object_impl(kernel, pars, t_id):
@@ -116,10 +111,10 @@ async def _agora_buy_object_impl(kernel, pars, t_id):
 
     skip_task = pars.get('_x_skip_task')
     if (skip_task) is None or (skip_task == False):
-        await tku.add_routing_task(kernel, offer_ob, chain_exports,
-                                   chain_imports, t_id)
-        await ecut.distribute_losses_and_gains(kernel, agora_exported_price,
+         await ecut.distribute_losses_and_gains(kernel, agora_exported_price,
                 chain_exports, chain_imports, ecut.EBMod.PENDING, t_id)
+         await tku.add_routing_task(kernel, offer_ob, chain_exports,
+                                   chain_imports, t_id)
     else:
         await ecut.distribute_losses_and_gains(kernel, agora_exported_price,
                 chain_exports, chain_imports, ecut.EBMod.REAL, t_id)

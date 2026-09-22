@@ -36,15 +36,23 @@ import app.core.sys.sys_calls_utils as scu
 import app.core.ui.task_descs as uitk
 
 
-async def get_task_as_dikastes_with_id(kernel, alias_ob, task_id, t_id):
-    tasks = await alias_ob.get_as_list('tasks_as_dikastes', t_id)
+async def get_task_as_dikastes_from_uri(kernel, alias_ob, task_uri, t_id):
+    return await _get_tasks_from_uri(kernel, 'dikastes', alias_ob, task_uri, t_id)
+
+
+async def get_task_as_diakonos_from_uri(kernel, alias_ob, task_uri, t_id):
+    return await _get_tasks_from_uri(kernel, 'diakonos', alias_ob, task_uri, t_id)
+
+    
+async def _get_tasks_from_uri(kernel, mode_task, alias_ob, task_uri, t_id):
+    tasks = await alias_ob().get_as_list(f'tasks_as_{mode_task}', t_id)
     for task in tasks:
-        if task == task_id:
-            gCon.log(f"found! the task")
+        if task == task_uri:
             fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-            task_ob = await fdb.uri_read_str(t_id, task)
+            task_ob = await fdb.uri_read_str(t_id, task_uri)
             return task_ob
-    raise AdelphosCoreException(ECoreErrno.ETASK_NOT_FOUND, task_id)
+    raise AdelphosCoreException(ECoreErrno.ETASK_NOT_FOUND,
+            f"task {task_uri} not found for {alias_ob().uri.unparse()} as {mode_task}")
 
 
 def create_step(task_step_type, dikastes_uri, diakonos_uri, pars):
@@ -78,36 +86,20 @@ async def add_associate_family_task(kernel, src_boss_ob, dst_boss_ob,
                           steps, t_id)
 
 
+async def _task_give_hearts_impl(kernel, pars, t_id):
+    task_uri = pars['task_uri']
+    hearts = pars['hearts']
+    alias_ob = await scu.get_alias_in_session(kernel, pars, t_id)
+    gCon.log(f"{alias_ob().uri.name} will give {hearts} hearts for task {task_uri}")
+
+    task_ob = await get_task_as_diakonos_from_uri(kernel, alias_ob,
+                                            task_uri, t_id)
+
+
 async def _create_first_step(kernel, offer_ob,
                 adelphos_from, first_carrier, family_origin, steps, t_id):
 
-    #desc_object = await offer_ob().get_scalar('description', t_id)
-    #title_object = await offer_ob().get_scalar('title', t_id)
-
     adelphos_to = await offer_ob().get_scalar('adelphos_to', t_id)
-
-#    desc_dikastes = f"""
-#{adelphos_from} in your family has sold an item: {title_object}
-#
-#{desc_object}.
-#
-#You should take it from your family member and later route it to the upper
-#agora.
-#
-#    Mark this task completed ONLY when you have the object in your hands.
-#    
-#
-#"""
-#
-#    desc_diakonos = f"""
-#You have sold the item {title_object} to {adelphos_to}.
-#
-#Please bring it to the carrier of your family {first_carrier} as
-#soon as possible to be shipped.
-#
-#Happy trading in adelphos!
-#
-#"""
 
     fsd = FirstStepData(first_carrier, adelphos_from)
     step = TaskStep(ERoutingStepType.BEFORE_CARRIER, fsd)
@@ -193,6 +185,8 @@ async def add_routing_task(kernel, offer_ob,
         gCon.log(f"Adding first step {adelphos_from} != {first_carrier}")
         await _create_first_step(kernel, offer_ob,
                 adelphos_from, first_carrier, chain_exp[0], steps, t_id)
+    else:
+        gCon.log(f"Skipping first step {adelphos_from} == {first_carrier} in family {chain_exp[0]().uri.unparse()}")
     
     current_carrier = first_carrier
     for export_step in chain_exp[1:]:
@@ -225,28 +219,6 @@ async def add_routing_task(kernel, offer_ob,
 
 async def _create_give_hearts_step(kernel, adelphos_to, offer_ob,
             steps, t_id):
-    #token_hearts = secrets.token_urlsafe()
-
-#    title_object = await offer_ob().get_scalar('title', t_id)
-#
-#    desc_diakonos = f"""
-#You have now the object {title_object}!
-#
-#Adelphos wishes that you are satisfied.
-#
-#You should now give a feedback in the form of ``hearts''.
-#You can give from 0 to 5 hearts, there is not a neutral feedback.
-#
-#0,1 and 2 hearts are negative (0 the worst)
-#3,4 and 5 hearts are positive (5 the best)
-#
-#To do this login to adelphos and issue the following command:
-#
-#    agora.give_hearts hearts $number_from_0_to_5 token {token_hearts}
-#
-#Please use your judgement.
-#
-#"""
 
     fsd = FeedbackStepData(None, adelphos_to)
     gCon.log(f"adding give feedback step {fsd}")
@@ -329,7 +301,7 @@ async def task_send_notices_for_active_step(kernel, task_ob, t_id):
     msg = await uitk.get_diakonos_msg_for_active_step(kernel,
                     task_ob, active_step, t_id)
 
-    gCon.log(f"sending {msg} to diakonos {dikastes_uri}")
+    gCon.log(f"sending {msg} to diakonos {diakonos_uri}")
     await su.out_msg_to_alias_ob(kernel, alias_diakonos_ob, msg, t_id)
 
 

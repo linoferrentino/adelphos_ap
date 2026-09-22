@@ -154,11 +154,18 @@ agora.list_ads uplevel 2 ==> { "errno" : 0, \
 
 agora.buy_object_title uplevel 2 ad_title Dalloway 
 
+
 root.pop_alias
 
 root.push_alias alias john.smith
 
-$ pop_msg | 
+$ pop_msg | jmsg
+
+$ assert | re.search('SHIP_OBJECT', pars['jmsg']['hmsg']) is not None
+
+$ exec | pars['jtask_uri'] = pars['jmsg']['task_uri']
+
+$ exec | pars['jtask_pin'] = pars['jmsg']['active_step']['data']['pin_to_give']
 
 root.pop_alias
 
@@ -167,14 +174,27 @@ root.push_alias alias maria_al.rossi
 agora.buy_object_title uplevel 2 ad_title Misery ==> \
 	{ "errno" : 20 }
 
-#$ set_data | pars['task_id']  = pars['$?']['res']['task_id']
-
-agora.give_hearts hearts 9 task_id task_id ==> \
+task.give_hearts hearts 9 task_uri task_uri ==> \
 	{ "errno" : 21 }
 
-# agora.give_hearts hearts 3 task_id {task_id} ==> \
-#	{ "errno" : 26 }
+task.give_hearts hearts 3 task_uri inexistent ==> \
+	{ "errno" : 26 }
 
 root.pop_alias
 
+root.push_alias alias john.smith
 
+task.first_step task_uri {jtask_uri} ==> \
+	{ "errno" : 26 }
+
+root.pop_alias
+
+root.push_alias alias bob.fam_bob
+
+$ pop_msg | bmsg
+
+$ exec | pars['btask_pin'] = pars['bmsg']['active_step']['data']['pin_to_give']
+
+$ assert | pars['btask_pin'] == pars['jtask_pin']
+
+root.pop_alias
