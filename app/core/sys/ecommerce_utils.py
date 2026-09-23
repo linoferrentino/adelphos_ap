@@ -185,7 +185,7 @@ async def get_family_balance(family, t_id):
 
     pending_balance = await family().get_scalar('pending_balance', t_id)
     real_balance = await family().get_scalar('balance', t_id)
-    return (pending_balance, real_balance,
+    return (real_balance, pending_balance,
             pending_balance + real_balance)
 
 
@@ -194,10 +194,17 @@ async def _change_family_balance(family, delta_balance, bmod_type, t_id):
     if delta_balance == 0.0:
         return
 
-    (pending_balance, real_balance, total_balance) = await \
+    (real_balance, pending_balance, total_balance) = await \
             get_family_balance(family, t_id)
 
-    gCon.log(f"[yellow]BEFORE {family().uri.name} --> {real_balance} + {pending_balance} = {total_balance} [/yellow]")
+    if bmod_type != EBMod.CONFIRMED:
+        if ((delta_balance * pending_balance) <= 0):
+            balance_to_check = real_balance + delta_balance
+        else:
+            balance_to_check = total_balance + delta_balance
+        await validate_balance_in_family(family, balance_to_check, t_id)
+
+    gCon.log(f"[yellow] change {bmod_type} balance for {family().uri.name} --> {real_balance} + {pending_balance} = {total_balance} delta {delta_balance} [/yellow]")
 
     match bmod_type:
         case EBMod.REAL:
@@ -206,25 +213,26 @@ async def _change_family_balance(family, delta_balance, bmod_type, t_id):
             pending_balance += delta_balance
         case EBMod.CONFIRMED:
             if delta_balance * pending_balance <= 0:
-                if abs(pending_balance) > abs(delta_balance):
-                    pending_balance += delta_balance
-                    real_balance -= delta_balance
-                else:
-                    pending_balance = 0
-                    real_balance += delta_balance
+                real_balance += delta_balance
+                pending_balance -= delta_balance
             else:
                 if abs(pending_balance) > abs(delta_balance):
+                    gCon.log("c3")
                     pending_balance -= delta_balance
                     real_balance += delta_balance
                 else:
+                    gCon.log("c4")
                     pending_balance = 0
-                    real_balance -= delta_balance
+                    real_balance += (delta_balance - pending_balance)
 
     new_balance = real_balance + pending_balance
 
-    gCon.log(f"[yellow]AFTER {family().uri.name} --> {real_balance} + {pending_balance} = {pending_balance + real_balance} [/yellow]")
+    gCon.log(f"[yellow]AFTER {bmod_type} modify: {family().uri.name} --> {real_balance} + {pending_balance} = {new_balance} [/yellow]")
 
-    await validate_balance_in_family(family, new_balance, t_id)
+    if bmod_type == EBMod.CONFIRMED:
+        assert (abs(total_balance - new_balance) < 1e-3)
+    else:
+        assert ((abs(total_balance - new_balance) - abs(delta_balance)) < 1e-3)
    
     family().set_scalar('pending_balance', pending_balance)
     family().set_scalar('balance', real_balance)

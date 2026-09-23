@@ -249,7 +249,6 @@ standard_cli_api = """
               script_path:
                 required: true
 
-
           - name: buy_object_title
             pars:
               as_adelphos:
@@ -265,7 +264,6 @@ standard_cli_api = """
                 required: true
                 validator: ((_v_ >= 0) and (_v_ <= 5))
 
-
           - name: put_object
             pars:
               as_adelphos:
@@ -277,6 +275,13 @@ standard_cli_api = """
               price:
                 required: true
                 par_type: float 
+
+          - name: do_join
+            pars:
+              containing_family:
+                required: true
+              inner_family:
+                required: true
 
           - name: do_association
             pars:

@@ -173,8 +173,6 @@ def _test_associate_with_family_ok(world):
     assert alice_inbox.count_msg() == 1
     msg = alice_inbox.pop_lst_mmsg()
     assert msg == 'dikastes_ASSOCIATE_FAMILY_default_state'
-    #assert re.search("judge: ASSOCIATE_FAMILY", msg) \
-            #        is not None
 
     data = ad1.push_user('alice.fam_t1')
     gCon.log(f"Data of alice is {data}")
@@ -195,8 +193,6 @@ def _test_associate_with_family_ok(world):
     assert john_inbox.count_msg() == 1
     msg = john_inbox.pop_lst_mmsg()
     gCon.log(f"john3 msg is {msg}")
-    #assert re.search("has been completed", msg) \
-            #        is not None
     assert msg == 'complete_ASSOCIATE_FAMILY_default_state'
 
     ad2.pop_user()

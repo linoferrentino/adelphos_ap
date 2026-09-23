@@ -81,6 +81,7 @@ class FamilyInviteData(TaskStepData):
 
 @dataclass
 class RoutingTaskData:
+    agora_exported_price: float
     chain_exports: list[str] = field(default_factory = list)
     chain_imports: list[str] = field(default_factory = list)
 

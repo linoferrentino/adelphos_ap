@@ -20,12 +20,15 @@ from app.core.algo.utils import federated_transaction
 import app.core.sys.task_utils as tu
 import app.core.sys.family_utils as fu
 import app.core.sys.sys_calls_utils as scu
+import app.core.sys.ecommerce_utils as ecut
 from app.core.ECoreErrno import ECoreErrno
 from app.core.AdelphosCoreException import AdelphosCoreException
 
 
 from app.core.model.Tasks import ETaskType, TaskStep, ERoutingStepType, \
         EDefaultTaskType
+
+from app.core.model.Tasks import RoutingTaskData
 
 class TaskCalls:
 
@@ -66,7 +69,7 @@ async def _task_confirm_routing_step_safe(kernel, pars, t_id):
 
 @federated_transaction(raise_if_fail = True)
 async def _task_give_hearts_safe(kernel, pars, t_id):
-    await tu._task_give_hearts_impl(kernel, pars, t_id)
+    await _task_give_hearts_impl(kernel, pars, t_id)
 
 
 @federated_transaction(raise_if_fail = True)
@@ -77,6 +80,29 @@ async def _accept_safe(kernel, pars, t_id):
 @federated_transaction(raise_if_fail = True)
 async def _task_first_step_safe(kernel, pars, t_id):
     return await _first_step_done_impl(kernel, pars, t_id)
+
+
+async def _task_give_hearts_impl(kernel, pars, t_id):
+    (alias_ob, task_ob, active_step_idx, steps, active_step) = \
+            await _get_active_diakonos_task_for_alias(kernel, pars, t_id,
+                                ETaskType.SHIP_OBJECT, ERoutingStepType.GIVE_FEEDBACK)
+    gCon.log(f"alias {alias_ob().uri.unparse()} can give feedback {active_step}")
+    data_dict = await task_ob().get_scalar('data', t_id)
+    rtd = RoutingTaskData(**data_dict)
+    gCon.log(f"The routing task data is {rtd}")
+
+    chain_exp_obs = await scu.reificate_uri_list(kernel, rtd.chain_exports, t_id)
+    chain_imp_obs = await scu.reificate_uri_list(kernel, rtd.chain_imports, t_id)
+
+    hearts_given = pars['hearts']
+    await ecut.complete_buy_task(kernel, hearts_given,
+                        chain_exp_obs, chain_imp_obs, t_id)
+
+    await ecut.distribute_losses_and_gains(kernel, rtd.agora_exported_price,
+                chain_exp_obs, chain_imp_obs, ecut.EBMod.CONFIRMED, t_id)
+
+    await tu.complete_active_step_for_task(kernel, task_ob, active_step,
+                active_step_idx, steps, t_id)
 
 
 async def _task_confirm_routing_step_impl(kernel, pars, t_id):
@@ -97,7 +123,6 @@ async def _first_step_done_impl(kernel, pars, t_id):
     (alias_ob, task_ob, active_step_idx, steps, active_step) = \
             await _get_active_dikastes_task_for_alias(kernel, pars, t_id,
                                 ETaskType.SHIP_OBJECT, ERoutingStepType.BEFORE_CARRIER)
-    gCon.log(f"================================== first step here! {active_step}")
 
 
 async def _get_active_dikastes_task_for_alias(kernel, pars, t_id, task_type, step_type):

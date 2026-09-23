@@ -60,6 +60,12 @@ class RootApi:
 
     @sudo_cmd
     @staticmethod
+    async def _sys_call_do_join(kernel, session, pars):
+        gCon.log(f"Will do the join family with pars {pars}")
+
+
+    @sudo_cmd
+    @staticmethod
     async def _sys_call_clear_cache(kernel, session, pars):
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         fdb.empty_cache()

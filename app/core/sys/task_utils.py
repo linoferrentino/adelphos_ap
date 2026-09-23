@@ -86,15 +86,6 @@ async def add_associate_family_task(kernel, src_boss_ob, dst_boss_ob,
                           steps, t_id)
 
 
-async def _task_give_hearts_impl(kernel, pars, t_id):
-    task_uri = pars['task_uri']
-    hearts = pars['hearts']
-    alias_ob = await scu.get_alias_in_session(kernel, pars, t_id)
-    gCon.log(f"{alias_ob().uri.name} will give {hearts} hearts for task {task_uri}")
-
-    task_ob = await get_task_as_diakonos_from_uri(kernel, alias_ob,
-                                            task_uri, t_id)
-
 
 async def _create_first_step(kernel, offer_ob,
                 adelphos_from, first_carrier, family_origin, steps, t_id):
@@ -140,7 +131,7 @@ async def _check_create_routing_step(kernel, current_carrier,
     return new_carrier
 
 
-async def add_routing_task(kernel, offer_ob,
+async def add_routing_task(kernel, offer_ob, agora_exported_price,
                            chain_exp, chain_imp, t_id):
     gCon.log(f"add_routing task for {offer_ob().uri.name} {offer_ob().ob.fields}")
 
@@ -182,7 +173,7 @@ async def add_routing_task(kernel, offer_ob,
     chain_exp_str = scu.transform_chain_ob_to_str(chain_exp)
     chain_imp_str = scu.transform_chain_ob_to_str(chain_imp)
 
-    rtd = RoutingTaskData(chain_exp_str, chain_imp_str)
+    rtd = RoutingTaskData(agora_exported_price, chain_exp_str, chain_imp_str)
 
     gCon.log(f"routing task data {rtd}")
 

@@ -113,8 +113,8 @@ async def _agora_buy_object_impl(kernel, pars, t_id):
     if (skip_task) is None or (skip_task == False):
          await ecut.distribute_losses_and_gains(kernel, agora_exported_price,
                 chain_exports, chain_imports, ecut.EBMod.PENDING, t_id)
-         await tku.add_routing_task(kernel, offer_ob, chain_exports,
-                                   chain_imports, t_id)
+         await tku.add_routing_task(kernel, offer_ob, agora_exported_price,
+                   chain_exports, chain_imports, t_id)
     else:
         await ecut.distribute_losses_and_gains(kernel, agora_exported_price,
                 chain_exports, chain_imports, ecut.EBMod.REAL, t_id)

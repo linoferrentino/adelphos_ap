@@ -85,6 +85,15 @@ def transform_chain_ob_to_str(chain_obs):
     return chain_str
 
 
+async def reificate_uri_list(kernel, chain_uris, t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    list_ob = list()
+    for uri_str in chain_uris:
+        ob = await fdb.uri_read_str(t_id, uri_str)
+        list_ob.append(ob)
+    return list_ob
+
+
 async def get_family_chain_up_from_to(kernel,
                 family_uri_src, family_to_ob, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)

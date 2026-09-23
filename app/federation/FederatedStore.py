@@ -136,7 +136,7 @@ class FederatedTransaction:
         ob.prepare_to_oblivion_sync(self)
         if self.do_mod_db == False:
             return
-        gCon.log(f"{self.fdb.hostname} -> object goes into oblivion {key_str}")
+        gCon.log(f"{self.fdb.hostname} -> [red]DELETE key {key_str}[/red]")
         self.fdb.db.del_key(key_str)
 
 
@@ -182,7 +182,7 @@ class FederatedTransaction:
 
         ob_str = fob.to_store_str()
         host = self.fdb.hostname
-        gCon.log(f"[blue]{host} => Set {key_str} = {ob_str}[/blue]")
+        gCon.log(f"{host} => SET [blue]{key_str} = {ob_str}[/blue]")
         self.fdb.db.set(key_str, ob_str)
 
 

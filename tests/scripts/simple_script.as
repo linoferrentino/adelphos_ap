@@ -232,8 +232,23 @@ $ pop_msg | maria_msg
 
 $ exec | pars['task_pin3'] = pars['maria_msg']['active_step']['data']['pin_to_give']
 
+task.give_hearts hearts 5 task_uri {jtask_uri} ==> \
+	{ "errno" : 26 }
+
 task.confirm_routing_step task_uri {jtask_uri} pin {task_pin3}
 
 task.give_hearts hearts 5 task_uri {jtask_uri} 
 
+task.give_hearts hearts 5 task_uri {jtask_uri} ==> \
+	{ "errno" : 26 }
+
 root.pop_alias
+
+root.add_user user join_u1
+
+root.add_alias alias al1.joinf user join_u1 password jpass \
+	location "Milan, via Manzoni 1"
+
+root.do_join containing_family #fa#wall_street_family@www.adelphos.it \
+	inner_family #fa#joinf@www.adelphos.it
+
