@@ -83,6 +83,11 @@ class UserInbox(SocialUser):
         msg_ob = self.pop_lst_msg_ob()
         return msg_ob['hmsg']
 
+
+    def pop_lst_mmsg(self):
+        msg_ob = self.pop_lst_msg_ob()
+        return msg_ob['mmsg']
+
    
 class BaseSocial(SocialProvider):
 

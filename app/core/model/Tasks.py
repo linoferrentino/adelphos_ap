@@ -28,11 +28,11 @@ class ETaskType(StrEnum):
     SHIP_OBJECT = 'SHIP_OBJECT'
 
 
-class EDefaultTaskType(IntEnum):
+class EDefaultTaskType(StrEnum):
     DEFAULT_STATE = auto()
 
 
-class ERoutingStepType(IntEnum):
+class ERoutingStepType(StrEnum):
     BEFORE_CARRIER = auto()
     ROUTING = auto()
     LAST_MILE = auto()

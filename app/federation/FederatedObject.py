@@ -804,7 +804,7 @@ class FederatedObject:
 
         if hasattr(self, 'prepared_to_oblivion'):
             return 
-        gCon.log(f"[red]prepare to oblivion >> {self.ob.fields}[/red]")
+        gCon.log(f"[red]prepare to oblivion >> {self.uri.unparse()}[/red]")
         for par, definition in self.registrar.pars.items():
             if ((definition.typecol != FObColType.URI)
                 and (definition.typecol != FObColType.LOCAL_URI)):

@@ -15,11 +15,13 @@ import json
 from dataclasses import asdict
 
 
-def _build_message_ob_str(hmsg, task_ob, active_step):
+async def _build_message_ob_str(hmsg, action, task_ob, active_step, t_id):
+    task_type = await task_ob().get_scalar('task_type', t_id)
+    step_type = active_step.task_step_type
     msg_ob = {
+            'mmsg' : f'{action}_{task_type}_{step_type}',
             'hmsg' : hmsg,
             'task_uri' : task_ob().uri.unparse(),
-            'task' : task_ob().ob.fields,
             'active_step' : asdict(active_step),
     }
     return json.dumps(msg_ob)
@@ -30,7 +32,7 @@ async def get_dikastes_msg_for_active_step(kernel, task_ob, active_step, t_id):
     msg = f"""New task as a judge: {task_type}.
 Login to adelphos to mark it completed or deny it."""
 
-    return _build_message_ob_str(msg, task_ob, active_step)
+    return await _build_message_ob_str(msg, 'dikastes', task_ob, active_step, t_id)
 
 
 async def get_diakonos_msg_for_active_step(kernel, task_ob, active_step, t_id):
@@ -42,12 +44,12 @@ The judge for this task is: {active_step.data['dikastes_uri']}.
 """
     msg += """
 """
-    return _build_message_ob_str(msg, task_ob, active_step)
+    return await _build_message_ob_str(msg, 'diakonos', task_ob, active_step, t_id)
     
 
 async def get_diakonos_complete_task_desc(kernel, task_ob, active_step, t_id):
-    msg = f"""The task {active_step} has been completed, or marked completed by the judge.
+    msg = f"""Completed task or marked completed by the judge.
 Thank you for using adelphos."""
-    return _build_message_ob_str(msg, task_ob, active_step)
+    return await _build_message_ob_str(msg, 'complete', task_ob, active_step, t_id)
     
 

@@ -260,6 +260,15 @@ async def _process_meta_line(kernel, session, pars, data):
     meta_args = meta_args.strip()
     gCon.log(f"meta_cmd {meta_cmd} args {meta_args}")
     match meta_cmd:
+        case 'cnt_msg':
+            user = session.social_user
+            user_inbox = kernel.get_dep(Dependencies.SOCIAL).local_user_get(user)
+            nmsg = int(meta_args)
+            gCon.log(f"User {user} should have {nmsg} messages")
+            if user_inbox.count_msg() != nmsg:
+                raise AdelphosException(AdErrno.ESCRIPT_ERROR,
+                    f"user has {user_inbox.count_msg()} messages, expected {nmsg}")
+ 
         case 'pop_msg':
             user = session.social_user
             user_inbox = kernel.get_dep(Dependencies.SOCIAL).local_user_get(user)

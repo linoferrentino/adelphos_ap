@@ -151,9 +151,9 @@ def _test_associate_with_family_ok(world):
     john_inbox = ad3.get_user_inbox('john3')
 
     assert john_inbox.count_msg() == 1
-    msg = john_inbox.pop_lst_hmsg()
+    msg = john_inbox.pop_lst_mmsg()
     gCon.log(f"john msg is {msg}")
-    assert re.search(r"ASSOCIATE_FAMILY.*\n.*alice\.fam_t1", msg) is not None 
+    assert msg == 'diakonos_ASSOCIATE_FAMILY_default_state'
     
     ad2 = world.get_instance('ad2')
     data = ad2.push_user('john_al.fam_t2')
@@ -171,9 +171,10 @@ def _test_associate_with_family_ok(world):
     ad1 = world.get_instance('ad1')
     alice_inbox = ad1.get_user_inbox('alice')
     assert alice_inbox.count_msg() == 1
-    msg = alice_inbox.pop_lst_hmsg()
-    assert re.search("judge: ASSOCIATE_FAMILY", msg) \
-            is not None
+    msg = alice_inbox.pop_lst_mmsg()
+    assert msg == 'dikastes_ASSOCIATE_FAMILY_default_state'
+    #assert re.search("judge: ASSOCIATE_FAMILY", msg) \
+            #        is not None
 
     data = ad1.push_user('alice.fam_t1')
     gCon.log(f"Data of alice is {data}")
@@ -192,10 +193,11 @@ def _test_associate_with_family_ok(world):
     assert len(tasks) == 0
 
     assert john_inbox.count_msg() == 1
-    msg = john_inbox.pop_lst_hmsg()
+    msg = john_inbox.pop_lst_mmsg()
     gCon.log(f"john3 msg is {msg}")
-    assert re.search("has been completed", msg) \
-            is not None
+    #assert re.search("has been completed", msg) \
+            #        is not None
+    assert msg == 'complete_ASSOCIATE_FAMILY_default_state'
 
     ad2.pop_user()
 

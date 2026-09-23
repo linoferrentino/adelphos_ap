@@ -20,8 +20,12 @@ from app.core.algo.utils import federated_transaction
 import app.core.sys.task_utils as tu
 import app.core.sys.family_utils as fu
 import app.core.sys.sys_calls_utils as scu
+from app.core.ECoreErrno import ECoreErrno
+from app.core.AdelphosCoreException import AdelphosCoreException
 
-from app.core.model.Tasks import ETaskType, TaskStep
+
+from app.core.model.Tasks import ETaskType, TaskStep, ERoutingStepType, \
+        EDefaultTaskType
 
 class TaskCalls:
 
@@ -49,6 +53,17 @@ class TaskCalls:
         await _task_give_hearts_safe(kernel, pars)
 
 
+    @staticmethod
+    @active_login
+    async def _sys_call_confirm_routing_step(kernel, session, pars):
+        return await _task_confirm_routing_step_safe(kernel, pars)
+
+
+@federated_transaction(raise_if_fail = True)
+async def _task_confirm_routing_step_safe(kernel, pars, t_id):
+    return await _task_confirm_routing_step_impl(kernel, pars, t_id)
+
+
 @federated_transaction(raise_if_fail = True)
 async def _task_give_hearts_safe(kernel, pars, t_id):
     await tu._task_give_hearts_impl(kernel, pars, t_id)
@@ -61,46 +76,76 @@ async def _accept_safe(kernel, pars, t_id):
 
 @federated_transaction(raise_if_fail = True)
 async def _task_first_step_safe(kernel, pars, t_id):
-    task_uri = pars['task_uri']
-    gCon.log(f"first step called {task_uri}")
     return await _first_step_done_impl(kernel, pars, t_id)
 
 
+async def _task_confirm_routing_step_impl(kernel, pars, t_id):
+    (alias_ob, task_ob, active_step_idx, steps, active_step) = \
+            await _get_active_dikastes_task_for_alias(kernel, pars, t_id,
+                        ETaskType.SHIP_OBJECT, ERoutingStepType.ROUTING)
+
+    if active_step.data['pin_to_give'] != pars['pin']:
+        raise AdelphosCoreException(ECoreErrno.EWRONG_PIN, "Wrong pin")
+
+
+    gCon.log(f"alias {alias_ob().uri.unparse()} confirm step!")
+    await tu.complete_active_step_for_task(kernel, task_ob, active_step,
+                active_step_idx, steps, t_id)
+
+
 async def _first_step_done_impl(kernel, pars, t_id):
-    (alias_ob, task_ob, task_type, active_step_idx, steps, active_step) = \
-            await _get_active_dikastes_task_for_alias(kernel, pars, t_id)
+    (alias_ob, task_ob, active_step_idx, steps, active_step) = \
+            await _get_active_dikastes_task_for_alias(kernel, pars, t_id,
+                                ETaskType.SHIP_OBJECT, ERoutingStepType.BEFORE_CARRIER)
+    gCon.log(f"================================== first step here! {active_step}")
 
 
+async def _get_active_dikastes_task_for_alias(kernel, pars, t_id, task_type, step_type):
+    return await _get_active_task_for_alias_mode(kernel, pars, t_id,
+                task_type, step_type, 'dikastes')
 
-async def _get_active_dikastes_task_for_alias(kernel, pars, t_id):
+
+async def _get_active_diakonos_task_for_alias(kernel, pars, t_id, task_type, step_type):
+    return await _get_active_task_for_alias_mode(kernel, pars, t_id,
+                task_type, step_type, 'diakonos')
+
+
+async def _get_active_task_for_alias_mode(kernel, pars, t_id, task_type, step_type, mode):
     alias_ob = await scu.get_alias_in_session(kernel, pars, t_id)
-    task_ob = await tu.get_task_as_dikastes_from_uri(kernel, alias_ob,
+    task_ob = await tu._get_tasks_from_uri(kernel, mode, alias_ob,
                       pars['task_uri'], t_id)
-    task_type = await task_ob().get_scalar('task_type', t_id)
+    task_type_real = await task_ob().get_scalar('task_type', t_id)
+
+    if task_type_real != task_type:
+        raise AdelphosCoreException(ECoreErrno.EWRONG_TASK_TYPE,
+            f"task {pars['task_uri']} has type {task_type_real} not {task_type}")
+
     active_step_idx = await task_ob().get_scalar('active_step', t_id)
     steps = await task_ob().get_as_list('steps', t_id)
     active_step_dict = steps[active_step_idx]
     gCon.log(f"active step is {active_step_dict}")
     active_step = TaskStep(**active_step_dict)
 
-    return (alias_ob, task_ob, task_type, active_step_idx, steps, active_step)
+    if active_step.task_step_type != step_type:
+        raise AdelphosCoreException(ECoreErrno.EWRONG_TASK_STEP,
+            f"task {pars['task_uri']} is in step {active_step.task_step_type} \
+not {step_type}")
+
+    return (alias_ob, task_ob, active_step_idx, steps, active_step)
 
 
 
 async def _accept_impl(kernel, pars, t_id):
-    (alias_ob, task_ob, task_type, active_step_idx, steps, active_step) = \
-            await _get_active_dikastes_task_for_alias(kernel, pars, t_id)
+    (alias_ob, task_ob, active_step_idx, steps, active_step) = \
+            await _get_active_dikastes_task_for_alias(kernel, pars, t_id,
+                        ETaskType.ASSOCIATE_FAMILY, EDefaultTaskType.DEFAULT_STATE)
 
     stored_pars = active_step.data['pars']
     gCon.log(f"stored_pars {stored_pars}")
 
     pars = stored_pars | pars
+    await _accept_associate_family(kernel, pars, t_id)
 
-    match task_type:
-        case ETaskType.ASSOCIATE_FAMILY:
-            await _accept_associate_family(kernel, pars, t_id)
-        case _ :
-            raise Exception(f"Internal error: task type {task_type} unknown")
     await tu.complete_active_step_for_task(kernel, task_ob, active_step,
                 active_step_idx, steps, t_id)
 

@@ -133,33 +133,6 @@ async def _check_create_routing_step(kernel, current_carrier,
 
     gCon.log(f"This is the step {rsd}")
 
-#    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-#    desc_object = await offer_ob().get_scalar('description', t_id)
-#    title_object = await offer_ob().get_scalar('title', t_id)
-#
-#    desc_dikastes = f"""
-#You have an object to receive from {current_carrier}.
-#The title of the object is {title_object}.
-#Its description is {desc_object}.
-#{current_carrier} will give to you the PIN: {pin_to_give}
-#
-#You can mark the task completed ONLY when you have the object
-#in your hands and you receive the correct PIN. DO NOT share the
-#PIN with anyone.
-#"""
-#    location = await agora_ob().get_scalar('location', t_id)
-#
-#    desc_diakonos = f"""
-#You should carry the object {title_object} to {new_carrier}
-#in the agora {agora_uri}, located on {location}.
-#
-#You should give to {new_carrier} the object and the PIN {pin_to_give}.
-#
-#DO NOT share the PIN with anyone and DO NOT give the PIN to
-#{new_carrier} without the object, or the object without the PIN.
-#
-#"""
-
     step = TaskStep(ERoutingStepType.ROUTING, rsd)
 
     steps.append(step)
@@ -278,10 +251,7 @@ async def task_send_notices_for_active_step(kernel, task_ob, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
     gCon.log(f"active step {active_step} type {type(active_step)}")
-
     gCon.log(f"active step data {active_step.data} type {type(active_step.data)}")
-
-    task_type = await task_ob().get_scalar('task_type', t_id)
 
     dikastes_uri = active_step.data['dikastes_uri']
     if dikastes_uri is not None:
@@ -331,6 +301,12 @@ async def complete_invite_task_for_user(kernel, alias_ob, user_handle,
 async def complete_active_step_for_task(kernel, task_ob, active_step,
                     active_step_idx, steps, t_id):
     gCon.log(f"Completed step {active_step}")
+
+    active_step_idx += 1
+    if len(steps) != active_step_idx:
+        task_ob().set_scalar('active_step', active_step_idx)
+        await task_send_notices_for_active_step(kernel, task_ob, t_id)
+
     diakonos_uri = active_step.data['diakonos_uri']
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
@@ -348,13 +324,11 @@ async def complete_active_step_for_task(kernel, task_ob, active_step,
         alias_dikastes_ob = await fdb.uri_read_str(t_id, dikastes_uri)
         await alias_dikastes_ob().remove_link('tasks_as_dikastes',
                                               task_ob, t_id)
+
+    steps[active_step_idx-1]['completed_on'] = \
+            datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+    #gCon.log(f"OLD STEP COMPLETED {active_step}")
+    task_ob().set_list('steps', steps)
+    gCon.log(f"the new steps are {steps}")
  
-    active_step_idx += 1
-    if len(steps) == active_step_idx:
-        return
 
-    task_ob().set_scalar('active_step', active_step_idx)
-    await task_send_notices_for_active_step(kernel, task_ob, t_id)
-
-
- 

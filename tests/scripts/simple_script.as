@@ -197,4 +197,43 @@ $ exec | pars['btask_pin'] = pars['bmsg']['active_step']['data']['pin_to_give']
 
 $ assert | pars['btask_pin'] == pars['jtask_pin']
 
+$ exec | pars['wrong_pin'] = (pars['btask_pin'] + 1)
+
+task.confirm_routing_step task_uri {jtask_uri} pin {wrong_pin} ==> \
+	{ "errno" : 27 }
+
+task.confirm_routing_step task_uri {jtask_uri} pin {btask_pin}
+
+root.pop_alias
+
+root.push_alias alias john.smith
+
+$ pop_msg | jmsg
+
+$ assert | pars['jmsg']['mmsg'] == "complete_SHIP_OBJECT_routing"
+
+$ cnt_msg | 0
+
+root.pop_alias
+
+root.push_alias alias jack_al.morrison
+
+$ pop_msg | jkmsg
+
+$ exec | pars['task_pin2'] = pars['jkmsg']['active_step']['data']['pin_to_give']
+
+task.confirm_routing_step task_uri {jtask_uri} pin {task_pin2}
+
+root.pop_alias
+
+root.push_alias alias maria_al.rossi
+
+$ pop_msg | maria_msg
+
+$ exec | pars['task_pin3'] = pars['maria_msg']['active_step']['data']['pin_to_give']
+
+task.confirm_routing_step task_uri {jtask_uri} pin {task_pin3}
+
+task.give_hearts hearts 5 task_uri {jtask_uri} 
+
 root.pop_alias

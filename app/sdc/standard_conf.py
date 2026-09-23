@@ -319,6 +319,15 @@ standard_cli_api = """
               task_uri:
                 required: true
 
+          - name: confirm_routing_step
+            pars:
+              task_uri:
+                required: true
+              pin:
+                par_type: int
+                required: true
+                validator:  (_v_ >= 0)
+
           - name: give_hearts
             pars:
               hearts:
