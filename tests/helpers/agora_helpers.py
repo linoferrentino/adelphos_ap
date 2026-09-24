@@ -24,18 +24,8 @@ def ws_list_ads(ws, uplevel, *, code_exp = ECoreErrno.DONE_OK):
 
 def ws_buy_object_title(ws, uplevel, ad_title, *,
                         code_exp = ECoreErrno.DONE_OK):
-    cmd = f"agora.buy_object_title uplevel {uplevel} ad_title '{ad_title}' dry_run false"
+    cmd = f"agora.buy_object_title uplevel {uplevel} ad_title '{ad_title}'"
     return tu.ws_send_cmd(ws, cmd, code_exp)
-
-
-#def ws_pin_received(ws, pin, *, code_exp = ECoreErrno.DONE_OK):
-#    cmd = f"agora.received_pin pin {pin}"
-#    return tu.ws_send_cmd(ws, cmd, code_exp)
-#
-#
-#def ws_pin_confirm(ws, pin, *, code_exp = ECoreErrno.DONE_OK):
-#    cmd = f"agora.confirm_pin pin {pin}"
-#    return tu.ws_send_cmd(ws, cmd, code_exp)
 
 
 def ws_give_hearts(ws, hearts, task_uri, *, code_exp = ECoreErrno.DONE_OK):

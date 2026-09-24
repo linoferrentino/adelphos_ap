@@ -252,3 +252,21 @@ root.add_alias alias al1.joinf user join_u1 password jpass \
 root.do_join containing_family #fa#wall_street_family@www.adelphos.it \
 	inner_family #fa#joinf@www.adelphos.it
 
+root.put_object as_adelphos #al#al1.joinf@www.adelphos.it \
+title 'red laser pointer' \
+description 'it works, without any batteries' price 2.16
+
+root.clear_cache
+
+root.buy_object_title as_adelphos mary.smith \
+uplevel 2 ad_title laser hearts_given 4 ==> \
+	{ "errno" : 30 }
+
+root.buy_object_title as_adelphos mary.smith \
+uplevel 1 ad_title laser hearts_given 4 
+
+#root.push_alias alias mary.smith
+
+#agora.buy_object_title uplevel 2 ad_title laser
+
+

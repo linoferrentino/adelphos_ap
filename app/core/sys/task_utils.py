@@ -25,7 +25,7 @@ from app.core.model.AdelphosUri import EAdelphosType
 from app.core.model.Tasks import ETaskType, TaskStep, \
         RoutingStepData, FeedbackStepData, RoutingTaskData, ERoutingStepType, \
         EDefaultTaskType, TaskStepData, GenericTaskStepData, FirstStepData, \
-        FamilyInviteData
+        FamilyInviteData, LastStepData
 
 from app.logging import gCon
 from app.sdc.Dependencies import Dependencies
@@ -103,7 +103,10 @@ async def _create_first_step(kernel, offer_ob,
 async def _add_last_step(kernel, last_carrier, adelphos_to,
                          steps, family, offer_ob, t_id):
     gCon.log(f"Last step in family {family().uri.unparse()} to {adelphos_to}")
-    raise Exception("TODO")
+    lsd = LastStepData(adelphos_to, last_carrier)
+    step = TaskStep(ERoutingStepType.LAST_MILE, lsd)
+    gCon.log(f"adding last step {step}")
+    steps.append(step)
 
 
 async def _check_create_routing_step(kernel, current_carrier,
@@ -165,7 +168,7 @@ async def add_routing_task(kernel, offer_ob, agora_exported_price,
                 current_carrier, steps, import_step, offer_ob, t_id)
 
     if current_carrier != adelphos_to:
-        _add_last_step(kernel, current_carrier, adelphos_to,
+        await _add_last_step(kernel, current_carrier, adelphos_to,
                 steps, chain_imp[0], offer_ob, t_id)
     else:
         gCon.log(f"Last step is useless. {current_carrier} == {adelphos_to}")

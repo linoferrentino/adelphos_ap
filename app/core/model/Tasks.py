@@ -74,6 +74,11 @@ class FirstStepData(TaskStepData):
 
 
 @dataclass
+class LastStepData(TaskStepData):
+    pass
+
+
+@dataclass
 class FamilyInviteData(TaskStepData):
     user_handle: str
     invite_code: str

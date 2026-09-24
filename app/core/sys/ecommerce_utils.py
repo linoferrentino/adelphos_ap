@@ -114,7 +114,7 @@ async def change_brotherhood(kernel, hearts_given, chain, t_id):
 async def _distribute_hearts_to_chain(kernel, hearts_given,
                                       chain, trust_field, t_id):
     db_delta = -0.03 + ( 0.01 * hearts_given)
-    gCon.rule(f"TRUST MOD: {db_delta} of trust {trust_field} to chain")
+    gCon.rule(f"TRUST MOD: {db_delta} of trust {trust_field} to chain len {len(chain)}")
 
     for export_family in reversed(chain[:-1]):
         old_trust = await export_family().get_scalar(trust_field, t_id)

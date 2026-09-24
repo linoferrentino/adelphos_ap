@@ -61,7 +61,7 @@ class RootApi:
     @sudo_cmd
     @staticmethod
     async def _sys_call_do_join(kernel, session, pars):
-        gCon.log(f"Will do the join family with pars {pars}")
+        await _root_do_join_safe(kernel, pars)
 
 
     @sudo_cmd
@@ -147,6 +147,11 @@ class RootApi:
 
 
 @federated_transaction(raise_if_fail = True)
+async def _root_do_join_safe(kernel, pars, t_id):
+    await fu.family_join_impl(kernel, pars, t_id)
+
+ 
+@federated_transaction(raise_if_fail = True)
 async def _push_alias_safe(kernel, pars, t_id):
     alias = pars['alias']
     session = pars['_param']
@@ -168,6 +173,8 @@ async def _root_buy_object_title_safe(kernel, pars, t_id):
     object_title = pars['ad_title']
     session = pars['_param']
 
+    gCon.rule("BUY OBJECT before push")
+
     alias_session = await _push_alias_impl(kernel, session,
                             as_adelphos_uri_str, t_id)
     pars['_param'] = alias_session
@@ -177,6 +184,8 @@ async def _root_buy_object_title_safe(kernel, pars, t_id):
     hearts_given = pars['hearts_given']
     pars['_x_skip_task'] = True
 
+    gCon.rule("BUY OBJECT ROOT START")
+
     try:
         (exp_chain, imp_chain) = await agu._agora_buy_object_impl(
                 kernel, pars, t_id)
@@ -184,6 +193,8 @@ async def _root_buy_object_title_safe(kernel, pars, t_id):
                         exp_chain, imp_chain, t_id)
     finally:
         session.client.pop_session()
+
+    gCon.rule("BUY OBJECT ROOT END")
  
    
 @federated_transaction(raise_if_fail = True)

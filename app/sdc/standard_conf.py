@@ -376,10 +376,6 @@ standard_cli_api = """
                 validator: _v_ > 0
               ad_title:
                 required: true
-              dry_run:
-                required: false
-                par_type: bool
-                default: false
 
 
       family:

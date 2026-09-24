@@ -45,6 +45,7 @@ class ECoreErrno(IntEnum):
     EWRONG_PIN = 27
     EWRONG_TASK_TYPE = 28
     EWRONG_TASK_STEP = 29
+    EUPLEVEL_OVERFLOW = 30
 
     
     ECORE_INVALID = 9997
