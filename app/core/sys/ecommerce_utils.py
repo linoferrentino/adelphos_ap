@@ -132,13 +132,15 @@ async def distribuite_hearts_to_imports(kernel, hearts_given, chain_imports,
 async def _distribute_gains_to_exports(kernel, price, chain_exports,
                                       bmod_type, t_id):
     gCon.log(f"[blue]================ start {bmod_type} gain distribution {price}[/blue]")
+    pending_dict = dict()
     await _distribute_delta_to_chain(kernel, price, chain_exports, bmod_type,
-                                     t_id)
+                                     t_id, pending_dict)
     gCon.log(f"[blue]================ end {bmod_type} gain distribution[/blue]")
+    return pending_dict
 
 
 async def _distribute_delta_to_chain(kernel, delta, family_chain, bmod_type,
-                                     t_id):
+                                     t_id, pending_dict):
 
     exp_imp = "export" if delta > 0 else "import"
 
@@ -146,7 +148,7 @@ async def _distribute_delta_to_chain(kernel, delta, family_chain, bmod_type,
 
     if len(family_chain) == 2:
         gCon.log("This is the ultimate family, it takes all the delta.")
-        await _change_family_balance(top_family, delta, bmod_type, t_id)
+        await _change_family_balance_dict(top_family, delta, bmod_type, t_id, pending_dict)
         return
  
     containing_family = family_chain[-2]
@@ -157,8 +159,8 @@ async def _distribute_delta_to_chain(kernel, delta, family_chain, bmod_type,
     tax_rate = await inner_family().get_scalar('import_export_tax', t_id)
     tax_amount = abs((tax_rate - 1) * delta)
     gCon.log(f"the {exp_imp} family {containing_family_uri} has a tax rate {tax_rate} delta {delta} gain of {tax_amount}")
-    await _change_family_balance(containing_family, tax_amount, bmod_type,
-                                 t_id)
+    await _change_family_balance_dict(containing_family, tax_amount, bmod_type,
+                                 t_id, pending_dict)
 
     delta = delta - tax_amount
     gCon.log(f"The new delta is {delta}")
@@ -174,11 +176,11 @@ async def _distribute_delta_to_chain(kernel, delta, family_chain, bmod_type,
     gCon.log(f"This family will take {balance_to_family} of the total transaction")
     gCon.log(f"The transaction family will take {balance_to_tx_family}")
 
-    await _change_family_balance(containing_family, balance_to_family,
-                                 bmod_type, t_id)
+    await _change_family_balance_dict(containing_family, balance_to_family,
+                                 bmod_type, t_id, pending_dict)
     family_chain = family_chain[:-1]
     await _distribute_delta_to_chain(inner_family, balance_to_tx_family,
-                                     family_chain, bmod_type, t_id)
+                                     family_chain, bmod_type, t_id, pending_dict)
 
 
 async def get_family_balance(family, t_id):
@@ -187,6 +189,18 @@ async def get_family_balance(family, t_id):
     real_balance = await family().get_scalar('balance', t_id)
     return (real_balance, pending_balance,
             pending_balance + real_balance)
+
+
+async def _change_family_balance_dict(family, delta_balance, bmod_type, t_id, pending_dict):
+    await _change_family_balance(family, delta_balance, bmod_type, t_id)
+    if bmod_type != EBMod.PENDING:
+        return
+    family_uri = family().uri.unparse()
+    val = pending_dict.get(family_uri)
+    if val is None:
+        pending_dict[family_uri] = delta_balance
+    else:
+        pending_dict[family_uri] += delta_balance
 
 
 async def _change_family_balance(family, delta_balance, bmod_type, t_id):
@@ -241,18 +255,29 @@ async def _change_family_balance(family, delta_balance, bmod_type, t_id):
 async def _distribute_losses_to_imports(kernel, price, chain_imports, bmod_type,
                                        t_id):
     gCon.log(f"[red]=================== start {bmod_type} loss distribution -{price}[/red]")
+    pending_dict = dict()
     await _distribute_delta_to_chain(kernel, price * (-1.0), 
-                                     chain_imports, bmod_type, t_id)
+                                     chain_imports, bmod_type, t_id, pending_dict)
     gCon.log(f"[red]==================== end {bmod_type} loss distribution[/red]")
-
+    return pending_dict
 
 
 async def distribute_losses_and_gains(kernel, price, chain_exports, chain_imports,
                                        bmod_type, t_id):
 
-    await _distribute_losses_to_imports(kernel,
+    pending_losses = await _distribute_losses_to_imports(kernel,
             price, chain_imports, bmod_type, t_id)
 
-    await _distribute_gains_to_exports(kernel,
+    pending_gains = await _distribute_gains_to_exports(kernel,
             price, chain_exports, bmod_type, t_id)
+
+    pending_moves = pending_losses | pending_gains
+
+    if bmod_type == EBMod.PENDING:
+        cont_family_uri = chain_exports[-1]().uri.unparse()
+        gCon.log(f"Adding the zero balance for the containing family {cont_family_uri}")
+        pending_moves[cont_family_uri] = 0
+        gCon.rule('PENDING RESULTS')
+        gCon.log(pending_moves)
+    return pending_moves
 

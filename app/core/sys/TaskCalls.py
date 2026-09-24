@@ -82,6 +82,26 @@ async def _task_first_step_safe(kernel, pars, t_id):
     return await _first_step_done_impl(kernel, pars, t_id)
 
 
+async def _reificate_from_routing_list(kernel, routing_list, t_id):
+    chain_ob = list()
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    for fam_pending in routing_list:
+        fam_uri = fam_pending[0]
+        fam_ob = await fdb.uri_read_str(t_id, fam_uri)
+        chain_ob.append(fam_ob)
+    return chain_ob
+
+
+async def _split_and_reificate_rtd(kernel, rtd, t_id):
+    len_routing = len(rtd.routing)
+    half_len = int((len_routing - 1) / 2)
+    chain_exp = await _reificate_from_routing_list(kernel,
+                                                   rtd.routing[:(half_len+1)], t_id)
+    chain_imp = await _reificate_from_routing_list(kernel,
+                                                   reversed(rtd.routing[half_len:]), t_id)
+    return chain_exp, chain_imp
+
+
 async def _task_give_hearts_impl(kernel, pars, t_id):
     (alias_ob, task_ob, active_step_idx, steps, active_step) = \
             await _get_active_diakonos_task_for_alias(kernel, pars, t_id,
@@ -91,15 +111,11 @@ async def _task_give_hearts_impl(kernel, pars, t_id):
     rtd = RoutingTaskData(**data_dict)
     gCon.log(f"The routing task data is {rtd}")
 
-    chain_exp_obs = await scu.reificate_uri_list(kernel, rtd.chain_exports, t_id)
-    chain_imp_obs = await scu.reificate_uri_list(kernel, rtd.chain_imports, t_id)
+    (chain_exp_obs, chain_imp_obs) = await _split_and_reificate_rtd(kernel, rtd, t_id)
 
     hearts_given = pars['hearts']
     await ecut.complete_buy_task(kernel, hearts_given,
                         chain_exp_obs, chain_imp_obs, t_id)
-
-    await ecut.distribute_losses_and_gains(kernel, rtd.agora_exported_price,
-                chain_exp_obs, chain_imp_obs, ecut.EBMod.CONFIRMED, t_id)
 
     await tu.complete_active_step_for_task(kernel, task_ob, active_step,
                 active_step_idx, steps, t_id)
@@ -113,8 +129,17 @@ async def _task_confirm_routing_step_impl(kernel, pars, t_id):
     if active_step.data['pin_to_give'] != pars['pin']:
         raise AdelphosCoreException(ECoreErrno.EWRONG_PIN, "Wrong pin")
 
+    if active_step_idx == 0:
+        family_source = None
+    else:
+        family_source = steps[active_step_idx-1]['data']['family_dest']
 
-    gCon.log(f"alias {alias_ob().uri.unparse()} confirm step!")
+    family_dest = active_step.data['family_dest']
+
+    gCon.log(f"[yellow]alias {alias_ob().uri.unparse()} confirms route from {family_source} until family {family_dest}[/yellow]")
+
+    await tu.confirm_routing_step(kernel, task_ob, family_source, family_dest, t_id)
+
     await tu.complete_active_step_for_task(kernel, task_ob, active_step,
                 active_step_idx, steps, t_id)
 

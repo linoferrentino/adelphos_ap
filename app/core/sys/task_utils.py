@@ -34,6 +34,7 @@ import app.core.sys.family_utils as fu
 import app.core.sys.social_utils as su
 import app.core.sys.sys_calls_utils as scu
 import app.core.ui.task_descs as uitk
+import app.core.sys.ecommerce_utils as ecut
 
 
 async def get_task_as_dikastes_from_uri(kernel, alias_ob, task_uri, t_id):
@@ -113,14 +114,16 @@ async def _check_create_routing_step(kernel, current_carrier,
         gCon.log(f"Nothing to route!")
         return current_carrier
 
-    agora_ob = await fu.family_get_your_agora(kernel, family_ob, t_id)
-    agora_uri = agora_ob().uri.unparse()
+    family_uri = family_ob().uri.unparse()
 
-    gCon.log(f"{current_carrier} will send the object to {new_carrier} in agora {agora_uri}")
+    #agora_ob = await fu.family_get_your_agora(kernel, family_ob, t_id)
+    #agora_uri = agora_ob().uri.unparse()
+
+    gCon.log(f"{current_carrier} brings the object to {new_carrier} in family {family_uri}")
 
     pin_to_give = secrets.randbelow(100000000)
 
-    rsd = RoutingStepData(new_carrier, current_carrier, agora_uri, pin_to_give)
+    rsd = RoutingStepData(new_carrier, current_carrier, family_uri, pin_to_give)
 
     gCon.log(f"This is the step {rsd}")
 
@@ -132,7 +135,7 @@ async def _check_create_routing_step(kernel, current_carrier,
 
 
 async def add_routing_task(kernel, offer_ob, agora_exported_price,
-                           chain_exp, chain_imp, t_id):
+                           chain_exp, chain_imp, pending_moves, t_id):
     gCon.log(f"add_routing task for {offer_ob().uri.name} {offer_ob().ob.fields}")
 
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
@@ -173,9 +176,15 @@ async def add_routing_task(kernel, offer_ob, agora_exported_price,
     chain_exp_str = scu.transform_chain_ob_to_str(chain_exp)
     chain_imp_str = scu.transform_chain_ob_to_str(chain_imp)
 
-    rtd = RoutingTaskData(agora_exported_price, chain_exp_str, chain_imp_str)
+    list_pending_moves = list()
+    for xp_fam in chain_exp_str:
+        list_pending_moves.append( (xp_fam, pending_moves[xp_fam]) )
+    for im_fam in reversed(chain_imp_str[:-1]):
+        list_pending_moves.append( (im_fam, pending_moves[im_fam]) )
 
-    gCon.log(f"routing task data {rtd}")
+    rtd = RoutingTaskData(list_pending_moves)
+
+    gCon.log(f"list pending moves {list_pending_moves}")
 
     task_ob = await create_task(kernel, ETaskType.SHIP_OBJECT,
                           steps, t_id, linked_ob = offer_ob, data = rtd)
@@ -287,6 +296,40 @@ async def complete_invite_task_for_user(kernel, alias_ob, user_handle,
         return True
 
     return False
+
+
+def _find_family_in_rtd(routing_list, family_source):
+    idx = 0 
+    for fam_pending in routing_list:
+        if fam_pending[0] != family_source:
+            idx += 1
+            continue
+        return idx
+    raise Exception(f"Not found {family_source}")
+
+
+async def confirm_routing_step(kernel, task_ob, family_source, family_dest, t_id):
+    data_dict = await task_ob().get_scalar('data', t_id)
+    rtd = RoutingTaskData(**data_dict)
+    #gCon.log(f"The routing task data is {rtd}")
+    if family_source is None:
+        start_idx = 0
+    else:
+        start_idx = _find_family_in_rtd(rtd.routing, family_source) + 1
+
+    end_idx = _find_family_in_rtd(rtd.routing, family_dest)
+    assert start_idx <= end_idx
+
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    gCon.log(f"distribute gain/loss between {start_idx} and {end_idx+1}")
+    for idx in range(start_idx, end_idx+1):
+        fam_pending = rtd.routing[idx]
+        if fam_pending[1] == 0:
+            gCon.log(f"This family {fam_pending[0]} has not a change in balance.")
+            continue
+        fam_ob = await fdb.uri_read_str(t_id, fam_pending[0])
+        await ecut._change_family_balance(fam_ob, fam_pending[1],
+                        ecut.EBMod.CONFIRMED, t_id)
 
 
 async def complete_active_step_for_task(kernel, task_ob, active_step,
