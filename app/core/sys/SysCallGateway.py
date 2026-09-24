@@ -147,6 +147,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
             if par.validator is not None:
                 string_validator = re.sub("_v_", str(val_final), par.validator)
+                gCon.log(f"{par} string validator {string_validator}")
                 validator_result = eval(string_validator)
                 if validator_result != True:
                     raise AdelphosException(

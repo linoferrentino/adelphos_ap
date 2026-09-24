@@ -41,7 +41,16 @@ root.put_object as_adelphos #al#john.smith@www.adelphos.it \
 title 'iPhone 14' \
 description 'battery low' price 232.35
 
-root.buy_object_title as_adelphos mary.smith \
+root.push_alias alias mary.smith
+
+agora.find_object_title as_adelphos mary.smith \
+ob_title Joyce
+
+$ assert | len(pars['$?']['res']['list_ob']
+
+root.pop_alias
+
+root.find_object_title as_adelphos mary.smith \
 uplevel 0 ad_title Joyce hearts_given 5 ==> \
 	{ "errno" : 18 }
 

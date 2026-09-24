@@ -71,10 +71,21 @@ class RootApi:
         fdb.empty_cache()
 
 
+    #@sudo_cmd
+    #@staticmethod
+    #async def _sys_call_buy_object_title(kernel, session, pars):
+    #    await _root_buy_object_title_safe(kernel, pars)
+
     @sudo_cmd
     @staticmethod
-    async def _sys_call_buy_object_title(kernel, session, pars):
-        await _root_buy_object_title_safe(kernel, pars)
+    async def _sys_call_find_object_title(kernel, session, pars):
+        await _root_find_object_title_safe(kernel, pars)
+
+
+    @sudo_cmd
+    @staticmethod
+    async def _sys_call_buy_object_uri(kernel, session, pars):
+        await _root_buy_object_uri_safe(kernel, pars)
 
 
     @sudo_cmd
@@ -165,6 +176,16 @@ async def _push_alias_impl(kernel, session, alias, t_id):
     await AliasCalls._session_login(kernel, alias_session,
                                     alias, None, t_id, True)
     return alias_session
+
+
+@federated_transaction(raise_if_fail = True)
+async def _root_find_object_title_safe(kernel, pars, t_id):
+    pass
+
+
+@federated_transaction(raise_if_fail = True)
+async def _root_buy_object_uri_safe(kernel, pars, t_id):
+    pass
 
 
 @federated_transaction(raise_if_fail = True)

@@ -249,17 +249,13 @@ standard_cli_api = """
               script_path:
                 required: true
 
-          - name: buy_object_title
+          - name: buy_object_uri
             pars:
               as_adelphos:
                 required: true
-              uplevel:
-                par_type: int
+              ob_uri:
                 required: true
-                validator: _v_ >= 0
-              ad_title:
-                required: true
-              hearts_given:
+              hearts:
                 par_type: int
                 required: true
                 validator: ((_v_ >= 0) and (_v_ <= 5))
@@ -367,15 +363,51 @@ standard_cli_api = """
                 par_type: int
                 required: true
                 validator: _v_ >= 0
-
-          - name: buy_object_title
-            pars:
-              uplevel:
+              max_objects:
                 par_type: int
+                required: false
+                validator: _v_ >= -1
+                default: -1
+              listing_start:
+                par_type: int
+                required: false
+                validator: _v_ >= 0
+                default: 0
+
+          #- name: buy_object_title
+          #  pars:
+          #    uplevel:
+          #      par_type: int
+          #      required: true
+          #      validator: _v_ > 0
+          #    ad_title:
+          #      required: true
+
+          - name: buy_object_uri
+            pars:
+              ob_uri:
                 required: true
-                validator: _v_ > 0
-              ad_title:
+
+          - name: find_object_title
+            pars:
+              max_uplevel:
+                par_type: int
+                required: false
+                validator: _v_ >= -1
+                default: -1
+              max_objects:
+                par_type: int
+                required: false
+                validator: _v_ >= -1
+                default: -1
+              listing_start:
+                par_type: int
+                required: false
+                validator: _v_ >= 0
+                default: 0
+              ob_title:
                 required: true
+
 
 
       family:

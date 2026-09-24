@@ -38,10 +38,22 @@ class AgoraCalls:
         return await AgoraCalls._agora_list_ads_safe(kernel, pars)
 
 
+    #@staticmethod
+    #@active_login
+    #async def _sys_call_buy_object_title(kernel, session, pars):
+    #    return await _agora_buy_object_safe(kernel, pars)
+
+
     @staticmethod
     @active_login
-    async def _sys_call_buy_object_title(kernel, session, pars):
-        return await _agora_buy_object_safe(kernel, pars)
+    async def _sys_call_buy_object_uri(kernel, session, pars):
+        pass
+
+
+    @staticmethod
+    @active_login
+    async def _sys_call_find_object_title(kernel, session, pars):
+        pass
 
 
     @staticmethod
