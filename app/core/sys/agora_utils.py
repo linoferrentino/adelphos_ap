@@ -55,7 +55,7 @@ async def _get_offer_from_pars_title(fdb, offers, par_title, t_id):
                 f"no object with title {par_title} found")
 
 
-async def _get_object_title(kernel, family_lev_ob, ad_title, t_id):
+async def _get_first_object_title(kernel, family_lev_ob, ad_title, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
     offers = await family_list_ads(kernel, family_lev_ob, t_id)
@@ -68,6 +68,69 @@ async def _get_object_title(kernel, family_lev_ob, ad_title, t_id):
     return (offer, offer_ob)
 
 
+async def agora_find_first_object_title_impl(kernel, pars, t_id):
+    uplevel = pars['uplevel']
+    ob_title = pars['ob_title']
+
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    chain_imports = await scu.get_family_chain_up(kernel, pars, t_id)
+
+    if len(chain_imports) < 2:
+        raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
+                    "You cannot buy in your family")
+
+    family_lev_ob = chain_imports[-1] 
+
+    (offer, offer_ob) = await _get_first_object_title(kernel, family_lev_ob,
+                                                ob_title, t_id)
+
+    return (offer,)
+
+
+async def _agora_buy_object_uri_impl(kernel, pars, t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    ob_uri = pars['ob_uri']
+    offer_ob = await fdb.uri_read_str(t_id, ob_uri)
+    alias_uri_str = await offer_ob().get_scalar('adelphos_from', t_id)
+    family_from_ob = await alu.alias_get_your_family(
+            kernel, alias_uri_str, t_id)
+    family_from_src = family_from_ob().uri.unparse()
+
+    my_family = await scu.get_family_in_session(kernel, pars, t_id)
+
+    (chain_exports, chain_imports) = await scu.find_first_common_parent(
+            kernel, family_from_ob, my_family, t_id)
+
+    if len(chain_imports) < 2:
+        raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
+                    "You cannot buy in your family")
+
+    if family_from_src == chain_imports[0]().uri.unparse():
+        raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
+                   f"The object {await offer_ob().get_scalar('description', t_id)} is originated by your family.")
+
+    myself_ob = await scu.get_alias_in_session(kernel, pars, t_id)
+    await offer_ob().set_link('adelphos_to', myself_ob, t_id)
+
+    total_tax = await ecut.get_total_tax_up(chain_exports, t_id)
+    offer_price = await offer_ob().get_scalar('price', t_id)
+    agora_exported_price = total_tax * offer_price
+
+    skip_task = pars.get('_x_skip_task')
+    gCon.log(f"_x_skip_task is {skip_task}")
+    if (skip_task is None) or (skip_task == False):
+         pending_moves = await ecut.distribute_losses_and_gains(kernel,
+                agora_exported_price, chain_exports, chain_imports,
+                ecut.EBMod.PENDING, t_id)
+         await tku.add_routing_task(kernel, offer_ob, agora_exported_price,
+                chain_exports, chain_imports, pending_moves, t_id)
+    else:
+        await ecut.distribute_losses_and_gains(kernel, agora_exported_price,
+                chain_exports, chain_imports, ecut.EBMod.REAL, t_id)
+
+    await au.remove_object_from_agora(kernel, chain_exports[0],
+                                      offer_ob, t_id)
+    return (chain_exports, chain_imports)
 
 
 
@@ -85,7 +148,7 @@ async def _agora_buy_object_impl(kernel, pars, t_id):
 
     family_lev_ob = chain_imports[-1] 
 
-    (offer, offer_ob) = await _get_object_title(kernel, family_lev_ob,
+    (offer, offer_ob) = await _get_first_object_title(kernel, family_lev_ob,
                                                 ad_title, t_id)
 
     offer_uri = offer['uri']

@@ -388,26 +388,14 @@ standard_cli_api = """
               ob_uri:
                 required: true
 
-          - name: find_object_title
+          - name: find_first_object_title
             pars:
-              max_uplevel:
+              uplevel:
                 par_type: int
-                required: false
-                validator: _v_ >= -1
-                default: -1
-              max_objects:
-                par_type: int
-                required: false
-                validator: _v_ >= -1
-                default: -1
-              listing_start:
-                par_type: int
-                required: false
-                validator: _v_ >= 0
-                default: 0
+                required: true 
+                validator: _v_ > 0
               ob_title:
                 required: true
-
 
 
       family:

@@ -55,8 +55,7 @@ async def object_put_ad_in_agora_impl(kernel, family_ob, alias_ob,
     ob_uri = object_ob().uri.unparse()
 
     return {
-      'msg' : f"Created the ad, the object has its uri {ob_uri}",
-      'ob_uri' : ob_uri
+      'uri' : ob_uri
     }
 
 

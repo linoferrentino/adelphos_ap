@@ -91,7 +91,7 @@ class RootApi:
     @sudo_cmd
     @staticmethod
     async def _sys_call_put_object(kernel, session, pars):
-        await _root_put_object_safe(kernel, pars)
+        return await _root_put_object_safe(kernel, pars)
 
 
     @sudo_cmd
@@ -185,7 +185,22 @@ async def _root_find_object_title_safe(kernel, pars, t_id):
 
 @federated_transaction(raise_if_fail = True)
 async def _root_buy_object_uri_safe(kernel, pars, t_id):
-    pass
+    as_adelphos_uri_str = pars['as_adelphos']
+    session = pars['_param']
+    alias_session = await _push_alias_impl(kernel, session,
+                            as_adelphos_uri_str, t_id)
+    pars['_param'] = alias_session
+
+
+    try:
+        pars['_x_skip_task'] = True
+        (exp_chain, imp_chain) = await agu._agora_buy_object_uri_impl(
+                kernel, pars, t_id)
+        hearts = pars['hearts']
+        await ecut.complete_buy_task(kernel, hearts,
+                        exp_chain, imp_chain, t_id)
+    finally:
+        session.client.pop_session()
 
 
 @federated_transaction(raise_if_fail = True)
@@ -228,7 +243,7 @@ async def _root_put_object_safe(kernel, pars, t_id):
     family_ob = await autils.alias_get_your_family(kernel,
             as_adelphos_uri_str, t_id)
     gCon.log(f"aliasob {alias_ob} family {family_ob}")
-    await ofutils.object_put_ad_in_agora_impl(kernel, family_ob,
+    return await ofutils.object_put_ad_in_agora_impl(kernel, family_ob,
             alias_ob, pars, t_id)
     
 

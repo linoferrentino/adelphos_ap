@@ -41,18 +41,27 @@ root.put_object as_adelphos #al#john.smith@www.adelphos.it \
 title 'iPhone 14' \
 description 'battery low' price 232.35
 
+$ exec | pars['iphone_uri'] = pars['$?']['res']['uri']
+
 root.push_alias alias mary.smith
 
-agora.find_object_title as_adelphos mary.smith \
-ob_title Joyce
+#agora.find_first_object_title uplevel 0 ob_title Joyce ==> \
+#	{ "errno" : 18 }
 
-$ assert | len(pars['$?']['res']['list_ob']
+agora.find_first_object_title uplevel 2 ob_title Joyce ==> \
+	{ "errno" : 14 }
+
+agora.find_first_object_title uplevel 1 ob_title Joyce 
+
+$ assert | len(pars['$?']['res']) == 1
+
+$ exec | pars['joyce_uri'] = pars['$?']['res'][0]['uri']
 
 root.pop_alias
 
-root.find_object_title as_adelphos mary.smith \
-uplevel 0 ad_title Joyce hearts_given 5 ==> \
-	{ "errno" : 18 }
+#root.find_object_title as_adelphos mary.smith \
+#uplevel 0 ad_title Joyce hearts_given 5 ==> \
+#	{ "errno" : 18 }
 
 root.add_user user jack
 root.add_alias alias jack_al.morrison user jack password jpass \
@@ -75,18 +84,18 @@ agora.list_ads uplevel 0 ==> { "errno" : 0, \
 
 root.pop_alias
 
-root.buy_object_title as_adelphos jack_al.morrison \
-uplevel 2 ad_title Joyce hearts_given 5  ==> \
-	{ "errno" : 14 }
+#root.buy_object_title as_adelphos jack_al.morrison \
+#uplevel 2 ad_title Joyce hearts_given 5  ==> \
+#	{ "errno" : 14 }
 
-root.buy_object_title as_adelphos bob.fam_bob \
-uplevel 1 ad_title Joyce hearts_given 5 
+root.buy_object_uri as_adelphos bob.fam_bob \
+ob_uri {joyce_uri} hearts 5 
 
 root.clear_cache
 
-root.buy_object_title as_adelphos bob.fam_bob \
-uplevel 1 ad_title iPhone hearts_given 5  ==> \
-	{ "errno" : 19 }
+root.buy_object_uri as_adelphos bob.fam_bob \
+ob_uri {iphone_uri} hearts 5  ==> \
+	{ "errno" : 21 }
 
 root.do_association family_source #fa#fam_bob@www.adelphos.it \
 	family_dest #fa#morrison@www.adelphos.it \
@@ -137,9 +146,13 @@ root.put_object as_adelphos #al#john.smith@www.adelphos.it \
 title 'Ms. Dalloway' \
 description 'used in good condition' price 1.51
 
+$ exec | pars['dalloway_uri'] = pars['$?']['res']['uri']
+
 root.put_object as_adelphos #al#john.smith@www.adelphos.it \
 title 'Misery' \
 description 'a bit scratched, missing two pages' price 4.88 
+
+$ exec | pars['misery_uri'] = pars['$?']['res']['uri']
 
 root.push_alias alias maria_al.rossi
 
@@ -161,7 +174,7 @@ agora.list_ads uplevel 2 ==> { "errno" : 0, \
 	"eval_exp" : "len(res_ob['res']) == 3" \
 }
 
-agora.buy_object_title uplevel 2 ad_title Dalloway 
+agora.buy_object_uri ob_uri {dalloway_uri} 
 
 
 root.pop_alias
@@ -180,7 +193,7 @@ root.pop_alias
 
 root.push_alias alias maria_al.rossi
 
-agora.buy_object_title uplevel 2 ad_title Misery ==> \
+agora.buy_object_uri ob_uri {misery_uri} ==> \
 	{ "errno" : 20 }
 
 task.give_hearts hearts 9 task_uri task_uri ==> \
@@ -265,14 +278,15 @@ root.put_object as_adelphos #al#al1.joinf@www.adelphos.it \
 title 'red laser pointer' \
 description 'it works, without any batteries' price 2.16
 
+$ exec | pars['laser_uri'] = pars['$?']['res']['uri']
+
 root.clear_cache
 
-root.buy_object_title as_adelphos mary.smith \
-uplevel 2 ad_title laser hearts_given 4 ==> \
-	{ "errno" : 30 }
+root.buy_object_uri as_adelphos mary.smith \
+ob_uri {laser_uri} hearts 4
 
-root.buy_object_title as_adelphos mary.smith \
-uplevel 1 ad_title laser hearts_given 4 
+#root.buy_object_title as_adelphos mary.smith \
+#uplevel 1 ad_title laser hearts_given 4 
 
 #root.push_alias alias mary.smith
 

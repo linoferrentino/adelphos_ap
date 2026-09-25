@@ -47,13 +47,13 @@ class AgoraCalls:
     @staticmethod
     @active_login
     async def _sys_call_buy_object_uri(kernel, session, pars):
-        pass
+        return await _agora_buy_object_uri_safe(kernel, pars)
 
 
     @staticmethod
     @active_login
-    async def _sys_call_find_object_title(kernel, session, pars):
-        pass
+    async def _sys_call_find_first_object_title(kernel, session, pars):
+        return await _agora_find_first_object_title(kernel, pars)
 
 
     @staticmethod
@@ -69,9 +69,17 @@ class AgoraCalls:
         return await agu.family_list_ads(kernel, family_lev_ob, t_id)
 
 
+#@federated_transaction(raise_if_fail = True)
+#async def _agora_buy_object_safe(kernel, pars, t_id):
+#    await agu._agora_buy_object_impl(kernel, pars, t_id)
+
+
 @federated_transaction(raise_if_fail = True)
-async def _agora_buy_object_safe(kernel, pars, t_id):
-    await agu._agora_buy_object_impl(kernel, pars, t_id)
+async def _agora_find_first_object_title(kernel, pars, t_id):
+    return await agu.agora_find_first_object_title_impl(kernel, pars, t_id)
+ 
 
-
-
+@federated_transaction(raise_if_fail = True)
+async def _agora_buy_object_uri_safe(kernel, pars, t_id):
+    return await agu._agora_buy_object_uri_impl(kernel, pars, t_id)
+ 

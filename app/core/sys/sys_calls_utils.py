@@ -94,6 +94,35 @@ async def reificate_uri_list(kernel, chain_uris, t_id):
     return list_ob
 
 
+async def find_first_common_parent(kernel, left_family, right_family, t_id):
+    left_chain = list()
+    right_chain = list()
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+
+    while True:
+        left_chain.append(left_family)
+        right_chain.append(right_family)
+
+        left_uri = left_family().uri.unparse()
+        right_uri = right_family().uri.unparse()
+
+        if left_uri == right_uri:
+            break
+
+        new_left_family = await left_family().get_scalar('upper_family', t_id)
+        new_right_family = await right_family().get_scalar('upper_family', t_id)
+
+        if (new_left_family is None) or (new_right_family is None):
+            raise AdelphosCoreException(ECoreErrno.EINVALID_CHAIN,
+              f"Invalid chain requested: unreacheable")
+
+        left_family = await fdb.uri_read_str(t_id, new_left_family)
+        right_family = await fdb.uri_read_str(t_id, new_right_family)
+
+
+    return (left_chain, right_chain)
+
+
 async def get_family_chain_up_from_to(kernel,
                 family_uri_src, family_to_ob, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
