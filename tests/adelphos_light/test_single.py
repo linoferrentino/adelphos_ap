@@ -27,7 +27,6 @@ def test_simul_root_single(simulated_fediverse):
 
 
 def _test_do_setup(world):
-    gCon.log("doing setup single world")
     ad = world.get_instance('adelphos')
     rh.ws_play_script(ad.get_sock(), 'simple_script')
 

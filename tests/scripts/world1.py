@@ -33,7 +33,7 @@ world_1_yaml = """
 """
 
 
-fixture_1_yaml = """
+basic_ad1_setup_yaml = """
 
   ad1_setup:
 
@@ -68,7 +68,33 @@ fixture_1_yaml = """
         my_trust: 150
         location: fam_t2_loc
 
+"""
 
+
+fixture_associate_1_yaml = f"""
+
+{basic_ad1_setup_yaml} 
+
+      - name: upper_fam
+        level: 1
+        members: 
+          fam_t1:
+          fam_t2:
+        boss: alice.fam_t1@ad1 
+        balance: 10.92
+        my_trust: 150
+        system_trust: 200
+        brotherhood_ratio: 0.58
+        location: upper_fam_loc
+
+
+"""
+
+
+fixture_1_yaml = f"""
+
+{basic_ad1_setup_yaml} 
+ 
   ad2_setup:
 
     families:

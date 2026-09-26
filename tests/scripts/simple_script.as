@@ -1,9 +1,8 @@
 # Test for creating family trees.
 
-root.add_user user bob
-root.add_user user alice
 
-root.add_user user alice ==> { "errno" : 2, "res_re" : "alice" }
+$ include | build_users
+
 
 root.add_alias alias bob.fam_bob user bob password bob_pass \
 	location "Milan, via Petrarca 12"
@@ -285,11 +284,5 @@ root.clear_cache
 root.buy_object_uri as_adelphos mary.smith \
 ob_uri {laser_uri} hearts 4
 
-#root.buy_object_title as_adelphos mary.smith \
-#uplevel 1 ad_title laser hearts_given 4 
-
-#root.push_alias alias mary.smith
-
-#agora.buy_object_title uplevel 2 ad_title laser
 
 

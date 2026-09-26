@@ -34,6 +34,17 @@ import tests.helpers.trust_helpers as th
 from app.federation.FederatedObject import str_to_fobs
 
 
+def test_simul_associates(simulated_fediverse):
+    sim_fed = simulated_fediverse(wld1.world_1_yaml)
+    sim_fed.test(wld1.fixture_associate_1_yaml, (
+        _test_join_fam3,
+        ))
+
+
+def _test_join_fam3(world):
+    pass
+
+
 def test_simul_fediverse_basic(simulated_fediverse):
 
     sim_fed = simulated_fediverse(wld1.world_1_yaml)

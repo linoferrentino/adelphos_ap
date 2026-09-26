@@ -132,9 +132,7 @@ class BaseSocial(SocialProvider):
         else:
             present_key = False
 
-        gCon.log(f"private_key_file {private_key_file} present {present_key}")
         if present_key is False:
-
             private_key = generate_key()
             content = private_key.private_bytes(
                 encoding=crypto_serialization.Encoding.PEM,

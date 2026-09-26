@@ -313,6 +313,12 @@ async def _process_meta_line(kernel, session, pars, data):
     meta_args = meta_args.strip()
     gCon.log(f"meta_cmd {meta_cmd} args {meta_args}")
     match meta_cmd:
+        case 'include':
+            old_script = pars['script_path']
+            pars['script_path'] = meta_args
+            gCon.log(f"transferring control to script {meta_args}")
+            await _root_play_script(kernel, session, pars)
+            pars['script_path'] = old_script
         case 'cnt_msg':
             user = session.social_user
             user_inbox = kernel.get_dep(Dependencies.SOCIAL).local_user_get(user)
@@ -410,6 +416,7 @@ async def _root_play_line(kernel, session, pars, line):
 
 async def _root_play_script(kernel, session, pars):
     gCon.log(f"Playing the script {pars['script_path']}")
+    pars['$?'] = None
     with open (f"tests/scripts/{pars['script_path']}.as") as script:
         multiline = False
         long_line = ""

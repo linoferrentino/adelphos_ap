@@ -182,7 +182,17 @@ class SimulFediverse:
 
 
     @staticmethod
+    def _do_install_upper_family(instance, lev, family):
+        gCon.log(f"installing level {lev} family {family}")
+
+
+    @staticmethod
     def _install_family(instance, family):
+        level = family.get('level', 0)
+        if level != 0:
+            SimulFediverse._do_install_upper_family(instance, level, family)
+            return
+
         members = family['members']
         family_name = family['name']
         boss = family['boss']
