@@ -123,10 +123,9 @@ async def family_get_upper_family(kernel, family_ob, t_id, *,
     return await ou.object_get_field_uri_locked(kernel, family_ob,
                      'upper_family', t_id, maybe = maybe)
 
-
-async def family_get_chain_alias_family_to(kernel,
-            alias_ob, family_ob, t_id):
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+#async def family_get_chain_alias_family_to(kernel,
+#            alias_ob, family_ob, t_id):
+#    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
 
 async def family_get_your_carrier_uri(kernel, family_ob, t_id):
@@ -202,7 +201,7 @@ async def family_associate_2nd_half(kernel, pars, t_id):
     await family_dst_ob().set_link('upper_family', family_ob, t_id)
 
 
-async def add_default_agora(fdb, family_ob, alias_ob, location, t_id):
+async def add_default_agora(fdb, family_ob, carrier_ob, location, t_id):
     agora_name = family_ob().uri.name + "_main_agora"
 
     fields = {
@@ -210,7 +209,7 @@ async def add_default_agora(fdb, family_ob, alias_ob, location, t_id):
     }
     agora_ob = fdb.new_ob(t_id, EAdelphosType.AGORA_TYPE,
                     agora_name, fields = fields)
-    await agora_ob().set_link('carrier', alias_ob, t_id)
+    await agora_ob().set_link('carrier', carrier_ob, t_id)
     await family_ob().set_link('agora', agora_ob, t_id)
 
     return agora_ob

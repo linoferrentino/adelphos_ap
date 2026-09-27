@@ -43,6 +43,8 @@ basic_ad1_setup_yaml = """
       - alice
       - tom
       - jane
+      - bill
+      - pat
 
     families:
 
@@ -75,12 +77,25 @@ fixture_associate_1_yaml = f"""
 
 {basic_ad1_setup_yaml} 
 
+      - name: fam_t3
+        members: 
+          bill:
+           password: bill_ps
+          pat:
+           password: pat_ps
+        boss: bill 
+        balance: 2.92
+        my_trust: 40
+        location: fam_t3_loc
+
       - name: upper_fam
         level: 1
         members: 
-          fam_t1:
-          fam_t2:
-        boss: alice.fam_t1@ad1 
+          - '#fa#fam_t1'
+          - '#fa#fam_t2'
+          - '#fa#fam_t3'
+        boss: '#al#alice.fam_t1@www.ad1.com'
+        carrier: '#al#pat.fam_t3@www.ad1.com'
         balance: 10.92
         my_trust: 150
         system_trust: 200

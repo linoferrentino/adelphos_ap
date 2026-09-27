@@ -25,6 +25,7 @@ import tests.daemon.daemon_tests as dt
 from app.sdc.Dependencies import Dependencies
 from app.transport.bridge.loop import run_coro_in_loop
 from app.core.algo.AliasAlgo import AliasAlgo
+import app.core.sys.root_utils as rutils
 
 
 simulated_instance_conf = """
@@ -183,7 +184,12 @@ class SimulFediverse:
 
     @staticmethod
     def _do_install_upper_family(instance, lev, family):
-        gCon.log(f"installing level {lev} family {family}")
+        run_coro_in_loop(SimulFediverse._a_do_install_upper_family,
+                         (instance, lev, family))
+
+    @staticmethod
+    async def _a_do_install_upper_family(instance, lev, family):
+        await rutils.build_upper_family_ob_safe(instance.kernel(), family)
 
 
     @staticmethod
