@@ -5,9 +5,30 @@ general:
   port: 5000
   host: localhost 
   root_path: /api
-  # the root user can be local.
+  # the root user can be a local user, in this case this instance of adelphos acts
+  # also as a (very simple) ActivityPub server, able to send and store messages.
+  # Use this only as a test, because this server does not do a Multi Factor Login.
   root: :local:rlocal
-  root_password: super_secret
+  # the password can be in clear or hashed. This is NOT your mastodon password.
+  # This is the password to access this Adelphos instance as root.
+  # The root account in Adelphos is a special alias with the name root belonging
+  # to the `admins' family.
+  # As in each adelphos instance the families are unique, no other user can belong
+  # to the `admins' family unless you (as a root) invite them.
+  # Yes, you could have more than one root in adelphos.
+  #
+  #  This is the hashed version of 'super_secret' (if you hash it by yourself you
+  #  will get something different!)
+  root_password: '$argon2id$v=19$m=65536,t=3,p=4$F/5IuDGWSdTdi1fTk1FIqA$2qrnHNWXn3f50S3Z6xIYIA+zFvp+qOIQRmmkbrYv8aQ'
+  # If this is true than the password is already hashed. Default: true
+  # To create a hashed password type this in the terminal
+  #
+  # >>> from argon2 import PasswordHasher
+  # >>> ph = PasswordHasher()
+  # >>> pwhas = ph.hash('my_super_secret_password')
+  # >>> print (pwhas)
+  # and copy the output to the root_password slot
+  # already_hashed: false
 
 social_dao:
   db_name: ad_social.sqlite

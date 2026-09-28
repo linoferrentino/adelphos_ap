@@ -73,6 +73,29 @@ basic_ad1_setup_yaml = """
 """
 
 
+basic_ad2_setup_yaml = f"""
+
+  ad2_setup:
+    users:
+      - john2
+      - katy2
+
+    families:
+      - name: fam_t2
+        members:
+          john2:
+            password: john_pass
+          katy2:
+            password: katy_pass
+        boss: john2
+        balance: 239.19
+        my_trust: 250
+        location: ad2_fam_t2
+ 
+
+"""
+
+
 fixture_associate_1_yaml = f"""
 
 {basic_ad1_setup_yaml} 
@@ -102,6 +125,8 @@ fixture_associate_1_yaml = f"""
         brotherhood_ratio: 0.58
         location: upper_fam_loc
 
+
+{basic_ad2_setup_yaml} 
 
 """
 

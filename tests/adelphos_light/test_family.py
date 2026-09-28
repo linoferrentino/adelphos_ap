@@ -42,8 +42,12 @@ def test_simul_associates(simulated_fediverse):
 
 
 def _test_join_fam3(world):
-    pass
-
+    ad1 = world.get_instance('ad1')
+    ad1.push_user('alice.fam_t1')
+    fh.ws_join_with_family(ad1.get_sock(), 'XXX99', '#fa#fam_t1@www.ad1.com',
+                           '#fa#fam_t2@www.ad2.com',
+                           ECoreErrno.ECANNOT_JOIN_LEVEL_ZERO)
+ 
 
 def test_simul_fediverse_basic(simulated_fediverse):
 

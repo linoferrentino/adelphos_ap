@@ -47,6 +47,13 @@ def ws_invite_user_macro(ws, user_handle, invite_code, user_inbox):
     gCon.log(f"the msg is {msg.content}")
 
 
+def ws_join_with_family(ws, invite_code, containing_family, inner_family,
+                        code_exp = ECoreErrno.DONE_OK):
+    cmd = f"family.join invite_code {invite_code} containing_family {containing_family}"
+    cmd += f" inner_family {inner_family}"
+    return tu.ws_send_cmd(ws, cmd, code_exp)
+
+
 def ws_associate_with_family(ws, family_dest, import_export_tax, upper_name,
             location, *, 
             family_source = None,

@@ -46,7 +46,7 @@ class FamilyCalls:
     @staticmethod
     @active_login
     async def _sys_call_join(kernel, session, pars):
-        pass
+        return await _family_join_safe(kernel, pars)
 
  
     @staticmethod
@@ -69,6 +69,17 @@ class FamilyCalls:
 f"""You have been invited to join adelphos by @{session.alias_family}@{this_host}
  to accept it do a private mention 
  {social_handle} family.join alias $alias_chosen invite_code {invite_code}""")
+
+
+@federated_transaction(raise_if_fail = True)
+async def _family_join_safe(kernel, pars ,t_id):
+    return await fu.family_join_user_impl(kernel, pars, t_id)
+
+
+async def _family_join_impl(kernel, pars, t_id):
+    containing_family = pars['containing_family']
+    inner_family = pars['inner_family']
+    gCon.log(f"family {containing_family} wants to incorporate {inner_family}")
 
 
 

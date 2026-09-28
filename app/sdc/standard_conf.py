@@ -412,10 +412,10 @@ standard_cli_api = """
             pars:
               invite_code:
                 required: true
-              family_dest:
+              containing_family:
                 required: true
-              family_source:
-                required: false
+              inner_family:
+                required: true
 
           - name: associate
             pars:

@@ -20,6 +20,8 @@ import app.core.sys.ecommerce_utils as ecut
 from app.core.model.AdelphosUri import EAdelphosType
 from app.core.model.AdelphosUri import AdelphosUri
 from app.logging import gCon
+from app.core.ECoreErrno import ECoreErrno
+from app.core.AdelphosCoreException import AdelphosCoreException
 
 import app.misc.trust_utils as tutils
 
@@ -134,20 +136,29 @@ async def family_get_your_carrier_uri(kernel, family_ob, t_id):
     return carrier
 
 
-async def family_join_impl(kernel, pars, t_id):
+async def family_join_user_impl(kernel, pars, t_id):
+    cont_family_uri = pars['containing_family']
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    cont_family_ob = await fdb.uri_read_str(t_id, cont_family_uri)
+    await scu.ensure_logged_alias_is_boss(cont_family_ob, pars, t_id)
+    await _check_join_conditions(kernel, pars, t_id)
+
+
+async def _check_join_conditions(kernel, pars, t_id):
     cont_family_uri = pars['containing_family']
     inner_family_uri = pars['inner_family']
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     cont_family_ob = await fdb.uri_read_str(t_id, cont_family_uri)
     inner_family_ob = await fdb.uri_read_str(t_id, inner_family_uri)
 
-    upper_family_uri = await inner_family_ob().get_scalar('upper_family', t_id)
-    if upper_family_uri is not None:
-        raise AdelphosCoreException(ECoreErrno.EALREADY_ASSOCIATED,
-         f"Family {inner_family_uri} is already associated to {upper_family_uri}")
+    await scu.ensure_family_not_associated(inner_family_ob, t_id)
 
     lev_container = await cont_family_ob().get_scalar('level', t_id)
     lev_inner = await inner_family_ob().get_scalar('level', t_id)
+
+    if lev_container == 0:
+        raise AdelphosCoreException(ECoreErrno.ECANNOT_JOIN_LEVEL_ZERO,
+           f"family {cont_family_uri} cannot contain anything")
 
     if lev_container != (lev_inner + 1):
         raise AdelphosCoreException(ECoreErrno.EDIFFERENT_LEVELS,
@@ -155,6 +166,15 @@ async def family_join_impl(kernel, pars, t_id):
 and can contain families with level {lev_container-1}, \
 but inner family {inner_family_uri} has {lev_inner}")
 
+   
+
+async def family_join_impl(kernel, pars, t_id):
+    await _check_join_conditions(kernel, pars, t_id)
+    cont_family_uri = pars['containing_family']
+    inner_family_uri = pars['inner_family']
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    cont_family_ob = await fdb.uri_read_str(t_id, cont_family_uri)
+    inner_family_ob = await fdb.uri_read_str(t_id, inner_family_uri)
     cont_family_ob().add_link('members', inner_family_ob)
     await inner_family_ob().set_link('upper_family', cont_family_ob, t_id)
     
