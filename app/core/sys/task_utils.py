@@ -75,7 +75,12 @@ def create_step(task_step_type, dikastes_uri, diakonos_uri, pars):
 
 async def add_associate_family_task(kernel, src_boss_ob, dst_boss_ob,
                                 pars, t_id):
+    await _add_simple_task(kernel, src_boss_ob, dst_boss_ob,
+                                pars, ETaskType.ASSOCIATE_FAMILY, t_id)
 
+
+async def _add_simple_task(kernel, src_boss_ob, dst_boss_ob,
+                           pars, task_type, t_id):
     src_boss_uri = src_boss_ob().uri.unparse()
     dst_boss_uri = dst_boss_ob().uri.unparse()
 
@@ -83,9 +88,13 @@ async def add_associate_family_task(kernel, src_boss_ob, dst_boss_ob,
                        src_boss_uri, pars)
     steps = []
     steps.append(step)
-    task_ob = await create_task(kernel, ETaskType.ASSOCIATE_FAMILY,
-                          steps, t_id)
+    task_ob = await create_task(kernel, task_type, steps, t_id)
 
+
+async def add_join_family_task(kernel, src_boss_ob, dst_boss_ob,
+                                pars, t_id):
+    await _add_simple_task(kernel, src_boss_ob, dst_boss_ob,
+                                pars, ETaskType.JOIN_FAMILY, t_id)
 
 
 async def _create_first_step(kernel, offer_ob,

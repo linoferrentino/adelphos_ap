@@ -17,6 +17,7 @@ import app.core.sys.sys_calls_utils as scu
 import app.core.sys.agora_utils as au
 import app.core.sys.object_utils as ou
 import app.core.sys.ecommerce_utils as ecut
+import app.core.sys.task_utils as tu
 from app.core.model.AdelphosUri import EAdelphosType
 from app.core.model.AdelphosUri import AdelphosUri
 from app.logging import gCon
@@ -142,6 +143,15 @@ async def family_join_user_impl(kernel, pars, t_id):
     cont_family_ob = await fdb.uri_read_str(t_id, cont_family_uri)
     await scu.ensure_logged_alias_is_boss(cont_family_ob, pars, t_id)
     await _check_join_conditions(kernel, pars, t_id)
+
+    inner_family_uri = pars['inner_family']
+    inner_family_ob = await fdb.uri_read_str(t_id, inner_family_uri)
+
+    inviting_boss_ob = await scu.get_alias_in_session(kernel, pars, t_id)
+    invited_boss_ob = await family_get_your_boss(kernel, inner_family_ob, t_id)
+
+    await tu.add_join_family_task(kernel, inviting_boss_ob, invited_boss_ob, pars,
+                                  t_id)
 
 
 async def _check_join_conditions(kernel, pars, t_id):

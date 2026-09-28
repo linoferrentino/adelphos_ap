@@ -34,13 +34,25 @@ class TaskCalls:
 
     @staticmethod
     @active_login
-    async def _sys_call_accept(kernel, session, pars):
-        await _accept_safe(kernel, pars)
+    async def _sys_call_accept_associate(kernel, session, pars):
+        await _accept_associate_safe(kernel, pars)
 
 
     @staticmethod
     @active_login
-    async def _sys_call_decline(kernel, session, pars):
+    async def _sys_call_accept_join(kernel, session, pars):
+        await _accept_join_safe(kernel, pars)
+
+
+    @staticmethod
+    @active_login
+    async def _sys_call_decline_associate(kernel, session, pars):
+        pass
+
+
+    @staticmethod
+    @active_login
+    async def _sys_call_decline_join(kernel, session, pars):
         pass
 
 
@@ -73,8 +85,13 @@ async def _task_give_hearts_safe(kernel, pars, t_id):
 
 
 @federated_transaction(raise_if_fail = True)
-async def _accept_safe(kernel, pars, t_id):
-    await _accept_impl(kernel, pars, t_id)
+async def _accept_associate_safe(kernel, pars, t_id):
+    await _accept_associate_impl(kernel, pars, t_id)
+
+
+@federated_transaction(raise_if_fail = True)
+async def _accept_join_safe(kernel, pars, t_id):
+    await _accept_join_impl(kernel, pars, t_id)
 
 
 @federated_transaction(raise_if_fail = True)
@@ -184,8 +201,23 @@ not {step_type}")
     return (alias_ob, task_ob, active_step_idx, steps, active_step)
 
 
+async def _accept_join_impl(kernel, pars, t_id):
+    (alias_ob, task_ob, active_step_idx, steps, active_step) = \
+            await _get_active_dikastes_task_for_alias(kernel, pars, t_id,
+                        ETaskType.JOIN_FAMILY, EDefaultTaskType.DEFAULT_STATE)
 
-async def _accept_impl(kernel, pars, t_id):
+    stored_pars = active_step.data['pars']
+    gCon.log(f"stored_pars {stored_pars}")
+
+    pars = stored_pars | pars
+    await fu.family_join_impl(kernel, pars, t_id)
+
+    await tu.complete_active_step_for_task(kernel, task_ob, active_step,
+                active_step_idx, steps, t_id)
+
+
+
+async def _accept_associate_impl(kernel, pars, t_id):
     (alias_ob, task_ob, active_step_idx, steps, active_step) = \
             await _get_active_dikastes_task_for_alias(kernel, pars, t_id,
                         ETaskType.ASSOCIATE_FAMILY, EDefaultTaskType.DEFAULT_STATE)

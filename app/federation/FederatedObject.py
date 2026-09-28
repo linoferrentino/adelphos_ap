@@ -136,11 +136,11 @@ def reification(detach):
             if detach == False:
                 return data
             if isinstance(data, Iterable) == False:
-                return data().detach()
+                return data().detach_field_uri()
             val = list()
             for val_item in data:
-                val_detached = val_item().detach()
-                val.append(val_detached.ob.fields)
+                val_detached = val_item().detach_field_uri()
+                val.append(val_detached)
             return val
 
 
@@ -271,6 +271,7 @@ FDB_RESERVED_PREFIX = "_fdb_"
 REF_COUNT_COLUMN = f"{FDB_RESERVED_PREFIX}ref_count"
 VERSION_COLUMN   = f"{FDB_RESERVED_PREFIX}version"
 CID_COLUMN   = f"{FDB_RESERVED_PREFIX}cid"
+URI_COLUMN   = f"{FDB_RESERVED_PREFIX}uri"
 
 
 @dataclass
@@ -622,6 +623,13 @@ class FederatedObject:
             if maybe == True:
                 return None
             raise ex
+
+
+    def detach_field_uri(self):
+        detached = self.detach()
+        fields = detached.ob.fields
+        fields[URI_COLUMN] = self.uri.unparse()
+        return fields
 
 
     def detach(self):

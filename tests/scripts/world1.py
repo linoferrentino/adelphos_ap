@@ -83,11 +83,13 @@ basic_ad2_setup_yaml = f"""
     families:
       - name: fam_t2
         members:
-          john2:
+          john2_al:
+            actor: john2
             password: john_pass
-          katy2:
+          katy2_al:
+            actor: katy2
             password: katy_pass
-        boss: john2
+        boss: john2_al
         balance: 239.19
         my_trust: 250
         location: ad2_fam_t2

@@ -305,12 +305,22 @@ standard_cli_api = """
         class: app.core.sys.TaskCalls.TaskCalls
         syscalls:
 
-          - name: accept
+          - name: accept_associate
             pars:
               task_uri:
                 required: true
 
-          - name: decline
+          - name: accept_join
+            pars:
+              task_uri:
+                required: true
+
+          - name: decline_associate
+            pars:
+              task_uri:
+                required: true
+      
+          - name: decline_join
             pars:
               task_uri:
                 required: true

@@ -13,6 +13,7 @@
 
 import re
 import pytest
+import json
 
 from tests.testers.fixtures import get_routable_app
 from tests.testers.fixtures import simulated_fediverse
@@ -37,17 +38,72 @@ from app.federation.FederatedObject import str_to_fobs
 def test_simul_associates(simulated_fediverse):
     sim_fed = simulated_fediverse(wld1.world_1_yaml)
     sim_fed.test(wld1.fixture_associate_1_yaml, (
-        _test_join_fam3,
+        _test_join_fam3_KO,
+        _test_join_fam3_denied,
+        _test_join_fam3_already_associated,
+        _test_join_fam3_OK,
         ))
 
 
-def _test_join_fam3(world):
+def _test_join_fam3_OK(world):
+    ad1 = world.get_instance('ad1')
+    ad1.push_user('alice.fam_t1')
+    fh.ws_join_with_family(ad1.get_sock(), 'XXX99', '#fa#upper_fam@www.ad1.com',
+                           '#fa#fam_t2@www.ad2.com')
+
+    alice_inbox = ad1.get_user_inbox('alice')
+    assert alice_inbox.count_msg() == 1
+    msg = alice_inbox.pop_lst_mmsg()
+    assert msg == 'diakonos_JOIN_FAMILY_default_state'
+    ad1.pop_user()
+
+    ad2 = world.get_instance('ad2')
+    ad2.push_user('john2_al.fam_t2')
+    john_inbox = ad2.get_user_inbox('john2')
+    assert john_inbox.count_msg() == 1
+    msg = john_inbox.pop_lst_mmsg()
+    assert msg == 'dikastes_JOIN_FAMILY_default_state'
+
+    datas = ah.ws_alias_get_tasks_as_dikastes(ad2.get_sock())
+    assert len(datas['res']) == 1
+    gCon.log(f"john's dikastes tasks are {datas['res']}")
+    invite_code = datas['res'][0]['steps'][0]['data']['pars']['invite_code']
+    assert invite_code == 'XXX99'
+
+    task_uri = datas['res'][0]['_fdb_uri']
+    gCon.log(f"uri to accept {task_uri}")
+
+    tkh.ws_accept_join_task(ad2.get_sock(), task_uri)
+
+    ad2.pop_user()
+
+
+def _test_join_fam3_KO(world):
     ad1 = world.get_instance('ad1')
     ad1.push_user('alice.fam_t1')
     fh.ws_join_with_family(ad1.get_sock(), 'XXX99', '#fa#fam_t1@www.ad1.com',
                            '#fa#fam_t2@www.ad2.com',
                            ECoreErrno.ECANNOT_JOIN_LEVEL_ZERO)
+    ad1.pop_user()
  
+
+def _test_join_fam3_denied(world):
+    ad1 = world.get_instance('ad1')
+    ad1.push_user('bob.fam_t1')
+    fh.ws_join_with_family(ad1.get_sock(), 'XXX99', '#fa#fam_t1@www.ad1.com',
+                           '#fa#fam_t2@www.ad2.com',
+                           ECoreErrno.EDENIED)
+    ad1.pop_user()
+
+
+def _test_join_fam3_already_associated(world):
+    ad1 = world.get_instance('ad1')
+    ad1.push_user('alice.fam_t1')
+    fh.ws_join_with_family(ad1.get_sock(), 'XXX99', '#fa#upper_fam@www.ad1.com',
+                           '#fa#fam_t2@www.ad1.com',
+                           ECoreErrno.EALREADY_ASSOCIATED)
+    ad1.pop_user()
+
 
 def test_simul_fediverse_basic(simulated_fediverse):
 
@@ -194,7 +250,7 @@ def _test_associate_with_family_ok(world):
     tasks = data['res']['tasks_as_dikastes']
     assert len(tasks) == 1
     gCon.log(f"The task of user is {tasks[0]} to do accept")
-    tkh.ws_accept_task(ad1.get_sock(), tasks[0])
+    tkh.ws_accept_associate_task(ad1.get_sock(), tasks[0])
     ad1.pop_user()
 
     ad2 = world.get_instance('ad2')
