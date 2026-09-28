@@ -384,15 +384,6 @@ standard_cli_api = """
                 validator: _v_ >= 0
                 default: 0
 
-          #- name: buy_object_title
-          #  pars:
-          #    uplevel:
-          #      par_type: int
-          #      required: true
-          #      validator: _v_ > 0
-          #    ad_title:
-          #      required: true
-
           - name: buy_object_uri
             pars:
               ob_uri:

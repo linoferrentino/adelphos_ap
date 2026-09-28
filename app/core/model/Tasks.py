@@ -26,6 +26,7 @@ class ETaskType(StrEnum):
     ASSOCIATE_FAMILY = 'ASSOCIATE_FAMILY'
     JOIN_FAMILY = 'JOIN_FAMILY'
     SHIP_OBJECT = 'SHIP_OBJECT'
+    TRUST_LINE_INVITE = 'TRUST_LINE'
 
 
 class EDefaultTaskType(StrEnum):

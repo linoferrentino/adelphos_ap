@@ -220,6 +220,47 @@ classes:
           transient_age: 15m
 
 
+    - uri_prefix: {EAdelphosType.TRUST_LINE_TYPE}
+      can_be_root: false
+      version: 0
+
+      columns:
+
+        - name: alias_src
+          type: uri
+          cardinality: scalar
+          required: true
+
+        - name: alias_dst
+          type: uri
+          cardinality: scalar
+          required: true
+
+        - name: trust_val
+          type: real
+          cardinality: scalar
+          required: false
+          default: 5
+
+        - name: carry_tax
+          type: real
+          cardinality: scalar
+          required: false
+          default: 1.02
+
+        - name: balance
+          type: real
+          cardinality: scalar
+          required: false
+          default: 0
+
+        - name: pending_balance
+          type: real
+          cardinality: scalar
+          required: false
+          default: 0
+
+
     - uri_prefix: {EAdelphosType.OBJECT_TYPE}
       can_be_root: false
       version: 0

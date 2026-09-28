@@ -27,6 +27,7 @@ class EAdelphosType(StrEnum):
     AGORA_TYPE = 'ag'
     OBJECT_TYPE = 'ob'
     TASK_TYPE   = 'tk'
+    TRUST_LINE_TYPE = 'tl'
 
 
 @dataclass

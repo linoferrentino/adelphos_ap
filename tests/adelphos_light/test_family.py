@@ -42,6 +42,8 @@ def test_simul_associates(simulated_fediverse):
         _test_join_fam3_denied,
         _test_join_fam3_already_associated,
         _test_join_fam3_OK,
+        _test_put_object_after_join,
+        _test_buy_object_after_join,
         ))
 
 
@@ -75,6 +77,30 @@ def _test_join_fam3_OK(world):
 
     tkh.ws_accept_join_task(ad2.get_sock(), task_uri)
 
+    ad2.pop_user()
+    assert alice_inbox.count_msg() == 1
+    msg = alice_inbox.pop_lst_mmsg()
+    assert msg == 'complete_JOIN_FAMILY_default_state'
+
+def _test_buy_object_after_join(world):
+    ad1 = world.get_instance('ad1')
+    ad1.push_user('alice.fam_t1')
+    data = agoh.ws_list_ads(ad1.get_sock(), 1)
+    gCon.log(f"list ads returns {data}")
+
+    assert len(data['res']) == 1
+    assert data['res'][0]['title'] == "Hello Kitty mug"
+
+    ob_uri = data['res'][0]['uri']
+    data = agoh.ws_buy_object_uri(ad1.get_sock(), ob_uri)
+
+    ad1.pop_user()
+
+
+def _test_put_object_after_join(world):
+    ad2 = world.get_instance('ad2')
+    ad2.push_user('katy2_al.fam_t2')
+    data = oh.ws_create_object_ad(ad2.get_sock(), "Hello Kitty mug", 1.39)
     ad2.pop_user()
 
 
@@ -189,25 +215,25 @@ def _test_list_uplevel_two_ok(world):
     _test_len_get_list(world, 'ad1', 'alice.fam_t1', 2, uplevel = 1)
 
 
-def _test_buy_object_level_one_ok(world):
-    gCon.rule("2nd buy, will do it")
-    ad1 = world.get_instance('ad1')
-    ad1.push_user('alice.fam_t1')
-    gCon.rule("2nd buy, first I try a not existent object")
-    agoh.ws_buy_object_title(ad1.get_sock(), 1, 'A tale of two cities',
-                    code_exp = ECoreErrno.ENO_SUCH_OBJECT)
-    gCon.rule("2nd buy, now I ask a real object")
-    agoh.ws_buy_object_title(ad1.get_sock(), 1, 'Son and Lovers')
-    ad1.pop_user()
+#def _test_buy_object_level_one_ok(world):
+#    gCon.rule("2nd buy, will do it")
+#    ad1 = world.get_instance('ad1')
+#    ad1.push_user('alice.fam_t1')
+#    gCon.rule("2nd buy, first I try a not existent object")
+#    agoh.ws_buy_object_title(ad1.get_sock(), 1, 'A tale of two cities',
+#                    code_exp = ECoreErrno.ENO_SUCH_OBJECT)
+#    gCon.rule("2nd buy, now I ask a real object")
+#    agoh.ws_buy_object_title(ad1.get_sock(), 1, 'Son and Lovers')
+#    ad1.pop_user()
 
 
-def _test_buy_object_level_one_same_family(world):
-    gCon.rule("1st buy, same family")
-    ad1 = world.get_instance('ad1')
-    ad1.push_user('alice.fam_t1')
-    agoh.ws_buy_object_title(ad1.get_sock(), 1, 'pokemon', code_exp = 
-                    ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY )
-    ad1.pop_user()
+#def _test_buy_object_level_one_same_family(world):
+#    gCon.rule("1st buy, same family")
+#    ad1 = world.get_instance('ad1')
+#    ad1.push_user('alice.fam_t1')
+#    agoh.ws_buy_object_title(ad1.get_sock(), 1, 'pokemon', code_exp = 
+#                    ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY )
+#    ad1.pop_user()
 
 
 def _test_associate_with_family_ok(world):
