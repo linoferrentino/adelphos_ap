@@ -23,3 +23,8 @@ def ws_play_script(ws, script_path, *, code_exp = AdErrno.DONE_OK):
     tu.ws_send_cmd(ws, cmd, code_exp)
 
 
+def ws_clear_cache(ws, *, code_exp = AdErrno.DONE_OK):
+    cmd = f"root.clear_cache"
+    tu.ws_send_cmd(ws, cmd, code_exp)
+
+

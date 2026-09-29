@@ -74,9 +74,9 @@ async def agora_find_first_object_title_impl(kernel, pars, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     chain_imports = await scu.get_family_chain_up(kernel, pars, t_id)
 
-    if len(chain_imports) < 2:
-        raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
-                    "You cannot buy in your family")
+    #if len(chain_imports) < 2:
+    #    raise AdelphosCoreException(ECoreErrno.ECANNOT_BUY_IN_YOUR_FAMILY,
+    #                "You cannot buy in your family")
 
     family_lev_ob = chain_imports[-1] 
 

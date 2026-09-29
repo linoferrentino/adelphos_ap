@@ -215,6 +215,7 @@ class SimulFediverse:
             'my_trust' : my_trust,
             'user_handle' : actor_dto.get_social_handle(),
             'location' : location,
+            'already_hashed' : True,
         }
 
         gCon.log(f"building alias with pars {pars}")

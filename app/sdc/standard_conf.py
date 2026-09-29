@@ -394,7 +394,7 @@ standard_cli_api = """
               uplevel:
                 par_type: int
                 required: true 
-                validator: _v_ > 0
+                validator: _v_ >= 0
               ob_title:
                 required: true
 

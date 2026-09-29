@@ -658,7 +658,6 @@ class FederatedObject:
     @enforce_set
     async def get_set(self, key, t_id):
         cur_value = await self._get_key_val_raw(key, True, t_id)
-        gCon.log(f"get_set {key} val {cur_value} fields {self.ob.fields}")
         return set(cur_value)
 
 

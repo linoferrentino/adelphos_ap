@@ -87,13 +87,15 @@ async def family_get_offers_exp_r(fdb, fob, t_id):
 async def family_get_offers_deep(fdb, fob, t_id):
     gCon.log(f"[blue]get Recursive offers for {fob().uri.unparse()}[/blue]")
     agora_ob = await family_get_your_agora(fdb.kernel, fob, t_id) 
-    offers_set = await agora_ob().get_set('offers', t_id)
     level = await fob().get_scalar('level', t_id)
-    gCon.log(f"lev {level} offers set is {offers_set}")
-    offers_result = list()
 
     if (level == 0):
-        return offers_set
+        offers_list = await agora_ob().get_as_list('prices_uri_titles', t_id)
+        gCon.log(f"lev {level} offers set is {offers_list}")
+        return offers_list
+
+    offers_set = set()
+    offers_result = list()
 
     members_list = await fob().get_as_object_list('members', t_id)
     gCon.log(f"fam members are {members_list}")

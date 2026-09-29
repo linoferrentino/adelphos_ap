@@ -30,3 +30,28 @@ def _test_do_setup(world):
     ad = world.get_instance('adelphos')
     rh.ws_play_script(ad.get_sock(), 'simple_script')
 
+
+def test_simul_complex(simulated_fediverse):
+    sim_fed = simulated_fediverse(sw.single_world_yaml)
+    sim_fed.test(sw.fixture_2_complex, (
+        _test_add_objects,
+        _test_check_visibility,
+        _test_check_calculations,
+        ))
+
+
+def _test_add_objects(world):
+    ad = world.get_instance('adelphos')
+    rh.ws_play_script(ad.get_sock(), 'add_objects')
+
+
+def _test_check_visibility(world):
+    ad = world.get_instance('adelphos')
+    rh.ws_play_script(ad.get_sock(), 'check_visibility')
+
+
+def _test_check_calculations(world):
+    ad = world.get_instance('adelphos')
+    rh.ws_play_script(ad.get_sock(), 'check_calcs')
+
+

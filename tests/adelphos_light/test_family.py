@@ -23,6 +23,7 @@ import tests.helpers.family_helpers as fh
 import tests.helpers.object_helpers as oh
 import tests.helpers.agora_helpers as agoh
 import tests.helpers.task_helpers as tkh
+import tests.helpers.root_helpers as rh
 import app.consts as CNST
 import app.sdc.standard_conf as stdcnf
 from app.exc.AdelphosException import AdErrno
@@ -38,6 +39,7 @@ from app.federation.FederatedObject import str_to_fobs
 def test_simul_associates(simulated_fediverse):
     sim_fed = simulated_fediverse(wld1.world_1_yaml)
     sim_fed.test(wld1.fixture_associate_1_yaml, (
+        _clear_cache,
         _test_join_fam3_KO,
         _test_join_fam3_denied,
         _test_join_fam3_already_associated,
@@ -135,6 +137,7 @@ def test_simul_fediverse_basic(simulated_fediverse):
 
     sim_fed = simulated_fediverse(wld1.world_1_yaml)
     sim_fed.test(wld1.fixture_1_yaml, (
+        _clear_cache,
         _test_put_object_ad,
         _test_associate_with_family_denied,
         _test_list_objects_zero_ok,
@@ -148,6 +151,14 @@ def test_simul_fediverse_basic(simulated_fediverse):
         #_test_buy_object_level_one_ok,
         ))
 
+
+def _clear_cache(world):
+    ad1 = world.get_instance('ad1')
+    rh.ws_clear_cache(ad1.get_sock())
+    ad2 = world.get_instance('ad2')
+    rh.ws_clear_cache(ad2.get_sock())
+    ad3 = world.get_instance('ad3')
+    rh.ws_clear_cache(ad3.get_sock())
 
 
 def _test_put_object_ad(world):
