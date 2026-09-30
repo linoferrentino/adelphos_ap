@@ -12,7 +12,7 @@ root.put_object as_adelphos #al#b7.f7_l0@www.adelphos.it \
 title 'hello kitty purse' description 'for a baby girl' price 3.29
 
 root.put_object as_adelphos #al#b7.f7_l0@www.adelphos.it \
-title 'hello kitty purse' description 'for a baby girl' price 1.22
+title 'lego car' description 'for a boy' price 2.81
 
 root.put_object as_adelphos #al#b7.f7_l0@www.adelphos.it \
 title 'ms. Dalloway' description 'good condition, a bit scratched' \

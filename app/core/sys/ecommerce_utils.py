@@ -207,8 +207,8 @@ async def get_family_balance(family, t_id):
 
 async def _change_family_balance_dict(family, delta_balance, bmod_type, t_id, pending_dict):
     await _change_family_balance(family, delta_balance, bmod_type, t_id)
-    if bmod_type != EBMod.PENDING:
-        return
+    #if bmod_type != EBMod.PENDING:
+    #    return
     family_uri = family().uri.unparse()
     val = pending_dict.get(family_uri)
     if val is None:
@@ -225,14 +225,14 @@ async def _change_family_balance(family, delta_balance, bmod_type, t_id):
     (real_balance, pending_balance, total_balance) = await \
             get_family_balance(family, t_id)
 
+    gCon.log(f"[yellow]change {bmod_type} balance for {family().uri.name} --> {real_balance} + {pending_balance} = {total_balance} delta {delta_balance} [/yellow]")
+
     if bmod_type != EBMod.CONFIRMED:
         if ((delta_balance * pending_balance) <= 0):
             balance_to_check = real_balance + delta_balance
         else:
             balance_to_check = total_balance + delta_balance
         await validate_balance_in_family(family, balance_to_check, t_id)
-
-    gCon.log(f"[yellow] change {bmod_type} balance for {family().uri.name} --> {real_balance} + {pending_balance} = {total_balance} delta {delta_balance} [/yellow]")
 
     match bmod_type:
         case EBMod.REAL:
@@ -285,14 +285,9 @@ async def distribute_losses_and_gains(kernel, price, chain_exports, chain_import
     pending_gains = await _distribute_gains_to_exports(kernel,
             price, chain_exports, bmod_type, t_id)
 
-    if bmod_type != EBMod.PENDING:
-        return
-
-    #gCon.log(f"Adding the zero balance for the containing family {cont_family_uri}")
-    #pending_moves[cont_family_uri] = 0
-    gCon.rule('PENDING gains')
+    gCon.rule(f'{bmod_type} gains')
     gCon.log(pending_gains)
-    gCon.rule('PENDING losses')
+    gCon.rule(f'{bmod_type} losses')
     gCon.log(pending_losses)
 
     cont_family_uri = chain_exports[-1]().uri.unparse()
@@ -300,8 +295,15 @@ async def distribute_losses_and_gains(kernel, price, chain_exports, chain_import
     pending_moves = pending_losses | pending_gains
     pending_moves[cont_family_uri] += save_pending_loss 
 
-    gCon.rule('PENDING RESULTS')
+    gCon.rule(f'{bmod_type} RESULTS')
     gCon.log(pending_moves)
+
+    total_val = 0
+    for k,v in pending_moves.items():
+        total_val += float(v)
+
+    gCon.log(f"total transaction value {total_val}")
+    assert (abs(total_val) < 1e-3)
  
     return pending_moves
 
