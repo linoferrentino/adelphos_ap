@@ -54,15 +54,12 @@ def ws_join_with_family(ws, invite_code, containing_family, inner_family,
     return tu.ws_send_cmd(ws, cmd, code_exp)
 
 
-def ws_associate_with_family(ws, family_dest, import_export_tax, upper_name,
-            location, *, 
+def ws_associate_with_family(ws, family_dest, import_export_tax, upper_name, *, 
             family_source = None,
             brotherhood_ratio = None,
             code_exp = ECoreErrno.DONE_OK):
     cmd = f"family.associate \
 import_export_tax {import_export_tax} family_dest {family_dest}"
-    if location is not None:
-        cmd += f" location '{location}'"
     if family_source is not None:
         cmd += f" family_source {family_source}"
     if upper_name is not None:

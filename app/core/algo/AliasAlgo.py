@@ -76,10 +76,8 @@ class AliasAlgo:
         alias_name = pars['alias_name']
         family = pars['family']
         password = pars['password']
-        my_trust = pars['my_trust'] if hasattr(pars, 'my_trust') \
-                else 5.0
+        my_trust = pars['my_trust']
         user_handle = pars['user_handle']
-        location = pars['location']
 
         already_hashed = pars.get('already_hashed')
 
@@ -105,7 +103,7 @@ class AliasAlgo:
                         user_handle, alias_name, family, password, t_id,
                         already_hashed = already_hashed)
 
-        await fu.add_default_agora(fdb, family_ob, alias_ob, location, t_id)
+        await fu.add_default_agora(fdb, family_ob, alias_ob, t_id)
 
         await family_ob().set_link('boss', alias_ob, t_id)
 

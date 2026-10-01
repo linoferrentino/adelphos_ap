@@ -219,8 +219,11 @@ standard_cli_api = """
                 required: true
               password:
                 required: true
-              location:
-                required: true
+              my_trust:
+                required: false
+                par_type: float
+                default: 5
+                validator: _v_ > 0
 
           - name: add_alias
             pars:
@@ -230,8 +233,11 @@ standard_cli_api = """
                 required: true
               password:
                 required: true
-              location:
-                required: true
+              my_trust:
+                required: false
+                par_type: float
+                default: 5
+                validator: _v_ > 0
 
           - name: alias_join_family
             pars:
@@ -292,13 +298,6 @@ standard_cli_api = """
               upper_name:
                 required: true
                 validator: len("_v_") > 3
-              location:
-                required: true
-                validator: len("_v_") > 3
-              force:
-                par_type: bool
-                required: false
-                default: false
             
 
       task:
@@ -430,10 +429,6 @@ standard_cli_api = """
               upper_name:
                 required: true
                 validator: len("_v_") > 3
-              location:
-                required: true
-                validator: len("_v_") > 3
-
 
       alias:
         class: app.core.sys.AliasCalls.AliasCalls
@@ -535,8 +530,12 @@ standard_inbox_api = """
                     required: true
                 password:
                     required: true
-                location:
-                    required: true
+                my_trust:
+                    required: false
+                    par_type: float
+                    validator: _v_ > 0
+                    default: 5
+
  
           - name: join_family
             pars:

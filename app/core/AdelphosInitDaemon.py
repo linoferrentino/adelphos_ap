@@ -52,7 +52,7 @@ class AdelphosInitDaemon(Daemon):
             'family' : 'admins',
             'password' : root_password,
             'already_hashed' : already_hashed,
-            'location' : "root's home",
+            'my_trust' : 5,
             'maybe' : True
         }
 

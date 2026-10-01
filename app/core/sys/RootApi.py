@@ -289,6 +289,8 @@ async def _sys_call_add_user_alias_impl(kernel, session, pars,
     pars['alias_name'] = alias_name
     pars['family']  = family
     pars['user_handle'] = local_user.actor_dto.get_social_handle()
+    #pars['my_trust'] = pars['my_trust']
+    gCon.log(f"I want to create user alias with {pars}")
 
     return await AliasAlgo.alias_create_safe(kernel, pars) 
 

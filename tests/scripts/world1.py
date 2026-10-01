@@ -57,7 +57,6 @@ basic_ad1_setup_yaml = """
         boss: alice
         balance: 33.92
         my_trust: 115
-        location: fam_t1_loc
 
       - name: fam_t2
         members: 
@@ -68,7 +67,6 @@ basic_ad1_setup_yaml = """
         boss: tom
         balance: 102.92
         my_trust: 150
-        location: fam_t2_loc
 
 """
 
@@ -92,7 +90,6 @@ basic_ad2_setup_yaml = f"""
         boss: john2_al
         balance: 239.19
         my_trust: 250
-        location: ad2_fam_t2
  
 
 """
@@ -111,7 +108,6 @@ fixture_associate_1_yaml = f"""
         boss: bill 
         balance: 2.92
         my_trust: 40
-        location: fam_t3_loc
 
       - name: upper_fam
         level: 1
@@ -125,7 +121,6 @@ fixture_associate_1_yaml = f"""
         my_trust: 150
         system_trust: 200
         brotherhood_ratio: 0.58
-        location: upper_fam_loc
 
 
 {basic_ad2_setup_yaml} 
@@ -151,7 +146,6 @@ fixture_1_yaml = f"""
         boss: john_al
         balance: 239.19
         my_trust: 250
-        location: ad2_fam_t2
    
 
   ad3_setup:
@@ -172,7 +166,6 @@ fixture_1_yaml = f"""
         boss: john_a3
         balance: 63.44
         my_trust: 99
-        location: ad3_fam_t3
 
 
 """

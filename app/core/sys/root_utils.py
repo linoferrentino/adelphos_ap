@@ -90,7 +90,7 @@ async def build_upper_family_ob_impl(kernel, pars, t_id):
 
     family_ob = fdb.new_ob_uri(t_id, family_uri, fields)
 
-    await fu.add_default_agora(fdb, family_ob, carrier_ob, pars['location'], t_id)
+    await fu.add_default_agora(fdb, family_ob, carrier_ob, t_id)
     await family_ob().set_link('boss', boss_ob, t_id)
 
     for member_ob in members_ob:

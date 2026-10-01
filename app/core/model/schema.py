@@ -192,11 +192,6 @@ classes:
 
       columns:
 
-        - name: location
-          type: str
-          cardinality: scalar
-          required: true
-
         - name: carrier
           type: uri
           cardinality: scalar

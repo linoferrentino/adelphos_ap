@@ -203,7 +203,6 @@ class SimulFediverse:
         family_name = family['name']
         boss = family['boss']
         my_trust = family['my_trust']
-        location = family['location']
         member = members[boss]
         actor_dto = SimulFediverse._get_actor_for_alias(instance, boss, member)
 
@@ -214,7 +213,6 @@ class SimulFediverse:
             'password': member['password'],
             'my_trust' : my_trust,
             'user_handle' : actor_dto.get_social_handle(),
-            'location' : location,
             'already_hashed' : True,
         }
 

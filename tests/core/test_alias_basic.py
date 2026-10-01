@@ -47,6 +47,7 @@ async def a_test_add_alias(w_local):
       'password' : 'pass',
       'user_handle' : '@lino@host.com',
       'location' : 'Church of St. Anna, Padova',
+      'my_trust' : 5,
     }
 
     res = await AliasAlgo.alias_create(kernel, pars)
@@ -70,6 +71,7 @@ async def a_test_add_dup_family(w_local):
       'password' : 'pass',
       'user_handle' : lino_handle,
       'location' : 'Church of St. Anne, Padova',
+      'my_trust' : 5,
     }
 
 

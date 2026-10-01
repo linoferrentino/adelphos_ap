@@ -4,12 +4,10 @@
 $ include | build_users
 
 
-root.add_alias alias bob.fam_bob user bob password bob_pass \
-	location "Milan, via Petrarca 12"
+root.add_alias alias bob.fam_bob user bob password bob_pass 
 
 root.add_alias alias alice.fam_bob user alice password alice_pass \
-	location "Milan, via Petrarca 12" ==> \
-	{ "errno" : 1, "res_re" : "fam_bob already present" }
+	 ==> { "errno" : 1, "res_re" : "fam_bob already present" }
 
 root.alias_join_family alias alice family fam_bob user \
 	alice password alice_pass ==> { "errno" : 0, \
@@ -22,15 +20,13 @@ root.alias_join_family alias alice family fam_bob user \
 root.add_user user john
 root.add_user user mary
 
-root.add_alias alias john.smith user john password jpass \
-	location 'Milan, via Mazzini 55'
+root.add_alias alias john.smith user john password jpass 
 
 root.alias_join_family alias mary family smith user mary password mpass
 
 root.do_association family_source #fa#fam_bob@www.adelphos.it \
 	family_dest #fa#smith@www.adelphos.it \
-	upper_name wall_street_family \
-	location "Wall Street 5th" 
+	upper_name wall_street_family 
 
 root.put_object as_adelphos #al#john.smith@www.adelphos.it \
 title 'Joyce Ulysses' \
@@ -63,8 +59,7 @@ root.pop_alias
 #	{ "errno" : 18 }
 
 root.add_user user jack
-root.add_alias alias jack_al.morrison user jack password jpass \
-	location 'Siena, via Dante 3'
+root.add_alias alias jack_al.morrison user jack password jpass 
 
 root.put_object as_adelphos #al#jack_al.morrison@www.adelphos.it \
 title 'bluetooth speaker' \
@@ -99,21 +94,19 @@ ob_uri {iphone_uri} hearts 5  ==> \
 root.do_association family_source #fa#fam_bob@www.adelphos.it \
 	family_dest #fa#morrison@www.adelphos.it \
 	upper_name second_level \
-	location "Central Park"  ==> { "errno" : 16 }
+	==> { "errno" : 16 }
 
 root.do_association family_source #fa#wall_street_family@www.adelphos.it \
 	family_dest #fa#morrison@www.adelphos.it \
 	upper_name second_level \
-	location "Central Park" ==> { "errno" : 15 }
+	==> { "errno" : 15 }
 
 root.add_user user maria
-root.add_alias alias maria_al.rossi user maria password mpass \
-	location 'Pisa, via Manzoni 33'
+root.add_alias alias maria_al.rossi user maria password mpass 
 
 root.do_association family_source #fa#morrison@www.adelphos.it \
 	family_dest #fa#rossi@www.adelphos.it \
-	upper_name tuscany \
-	location "Pisa, via Manzoni 33"
+	upper_name tuscany 
 
 root.push_alias alias maria_al.rossi
 
@@ -130,8 +123,7 @@ root.pop_alias
 
 root.do_association family_source #fa#tuscany@www.adelphos.it \
 	family_dest #fa#wall_street_family@www.adelphos.it \
-	upper_name america_tuscany \
-	location "Florence, via Verdi 1"
+	upper_name america_tuscany 
 
 root.push_alias alias maria_al.rossi
 
@@ -267,8 +259,7 @@ root.pop_alias
 
 root.add_user user join_u1
 
-root.add_alias alias al1.joinf user join_u1 password jpass \
-	location "Milan, via Manzoni 1"
+root.add_alias alias al1.joinf user join_u1 password jpass 
 
 root.do_join containing_family #fa#wall_street_family@www.adelphos.it \
 	inner_family #fa#joinf@www.adelphos.it
