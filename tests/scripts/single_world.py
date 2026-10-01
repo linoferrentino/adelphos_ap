@@ -22,6 +22,39 @@ single_world_yaml = """
 
 """
 
+fixture_writers_poets_wrong = """
+
+  adelphos_setup:
+    
+    users:
+        - udante
+        - ugiacomo
+        - ualessandro
+         
+
+    families:
+
+       - name: alighieri
+         members: 
+           dante:
+             password: beatrice
+             actor: udante
+         boss: dante 
+         balance: 0
+         my_trust: 10
+         
+       - name: leopardi 
+         members: 
+           giacomo:
+             password: silvia
+             actor: ugiacomo
+         boss: dante 
+         balance: 0
+         my_trust: 10
+
+
+"""
+
 fixture_1_single = """
 
   adelphos_setup:
@@ -33,7 +66,7 @@ fixture_1_single = """
 
 """
 
-fixture_2_complex = """
+fixture_2_complex_parametric = """
 
   adelphos_setup:
     
@@ -176,7 +209,7 @@ fixture_2_complex = """
         members: 
           - '#fa#f0_l0'
           - '#fa#f1_l0'
-        boss: '#al#b0.f0_l0'
+        boss: '{_boss_f0_1_l1_}'
         carrier: '#al#c0.f0_l0'
         balance: 0
         my_trust: 10
@@ -243,7 +276,7 @@ fixture_2_complex = """
           - '#fa#f4-5_l1'
           - '#fa#f6-7_l1'
         boss: '#al#b7.f7_l0'
-        carrier: '#al#c7.f7_l0'
+        carrier: '{_carrier_f4-7_l2}'
         balance: 0
         my_trust: 10
         system_trust: 10
@@ -265,4 +298,24 @@ fixture_2_complex = """
 
 
 """
- 
+
+fixture_2_complex_ok_vals = {
+
+    '_boss_f0_1_l1_': '#al#b0.f0_l0',
+    '_carrier_f4-7_l2' : '#al#c7.f7_l0',
+}
+
+
+fixture_2_complex_wrong_boss = {
+
+    '_boss_f0_1_l1_': '#al#b2.f2_l0',
+    '_carrier_f4-7_l2' : '#al#c7.f7_l0',
+
+}
+
+fixture_2_complex_wrong_carrier = {
+
+    '_boss_f0_1_l1_': '#al#b0.f0_l0',
+    '_carrier_f4-7_l2' : '#al#c1.f1_l0',
+
+}

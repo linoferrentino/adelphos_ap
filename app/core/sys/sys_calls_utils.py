@@ -17,8 +17,32 @@ from app.core.model.AdelphosUri import AdelphosUri
 
 from app.core.ECoreErrno import ECoreErrno
 from app.core.AdelphosCoreException import AdelphosCoreException
+import app.core.sys.alias_utils as au
 
 from app.logging import gCon
+
+
+async def _is_alias_in_family_chain(kernel, alias_ob, family_str, t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    family_ob = await fdb.uri_read_str(t_id, family_str)
+    lev_family = await family_ob().get_scalar('level', t_id)
+    family0 = await au.alias_ob_get_your_family(kernel, alias_ob, t_id)
+    chain_up = await get_family_chain_up_l(kernel, family0, lev_family, t_id)
+    top_fam = chain_up[-1]
+    if top_fam().uri.unparse() == family_ob().uri.unparse():
+        return True
+    return False
+
+
+async def _ensure_alias_in_families(kernel, alias_ob, families, t_id):
+    for family in families:
+        gCon.log(f"_searching in family {family}")
+        res = await _is_alias_in_family_chain(kernel, alias_ob, family, t_id)
+        if res == True:
+            return
+    raise AdelphosCoreException(ECoreErrno.EEXTERNAL_ALIAS,
+            f"alias {alias_ob().uri.unparse()} is external in family list")
+
 
 async def get_family_str_in_session(kernel, pars, t_id):
     family_uri = pars['_param'].family_uri
@@ -55,10 +79,14 @@ async def get_family_dest(kernel, pars, t_id):
 
 
 async def get_family_chain_up(kernel, pars, t_id):
-    chain = list()
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     family_ob = await get_family_in_session(kernel, pars, t_id)
     uplevel = pars['uplevel']
+    return await get_family_chain_up_l(kernel, family_ob, uplevel, t_id)
+
+
+async def get_family_chain_up_l(kernel, family_ob, uplevel, t_id):
+    chain = list()
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     chain.append(family_ob)
     gCon.log(f"Starting chain up from {family_ob().uri.unparse()}")
     for lev in range(0, uplevel):

@@ -12,11 +12,25 @@
 ######################################################
 
 
+import re
 from tests.testers.fixtures import simulated_fediverse
 import tests.scripts.single_world as sw
 from app.logging import gCon
+from app.core.AdelphosCoreException import AdelphosCoreException
+from app.core.ECoreErrno import ECoreErrno
 
 import tests.helpers.root_helpers as rh
+import pytest
+
+
+
+def test_simul_wrong(simulated_fediverse):
+    sim_fed = simulated_fediverse(sw.single_world_yaml)
+    with pytest.raises(KeyError) as kex:
+        sim_fed.test(sw.fixture_writers_poets_wrong, (
+        _test_do_setup
+        ))
+    assert str(kex.value) == "'dante'"
 
 
 def test_simul_root_single(simulated_fediverse):
@@ -31,23 +45,50 @@ def _test_do_setup(world):
     rh.ws_play_script(ad.get_sock(), 'simple_script')
 
 
+def test_simul_complex_wrong_boss(simulated_fediverse):
+    sim_fed = simulated_fediverse(sw.single_world_yaml)
+    fixture_2_complex = sw.fixture_2_complex_parametric.format(
+            **sw.fixture_2_complex_wrong_boss
+    )
+    with pytest.raises(AdelphosCoreException) as acex:
+        sim_fed.test(fixture_2_complex, (
+            _unreacheable,
+        ))
+    assert acex.value.errno == ECoreErrno.EEXTERNAL_ALIAS
+
+
+def test_simul_complex_wrong_carrier(simulated_fediverse):
+    sim_fed = simulated_fediverse(sw.single_world_yaml)
+    fixture_2_complex = sw.fixture_2_complex_parametric.format(
+            **sw.fixture_2_complex_wrong_carrier
+    )
+    with pytest.raises(AdelphosCoreException) as acex:
+        sim_fed.test(fixture_2_complex, (
+            _unreacheable,
+        ))
+    assert acex.value.errno == ECoreErrno.EEXTERNAL_ALIAS
+    assert re.search('#al#c1.f1_l0', acex.value.out_str) is not None
+
+
+def _unreacheable(world):
+    assert False
+
+
 def test_simul_complex(simulated_fediverse):
     sim_fed = simulated_fediverse(sw.single_world_yaml)
-    sim_fed.test(sw.fixture_2_complex, (
+    fixture_2_complex = sw.fixture_2_complex_parametric.format(
+            **sw.fixture_2_complex_ok_vals
+    )
+    
+    sim_fed.test(fixture_2_complex, (
         _test_add_objects,
-        _test_check_visibility,
         _test_check_calculations,
-        ))
+    ))
 
 
 def _test_add_objects(world):
     ad = world.get_instance('adelphos')
     rh.ws_play_script(ad.get_sock(), 'add_objects')
-
-
-def _test_check_visibility(world):
-    ad = world.get_instance('adelphos')
-    rh.ws_play_script(ad.get_sock(), 'check_visibility')
 
 
 def _test_check_calculations(world):

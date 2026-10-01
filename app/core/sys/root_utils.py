@@ -21,6 +21,7 @@ from app.core.model.AdelphosUri import AdelphosUri
 from app.core.model.AdelphosUri import EAdelphosType
 import app.misc.trust_utils as tutils
 import app.core.sys.family_utils as fu
+import app.core.sys.sys_calls_utils as scu
 
 
 
@@ -55,6 +56,9 @@ async def build_upper_family_ob_impl(kernel, pars, t_id):
 
     boss_ob = await fdb.uri_read_str(t_id, boss)
     carrier_ob = await fdb.uri_read_str(t_id, carrier)
+
+    await scu._ensure_alias_in_families(kernel, boss_ob, members, t_id)
+    await scu._ensure_alias_in_families(kernel, carrier_ob, members, t_id)
 
     name = pars['name']
     family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, name)
