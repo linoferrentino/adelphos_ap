@@ -28,6 +28,8 @@ class EAdelphosType(StrEnum):
     OBJECT_TYPE = 'ob'
     TASK_TYPE   = 'tk'
     TRUST_LINE_TYPE = 'tl'
+    CHORION_TYPE = 'ch'
+    ERGON_TYPE = 'er'
 
 
 @dataclass

@@ -35,6 +35,7 @@ import app.core.sys.offer_utils as ofutils
 import app.core.sys.agora_utils as agu
 import app.core.sys.ecommerce_utils as ecut
 import app.core.sys.AgoraCalls as ac
+import app.core.sys.alias_utils as autils
 
 
 def sudo_cmd(func):
@@ -174,7 +175,7 @@ async def _push_alias_safe(kernel, pars, t_id):
 async def _push_alias_impl(kernel, session, alias, t_id):
     gCon.log(f"pushing alias {alias}")
     alias_session = session.client.push_session(alias)
-    await AliasCalls._session_login(kernel, alias_session,
+    await autils._session_login(kernel, alias_session,
                                     alias, None, t_id, True)
     return alias_session
 

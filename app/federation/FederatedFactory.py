@@ -76,6 +76,8 @@ class FederatedFactory:
                 return FObColType.ENUM
             case 'uri':
                 return FObColType.URI
+            case 'bool':
+                return FObColType.BOOL
             case _:
                 raise Exception(f"Invalid col type {col_type_str}")
 

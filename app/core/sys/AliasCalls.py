@@ -13,8 +13,6 @@
 
 from app.core.ECoreErrno import ECoreErrno
 from app.core.AdelphosCoreException import AdelphosCoreException
-from argon2 import PasswordHasher
-import app.misc.alias_utils as au
 from app.sdc.Dependencies import Dependencies
 
 from app.core.model.AdelphosUri import EAdelphosType
@@ -29,6 +27,10 @@ from app.exc.AdelphosException import AdErrno
 from app.exc.AdelphosException import AdelphosException
 
 import app.core.sys.sys_calls_utils as scu
+import app.core.sys.alias_utils as au
+import app.core.sys.task_utils as tku
+import app.core.ui.msg_descs as mdescs
+import app.core.sys.social_utils as su
 
 
 class AliasCalls:
@@ -36,7 +38,7 @@ class AliasCalls:
     @staticmethod
     @active_login
     async def _sys_call_send_msg(kernel, session, pars):
-        pass
+        await _sys_call_send_msg_safe(kernel, pars)
 
 
     @staticmethod
@@ -47,47 +49,8 @@ class AliasCalls:
 
     @staticmethod
     async def _sys_call_login(kernel, session, pars):
-        await AliasCalls.session_login_safe(kernel, pars)
-
+        await session_login_safe(kernel, pars)
         return "Login OK, check your Mastodon inbox to get the token."
-
-
-    @staticmethod
-    @federated_transaction(raise_if_fail = True)
-    async def session_login_safe(kernel, pars, t_id):
-        login = pars['login']
-        password = pars['password']
-        session = pars['_param']
-
-        await AliasCalls._session_login(kernel, session, login, password, 
-                                        t_id)
-
-
-    @staticmethod
-    async def _session_login(kernel, session, login, password, t_id,
-                             force = False):
-        (alias, family) = au.split_alias(login)
-        pars = {
-          'alias' : alias,
-          'family' : family,
-          'password': password,
-          'force' : force,
-        }
-        alias_ob = await _login_impl(kernel, pars, t_id)
-        actor_handle = await alias_ob.get_scalar('actor_handle', t_id)
-        social_dao = kernel.get_dep(Dependencies.SOCIAL_DAO)
-        gCon.log(f"login {alias} has social handle {actor_handle}")
-        actor_dto = social_dao.actor_get_from_actor_handle(actor_handle)
-        token = session.login_start(alias, family, actor_dto, alias_ob,
-                                    force)
-
-        if force == True:
-            gCon.log(f"forced login with pars {pars}")
-            return
-
-        social = kernel.get_dep(Dependencies.SOCIAL)
-        await social.out_msg_listener_to_actor(actor_dto,
-          f"Copy this command to finalize login \n'alias.put_token tk {token}'")
 
 
     @staticmethod
@@ -109,13 +72,13 @@ class AliasCalls:
     @staticmethod
     @federated_transaction(raise_if_fail = False)
     async def login(kernel, pars, t_id):
-        return await _login_impl(kernel, pars, t_id)
+        return await au._login_impl(kernel, pars, t_id)
 
 
     @staticmethod
     @federated_transaction(raise_if_fail = True)
     async def login_safe(kernel, pars, t_id):
-        return await _login_impl(kernel, pars, t_id)
+        return await au._login_impl(kernel, pars, t_id)
 
 
     @staticmethod
@@ -133,45 +96,26 @@ class AliasCalls:
 
 
 @federated_transaction(raise_if_fail = True)
-async def _get_tasks_of_type_safe(kernel, pars, t_id):
-    return await _get_tasks_of_type_impl(kernel, pars, t_id)
+async def _sys_call_send_msg_safe(kernel, pars, t_id):
+    alias_to_uri = pars['alias_to']
+    alias_to_ob = await fdb.uri_read_str(t_id, alias_to_uri)
+    alias_from_uri = pars['_param'].alias_uri
+    msg = mdescs.build_message_from_alias(pars['msg'], alias_from_uri, alias_to_uri)
+    await su.out_msg_to_alias_ob(kernel, alias_to_ob, msg, t_id)
 
 
-async def _get_tasks_of_type_impl(kernel, pars, t_id):
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-    myself = await scu.get_alias_in_session(kernel, pars, t_id)
-    as_role = pars['_as_role']
-    tasks = await myself().get_as_detached_list(f"tasks_as_{as_role}", t_id)
-    gCon.log(f"tasks as {as_role} for user {myself().uri.unparse()} are {tasks}")
-    return tasks
-
-
-async def _login_impl(kernel, pars, t_id):
-    alias = pars['alias']
-    family = pars['family']
+@federated_transaction(raise_if_fail = True)
+async def session_login_safe(kernel, pars, t_id):
+    login = pars['login']
     password = pars['password']
-    force = pars['force']
+    session = pars['_param']
 
-    alias_uri = AdelphosUri(EAdelphosType.ALIAS_TYPE, alias, family = family)
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    await au._session_login(kernel, session, login, password, 
+                                    t_id)
 
-    alias_ob = await fdb.uri_read_no_lock(t_id, alias_uri, True)
 
-    if alias_ob is None:
-        raise AdelphosCoreException(ECoreErrno.EINVALID_USER_OR_PASSWORD,
-                                    f"{alias}.{family}")
-
-    if force == False:
-        password_hashed = await alias_ob().get_scalar('password', t_id)
-
-        ph = PasswordHasher()
-        try:
-            res = ph.verify(password_hashed, password)
-        except:
-            raise AdelphosCoreException(
-                    ECoreErrno.EINVALID_USER_OR_PASSWORD,
-                                    f"{alias}.{family}")
-
-    return alias_ob().detach()
+@federated_transaction(raise_if_fail = True)
+async def _get_tasks_of_type_safe(kernel, pars, t_id):
+    return await tku._get_tasks_of_type_impl(kernel, pars, t_id)
 
 

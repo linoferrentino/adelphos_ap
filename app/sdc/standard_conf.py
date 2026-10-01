@@ -456,7 +456,7 @@ standard_cli_api = """
 
           - name: send_msg
             pars:
-              alias:
+              alias_to:
                 required: true
               msg:
                 required: true

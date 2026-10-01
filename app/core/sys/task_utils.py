@@ -378,3 +378,12 @@ async def complete_active_step_for_task(kernel, task_ob, active_step,
     gCon.log(f"the new steps are {steps}")
  
 
+async def _get_tasks_of_type_impl(kernel, pars, t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    myself = await scu.get_alias_in_session(kernel, pars, t_id)
+    as_role = pars['_as_role']
+    tasks = await myself().get_as_detached_list(f"tasks_as_{as_role}", t_id)
+    gCon.log(f"tasks as {as_role} for user {myself().uri.unparse()} are {tasks}")
+    return tasks
+
+

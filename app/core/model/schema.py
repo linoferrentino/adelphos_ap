@@ -31,8 +31,62 @@ types:
       - JOIN_FAMILY
       - SHIP_OBJECT
 
+    ELocality:
+      - SRC_XORION
+      - DST_XORION
+      - REMOTE
+
 
 classes:
+
+    - uri_prefix: {EAdelphosType.CHORION_TYPE}
+      can_be_root: false
+      version: 0
+      columns:
+
+        - name: location
+          type: str
+          cardinality: scalar
+          required: true
+
+        - name: erga
+          type: uri
+          cardinality: set
+          required: false 
+
+
+    - uri_prefix: {EAdelphosType.ERGON_TYPE}
+      can_be_root: false
+      version: 0
+      columns:
+
+        - name: adelphos_from
+          type: uri
+          cardinality: scalar
+          required: true
+
+        - name: title
+          type: str
+          cardinality: scalar
+          required: true
+
+        - name: description
+          type: str
+          cardinality: scalar
+          required: false
+
+        - name: price
+          type: real
+          cardinality: scalar
+          required: true
+
+        - name: locality 
+          type: enum 
+          sub_type: ELocality
+          cardinality: scalar
+          required: true
+
+
 
     - uri_prefix: {EAdelphosType.TASK_TYPE}
       can_be_root: false 
