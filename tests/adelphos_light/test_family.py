@@ -36,6 +36,35 @@ import tests.helpers.trust_helpers as th
 from app.federation.FederatedObject import str_to_fobs
 
 
+def test_send_msg_internet(simulated_fediverse):
+
+    sim_fed = simulated_fediverse(wld1.world_1_yaml)
+    sim_fed.test(wld1.fixture_1_yaml, (
+        _test_send_message_inexistent_alias,
+        _test_send_message_internet,
+    ))
+
+
+def _test_send_message_inexistent_alias(world):
+    ad1 = world.get_instance('ad1')
+    ad1.push_user('alice.fam_t1')
+    data = ah.ws_alias_send_msg(ad1.get_sock(), '#al#john_WHAT.fam_t2@www.ad2.com',
+                    'hello john, is the book <history of Rome> still available?',
+                         code_exp = ECoreErrno.ESYS)
+    assert re.search('Adelphos Federated Db error #5#>: #al#john_WHAT.fam_t2',
+                     data['res']) is not None
+    ad1.pop_user()
+
+
+def _test_send_message_internet(world):
+    ad1 = world.get_instance('ad1')
+    ad1.push_user('alice.fam_t1')
+    ah.ws_alias_send_msg(ad1.get_sock(), '#al#john_al.fam_t2@www.ad2.com',
+                    'hello john, is the book <history of Rome> still available?')
+    ad1.pop_user()
+
+    
+
 def test_simul_associates(simulated_fediverse):
     sim_fed = simulated_fediverse(wld1.world_1_yaml)
     sim_fed.test(wld1.fixture_associate_1_yaml, (
@@ -83,6 +112,7 @@ def _test_join_fam3_OK(world):
     assert alice_inbox.count_msg() == 1
     msg = alice_inbox.pop_lst_mmsg()
     assert msg == 'complete_JOIN_FAMILY_default_state'
+
 
 def _test_buy_object_after_join(world):
     ad1 = world.get_instance('ad1')

@@ -22,7 +22,7 @@ single_world_yaml = """
 
 """
 
-fixture_writers_poets_wrong = """
+fixture_writers_poets_parametric = """
 
   adelphos_setup:
     
@@ -48,12 +48,24 @@ fixture_writers_poets_wrong = """
            giacomo:
              password: silvia
              actor: ugiacomo
-         boss: dante 
+         boss: {LEOPARDI_BOSS}
          balance: 0
          my_trust: 10
 
-
 """
+
+fixture_1_writers_poets_vals_ko = {
+
+        'LEOPARDI_BOSS' : 'dante'
+
+}
+
+
+fixture_1_writers_poets_vals_ok = {
+
+        'LEOPARDI_BOSS' : 'giacomo'
+
+}
 
 fixture_1_single = """
 

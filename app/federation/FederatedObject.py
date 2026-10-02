@@ -480,6 +480,7 @@ class FederatedObject:
         self.prepared_to_oblivion = True
 
 
+    @ensure_lock
     def lent_to(self, social_handle):
         gCon.log(f"[red]Object {self.uri.unparse()} lent to {social_handle}[/red]")
         now = datetime.now()

@@ -222,8 +222,7 @@ class BaseSocialApiProvider(SocialApiProvider):
         try:
             actor_from = envelope.actor_from
             self._check_actor_identity(actor_from, 'proc')
-            res = await self._sys_call_q_try(actor_from, pars)
-            remote_errno = AdErrno.DONE_OK
+            (remote_errno, res) = await self._sys_call_q_try(actor_from, pars)
         except AdelphosException as adex:
             res = str(adex)
             remote_errno = adex.errno
@@ -249,8 +248,7 @@ class BaseSocialApiProvider(SocialApiProvider):
 
         res = await rpc_api.sys_call_handler_call(context, rpc,
                                              actor_from, req_json['params'])
-        internal_res = res['res']
-        return internal_res
+        return (res['errno'], res['res'])
 
 
     async def _sys_call_a(kernel, envelope, pars):

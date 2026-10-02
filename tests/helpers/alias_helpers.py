@@ -20,6 +20,12 @@ from app.core.ECoreErrno import ECoreErrno
 import app.misc.alias_utils as au
 
 
+def ws_alias_send_msg(ws, alias_to, msg, *,
+           code_exp = ECoreErrno.DONE_OK):
+    cmd = f"alias.send_msg alias_to {alias_to} msg '{msg}'"
+    return tu.ws_send_cmd(ws, cmd, code_exp)
+
+
 def ws_alias_get_tasks_as_dikastes(ws, *,
            code_exp = ECoreErrno.DONE_OK):
     cmd = "alias.tasks_as_dikastes"

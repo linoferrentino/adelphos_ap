@@ -30,6 +30,7 @@ alias.send_msg alias_to {alias_to_uri} msg '$YOUR_MESSAGE'
     msg_ob = {
             'mmsg' : f'priv_msg',
             'hmsg' : hmsg,
+            'raw' : msg,
             'alias_from_uri' : alias_from_uri,
             'alias_to_uri' : alias_to_uri,
     }

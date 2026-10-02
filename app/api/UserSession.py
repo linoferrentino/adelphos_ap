@@ -93,6 +93,9 @@ class UserSession:
         return AdelphosUri.alias_as_uri(self.alias, self.family, 
             self.client.kernel.conf().get_host())
 
+    @property
+    def alias_uri_str(self):
+        return self.alias_uri.unparse()
 
     @property
     def family_uri(self):

@@ -26,11 +26,31 @@ import pytest
 
 def test_simul_wrong(simulated_fediverse):
     sim_fed = simulated_fediverse(sw.single_world_yaml)
+
+    fixture_writers_poets_wrong = sw.fixture_writers_poets_parametric.format(
+            **sw.fixture_1_writers_poets_vals_ko)
+
     with pytest.raises(KeyError) as kex:
-        sim_fed.test(sw.fixture_writers_poets_wrong, (
-        _test_do_setup
+        sim_fed.test(fixture_writers_poets_wrong, (
+            _unreacheable
         ))
     assert str(kex.value) == "'dante'"
+
+
+def test_send_message_same_net(simulated_fediverse):
+    sim_fed = simulated_fediverse(sw.single_world_yaml)
+
+    fixture_writers_poets_good= sw.fixture_writers_poets_parametric.format(
+            **sw.fixture_1_writers_poets_vals_ok)
+
+    sim_fed.test(fixture_writers_poets_good, (
+        _test_do_send_message
+    ))
+
+
+def _test_do_send_message(world):
+    ad = world.get_instance('adelphos')
+    rh.ws_play_script(ad.get_sock(), 'send_message_same_net')
 
 
 def test_simul_root_single(simulated_fediverse):

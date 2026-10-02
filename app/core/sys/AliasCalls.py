@@ -97,10 +97,12 @@ class AliasCalls:
 
 @federated_transaction(raise_if_fail = True)
 async def _sys_call_send_msg_safe(kernel, pars, t_id):
-    alias_to_uri = pars['alias_to']
-    alias_to_ob = await fdb.uri_read_str(t_id, alias_to_uri)
-    alias_from_uri = pars['_param'].alias_uri
-    msg = mdescs.build_message_from_alias(pars['msg'], alias_from_uri, alias_to_uri)
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    alias_to_uri_pars = pars['alias_to']
+    alias_to_ob = await fdb.uri_read_str(t_id, alias_to_uri_pars)
+    alias_to_uri = alias_to_ob().uri.unparse()
+    alias_from_uri = pars['_param'].alias_uri_str
+    msg = await mdescs.build_message_from_alias(pars['msg'], alias_from_uri, alias_to_uri)
     await su.out_msg_to_alias_ob(kernel, alias_to_ob, msg, t_id)
 
 
