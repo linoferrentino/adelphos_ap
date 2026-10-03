@@ -30,6 +30,7 @@ class EAdelphosType(StrEnum):
     TRUST_LINE_TYPE = 'tl'
     CHORION_TYPE = 'ch'
     ERGON_TYPE = 'er'
+    BOOK_TYPE = 'bk'
 
 
 @dataclass

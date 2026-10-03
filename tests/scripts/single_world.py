@@ -123,6 +123,22 @@ fixture_2_complex_parametric = """
         balance: 0
         my_trust: 5
         location: f0_l0_loc
+        choria:
+          - name: f0_l0_1st_chorion
+            location: "f0_l0_loc long. lat. openstreet link"
+            erga:
+              - adelphos_from: a0
+                title: english lessons at my home
+                description: mothertongue  
+                price: 10.0
+
+        online_chorion:
+             erga:
+              - adelphos_from: a0
+                title: english lessons online
+                description: mothertongue  
+                price: 7.0
+
 
       - name: f1_l0
         members: 

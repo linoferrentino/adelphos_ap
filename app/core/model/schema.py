@@ -31,12 +31,6 @@ types:
       - JOIN_FAMILY
       - SHIP_OBJECT
 
-    ELocality:
-      - SRC_XORION
-      - DST_XORION
-      - REMOTE
-
-
 classes:
 
     - uri_prefix: {EAdelphosType.CHORION_TYPE}
@@ -79,13 +73,6 @@ classes:
           type: real
           cardinality: scalar
           required: true
-
-        - name: locality 
-          type: enum 
-          sub_type: ELocality
-          cardinality: scalar
-          required: true
-
 
 
     - uri_prefix: {EAdelphosType.TASK_TYPE}
@@ -221,7 +208,7 @@ classes:
           type: uri
           cardinality: scalar
           required: true
-        
+      
         - name: upper_family
           type: uri
           cardinality: scalar
@@ -267,6 +254,26 @@ classes:
           cardinality: array
           transient_func: app.core.sys.family_utils.agora_get_price_offers
           transient_age: 15m
+
+        - name: choria
+          type: uri
+          cardinality: set
+          required: false
+
+        - name: remote_chorion
+          type: uri
+          cardinality: scalar
+          required: false
+
+        - name: online_chorion
+          type: uri
+          cardinality: scalar
+          required: false
+
+        - name: library
+          type: uri
+          cardinality: scalar
+          required: false
 
 
     - uri_prefix: {EAdelphosType.TRUST_LINE_TYPE}
