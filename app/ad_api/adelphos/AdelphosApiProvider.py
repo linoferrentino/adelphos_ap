@@ -15,6 +15,7 @@
 from app.ad_api.BaseSocialApiProvider import BaseSocialApiProvider
 from app.sdc.Dependencies import Dependencies
 from app.logging import gCon
+import app.consts as CNST
 
 
 class AdelphosApiProvider(BaseSocialApiProvider):
@@ -24,7 +25,7 @@ class AdelphosApiProvider(BaseSocialApiProvider):
 
 
     def get_social_user(self):
-        return "adelphos"
+        return CNST.DAEMON_ID
 
 
     def _is_allowed_remote_rpc_host(self, host, mode):

@@ -146,31 +146,52 @@ class AdelphosCliRouter(CliRouter):
 
         html_string += f"""
         <head>
-        <title>Welcome to adelphos instance {instance} @ {host}</title>
+        <title>Chat with adelphos instance {instance}@{host}</title>
         </head>
         <body>
-            <h1>Adelphos instance: {instance}</h1><br><h2>{CNST.DAEMON_ID}@{host}</h2>
+            <h1>Adelphos instance: {instance}@{host}</h1><br>
+            <h2>@{CNST.DAEMON_ID}@{host}, ver {CNST.VERSION}</h2>
 
     <div class="chat-container" id="chat">
         <div class="message received">
 
         <p>
-        Hello from the adelphos daemon running @{host}!
+        This is the Command Line Interface to this Adelphos Instance.
+
         <p>
 
-        If you have already created an alias on this instance login with command 'login alias ##$alias.$family password $password' to receive OTP token.
+        If you have already created an alias on this instance login with command
+        'login alias ##$alias.$family password $password' to receive the OTP token.
 
         <p>
         If you haven't yet created an alias send a message to me from your
-        Mastodon account to create one. The message should be a private mention
+        Mastodon account to create one.
+
+        <p>
+
+        The message should be a private mention
         to the @adelphos user at this instance. Like this:
 
         <p>
-        @adelphos@{host} alias_create alias name.family password _password_ trust number 
+        @{CNST.DAEMON_ID}@{host} alias_create alias name.family password _password_
 
         <p>
-        You will receive a messange and you can come back here to login.
+        If the alias is well formed and the family does not exist yet on
+        this instance you will receive shortly a success message and you
+        can come back here to login.
         <p>
+
+        <p>
+
+        Copyright (c) 2026 Lino Ferrentino &lt;lino.ferrentino@gmail.com&gt;
+        
+        <p>
+
+        This program comes with ABSOLUTELY NO WARRANTY; 
+
+        <p>
+        This is free software, and you are welcome to redistribute it on
+        the terms of the General Public Licence Version 3
 
         </div>
     </div>

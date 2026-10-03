@@ -40,6 +40,12 @@ class AgoraCalls:
 
     @staticmethod
     @active_login
+    async def _sys_call_crawl(kernel, session, pars):
+        pass
+
+
+    @staticmethod
+    @active_login
     async def _sys_call_buy_object_uri(kernel, session, pars):
         await _agora_buy_object_uri_safe(kernel, pars)
 

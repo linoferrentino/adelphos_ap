@@ -372,16 +372,21 @@ standard_cli_api = """
                 par_type: int
                 required: true
                 validator: _v_ >= 0
-              max_objects:
+
+          - name: crawl
+            pars:
+              max_hops:
                 par_type: int
                 required: false
-                validator: _v_ >= -1
-                default: -1
-              listing_start:
+                validator: _v_ >= 1
+                default: 10
+              title:
+                required: false
+              max_results:
                 par_type: int
                 required: false
                 validator: _v_ >= 0
-                default: 0
+                default: -1
 
           - name: buy_object_uri
             pars:

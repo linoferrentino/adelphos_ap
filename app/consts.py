@@ -1,5 +1,7 @@
 
-DAEMON_ID = "daemon"
+DAEMON_ID = "adelphos"
+
+VERSION = "0.1.0"
 
 LOCALHOST = '127.0.0.1'
 

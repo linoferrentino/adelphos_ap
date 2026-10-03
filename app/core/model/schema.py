@@ -146,6 +146,11 @@ classes:
           cardinality: array
           required: false
 
+        - name: trust_lines
+          type: uri
+          cardinality: set
+          required: false
+
 
     - uri_prefix: {EAdelphosType.FAMILY_TYPE}
       can_be_root: true
