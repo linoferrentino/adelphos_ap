@@ -21,3 +21,9 @@ private_key.pem
 *.yaml
 
 !adelphos_ap.prototype.yaml
+
+docs/user/_site
+docs/user/.sass-cache
+docs/user/.jekyll-cache
+docs/user/.jekyll-metadata
+docs/user/vendor
