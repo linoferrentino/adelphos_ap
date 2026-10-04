@@ -108,12 +108,11 @@ async def _sys_call_send_msg_safe(kernel, pars, t_id):
 
 @federated_transaction(raise_if_fail = True)
 async def session_login_safe(kernel, pars, t_id):
-    login = pars['login']
+    alias_family = pars['alias']
     password = pars['password']
     session = pars['_param']
 
-    await au._session_login(kernel, session, login, password, 
-                                    t_id)
+    await au._session_login(kernel, session, alias_family, password, t_id)
 
 
 @federated_transaction(raise_if_fail = True)

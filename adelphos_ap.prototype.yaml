@@ -1,14 +1,68 @@
+#
+# Generic configuration file for the adelphos system.
+#
+# © 2025-26 Lino Ferrentino
+# lino.ferrentino@gmail.com
+#
+# This is free software. Licensed with GPL version 3
+#
+######
+# 
+# The adelphos system is a uvicorn web application which speaks the
+# Activity Pub Protocol and opens a web socket to serve CLI requests.
+#
+# A single machine can host different adelphos instances (mainly for test)
+# which will listen to different ports.
+#
+# The name of the instance determines the default name of the configuration
+# file which it will read, unless another file is set in the command line.
+#
+# To create an adelphos instance called 'test' on your host, copy this file
+# to a file named adelphos_ap_test.yaml and customize it.
+#
+# When you are ready you can start your new adelphos instance using the
+# line
+#
+# python main.py --instance-name test
+#
 
 general:
 
-  debug: true 
+  # The port used by this adelphos instance. It should *not* be a privileged
+  # port (under 1024), nor a port visible from the outside world.
+  #
+  # If you want to make this adelphos instance public you can use a reverse
+  # proxy with nginx (or similar) or a service like ngrok (or similar) to
+  # route the public traffic to this private instance.
+  #
+  # Sample deployment files are stored in docs/tech/deploy
   port: 5000
+
+  # The name of this host. If this host will be visible to the outside this
+  # should be the FQDN for example www.adelphos.it, otherwise localhost is
+  # OK.
   host: localhost 
+
+  # This is the root path of the 
+  #
+  # Adelphos uses the Activity Pub protocol which has one prefixed
+  # endpoint /.well-known visible from the root.
+  #
+  # If you plan to host different adelphos
+  # instance on one host (for example to test connectivity) you 
+
   root_path: /api
+
   # the root user can be a local user, in this case this instance of adelphos acts
   # also as a (very simple) ActivityPub server, able to send and store messages.
   # Use this only as a test, because this server does not do a Multi Factor Login.
   root: :local:rlocal
+
+  # in the normal case you have a Mastodon user in some instance like this
+  # @user@host, so you will write something like
+  # root: @user@host, for example my root is
+  # root: @lino_ferre@mastodon.uno
+
   # the password can be in clear or hashed. This is NOT your mastodon password.
   # This is the password to access this Adelphos instance as root.
   # The root account in Adelphos is a special alias with the name root belonging

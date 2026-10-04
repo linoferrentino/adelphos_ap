@@ -48,9 +48,9 @@ async def alias_get_from_uri(kernel, alias_uri, t_id):
     return alias_ob
 
 
-async def _session_login(kernel, session, login, password, t_id,
+async def _session_login(kernel, session, alias_family, password, t_id,
                          force = False):
-    (alias, family) = au.split_alias(login)
+    (alias, family) = au.split_alias(alias_family)
     pars = {
       'alias' : alias,
       'family' : family,

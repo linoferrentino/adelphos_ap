@@ -122,7 +122,7 @@ def test_create_root_user(get_routable_app):
     local_root = au.get_local_alias(tconf.adelphos_testable_1_conf['_root_handle_'])
 
     with test1, test1.websocket_connect(CNST.WS_ROUTE) as websocket:
-        websocket.send_text(f"alias.login login root.admins password {root_pass}")
+        websocket.send_text(f"alias.login alias root.admins password {root_pass}")
         data = tu.ws_assert_code(websocket, AdErrno.DONE_OK)
         ah.ws_alias_login_in_app(test1, local_root, websocket, 
                                  'root.admins', root_pass)

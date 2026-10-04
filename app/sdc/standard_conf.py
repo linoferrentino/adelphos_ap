@@ -449,7 +449,7 @@ standard_cli_api = """
 
           - name: login
             pars:
-              login:
+              alias:
                 required: true
               password:
                 required: true

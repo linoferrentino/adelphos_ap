@@ -146,22 +146,36 @@ class AdelphosCliRouter(CliRouter):
 
         html_string += f"""
         <head>
-        <title>Chat with adelphos instance {instance}@{host}</title>
+        <title>Chat with adelphos instance {instance} running on host {host}</title>
         </head>
         <body>
-            <h1>Adelphos instance: {instance}@{host}</h1><br>
-            <h2>@{CNST.DAEMON_ID}@{host}, ver {CNST.VERSION}</h2>
-
+            <h1>Adelphos instance: {instance}, running on host {host} ver {CNST.VERSION}</h1><br>
+            <h3>&copy; 2026 Lino Ferrentino
+            &lt;lino.ferrentino@gmail.com&gt;. This is free Software
+            licenced with GPL3</h3>
     <div class="chat-container" id="chat">
         <div class="message received">
 
+        <p>Welcome to the Command Line Interface to the Adelphos Instance {instance}@{host}
+
         <p>
-        This is the Command Line Interface to this Adelphos Instance.
+        Adelphos uses a Mastodon instance (or a similar software which
+        speaks the Ativity Pub protocol) to authenticate users.
 
         <p>
 
-        If you have already created an alias on this instance login with command
-        'login alias ##$alias.$family password $password' to receive the OTP token.
+        Please refer to the reference manual located on <a
+        href="https://{host}">Documentation</a>
+
+        <p>
+        </div>
+        <div class="message received">
+        <h1>Quick start</h1>
+
+        <p>
+
+        If you have an alias on this instance you can type the command
+        <pre>alias.login alias $alias.$family password $password</pre> to receive the OTP token.
 
         <p>
         If you haven't yet created an alias send a message to me from your
@@ -170,29 +184,39 @@ class AdelphosCliRouter(CliRouter):
         <p>
 
         The message should be a private mention
-        to the @adelphos user at this instance. Like this:
+        to the @{CNST.DAEMON_ID} user at this instance. Refer to your social
+        software documentation, but usually you should type a message like this:
 
         <p>
-        @{CNST.DAEMON_ID}@{host} alias_create alias name.family password _password_
+        <pre>
+        @{CNST.DAEMON_ID}@{host} alias.create alias $name.$family password $password
+        </pre>
 
         <p>
         If the alias is well formed and the family does not exist yet on
-        this instance you will receive shortly a success message and you
+        this instance you will receive shortly a success message from me and you
         can come back here to login.
         <p>
 
         <p>
 
-        Copyright (c) 2026 Lino Ferrentino &lt;lino.ferrentino@gmail.com&gt;
+        </div>
+
+        <div class="message received">
+        Copyright &copy; 2026 Lino Ferrentino &lt;lino.ferrentino@gmail.com&gt;
         
         <p>
 
-        This program comes with ABSOLUTELY NO WARRANTY; 
+        This program comes with <b>ABSOLUTELY NO WARRANTY</b>
 
         <p>
         This is free software, and you are welcome to redistribute it on
-        the terms of the General Public Licence Version 3
-
+        the terms of the General Public Licence Version 3. You can find the
+        full text <a
+        href="https://www.gnu.org/licenses/gpl-3.0.html">here</a>
+        <p>
+        You can view the
+        source code of adelphos <a href="https://github.com/linoferrentino/adelphos_ap">here</a>
         </div>
     </div>
 

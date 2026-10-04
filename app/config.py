@@ -92,14 +92,6 @@ class Config:
         return self.config['conf'].get(section)
 
 
-    def is_test_instance(self):
-        return self.config['conf'][CNF_GENERAL_SECTION]['debug']
-
-
-    def is_human_output(self):
-        return self.config['conf'][CNF_GENERAL_SECTION].get('human_output',
-                                                            True)
-
     def conf_mod(self, dependency):
         return self.config['conf'][dependency]
 

@@ -94,7 +94,7 @@ def ws_pop_alias(ws):
 
 def ws_alias_login(user_inbox, ws, alias, password):
 
-    ws.send_text(f"alias.login login {alias} password {password}")
+    ws.send_text(f"alias.login alias {alias} password {password}")
     tu.ws_assert_code(ws, AdErrno.DONE_OK)
 
     count_msg = user_inbox.count_msg()
