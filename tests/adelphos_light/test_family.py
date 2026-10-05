@@ -75,6 +75,12 @@ def test_simul_associates(simulated_fediverse):
         _test_join_fam3_OK,
         _test_put_object_after_join,
         _test_buy_object_after_join,
+        _test_put_object_big_price,
+        _clear_cache,
+        _test_no_object_big_price,
+        _test_change_price,
+        _clear_cache,
+        _test_yes_object_big_price,
         ))
 
 
@@ -114,6 +120,14 @@ def _test_join_fam3_OK(world):
     assert msg == 'complete_JOIN_FAMILY_default_state'
 
 
+def _test_no_object_big_price(world):
+    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 0, uplevel = 1)
+
+
+def _test_yes_object_big_price(world):
+    _test_len_get_list(world, 'ad1', 'alice.fam_t1', 1, uplevel = 1)
+
+
 def _test_buy_object_after_join(world):
     ad1 = world.get_instance('ad1')
     ad1.push_user('alice.fam_t1')
@@ -127,6 +141,34 @@ def _test_buy_object_after_join(world):
     data = agoh.ws_buy_object_uri(ad1.get_sock(), ob_uri)
 
     ad1.pop_user()
+
+
+def _test_change_price(world):
+    ad2 = world.get_instance('ad2')
+    ad2.push_user('katy2_al.fam_t2')
+    data = oh.ws_create_object_ad(ad2.get_sock(), "a beautiful painting", 260.99)
+    ad2.pop_user()
+    gCon.log(f"data is {data}")
+    ob_uri = data['res']['uri']
+
+    ad1 = world.get_instance('ad1')
+    oh.ws_object_change_price(ad1.get_sock(), ob_uri, 200.33, exp_errno_code = ECoreErrno.EDENIED)
+
+    ad2 = world.get_instance('ad2')
+    ad2.push_user('john2_al.fam_t2')
+    oh.ws_object_change_price(ad2.get_sock(), ob_uri, 200.33, exp_errno_code = ECoreErrno.EDENIED)
+    ad2.pop_user()
+
+    ad2.push_user('katy2_al.fam_t2')
+    oh.ws_object_change_price(ad2.get_sock(), ob_uri, 200.33)
+    ad2.pop_user()
+
+
+def _test_put_object_big_price(world):
+    ad2 = world.get_instance('ad2')
+    ad2.push_user('katy2_al.fam_t2')
+    data = oh.ws_create_object_ad(ad2.get_sock(), "expensive watch", 255.99)
+    ad2.pop_user()
 
 
 def _test_put_object_after_join(world):

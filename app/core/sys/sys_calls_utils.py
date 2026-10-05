@@ -174,6 +174,20 @@ async def get_family_chain_up_from_to(kernel,
     return chain
 
 
+def check_editable_object(pars, ob_uri, owner_uri_str):
+    session = pars['_param']
+    if session.is_logged_root() == False:
+        alias_uri_str = session.alias_uri_str
+        if alias_uri_str != owner_uri_str:
+            raise AdelphosCoreException(ECoreErrno.EDENIED,
+f"Cannot modify {ob_uri.unparse()}, you are not {owner_uri_str} but {alias_uri_str}")
+    else:
+        root_uri = session.alias_uri
+        if ob_uri.host != root_uri.host:
+            raise AdelphosCoreException(ECoreErrno.EDENIED,
+f"Cannot modify object, you are root of {root_uri.host} not of {ob_uri.host}")
+
+
 async def get_family_uplevel(kernel, pars, t_id):
     chain = await get_family_chain_up(kernel, pars, t_id)
     return chain[-1]

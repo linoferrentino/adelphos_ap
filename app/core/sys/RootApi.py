@@ -325,7 +325,11 @@ async def _a_assert_uri_k_v(kernel, meta_args):
         case 'i':
             assert int(exp_val) == int(real_val)
         case '$':
+            gCon.log(f"Check string -{exp_val}- with -{real_val}-")
             assert str(exp_val) == str(real_val)
+        case _:
+            raise AdelphosException(AdErrno.ESCRIPT_ERROR, f"invalid comparator {comp_type[0]}")
+
     fdb.rollback_transaction(t_id)
 
 

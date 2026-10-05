@@ -18,6 +18,8 @@ import app.core.sys.agora_utils as au
 import app.core.sys.object_utils as ou
 import app.core.sys.ecommerce_utils as ecut
 import app.core.sys.task_utils as tu
+import app.core.ui.family_descs as ui_fam
+import app.core.sys.social_utils as su
 from app.core.model.AdelphosUri import EAdelphosType
 from app.core.model.AdelphosUri import AdelphosUri
 from app.logging import gCon
@@ -128,15 +130,32 @@ async def family_get_upper_family(kernel, family_ob, t_id, *,
     return await ou.object_get_field_uri_locked(kernel, family_ob,
                      'upper_family', t_id, maybe = maybe)
 
-#async def family_get_chain_alias_family_to(kernel,
-#            alias_ob, family_ob, t_id):
-#    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-
 
 async def family_get_your_carrier_uri(kernel, family_ob, t_id):
     agora_ob = await family_get_your_agora(kernel, family_ob, t_id)
     carrier = await agora_ob().get_scalar('carrier', t_id)
     return carrier
+
+
+async def family_change_boss_impl(kernel, pars, t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+
+    family_dst_uri = pars['family_dst']
+    family_dst_ob = await fdb.uri_read_str(t_id, family_dst_uri)
+
+    boss_uri = await family_dst_ob().get_scalar('boss', t_id)
+    boss_ob = await fdb.uri_read_str(t_id, boss_uri)
+
+    scu.check_editable_object(pars, family_dst_ob().uri, boss_uri)
+
+    new_boss_uri = pars['new_boss_uri']
+    new_boss_ob = await fdb.uri_read_str(t_id, new_boss_uri)
+
+    await scu._ensure_alias_in_families(kernel, new_boss_ob, (family_dst_uri,), t_id)
+    await family_dst_ob().compare_and_swap_link('boss', boss_ob, new_boss_ob, t_id)
+
+    msg = await ui_fam.build_message_appointed_boss(boss_uri, family_dst_ob().uri.unparse())
+    await su.out_msg_to_alias_ob(kernel, new_boss_ob, msg, t_id)
 
 
 async def family_join_user_impl(kernel, pars, t_id):

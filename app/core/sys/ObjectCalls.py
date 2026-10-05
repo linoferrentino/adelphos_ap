@@ -27,11 +27,22 @@ class ObjectCalls:
         return await _object_put_ad_in_agora_safe(kernel, pars)
  
 
+    @staticmethod
+    @active_login
+    async def _sys_call_change_price(kernel, session, pars):
+        return await _object_change_price_safe(kernel, pars)
+ 
+
+@federated_transaction(raise_if_fail = True)
+async def _object_change_price_safe(kernel, pars, t_id):
+    return await ofutils._object_change_price_impl(kernel, pars, t_id)
+
+
 @federated_transaction(raise_if_fail = True)
 async def _object_put_ad_in_agora_safe(kernel, pars ,t_id):
     family_ob = await scu.get_family_in_session(kernel, pars, t_id)
     alias_ob = await scu.get_alias_in_session(kernel, pars, t_id)
-    await ofutils.object_put_ad_in_agora_impl(kernel, family_ob, alias_ob,
+    return await ofutils.object_put_ad_in_agora_impl(kernel, family_ob, alias_ob,
                                        pars, t_id)
 
 

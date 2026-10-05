@@ -151,7 +151,7 @@ class AdelphosCliRouter(CliRouter):
         <body>
             <h1>Adelphos instance: {instance}, running on host {host} ver {CNST.VERSION}</h1><br>
             <h3>&copy; 2026 Lino Ferrentino
-            &lt;lino.ferrentino@gmail.com&gt;. This is free Software
+            &lt;lino.ferrentino@gmail.com&gt;. This is free software
             licenced with GPL3</h3>
     <div class="chat-container" id="chat">
         <div class="message received">

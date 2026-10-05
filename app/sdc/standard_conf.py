@@ -361,6 +361,13 @@ standard_cli_api = """
                 par_type: float
                 required: true
 
+          - name: change_price
+            pars:
+              ob_uri:
+                required: true
+              new_price:
+                par_type: float
+                required: true
 
       agora:
         class: app.core.sys.AgoraCalls.AgoraCalls
@@ -406,6 +413,14 @@ standard_cli_api = """
       family:
         class: app.core.sys.FamilyCalls.FamilyCalls
         syscalls:
+
+          - name: change_boss
+            pars:
+              family_dst:
+                required: true
+              new_boss_uri:
+                required: true
+
           - name: invite
             pars:
               invite_code:

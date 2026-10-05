@@ -15,6 +15,12 @@ from app.core.ECoreErrno import ECoreErrno
 import tests.t_utils as tu
 
 
+def ws_object_change_price(ws, ob_uri, new_price, *,
+    exp_errno_code = ECoreErrno.DONE_OK):
+    cmd = f"object.change_price ob_uri {ob_uri} new_price {new_price}"
+    return tu.ws_send_cmd(ws, cmd, exp_errno_code)
+
+
 def ws_create_object_ad(ws, title, price, *,
     description = None,
     exp_errno_code = ECoreErrno.DONE_OK):

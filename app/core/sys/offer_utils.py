@@ -59,6 +59,15 @@ async def object_put_ad_in_agora_impl(kernel, family_ob, alias_ob,
     }
 
 
+async def _object_change_price_impl(kernel, pars, t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    ob_uri = pars['ob_uri']
+    object_ob = await fdb.uri_read_str(t_id, ob_uri)
+    alias_from_str = await object_ob().get_scalar('adelphos_from', t_id) 
+    scu.check_editable_object(pars, object_ob().uri, alias_from_str)
+    object_ob().set_scalar('price', pars['new_price'])
+
+
 def _create_object_from_pars(kernel, family_ob, object_id, pars, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     ob_name = f"{object_id}_" + family_ob().uri.name

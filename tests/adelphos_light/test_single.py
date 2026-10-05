@@ -94,7 +94,7 @@ def _unreacheable(world):
     assert False
 
 
-def test_simul_complex(simulated_fediverse):
+def test_ok_complex(simulated_fediverse):
     sim_fed = simulated_fediverse(sw.single_world_yaml)
     fixture_2_complex = sw.fixture_2_complex_parametric.format(
             **sw.fixture_2_complex_ok_vals
@@ -103,6 +103,7 @@ def test_simul_complex(simulated_fediverse):
     sim_fed.test(fixture_2_complex, (
         _test_add_objects,
         _test_check_calculations,
+        _test_change_boss,
     ))
 
 
@@ -114,5 +115,11 @@ def _test_add_objects(world):
 def _test_check_calculations(world):
     ad = world.get_instance('adelphos')
     rh.ws_play_script(ad.get_sock(), 'check_calcs')
+
+
+def _test_change_boss(world):
+    ad = world.get_instance('adelphos')
+    rh.ws_play_script(ad.get_sock(), 'change_boss')
+
 
 
