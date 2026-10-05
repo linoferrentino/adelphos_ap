@@ -1,0 +1,53 @@
+# INSTALLATION
+
+## Intented audience
+
+This manual is intented to future "admins" of an Adelphos instance and also
+to future developers; it is not intended to be read by end users who should
+look at the docs/user folder instead.
+
+## Prerequisites.
+
+Adelphos is a project written in Python and for now it has been tested on
+two ubuntu systems without any problem. It should run on any Linux system,
+though. I have tried it in a Ubuntu VM in Windows and it worked, however I
+have not yet tried to not tried to run it on WSL on Linux
+
+It is handled by uv, a python package manager, so you should install it
+first. Instructions to install it are found here.
+
+https://docs.astral.sh/uv/getting-started/installation/
+
+# Sync the packages
+
+After uv has been installed you can sync the packages, please type
+
+> uv sync
+
+in the root of the project and the package manager will download all the
+relevant packages.
+
+# Test the installation
+
+After installing the packages it is a good idea to test the installation.
+First of all you should activate the virtual environment, to do so type
+
+. ./.venv/bin/activate
+
+The shell prompt will reflect the change. After this you can type
+
+pytest 
+
+And all the tests (currently 125, but their number grows...) will be run
+(total extimated time 90 seconds).
+
+They should run all OK. In some cases, especially with system with a high
+load, a test might fail, but this is a false positive, re-run it with an
+idle machine and it should go.
+
+If all goes well you are now ready to create an adelphos instance.
+
+# Create an instance
+
+
+
