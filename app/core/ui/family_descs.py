@@ -13,11 +13,11 @@
 
 import json
 
-async def build_message_appointed_boss(former_boss, family_uri):
+async def build_message_appointed(key, cur_boss, family_uri):
 
     hmsg = f"""
 Hello,
-{former_boss} has appointed you as boss of family {family_uri}
+{cur_boss} has appointed you as {key} of family {family_uri}
 
 If this was not intended please contact the root of this instance sending
 a message to the administrator. As this:
@@ -27,9 +27,9 @@ alias.send_msg alias_to #al#root.admins msg "YOUR_MESSAGE"
 """
 
     msg_ob = {
-            'mmsg' : f'new_boss',
+            'mmsg' : f'new_{key}',
             'hmsg' : hmsg,
-            'former_boss' : former_boss,
+            'former_boss' : cur_boss,
             'family_uri' : family_uri,
     }
     return json.dumps(msg_ob)

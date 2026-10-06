@@ -264,6 +264,7 @@ class EObState(IntEnum):
     BORROWED = 2
     CLONED = 3
     DETACHED = 4
+    RETURNING = 5
 
 
 FDB_RESERVED_PREFIX = "_fdb_"
@@ -473,7 +474,8 @@ class FederatedObject:
             obs = FObSerialized(**ob)
             self.ob = obs
         else:
-            gCon.log(f"[green]Object {self.uri.unparse()} returned without modification[/green]")
+            gCon.log(f"[green]Object {self.uri.unparse()} returned \
+without modification in state {self.ob.state}[/green]")
             self.ob.fields = self.ob.fields['backup']
         self.ob.state = EObState.PRESENT
         self.modified = True
@@ -482,6 +484,9 @@ class FederatedObject:
 
     @ensure_lock
     def lent_to(self, social_handle):
+        if self.ob.state != EObState.PRESENT:
+            raise FdbException(EFdbErrors.EFDB_INVALID_STATE,
+  f"object {self.uri.unparse()} cannot be lent, in state {self.ob.state}")
         gCon.log(f"[red]Object {self.uri.unparse()} lent to {social_handle}[/red]")
         now = datetime.now()
         now_str = now.strftime("%Y-%m-%dT%H:%M:%S.%f")

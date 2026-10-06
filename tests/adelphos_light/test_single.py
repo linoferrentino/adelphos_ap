@@ -103,6 +103,7 @@ def test_ok_complex(simulated_fediverse):
     sim_fed.test(fixture_2_complex, (
         _test_add_objects,
         _test_check_calculations,
+        _test_change_carrier,
         _test_change_boss,
     ))
 
@@ -115,6 +116,11 @@ def _test_add_objects(world):
 def _test_check_calculations(world):
     ad = world.get_instance('adelphos')
     rh.ws_play_script(ad.get_sock(), 'check_calcs')
+
+
+def _test_change_carrier(world):
+    ad = world.get_instance('adelphos')
+    rh.ws_play_script(ad.get_sock(), 'change_carrier')
 
 
 def _test_change_boss(world):

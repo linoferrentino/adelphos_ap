@@ -35,7 +35,31 @@ class FamilyCalls:
     async def _sys_call_change_boss(kernel, session, pars):
         await _family_change_boss_safe(kernel, pars)
 
- 
+
+    @staticmethod
+    @active_login
+    async def _sys_call_change_carrier(kernel, session, pars):
+        await _family_change_carrier_safe(kernel, pars)
+
+
+    @staticmethod
+    @active_login
+    async def _sys_call_change_tax(kernel, session, pars):
+        pass
+
+
+    @staticmethod
+    @active_login
+    async def _sys_call_expel_member(kernel, session, pars):
+        pass
+
+
+    @staticmethod
+    @active_login
+    async def _sys_call_detach_upper(kernel, session, pars):
+        pass
+
+
     @staticmethod
     @active_login
     async def _sys_call_associate(kernel, session, pars):
@@ -80,6 +104,11 @@ f"""You have been invited to join adelphos by @{session.alias_family}@{this_host
 @federated_transaction(raise_if_fail = True)
 async def _family_change_boss_safe(kernel, pars ,t_id):
     return await fu.family_change_boss_impl(kernel, pars, t_id)
+
+
+@federated_transaction(raise_if_fail = True)
+async def _family_change_carrier_safe(kernel, pars ,t_id):
+    return await fu.family_change_carrier_impl(kernel, pars, t_id)
 
 
 @federated_transaction(raise_if_fail = True)

@@ -416,9 +416,37 @@ standard_cli_api = """
 
           - name: change_boss
             pars:
-              family_dst:
+              family_uri:
                 required: true
               new_boss_uri:
+                required: true
+
+          - name: change_tax
+            pars:
+              family_uri:
+                required: true
+              new_tax:
+                required: true
+                par_type: float
+                validator: _v_ > 1.0
+
+          - name: expel_member
+            pars:
+              family_uri:
+                required: true
+              member_to_expel:
+                required: true
+
+          - name: detach_upper
+            pars:
+              family_uri:
+                required: true
+
+          - name: change_carrier
+            pars:
+              family_uri:
+                required: true
+              new_carrier_uri:
                 required: true
 
           - name: invite

@@ -138,24 +138,49 @@ async def family_get_your_carrier_uri(kernel, family_ob, t_id):
 
 
 async def family_change_boss_impl(kernel, pars, t_id):
+    new_boss_uri = pars['new_boss_uri']
+    await family_change_uri_impl(kernel, pars, 'boss', new_boss_uri, t_id)
+
+
+async def family_change_carrier_impl(kernel, pars, t_id):
+    new_carrier_uri = pars['new_carrier_uri']
+    await family_change_uri_impl(kernel, pars, 'carrier', new_carrier_uri, t_id)
+
+
+async def family_change_uri_impl(kernel, pars, key, new_uri_val, t_id):
+    family_uri = pars['family_uri']
+
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
 
-    family_dst_uri = pars['family_dst']
-    family_dst_ob = await fdb.uri_read_str(t_id, family_dst_uri)
+    family_ob = await fdb.uri_read_str(t_id, family_uri)
 
-    boss_uri = await family_dst_ob().get_scalar('boss', t_id)
-    boss_ob = await fdb.uri_read_str(t_id, boss_uri)
+    if key == 'boss':
+       old_uri = await family_ob().get_scalar(key, t_id)
+       boss_uri = old_uri
+    else:
+       agora_ob = await family_get_your_agora(kernel, family_ob, t_id)
+       boss_uri = await family_ob().get_scalar('boss', t_id)
+       old_uri = await agora_ob().get_scalar(key, t_id)
 
-    scu.check_editable_object(pars, family_dst_ob().uri, boss_uri)
+    old_ob = await fdb.uri_read_str(t_id, old_uri)
+    scu.check_editable_object(pars, family_ob().uri, boss_uri)
 
-    new_boss_uri = pars['new_boss_uri']
-    new_boss_ob = await fdb.uri_read_str(t_id, new_boss_uri)
+    new_alias_ob = await fdb.uri_read_str(t_id, new_uri_val)
 
-    await scu._ensure_alias_in_families(kernel, new_boss_ob, (family_dst_uri,), t_id)
-    await family_dst_ob().compare_and_swap_link('boss', boss_ob, new_boss_ob, t_id)
+    await scu._ensure_alias_in_families(kernel, new_alias_ob, (family_uri,), t_id)
 
-    msg = await ui_fam.build_message_appointed_boss(boss_uri, family_dst_ob().uri.unparse())
-    await su.out_msg_to_alias_ob(kernel, new_boss_ob, msg, t_id)
+    if key == 'boss':
+        dst_ob = family_ob
+    else:
+        dst_ob = agora_ob
+
+    gCon.log(f"the ob to modify {dst_ob().uri.unparse()}")
+    await dst_ob().compare_and_swap_link(key, old_ob, new_alias_ob, t_id)
+    gCon.log(f"end mod")
+
+    msg = await ui_fam.build_message_appointed(key, boss_uri,
+                                               family_ob().uri.unparse())
+    await su.out_msg_to_alias_ob(kernel, new_alias_ob, msg, t_id)
 
 
 async def family_join_user_impl(kernel, pars, t_id):

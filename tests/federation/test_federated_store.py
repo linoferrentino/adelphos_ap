@@ -874,10 +874,16 @@ async def a_test_remote_uri(fdb1, fdb2):
         flocal().add_link('tlines', tline_ob)
     assert fex.value.errno == EFdbErrors.EFDB_UNKNOWN_COLUMN
 
+    gCon.log(f"XXX 1")
+
     fremote().add_link('trust_lines', tline_ob)
     flocal().add_link('trust_lines', tline_ob)
 
+    gCon.log(f"XXX 1.1 before commit")
+
     fdb1.commit_transaction(tid1)
+
+    gCon.log(f"XXX 2")
 
     tid2 = fdb2.begin_transaction()
     with pytest.raises(FdbException) as fex:

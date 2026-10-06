@@ -118,9 +118,8 @@ class FederatedTransaction:
                 continue
             if v.modified == False and v.ob.state != EObState.BORROWED:
                 continue
-            self._update_uri_str(k, v)
             if self.do_mod_db == False:
-                return
+                continue
             if v.ob.state == EObState.BORROWED:
                 if v.modified:
                     self.fdb.return_object(k, v)
@@ -130,6 +129,7 @@ class FederatedTransaction:
                 assert ((v.ob.state == EObState.PRESENT) or
                         (v.ob.state == EObState.LENT) or
                         (v.ob.state == EObState.DETACHED))
+            self._update_uri_str(k, v)
 
 
     def _delete_ob(self, key_str, ob):
@@ -148,9 +148,18 @@ class FederatedTransaction:
         if fob.ob.state != EObState.LENT:
             fob.enforce_schema_before_commit()
 
+        gCon.log(f"{self.fdb.hostname} --> update {key_str} in state {fob.ob.state}")
         if fob.ob.state == EObState.BORROWED:
+            raise FdbException(EFdbErrors.EFDB_INVALID_STATE, 
+                    f"cannot store a borrowed object")
+        elif fob.ob.state == EObState.RETURNING:
             if present_ob_str is not None:
-                gCon.log(f"I have found {present_ob_str} as string for a borrowed object")
+                #gCon.log(f"I have found {present_ob_str} as borrowed object")
+                #fob_comp_str = fob.to_store_str()
+                #gCon.log(f"{fob_comp_str} is the one in transaction.")
+                #if present_ob_str == fob_comp_str:
+                #    gCon.log("They are equal, all OK.")
+                #    return
                 raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_COMMIT,
                   f"{self.fdb.hostname} object {key_str} borrowed, cannot exist")
 
@@ -163,7 +172,7 @@ class FederatedTransaction:
 
                 if present_ob_str is None:
                     raise FdbException(EFdbErrors.EFDB_CONFLICT_DURING_COMMIT,
-                                   f"object {key_str} deleted")
+                                   f"{self.fdb.hostname} object {key_str} deleted")
                 obs = str_to_fobs(present_ob_str)
 
                 if obs.state == EObState.LENT:
@@ -227,12 +236,13 @@ class FederatedTransaction:
 
         except FdbException as fdbex:
             fdex = fdbex
+            gCon.log(f"HELP {fdbex}")
 
         except Exception as ex:
             traceback.print_exc()
             fdex = FdbException(EFdbErrors.EFDB_INTERNAL_ERROR, str(ex)) 
 
-        gCon.rule(f"[red] {self.fdb.hostname} !!!!!COMMIT ABORTED!!!!!{self.tid}[/red]")
+        gCon.log(f"[red]{self.fdb.hostname} !!!!!COMMIT ABORTED!!!!!{self.tid}[/red]")
         self.fdb.db.rollback()
         raise fdex
 
@@ -552,17 +562,28 @@ class FederatedStore(Dependency, LifespanAware):
         return uri_ob
 
 
-    def return_object(self, key, ob = None):
+    def return_object(self, key, fob = None):
         self.background_tasks += 1
-        self.fdbtg.create_task(FederatedStore.return_object_task(self, key, ob))
+        if fob is not None:
+            if fob.ob.state != EObState.BORROWED:
+                raise FdbException(EFdbErrors.EFDB_INVALID_STATE,
+f"cannot return {key} which is not borrowed, but {fob.ob.state}")
+
+            gCon.log(f"[yellow]Set RETURNING to {key}[/yellow]")
+            fob.ob.state = EObState.RETURNING
+
+        self.fdbtg.create_task(FederatedStore.return_object_task(self, key, fob))
 
 
     async def return_object_task(self, key, ob):
         try:
             await self.return_object_task_try(key, ob)
             gCon.log(f"[red]Returned object ok, I delete the key {key}[/red]")
-            self.db.del_key(key)
-            self.db.commit()
+            if self.db.has_key(key):
+                self.db.del_key(key)
+                self.db.commit()
+            else:
+                gCon.log(f"[red]No key {key} to delete {ob}[/red]")
         except Exception as ex:
             traceback.print_exc()
             gCon.log(f"Got exception {ex} in return object!")
@@ -582,7 +603,7 @@ class FederatedStore(Dependency, LifespanAware):
         else:
             uri_ob = self.parse_uri(key)
             host = uri_ob.host
-            gCon.log(f"===================== returned no mod {key} which is {host} ========")
+            gCon.log(f"========= returned no mod {key} which is {host} ========")
             res = await social_api.remote_req('fdb', 'return_no_mod', host,
                         uri_str = key)
 
@@ -620,6 +641,8 @@ class FederatedStore(Dependency, LifespanAware):
     async def _read_remote_ctx(self, rctx):
         host = rctx.uri_ob.host
         social_api = self.kernel.get_dep(Dependencies.SOCIAL_API)
+        if rctx.must_lock == False:
+            gCon.log(f"[blue]READ ONLY remote read {rctx.uri_str}[/blue]")
         res = await social_api.remote_req('fdb', 'borrow', host, uri_str =
                     rctx.uri_str, lock = rctx.must_lock)
         remote_ob_str = res['obstr']
@@ -629,8 +652,39 @@ class FederatedStore(Dependency, LifespanAware):
     async def return_object_received(self, t_id, uri_str, obstr = None):
         rctx = await self._uri_read_str_impl(t_id, uri_str, only_local = True,
                                      internal_read = True, must_lock = True)
+
         if rctx.fob.ob.state != EObState.LENT:
-            raise FdbException(EFdbErrors.EFDB_INVALID_STATE)
+            gCon.log(f"The return object is {obstr}")
+            ob_str = rctx.fob.to_store_str()
+            raise FdbException(EFdbErrors.EFDB_INVALID_STATE,
+f"object {uri_str} is in state {rctx.fob.ob.state}, string {ob_str}")
+
+        rctx.fob.returned_object(obstr)
+
+
+    async def return_object_received_bugged(self, t_id, uri_str, obstr = None):
+        rctx = await self._uri_read_str_impl(t_id, uri_str, only_local = True,
+                                     internal_read = True, must_lock = True)
+        if rctx.fob.ob.state == EObState.PRESENT:
+            if obstr is None:
+                gCon.log(f"Object already present, none string, no-op")
+                return
+
+            ob_db_str = rctx.fob.to_store_str()
+            gCon.log(f"XX -> In db I have {ob_db_str}")
+            gCon.log(f"YY -> Returned is {obstr}")
+            if ob_db_str == obstr:
+                gCon.log("They are equal, OK, NO-op")
+                return
+
+            raise FdbException(EFdbErrors.EFDB_INVALID_STATE,
+f"object {uri_str} is not LENT, but PRESENT, I cannot update it.")
+
+        elif rctx.fob.ob.state != EObState.LENT:
+            gCon.log(f"The return object is {obstr}")
+            ob_str = rctx.fob.to_store_str()
+            raise FdbException(EFdbErrors.EFDB_INVALID_STATE,
+f"object {uri_str} is in state {rctx.fob.ob.state}, string {ob_str}")
 
         rctx.fob.returned_object(obstr)
 
@@ -646,6 +700,12 @@ class FederatedStore(Dependency, LifespanAware):
             return
 
         t_ob_str = self.db.get_maybe(rctx.uri_str) 
+
+        if ((t_ob_str is not None) and (uri_local.host is not None)):
+            gCon.log(f"Help {rctx.uri_str} is present here {self.hostname} -> \
+{t_ob_str}")
+            assert False
+
         new_state = None
         if ((t_ob_str is None) and (uri_local.host is not None)):
             t_ob_str = await self._read_remote_ctx(rctx)
