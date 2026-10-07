@@ -51,7 +51,7 @@ class FamilyCalls:
     @staticmethod
     @active_login
     async def _sys_call_expel_member(kernel, session, pars):
-        pass
+        await _sys_call_expel_member_safe(kernel, pars)
 
 
     @staticmethod
@@ -71,7 +71,7 @@ class FamilyCalls:
     @federated_transaction(raise_if_fail = True)
     async def _family_associate_safe(kernel, pars ,t_id):
         await _family_associate_impl(kernel, pars, t_id)
-
+  
 
     @staticmethod
     @active_login
@@ -100,6 +100,11 @@ f"""You have been invited to join adelphos by @{session.alias_family}@{this_host
  to accept it do a private mention 
  {social_handle} family.join alias $alias_chosen invite_code {invite_code}""")
 
+
+@federated_transaction(raise_if_fail = True)
+async def _sys_call_expel_member_safe(kernel, pars, t_id):
+    await fu.family_expel_member_impl(kernel, pars, t_id)
+ 
 
 @federated_transaction(raise_if_fail = True)
 async def _family_change_boss_safe(kernel, pars, t_id):

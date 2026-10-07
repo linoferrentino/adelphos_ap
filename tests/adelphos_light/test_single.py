@@ -106,6 +106,7 @@ def test_ok_complex(simulated_fediverse):
         _test_change_carrier,
         _test_change_boss,
         _test_change_tax,
+        _test_expel_member,
     ))
 
 
@@ -132,5 +133,10 @@ def _test_change_boss(world):
 def _test_change_tax(world):
     ad = world.get_instance('adelphos')
     rh.ws_play_script(ad.get_sock(), 'change_tax')
+
+
+def _test_expel_member(world):
+    ad = world.get_instance('adelphos')
+    rh.ws_play_script(ad.get_sock(), 'expel_member')
 
 

@@ -20,6 +20,8 @@ private_key.pem
 *.backup
 *.yaml
 
+*cover
+
 !adelphos_ap.prototype.yaml
 
 docs/user/_site

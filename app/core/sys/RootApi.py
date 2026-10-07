@@ -29,13 +29,12 @@ from app.core.sys.AliasCalls import AliasCalls
 
 import app.core.sys.FamilyCalls as fcalls
 import app.core.sys.family_utils as fu
-import app.misc.alias_utils as au
-import app.core.sys.alias_utils as autils
+import app.misc.utils as misc
+import app.core.sys.alias_utils as au
 import app.core.sys.offer_utils as ofutils
 import app.core.sys.agora_utils as agu
 import app.core.sys.ecommerce_utils as ecut
 import app.core.sys.AgoraCalls as ac
-import app.core.sys.alias_utils as autils
 
 
 def sudo_cmd(func):
@@ -170,7 +169,7 @@ async def _push_alias_safe(kernel, pars, t_id):
 async def _push_alias_impl(kernel, session, alias, t_id):
     gCon.log(f"pushing alias {alias}")
     alias_session = session.client.push_session(alias)
-    await autils._session_login(kernel, alias_session,
+    await au._session_login(kernel, alias_session,
                                     alias, None, t_id, True)
     return alias_session
 
@@ -237,7 +236,7 @@ async def _root_put_object_safe(kernel, pars, t_id):
     as_adelphos_uri_str = pars['as_adelphos']
     alias_ob = await fdb.uri_read_str(t_id, as_adelphos_uri_str,
                                       must_lock = True)
-    family_ob = await autils.alias_get_your_family(kernel,
+    family_ob = await au.alias_get_your_family(kernel,
             as_adelphos_uri_str, t_id)
     gCon.log(f"aliasob {alias_ob} family {family_ob}")
     return await ofutils.object_put_ad_in_agora_impl(kernel, family_ob,
@@ -267,10 +266,9 @@ async def _alias_join_family_safe(kernel, pars, t_id):
     family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
     family_ob = await fdb.uri_read_ob(t_id, family_uri, must_lock = True)
 
-    alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, 
+    alias_ob = await au._alias_add_in_family(fdb, family_ob, 
         user_handle, alias, family, password, t_id)
     return f"Created alias {alias_ob().uri.unparse()}"
-
 
  
 async def _sys_call_add_user_alias_impl(kernel, session, pars,
@@ -279,7 +277,7 @@ async def _sys_call_add_user_alias_impl(kernel, session, pars,
 
     alias = pars['alias']
 
-    (alias_name, family) = au.split_alias(alias, True)
+    (alias_name, family) = misc.split_alias(alias, True)
 
     pars['actor_id'] = local_user.actor_dto.act.actor_id
     pars['alias_name'] = alias_name

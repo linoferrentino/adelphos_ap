@@ -58,6 +58,12 @@ class TaskCalls:
 
     @staticmethod
     @active_login
+    async def _sys_call_abort_routing(kernel, session, pars):
+        pass
+
+
+    @staticmethod
+    @active_login
     async def _sys_call_first_step(kernel, session, pars):
        return await _task_first_step_safe(kernel, pars)
 

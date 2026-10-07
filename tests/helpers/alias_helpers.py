@@ -17,7 +17,7 @@ import tests.t_utils as tu
 from app.sdc.Dependencies import Dependencies
 from app.exc.AdelphosException import AdErrno
 from app.core.ECoreErrno import ECoreErrno
-import app.misc.alias_utils as au
+import app.misc.utils as misc
 
 
 def ws_alias_send_msg(ws, alias_to, msg, *,
@@ -40,7 +40,7 @@ def ws_alias_get_tasks_as_diakonos(ws, *,
 
 def ws_upgrade_socket_to_local_root(wrapper, ws, conf):
     root_pass = conf['_root_password_']
-    local_root = au.get_local_alias(conf['_root_handle_'])
+    local_root = misc.get_local_alias(conf['_root_handle_'])
     ws_local_root_login(wrapper, ws, local_root, root_pass)
 
 

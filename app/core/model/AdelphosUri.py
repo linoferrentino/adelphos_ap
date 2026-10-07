@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from app.exc.AdelphosException import AdelphosException
 from app.exc.AdelphosException import AdErrno
 from app.logging import gCon
-import app.misc.alias_utils as au
+import app.misc.utils as misc
 
 
 class EAdelphosType(StrEnum):
@@ -57,7 +57,7 @@ class AdelphosUri(FederatedUri):
     @staticmethod
     def create_uri(uri_type, name_part, *, host_part = None, fragment = None):
         if uri_type == EAdelphosType.ALIAS_TYPE:
-            (alias, family) = au.split_alias(name_part, True)
+            (alias, family) = misc.split_alias(name_part, True)
         else:
             alias = name_part
             family = None

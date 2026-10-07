@@ -329,6 +329,11 @@ standard_cli_api = """
               task_uri:
                 required: true
 
+          - name: abort_routing
+            pars:
+              task_uri:
+                required: true
+
           - name: confirm_routing_step
             pars:
               task_uri:
@@ -436,6 +441,8 @@ standard_cli_api = """
                 required: true
               member_to_expel:
                 required: true
+              new_family:
+                required: false
 
           - name: detach_upper
             pars:

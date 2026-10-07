@@ -142,14 +142,57 @@ async def family_change_boss_impl(kernel, pars, t_id):
     await family_change_uri_impl(kernel, pars, 'boss', new_boss_uri, t_id)
 
 
-async def family_change_tax_impl(kernel, pars, t_id):
+async def _ensure_editable_family_in_pars(kernel, pars, t_id):
     family_uri = pars['family_uri']
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     family_ob = await fdb.uri_read_str(t_id, family_uri)
     boss_uri = await family_ob().get_scalar('boss', t_id)
     scu.check_editable_object(pars, family_ob().uri, boss_uri)
+    return family_ob
+ 
+
+def create_new_local_family(fdb, family, pars, fam_trust, t_id):
+    family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
+
+    is_present_family = fdb.is_present_local_uri(t_id, family_uri)
+
+    if is_present_family is True:
+        if pars.get('maybe') == True:
+            return
+        gCon.log(f"Family already present")
+        raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY,
+                    f"family {family} already present in this host")
+
+    family_ob = fdb.new_ob_uri(t_id, family_uri, fields = {
+        'my_trust' : tutils.abs_to_db(fam_trust),
+        'level' : 0,
+        'brotherhood_ratio' : 1.0,
+        })
+
+    return family_ob
+
+
+async def family_change_tax_impl(kernel, pars, t_id):
+    family_ob = await _ensure_editable_family_in_pars(kernel, pars, t_id)
     new_tax = pars['new_tax']
     family_ob().set_scalar('import_export_tax', new_tax)
+
+
+async def family_expel_member_impl(kernel, pars, t_id):
+    family_ob = await _ensure_editable_family_in_pars(kernel, pars, t_id)
+
+    member_to_expel_uri = pars['member_to_expel']
+    lev = await family_ob().get_scalar('level', t_id)
+    if lev == 0:
+        new_family = pars.get('new_family')
+        if new_family is None:
+            raise AdelphosCoreException(ECoreErrno.EALIAS_IN_NO_FAMILY,
+f"Cannot expel {member_to_expel_uri} without a new family")
+
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    gCon.log(f"You want to expel {member_to_expel_uri}")
+    member_to_expel_ob = await fdb.uri_read_str(t_id, member_to_expel_uri)
+    await family_ob().remove_link('members', member_to_expel_ob, t_id)
 
 
 async def family_change_carrier_impl(kernel, pars, t_id):

@@ -35,7 +35,7 @@ import tests.daemon.daemon_tests as dtests
 import tests.social.social_tests as stests
 import tests.t_utils as tu
 import tests.helpers.alias_helpers as ah
-import app.misc.alias_utils as au
+import app.misc.utils as misc
 
 def test_real1(get_standalone_app):
     ad1 = get_standalone_app('adelphos1', stdcnf.release_kernel_template,
@@ -119,7 +119,7 @@ def test_create_root_user(get_routable_app):
                              tconf.adelphos_testable_1_conf)
 
     root_pass = tconf.adelphos_testable_1_conf['_root_password_']
-    local_root = au.get_local_alias(tconf.adelphos_testable_1_conf['_root_handle_'])
+    local_root = misc.get_local_alias(tconf.adelphos_testable_1_conf['_root_handle_'])
 
     with test1, test1.websocket_connect(CNST.WS_ROUTE) as websocket:
         websocket.send_text(f"alias.login alias root.admins password {root_pass}")
@@ -168,9 +168,9 @@ def test_real_remote_add(get_routable_app):
     host1 = f'localhost:{port1}'
 
     root_pass = tconf.adelphos_testable_1_conf['_root_password_']
-    local_root = au.get_local_alias(tconf.adelphos_testable_1_conf['_root_handle_'])
+    local_root = misc.get_local_alias(tconf.adelphos_testable_1_conf['_root_handle_'])
 
-    local_root2 = au.get_local_alias(tconf.adelphos_testable_2_conf['_root_handle_'])
+    local_root2 = misc.get_local_alias(tconf.adelphos_testable_2_conf['_root_handle_'])
     root_pass2 = tconf.adelphos_testable_2_conf['_root_password_']
     with test1, test2:
         with test1.websocket_connect(CNST.WS_ROUTE) as ws, \

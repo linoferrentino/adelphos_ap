@@ -23,10 +23,10 @@ from app.core.model.AdelphosUri import AdelphosUri
 from app.sdc.Dependencies import Dependencies
 import weakref
 import sys
-import app.misc.alias_utils as au
-import app.misc.trust_utils as tutils
+import app.misc.utils as misc
 import app.core.sys.family_utils as fu
 import app.core.sys.task_utils as tku
+import app.core.sys.alias_utils as au
 
 from app.logging import gCon
 
@@ -47,7 +47,7 @@ class AliasAlgo:
     @staticmethod
     async def _sys_call_create(kernel, envelope, pars):
         alias = pars['name']
-        (alias_name, family) = au.split_alias(alias, True)
+        (alias_name, family) = misc.split_alias(alias, True)
 
         pars['actor_id'] = envelope.actor_from.act.actor_id
         pars['user_handle'] = envelope.actor_from.get_social_handle()
@@ -61,84 +61,16 @@ class AliasAlgo:
     @staticmethod
     @federated_transaction(raise_if_fail = False)
     async def alias_create(kernel, pars, t_id):
-        return await AliasAlgo._alias_create_impl(kernel, pars, t_id)
+        return await _alias_create_impl(kernel, pars, t_id)
  
 
     @staticmethod
     @federated_transaction(raise_if_fail = True)
     async def alias_create_safe(kernel, pars, t_id):
-        return await AliasAlgo._alias_create_impl(kernel, pars, t_id)
+        return await _alias_create_impl(kernel, pars, t_id)
  
 
-    async def _alias_create_impl(kernel, pars, t_id):
-        gCon.log(f"pars are {pars}")
-
-        alias_name = pars['alias_name']
-        family = pars['family']
-        password = pars['password']
-        my_trust = pars['my_trust']
-        user_handle = pars['user_handle']
-
-        already_hashed = pars.get('already_hashed')
-
-        fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-        family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
-
-        is_present_family = fdb.is_present_local_uri(t_id, family_uri)
-
-        if is_present_family is True:
-            if pars.get('maybe') == True:
-                return
-            gCon.log(f"Family already present")
-            raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY,
-                        f"family {family} already present in this host")
-
-        family_ob = fdb.new_ob_uri(t_id, family_uri, fields = {
-            'my_trust' : tutils.abs_to_db(my_trust),
-            'level' : 0,
-            'brotherhood_ratio' : 1.0,
-            })
-
-        alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, 
-                        user_handle, alias_name, family, password, t_id,
-                        already_hashed = already_hashed)
-
-        await fu.add_default_agora(fdb, family_ob, alias_ob, t_id)
-
-        await family_ob().set_link('boss', alias_ob, t_id)
-
-
-    @staticmethod
-    async def _alias_add_in_family(fdb, family_ob, user_handle,
-                                   name, family, password, t_id, *,
-                    already_hashed = False):
-
-        if already_hashed == True:
-            pass_hashed = password
-        else:
-            ph = PasswordHasher()
-            pass_hashed = ph.hash(password)
-
-        fields = {
-                'actor_handle' : user_handle,
-                'password': pass_hashed,
-        }
-
-        gCon.log(f"Adding alias {fields}")
-
-        alias_uri = AdelphosUri(EAdelphosType.ALIAS_TYPE, name,
-                                family = family)
-
-        is_present_alias = fdb.is_present_local_uri(t_id, alias_uri)
-        if is_present_alias:
-            raise AdelphosCoreException(ECoreErrno.EDUPLICATED_ALIAS_IN_FAMILY,
-                            f"alias {name} already present in {family}")
-
-        alias_ob = fdb.new_ob_uri(t_id, alias_uri, fields = fields)
-
-        family_ob().add_link('members', alias_ob)
-        return alias_ob
-       
+      
 
     @staticmethod
     @federated_transaction(raise_if_fail = True)
@@ -158,7 +90,7 @@ class AliasAlgo:
         fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
         family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)
         family_ob = await fdb.uri_read_lock(t_id, family_uri)
-        alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob,
+        alias_ob = await au._alias_add_in_family(fdb, family_ob,
                 user_handle, alias, family, password, t_id)
         return alias_ob
 
@@ -187,6 +119,33 @@ class AliasAlgo:
              raise AdelphosCoreException(ECoreErrno.ECANNOT_FIND_INVITE,
                                         family)
 
-        alias_ob = await AliasAlgo._alias_add_in_family(fdb, family_ob, 
+        alias_ob = await au._alias_add_in_family(fdb, family_ob, 
                             user_handle, alias, family, password, t_id)
+
+
+async def _alias_create_impl(kernel, pars, t_id):
+    gCon.log(f"pars are {pars}")
+
+    alias_name = pars['alias_name']
+    family = pars['family']
+    password = pars['password']
+    my_trust = pars['my_trust']
+    user_handle = pars['user_handle']
+
+    already_hashed = pars.get('already_hashed')
+
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    family_ob = fu.create_new_local_family(fdb, family, pars, my_trust,
+                                        t_id)
+
+    alias_ob = await au._alias_add_in_family(fdb, family_ob, 
+                    user_handle, alias_name, family, password, t_id,
+                    already_hashed = already_hashed)
+
+    await fu.add_default_agora(fdb, family_ob, alias_ob, t_id)
+
+    await family_ob().set_link('boss', alias_ob, t_id)
+
+
+
 

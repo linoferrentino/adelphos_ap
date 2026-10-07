@@ -13,39 +13,39 @@
 
 
 import pytest
-import app.misc.alias_utils as au
+import app.misc.utils as misc
 
 from app.core.AdelphosCoreException import AdelphosCoreException
 from app.core.ECoreErrno import ECoreErrno
 
 def test_alias_check():
 
-    (alias, family) = au.split_alias('lino.ferre', True)
+    (alias, family) = misc.split_alias('lino.ferre', True)
     assert alias == 'lino'
     assert family == 'ferre'
 
     with pytest.raises(AdelphosCoreException) as fex:
-        (alias, family) = au.split_alias('lino.ferre.eo', True)
+        (alias, family) = misc.split_alias('lino.ferre.eo', True)
 
     assert fex.value.errno == ECoreErrno.EINVALID_ALIAS_SYNTAX
 
     with pytest.raises(AdelphosCoreException) as fex:
-        (alias, family) = au.split_alias('.linoferre', True)
+        (alias, family) = misc.split_alias('.linoferre', True)
 
     assert fex.value.errno == ECoreErrno.EINVALID_ALIAS_SYNTAX
 
     with pytest.raises(AdelphosCoreException) as fex:
-        (alias, family) = au.split_alias('linoferre.', True)
+        (alias, family) = misc.split_alias('linoferre.', True)
 
     assert fex.value.errno == ECoreErrno.EINVALID_ALIAS_SYNTAX
 
     with pytest.raises(AdelphosCoreException) as fex:
-        (alias, family) = au.split_alias('#lino.ferre', True)
+        (alias, family) = misc.split_alias('#lino.ferre', True)
 
     assert fex.value.errno == ECoreErrno.EINVALID_ALIAS_SYNTAX
 
     with pytest.raises(AdelphosCoreException) as fex:
-        (alias, family) = au.split_alias('lino.=ferre', True)
+        (alias, family) = misc.split_alias('lino.=ferre', True)
 
     assert fex.value.errno == ECoreErrno.EINVALID_ALIAS_SYNTAX
 

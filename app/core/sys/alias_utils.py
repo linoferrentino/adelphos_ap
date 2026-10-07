@@ -17,7 +17,7 @@ from argon2 import PasswordHasher
 from app.logging import gCon
 from app.core.model.AdelphosUri import EAdelphosType
 from app.core.model.AdelphosUri import AdelphosUri
-import app.misc.alias_utils as au
+import app.misc.utils as misc
 from app.core.ECoreErrno import ECoreErrno
 from app.core.AdelphosCoreException import AdelphosCoreException
 
@@ -50,7 +50,7 @@ async def alias_get_from_uri(kernel, alias_uri, t_id):
 
 async def _session_login(kernel, session, alias_family, password, t_id,
                          force = False):
-    (alias, family) = au.split_alias(alias_family)
+    (alias, family) = misc.split_alias(alias_family)
     pars = {
       'alias' : alias,
       'family' : family,
@@ -100,4 +100,34 @@ async def _login_impl(kernel, pars, t_id):
 
     return alias_ob().detach()
 
+
+async def _alias_add_in_family(fdb, family_ob, user_handle,
+                               name, family, password, t_id, *,
+                already_hashed = False):
+
+    if already_hashed == True:
+        pass_hashed = password
+    else:
+        ph = PasswordHasher()
+        pass_hashed = ph.hash(password)
+
+    fields = {
+            'actor_handle' : user_handle,
+            'password': pass_hashed,
+    }
+
+    gCon.log(f"Adding alias {fields}")
+
+    alias_uri = AdelphosUri(EAdelphosType.ALIAS_TYPE, name,
+                            family = family)
+
+    is_present_alias = fdb.is_present_local_uri(t_id, alias_uri)
+    if is_present_alias:
+        raise AdelphosCoreException(ECoreErrno.EDUPLICATED_ALIAS_IN_FAMILY,
+                        f"alias {name} already present in {family}")
+
+    alias_ob = fdb.new_ob_uri(t_id, alias_uri, fields = fields)
+
+    family_ob().add_link('members', alias_ob)
+    return alias_ob
 
