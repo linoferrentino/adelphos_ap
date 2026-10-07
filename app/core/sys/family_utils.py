@@ -142,6 +142,16 @@ async def family_change_boss_impl(kernel, pars, t_id):
     await family_change_uri_impl(kernel, pars, 'boss', new_boss_uri, t_id)
 
 
+async def family_change_tax_impl(kernel, pars, t_id):
+    family_uri = pars['family_uri']
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    family_ob = await fdb.uri_read_str(t_id, family_uri)
+    boss_uri = await family_ob().get_scalar('boss', t_id)
+    scu.check_editable_object(pars, family_ob().uri, boss_uri)
+    new_tax = pars['new_tax']
+    family_ob().set_scalar('import_export_tax', new_tax)
+
+
 async def family_change_carrier_impl(kernel, pars, t_id):
     new_carrier_uri = pars['new_carrier_uri']
     await family_change_uri_impl(kernel, pars, 'carrier', new_carrier_uri, t_id)

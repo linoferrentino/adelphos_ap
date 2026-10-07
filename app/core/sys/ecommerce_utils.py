@@ -65,9 +65,12 @@ it only to have a negative balance of -{max_balance}""")
 
 async def get_total_tax_up(chain_exports, t_id):
     total_tax = 1.0
+    gCon.log(f"----------------------- start computing tax 1.0")
     for family in chain_exports[:-1]:
         family_tax = await family().get_scalar('import_export_tax', t_id)
         total_tax *= family_tax
+        gCon.log(f"family {family().uri.unparse()} has a tax {family_tax} -> total {total_tax}")
+    gCon.log(f"----------------------- end computing tax {total_tax}")
     return total_tax
 
 

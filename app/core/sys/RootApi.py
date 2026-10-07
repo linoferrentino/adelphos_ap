@@ -73,11 +73,6 @@ class RootApi:
         fdb.empty_cache()
 
 
-    #@sudo_cmd
-    #@staticmethod
-    #async def _sys_call_buy_object_title(kernel, session, pars):
-    #    await _root_buy_object_title_safe(kernel, pars)
-
     @sudo_cmd
     @staticmethod
     async def _sys_call_find_object_title(kernel, session, pars):

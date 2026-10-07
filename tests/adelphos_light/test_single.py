@@ -105,6 +105,7 @@ def test_ok_complex(simulated_fediverse):
         _test_check_calculations,
         _test_change_carrier,
         _test_change_boss,
+        _test_change_tax,
     ))
 
 
@@ -127,5 +128,9 @@ def _test_change_boss(world):
     ad = world.get_instance('adelphos')
     rh.ws_play_script(ad.get_sock(), 'change_boss')
 
+
+def _test_change_tax(world):
+    ad = world.get_instance('adelphos')
+    rh.ws_play_script(ad.get_sock(), 'change_tax')
 
 

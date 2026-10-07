@@ -29,7 +29,7 @@ alias.send_msg alias_to #al#root.admins msg "YOUR_MESSAGE"
     msg_ob = {
             'mmsg' : f'new_{key}',
             'hmsg' : hmsg,
-            'former_boss' : cur_boss,
+            'cur_boss' : cur_boss,
             'family_uri' : family_uri,
     }
     return json.dumps(msg_ob)

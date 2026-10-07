@@ -32,8 +32,8 @@ root.push_alias alias a4.f4_l0
 $ pop_msg | amsg 
 
 $ assert | pars['amsg']['mmsg'] == "new_boss"
-$ assert | pars['amsg']['former_boss'] == "#al#b7.f7_l0@www.adelphos.it"
+$ assert | pars['amsg']['cur_boss'] == "#al#b7.f7_l0@www.adelphos.it"
 $ assert | pars['amsg']['family_uri'] == "#fa#f4-7_l2@www.adelphos.it"
 
-
+root.pop_alias
 

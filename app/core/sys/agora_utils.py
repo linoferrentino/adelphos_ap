@@ -116,7 +116,6 @@ async def _agora_buy_object_uri_impl(kernel, pars, t_id):
     agora_exported_price = total_tax * offer_price
 
     skip_task = pars.get('_x_skip_task')
-    gCon.log(f"_x_skip_task is {skip_task}")
     if (skip_task is None) or (skip_task == False):
          pending_moves = await ecut.distribute_losses_and_gains(kernel,
                 agora_exported_price, chain_exports, chain_imports,
