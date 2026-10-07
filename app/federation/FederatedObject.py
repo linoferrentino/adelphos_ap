@@ -487,9 +487,9 @@ without modification in state {self.ob.state}[/green]")
         if self.ob.state != EObState.PRESENT:
             raise FdbException(EFdbErrors.EFDB_INVALID_STATE,
   f"object {self.uri.unparse()} cannot be lent, in state {self.ob.state}")
-        gCon.log(f"[red]Object {self.uri.unparse()} lent to {social_handle}[/red]")
         now = datetime.now()
         now_str = now.strftime("%Y-%m-%dT%H:%M:%S.%f")
+        gCon.log(f"[red]Object {self.uri.unparse()} lent to {social_handle} on {now_str}[/red]")
         self.ob.state = EObState.LENT
         backup_fields = self.ob.fields
         self.ob.fields = {

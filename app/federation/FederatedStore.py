@@ -124,7 +124,10 @@ class FederatedTransaction:
                 if v.modified:
                     self.fdb.return_object(k, v)
                 else:
+                    gCon.log(
+f"[red]{self.fdb.hostname} -> {k} is a not modified object, only return[/red]")
                     self.fdb.return_object(k)
+                    continue
             else:
                 assert ((v.ob.state == EObState.PRESENT) or
                         (v.ob.state == EObState.LENT) or
@@ -728,8 +731,9 @@ f"object {uri_str} is in state {rctx.fob.ob.state}, string {ob_str}")
 
         if ((rctx.fob.ob.state == EObState.LENT) and 
             (rctx.internal_read == False)):
-            gCon.log(f"{self.hostname}: Object {rctx.uri_str} has been lent!")
-            raise FdbException(EFdbErrors.EFDB_LENT, f"{rctx.uri_str} lent to {rctx.fob.ob.fields}")
+            gCon.log(f"[red]{self.hostname}: Object {rctx.uri_str} has been lent \
+to {rctx.fob.ob.fields['lent_to']} on {rctx.fob.ob.fields['date_lending']}![/red]")
+            raise FdbException(EFdbErrors.EFDB_LENT, f"{rctx.uri_str} lent")
 
         if new_state is not None:
             rctx.fob.ob.state = new_state
@@ -780,7 +784,6 @@ f"object {uri_str} is in state {rctx.fob.ob.state}, string {ob_str}")
 
 
     def begin_transaction(self):
-
         tid = secrets.token_hex()
         tob = FederatedTransaction(tid, self)
         self.transactions[tid] = tob
@@ -790,9 +793,11 @@ f"object {uri_str} is in state {rctx.fob.ob.state}, string {ob_str}")
     def commit_transaction(self, t_id):
         t_ob = self.get_tob_safe(t_id)
         t_ob.t_commit()
+        del self.transactions[t_id]
 
 
     def rollback_transaction(self, t_id):
         t_ob = self.get_tob_safe(t_id)
         t_ob.t_rollback()
+        del self.transactions[t_id]
 
