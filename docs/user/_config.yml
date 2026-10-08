@@ -32,9 +32,9 @@ twitter_username: jekyllrb
 github_username:  jekyll
 
 # Build settings
-theme: minima
+#theme: minima
 mathjax: true
-#theme: jekyll-text-theme
+theme: jekyll-text-theme
 plugins:
   - jekyll-feed
 

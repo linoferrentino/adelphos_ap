@@ -1,7 +1,9 @@
 ---
+
 title: Home
-layout: default 
+layout: article
 body_classes: 'title-center title-h1h2'
+
 ---
 
 # Adelphos main documentation index

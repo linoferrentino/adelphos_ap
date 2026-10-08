@@ -1,5 +1,6 @@
 ---
-layout: post
+#layout: post
+layout: page
 title:  "Adelphos is born!"
 date:   2026-10-04 15:58:37 +0200
 categories: adelphos update
