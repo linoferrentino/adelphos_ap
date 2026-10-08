@@ -75,6 +75,9 @@ freedom as the initial one.
 Copyright (c) Lino Ferrentino 2026. lino.ferrentino@gmail.com This project is licensed under the GPLv3 License.
 
 
+When $$a \ne 0$$, there are two solutions to $$ax^2 + bx + c = 0$$ and they are
+$$x_1 = {-b + \sqrt{b^2-4ac} \over 2a}$$
+$$x_2 = {-b - \sqrt{b^2-4ac} \over 2a} \notag$$
 
 
 
