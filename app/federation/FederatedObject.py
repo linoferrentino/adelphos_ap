@@ -741,8 +741,8 @@ without modification in state {self.ob.state}[/green]")
         if par.cardinality == FObCardType.SET:
             cur_set = set(cur_value)
             if uri_str not in cur_set:
-                raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB,
-                    f"Object {uri_str} not found")
+                raise FdbException(EFdbErrors.EFDB_LINK_NOT_FOUND,
+                    f"Object {uri_str} not found to be deleted in {key}")
             cur_set.remove(uri_str)
             self.ob.fields[key] = list(cur_set)
         elif par.cardinality == FObCardType.ARRAY:
@@ -750,8 +750,8 @@ without modification in state {self.ob.state}[/green]")
             try:
                 cur_list.remove(uri_str)
             except ValueError:
-                raise FdbException(EFdbErrors.EFDB_NO_SUCH_OB,
-                    f"Object {uri_str} not found")
+                raise FdbException(EFdbErrors.EFDB_LINK_NOT_FOUND,
+                    f"Object {uri_str} not found to be deleted in {key}")
             self.ob.fields[key] = cur_list 
         else:
             raise Exception("TO DO")
@@ -817,7 +817,8 @@ without modification in state {self.ob.state}[/green]")
 
         if hasattr(self, 'prepared_to_oblivion'):
             return 
-        gCon.log(f"[red]prepare to oblivion >> {self.uri.unparse()}[/red]")
+
+        gCon.log(f"[red]async prepare to oblivion >> {self.uri.unparse()}[/red]")
         for par, definition in self.registrar.pars.items():
             if ((definition.typecol != FObColType.URI)
                 and (definition.typecol != FObColType.LOCAL_URI)):
@@ -826,14 +827,20 @@ without modification in state {self.ob.state}[/green]")
             if definition.cardinality == FObCardType.SCALAR:
                 if uris_to_downvote is not None:
                     await fdb.downvote_uri(uris_to_downvote, t_id)
-                    self.prepared_to_oblivion = True
+                    #self.prepared_to_oblivion = True
             elif definition.cardinality == FObCardType.SET:
                 set_uri_downvoted = set(uris_to_downvote)
                 for uri_to_downvote in set_uri_downvoted:
                     await fdb.downvote_uri(uri_to_downvote, t_id)
-                    self.prepared_to_oblivion = True
+                #self.prepared_to_oblivion = True
+            elif definition.cardinality == FObCardType.ARRAY:
+                list_uri_downvoted = list(uris_to_downvote)
+                for uri_to_downvote in list_uri_downvoted:
+                    await fdb.downvote_uri(uri_to_downvote, t_id)
             else:
-                raise Exception("To do")
+                raise Exception(f"To do {par} -> {definition}")
+
+        self.prepared_to_oblivion = True
         gCon.log(f"=================== prepared to oblivion DONE {id(self)}")
 
 

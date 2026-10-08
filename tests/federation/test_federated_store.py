@@ -366,7 +366,7 @@ async def a_test_uri_remove(fdb1_loc):
 
     with pytest.raises(FdbException) as fex:
         await fob().remove_link('followers', fob_dep_bob, t_id)
-    assert fex.value.errno == EFdbErrors.EFDB_NO_SUCH_OB
+    assert fex.value.errno == EFdbErrors.EFDB_LINK_NOT_FOUND
 
     fdb1_loc.commit_transaction(t_id)
 

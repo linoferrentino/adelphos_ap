@@ -78,6 +78,49 @@ fixture_1_single = """
 
 """
 
+
+fixture_test_expel_member = """
+  adelphos_setup:
+    
+    users:
+
+      - a0
+      - a1
+      - b0
+      - b1
+      - c0
+      - c1
+
+    families:
+
+      - name: f0_l0
+        members: 
+          a0:
+           password: a0ps
+          b0:
+           password: b0ps
+          c0:
+           password: c0ps
+        boss: a0
+        balance: 0
+        my_trust: 5
+        location: f0_l0_loc
+ 
+      - name: f1_l0
+        members: 
+          a1:
+           password: a1ps
+          b1:
+           password: b1ps
+          c1:
+           password: c1ps
+        boss: a1
+        balance: 0
+        my_trust: 5
+        location: f1_l0_loc
+
+"""
+
 fixture_2_complex_parametric = """
 
   adelphos_setup:

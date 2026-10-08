@@ -94,6 +94,14 @@ def _unreacheable(world):
     assert False
 
 
+def test_expel_member(simulated_fediverse):
+    sim_fed = simulated_fediverse(sw.single_world_yaml)
+   
+    sim_fed.test(sw.fixture_test_expel_member, (
+        _test_expel_member,
+    ))
+
+
 def test_ok_complex(simulated_fediverse):
     sim_fed = simulated_fediverse(sw.single_world_yaml)
     fixture_2_complex = sw.fixture_2_complex_parametric.format(
