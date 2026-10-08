@@ -1,12 +1,16 @@
 ---
 
-title: Home
-layout: article
-body_classes: 'title-center title-h1h2'
+title: Adelphos Main Index
+layout: page
 
 ---
 
-# Adelphos main documentation index
+This is the main documentation index for the Adelphos system: this
+document is intended for end users.
+
+A Technical Documentation can be found in the source tree that you might
+find [on github](https://github.com/linoferrentino/adelphos_ap)
+
 
 - [BasicConcepts](content/BasicConcepts)
 

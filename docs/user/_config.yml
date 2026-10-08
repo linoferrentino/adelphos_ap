@@ -28,15 +28,46 @@ description: >- # this means to ignore newlines until "baseurl:"
   that can be also remote.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://www.adelphos.it" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: jekyllrb
-github_username:  jekyll
+#twitter_username: jekyllrb
+github_username:  linoferrentino
+
+
+repository: linoferrentino/adelphos_ap
+repository_tree: master
+
+text_skin: dark # "default" (default), "dark", "forest", "ocean", "chocolate", "orange"
+highlight_theme: tomorrow # "default" (default), "tomorrow", "tomorrow-night", "tomorrow-night-eighties", "tomorrow-night-blue", "tomorrow-night-bright"
+
+
+## => Post
+##############################
+## excerpt
+excerpt_separator: <!--more-->
+
+## license
+license: CC-BY-NC-4.0 # "CC-BY-4.0", "CC-BY-SA-4.0", "CC-BY-NC-4.0", "CC-BY-ND-4.0"
+
+## TOC
+toc:
+  selectors: # "h1,h2,h3" (default)
 
 # Build settings
 #theme: minima
 mathjax: true
 theme: jekyll-text-theme
+#plugins:
+#  - jekyll-feed
+
+
+## => Plugins
+##############################
 plugins:
   - jekyll-feed
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jemoji
+
+
 
 # Exclude from processing.
 # The following items will not be processed, by default.
