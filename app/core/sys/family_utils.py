@@ -182,17 +182,62 @@ async def family_expel_member_impl(kernel, pars, t_id):
     family_ob = await _ensure_editable_family_in_pars(kernel, pars, t_id)
 
     member_to_expel_uri = pars['member_to_expel']
+
+
     lev = await family_ob().get_scalar('level', t_id)
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    gCon.log(f"You want to expel {member_to_expel_uri}")
+    member_to_expel_ob = await fdb.uri_read_str(t_id, member_to_expel_uri)
+ 
     if lev == 0:
+        alias_uri_str = pars['_param'].alias_uri_str
+        
+        gCon.log(f"You are {alias_uri_str} and you want to expel {member_to_expel_uri}")
+        if alias_uri_str == member_to_expel_ob().uri.unparse():
+            raise AdelphosCoreException(ECoreErrno.ECANNOT_EXPEL_YOURSELF,
+f"Cannot expel yourself {member_to_expel_uri}")
+
         new_family = pars.get('new_family')
         if new_family is None:
             raise AdelphosCoreException(ECoreErrno.EALIAS_IN_NO_FAMILY,
 f"Cannot expel {member_to_expel_uri} without a new family")
 
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-    gCon.log(f"You want to expel {member_to_expel_uri}")
-    member_to_expel_ob = await fdb.uri_read_str(t_id, member_to_expel_uri)
+        fam_trust = await family_ob().get_scalar('my_trust', t_id)
+        new_fam_ob = create_new_local_family(fdb, new_family, pars, fam_trust, t_id)
+
+        new_fam_ob().add_link('members', member_to_expel_ob)
+        await new_fam_ob().set_link('boss', member_to_expel_ob, t_id)
+        await add_default_agora(fdb, new_fam_ob, member_to_expel_ob, t_id)
+
     await family_ob().remove_link('members', member_to_expel_ob, t_id)
+
+    if lev == 0:
+        return
+
+    await member_to_expel_ob().compare_and_swap_link('upper_family',
+                    family_ob, None, t_id)
+    await ensure_consinstency_upper_chain(kernel, family_ob, t_id)
+
+
+async def ensure_consinstency_family(kernel, family_ob, t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    boss_ob = await family_get_your_boss(kernel, family_ob, t_id)
+    family_uri = family_ob().uri.unparse()
+    await scu._ensure_alias_in_families(kernel, boss_ob, (family_uri,), t_id)
+    agora_ob = await family_get_your_agora(kernel, family_ob, t_id)
+    carrier_ob = await au.agora_get_your_carrier(kernel, agora_ob, t_id)
+    await scu._ensure_alias_in_families(kernel, carrier_ob, (family_uri,), t_id)
+
+
+async def ensure_consinstency_upper_chain(kernel, family_ob, t_id):
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    while True:
+        gCon.log(f"Check consinstency for family {family_ob().uri.unparse()}")
+        await ensure_consinstency_family(kernel, family_ob, t_id)
+        family_uri = await family_ob().get_scalar('upper_family', t_id)
+        if family_uri is None:
+            break
+        family_ob = await fdb.uri_read_str(t_id, family_uri, must_lock = True)
 
 
 async def family_change_carrier_impl(kernel, pars, t_id):

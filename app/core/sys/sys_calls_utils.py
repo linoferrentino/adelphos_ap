@@ -26,9 +26,11 @@ async def _is_alias_in_family_chain(kernel, alias_ob, family_str, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     family_ob = await fdb.uri_read_str(t_id, family_str)
     lev_family = await family_ob().get_scalar('level', t_id)
+    gCon.log(f"is alias {alias_ob().uri.unparse()} in {family_str}?")
     family0 = await au.alias_ob_get_your_family(kernel, alias_ob, t_id)
     chain_up = await get_family_chain_up_l(kernel, family0, lev_family, t_id)
     top_fam = chain_up[-1]
+    gCon.log(f"top family of lev {lev_family} is {top_fam().uri.unparse()}")
     if top_fam().uri.unparse() == family_ob().uri.unparse():
         return True
     return False

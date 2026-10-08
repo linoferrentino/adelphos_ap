@@ -109,12 +109,12 @@ def test_ok_complex(simulated_fediverse):
     )
     
     sim_fed.test(fixture_2_complex, (
+        _test_expel_families,
         _test_add_objects,
         _test_check_calculations,
         _test_change_carrier,
         _test_change_boss,
         _test_change_tax,
-        _test_expel_member,
     ))
 
 
@@ -146,5 +146,10 @@ def _test_change_tax(world):
 def _test_expel_member(world):
     ad = world.get_instance('adelphos')
     rh.ws_play_script(ad.get_sock(), 'expel_member')
+
+
+def _test_expel_families(world):
+    ad = world.get_instance('adelphos')
+    rh.ws_play_script(ad.get_sock(), 'expel_families')
 
 
