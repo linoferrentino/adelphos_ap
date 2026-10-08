@@ -79,7 +79,7 @@ fixture_1_single = """
 """
 
 
-fixture_test_expel_member = """
+fixture_test_simple_detach = """
   adelphos_setup:
     
     users:
@@ -119,7 +119,25 @@ fixture_test_expel_member = """
         my_trust: 5
         location: f1_l0_loc
 
+      - name: f0-1_l1
+        level: 1
+        members: 
+          - '#fa#f0_l0'
+          - '#fa#f1_l0'
+        boss: '#al#a0.f0_l0'
+        carrier: '#al#c0.f0_l0'
+        balance: 0
+        my_trust: 10
+        system_trust: 10
+        brotherhood_ratio: 0.618
+        location: upper_fam_loc
+
+ 
+
 """
+
+fixture_test_expel_member = fixture_test_simple_detach
+fixture_test_detach_upper = fixture_test_simple_detach
 
 fixture_2_complex_parametric = """
 

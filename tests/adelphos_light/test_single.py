@@ -102,6 +102,15 @@ def test_expel_member(simulated_fediverse):
     ))
 
 
+def test_detach_upper(simulated_fediverse):
+    sim_fed = simulated_fediverse(sw.single_world_yaml)
+   
+    sim_fed.test(sw.fixture_test_detach_upper, (
+        _test_detach_upper,
+    ))
+
+
+
 def test_ok_complex(simulated_fediverse):
     sim_fed = simulated_fediverse(sw.single_world_yaml)
     fixture_2_complex = sw.fixture_2_complex_parametric.format(
@@ -151,5 +160,10 @@ def _test_expel_member(world):
 def _test_expel_families(world):
     ad = world.get_instance('adelphos')
     rh.ws_play_script(ad.get_sock(), 'expel_families')
+
+
+def _test_detach_upper(world):
+    ad = world.get_instance('adelphos')
+    rh.ws_play_script(ad.get_sock(), 'detach_upper')
 
 

@@ -178,6 +178,23 @@ async def family_change_tax_impl(kernel, pars, t_id):
     family_ob().set_scalar('import_export_tax', new_tax)
 
 
+async def family_detach_upper_impl(kernel, pars, t_id):
+    family_ob = await _ensure_editable_family_in_pars(kernel, pars, t_id)
+
+    family_upper_uri = await family_ob().get_scalar('upper_family', t_id)
+    if family_upper_uri is None:
+        raise AdelphosCoreException(ECoreErrno.EFAMILY_NOT_ASSOCIATED,
+                f"Family {pars['family_uri']} is not associated, cannot detach.")
+
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    family_upper_ob = await fdb.uri_read_str(t_id, family_upper_uri)
+
+    await family_upper_ob().remove_link("members", family_ob, t_id)
+    await family_ob().compare_and_swap_link('upper_family',
+                    family_upper_ob, None, t_id)
+    await ensure_consinstency_upper_chain(kernel, family_upper_ob, t_id)
+
+
 async def family_expel_member_impl(kernel, pars, t_id):
     family_ob = await _ensure_editable_family_in_pars(kernel, pars, t_id)
 

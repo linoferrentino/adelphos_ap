@@ -57,7 +57,7 @@ class FamilyCalls:
     @staticmethod
     @active_login
     async def _sys_call_detach_upper(kernel, session, pars):
-        pass
+        await _sys_call_detach_upper_safe(kernel, pars)
 
 
     @staticmethod
@@ -99,6 +99,11 @@ class FamilyCalls:
 f"""You have been invited to join adelphos by @{session.alias_family}@{this_host}
  to accept it do a private mention 
  {social_handle} family.join alias $alias_chosen invite_code {invite_code}""")
+
+
+@federated_transaction(raise_if_fail = True)
+async def _sys_call_detach_upper_safe(kernel, pars, t_id):
+    await fu.family_detach_upper_impl(kernel, pars, t_id)
 
 
 @federated_transaction(raise_if_fail = True)
