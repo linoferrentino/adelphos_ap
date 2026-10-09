@@ -157,9 +157,9 @@ def create_new_local_family(fdb, family, pars, fam_trust, t_id):
     is_present_family = fdb.is_present_local_uri(t_id, family_uri)
 
     if is_present_family is True:
-        if pars.get('maybe') == True:
-            return
         gCon.log(f"Family already present")
+        if pars.get('maybe') == True:
+            return None
         raise AdelphosCoreException(ECoreErrno.EDUPLICATED_FAMILY,
                     f"family {family} already present in this host")
 

@@ -137,6 +137,8 @@ async def _alias_create_impl(kernel, pars, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     family_ob = fu.create_new_local_family(fdb, family, pars, my_trust,
                                         t_id)
+    if family_ob is None:
+        return None
 
     alias_ob = await au._alias_add_in_family(fdb, family_ob, 
                     user_handle, alias_name, family, password, t_id,

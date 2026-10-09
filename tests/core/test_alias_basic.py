@@ -91,6 +91,14 @@ async def a_test_add_dup_family(w_local):
     res = await AliasAlgo.alias_create(kernel, pars)
     assert res == -ECoreErrno.EDUPLICATED_FAMILY
 
+    pars['alias_name'] = 'bob'
+    pars['family'] = 'ferre'
+    pars['password'] = 'pass'
+    pars['maybe'] = True
+    res = await AliasAlgo.alias_create(kernel, pars)
+    assert res == ECoreErrno.DONE_OK
+
+    pars['maybe'] = False
     pars = {
       'alias' : 'lino',
       'family' : 'ferre',

@@ -16,8 +16,41 @@ body_classes: 'title-center title-h1h2'
 ## Introduction
 
 Adelphos (ἀδελφός, the ancient Greek word for "brother") is a system that
-enables users to exchange goods and services using a virtual currency based
-on trust between the users.
+enables users to exchange goods and services using a virtual currency.
+
+There are other systems like this, like the _time banks_ and the _LETS_
+system, expanded 
+
+The real difference of adelphos between similar systems are:
+
+    * Adelphos does the routing of the object, and also the shipping costs
+      are handled with the virtual currency.
+
+    * Adelphos lets communities of users to share gains and losses
+
+You can think of it like the union of eBay, Amazon and DHL in the same
+system, with the added bonus that it is free (free as *free speech* and
+*free beer*).
+
+Adelphos is not owned by anyone. I, Lino Ferrentino, have registered the
+domain www.adelphos.it, I have rented a Linux server (not very much
+powerful) where I run on the current version of adelphos and the web server
+that has uploaded to you the page you are reading.
+
+But, given enough technical capabilities and a modest cost (in domain
+registration and electricity bill), everyone could start a new instance
+which can talk to all the others.
+
+## Documentation
+
+[Here](default) you can read the complete end user documentation.
+    
+
+Adelphos is basically a system to let end users exchange goods and
+services, much like eBay. A diff
+
+
+
 
 The main difference from other similar systems (LETS, CreditCommons,
 Ripple) is that Adelphos is a closed ecosystem: it does not rely on
@@ -60,7 +93,6 @@ The source code of this instance is available here
 [adelphos-ap](https://github.com/linoferrentino/adelphos_ap)
 
 
-Please feel free to browse the documentation [here](default)
 
 
 
