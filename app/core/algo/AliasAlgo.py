@@ -46,7 +46,7 @@ class AliasAlgo:
 
     @staticmethod
     async def _sys_call_create(kernel, envelope, pars):
-        alias = pars['name']
+        alias = pars['alias']
         (alias_name, family) = misc.split_alias(alias, True)
 
         pars['actor_id'] = envelope.actor_from.act.actor_id

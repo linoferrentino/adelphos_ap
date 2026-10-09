@@ -54,6 +54,7 @@ toc:
 # Build settings
 #theme: minima
 mathjax: true
+mermaid: true
 theme: jekyll-text-theme
 #plugins:
 #  - jekyll-feed

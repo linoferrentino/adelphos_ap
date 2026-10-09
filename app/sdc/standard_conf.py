@@ -581,7 +581,7 @@ standard_inbox_api = """
         syscalls:
           - name: create
             pars:
-                name:
+                alias:
                     required: true
                 password:
                     required: true
