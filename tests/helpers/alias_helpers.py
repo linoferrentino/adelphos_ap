@@ -100,14 +100,16 @@ def ws_alias_login(user_inbox, ws, alias, password):
     count_msg = user_inbox.count_msg()
     assert count_msg == 1
 
-    msg = user_inbox.pop_lst_msg()
-    match_tk = re.match('Copy this command to finalize', msg.content)
-    assert match_tk is not None
+    msg = user_inbox.pop_lst_msg_ob()
+    #match_tk = re.match('Copy this command to finalize', msg.content)
+    #assert match_tk is not None
+    assert msg['mmsg'] == 'put_tk'
 
-    token_tk = re.search(r"tk (.*)$", msg.content)
-    assert token_tk is not None
-    token = token_tk.group(1)
-    token = token[:-1]
+    #token_tk = re.search(r"tk (.*)$", msg.content)
+    #assert token_tk is not None
+    #token = token_tk.group(1)
+    #token = token[:-1]
+    token = msg['token']
 
     ws.send_text(f"alias.put_token tk {token}")
     tu.ws_assert_code(ws, AdErrno.DONE_OK)

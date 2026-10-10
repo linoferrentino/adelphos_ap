@@ -21,6 +21,8 @@ import app.misc.utils as misc
 from app.core.ECoreErrno import ECoreErrno
 from app.core.AdelphosCoreException import AdelphosCoreException
 
+import app.core.ui.alias_descs as ad
+
 
 async def alias_ob_get_your_family(kernel, alias_ob, t_id):
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
@@ -68,8 +70,9 @@ async def _session_login(kernel, session, alias_family, password, t_id,
         return
 
     social = kernel.get_dep(Dependencies.SOCIAL)
-    await social.out_msg_listener_to_actor(actor_dto,
-      f"Copy this command to finalize login \n'alias.put_token tk {token}'")
+    msg = ad.build_msg_login_put_tk(actor_dto, token)
+    gCon.log(f"Sending message {msg}")
+    await social.out_msg_listener_to_actor(actor_dto, msg)
 
 
 async def _login_impl(kernel, pars, t_id):

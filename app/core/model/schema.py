@@ -219,6 +219,11 @@ classes:
           cardinality: scalar
           required: false
 
+        - name: location
+          type: str
+          cardinality: scalar
+          required: false
+
         - name: offers_deep
           type: uri
           cardinality: set
