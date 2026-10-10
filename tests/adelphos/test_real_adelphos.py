@@ -79,6 +79,7 @@ async def test_real_alias_create_async(get_standalone_app):
     ad2 = get_standalone_app('adelphos21', stdcnf.release_kernel_template,
                             tconf.adelphos_testable_2_conf)
 
+    
     port2 = tconf.adelphos_testable_2_conf['_port_']
     host2 = f"localhost:{port2}"
     with ad1, ad2:
@@ -87,10 +88,18 @@ async def test_real_alias_create_async(get_standalone_app):
         async with httpx.AsyncClient() as client:
             async with aconnect_ws(f"http://localhost:{port}/api/ws", client) as ws:
                 await ws.send_text(
-f"dbg.sndpost to @adelphos@{host2} msg 'alias.create name lino.ferre password test99' \
+f"dbg.sndpost to @adelphos@{host2} msg 'alias.create alias lino.ferre password test99' \
 from demo1")
+                data = await tu.ws_get_next_msg_async(ws)
+                gCon.log(f"Data is {data}")
             time.sleep(1)
-
+            gCon.log(f"Trying to login.")
+            async with aconnect_ws(f"http://localhost:{port2}/api/ws", client) as ws:
+                await ws.send_text(
+f"alias.login alias lino.ferre password test99")
+                data = await tu.ws_assert_code_async(ws, AdErrno.DONE_OK)
+                gCon.log(f"Login data is {data}")
+ 
 
 def test_post_real_kernel(get_routable_app):
     test1 = get_routable_app('adelphos1', stdcnf.release_kernel_template,
