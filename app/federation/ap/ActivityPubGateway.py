@@ -156,9 +156,13 @@ class ActivityPubGateway(BaseSocialGateway):
 
     def _do_envelope(self, actor_from_dto, actor_to_dto, msg):
 
+        gCon.log(f"Here envelope is {msg}")
+
         #msg = re.sub("\n", "<p>", msg)
         paragraphs = [f"<p>{p.strip()}</p>" for p in re.split(r'\n+', msg) if p.strip()]
         html_msg = "".join(paragraphs) if paragraphs else "<p></p>"
+
+        gCon.log(f"html msg is {html_msg}")
 
         id_message = uuid.uuid4()
 

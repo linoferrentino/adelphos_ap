@@ -66,11 +66,12 @@ class SysCallGateway(Dependency, SyncLifespanAware):
         if len(msg) == 0:
             raise AdelphosException(AdErrno.EINVALID_SYNTAX,
                                     f"Please type something.")
+        gCon.log(f"PARSING |{msg}|")
         cp = CliParser(msg)
         ctx_cmd = cp.cmd.split('.')
         if len(ctx_cmd) != 2:
             raise AdelphosException(AdErrno.EINVALID_SYNTAX,
-                                    f"{cp.cmd} not understood.")
+                                    f"{cp.cmd} not understood. {ctx_cmd}")
         (context, cmd) = ctx_cmd
         syscall = self.get_syscall(context, cmd)
         kernel = self.kernel

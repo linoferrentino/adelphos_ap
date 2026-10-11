@@ -26,7 +26,7 @@ alias.put_token tk {token}"""
             'logged_alias' : actor_dto.act.preferred_username,
             'token' : token,
     }
-    return json.dumps(msg_ob)
+    return msg_ob
 
 
 

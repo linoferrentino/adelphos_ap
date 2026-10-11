@@ -41,12 +41,7 @@ class BaseSocialGateway(SocialGateway):
         headers = request.headers
         body = await request.body()
         body_str = body.decode()
-        #body_str = body
         body_ob = await request.json()
-
-        #gCon.log(f"Request is {request}")
-        #gCon.log(f"The body ob is {body_ob} type {type(body_ob)}")
-        #gCon.log(f"The body  is {body} type {type(body)}")
 
         self._filter_message_type(body_ob)
 
@@ -62,6 +57,8 @@ class BaseSocialGateway(SocialGateway):
         
         clean_content = await self._parse_message(user, request, actor_str,
                                             body_str, body_ob)
+
+        gCon.log(f"[red]Clean content[/red] {clean_content}")
 
         #content_split = clean_content.split(" ", 1)
         content_split = re.split(r'\s|\n', clean_content, maxsplit = 1)
@@ -95,8 +92,12 @@ class BaseSocialGateway(SocialGateway):
         await self.out_outbox_dtos(actor_from_dto, actor_to_dto, message)
 
 
-    async def out_outbox_dtos(self, actor_from_dto, actor_to_dto, message):
-        message = f"@{actor_to_dto.act.preferred_username} {message}"
+    async def out_outbox_dtos(self, actor_from_dto, actor_to_dto, msg_dict):
+        gCon.log(f"OUTBOX--- {msg_dict} type {type(msg_dict)}")
+        presenter = self.kernel.get_dep(Dependencies.MSG_PRESENTER)
+        msg = presenter.extract_msg_text(msg_dict)
+        gCon.log(f"After the presenter {msg} type {type(msg)}")
+        message = f"@{actor_to_dto.act.preferred_username} {msg}"
         (headers, payload_str) = self._do_envelope(
                 actor_from_dto, actor_to_dto, message)
         actor_uri = f"https://{actor_to_dto.srv.host_name}\

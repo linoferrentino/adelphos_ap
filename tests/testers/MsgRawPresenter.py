@@ -22,6 +22,6 @@ class MsgRawPresenter(MsgPresenter):
         super().__init__(kernel)
 
 
-    def extract_msg_text(self, msg_dict):
+    def _extract_msg_dict(self, msg_dict):
         return json.dumps(msg_dict)
 

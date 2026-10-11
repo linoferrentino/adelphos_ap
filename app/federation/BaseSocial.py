@@ -52,6 +52,7 @@ class UserInbox(SocialUser):
 
 
     async def new_msg(self, actor_from, content):
+        gCon.log(f"Posting new message {content} type {type(content)}")
         msg = UserMsg(content, actor_from, self.actor_dto)
         if self.is_daemon:
             await self.listener.new_post(msg)
@@ -75,6 +76,7 @@ class UserInbox(SocialUser):
     def pop_lst_msg_ob(self):
         msg = self.pop_lst_msg()
         content_str = msg.content
+        gCon.log(f"got last message {content_str} type {type(content_str)}")
         content_ob = json.loads(content_str)
         return content_ob
 

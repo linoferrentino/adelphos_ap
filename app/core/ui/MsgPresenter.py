@@ -25,7 +25,13 @@ class MsgPresenter(Dependency):
         super().__init__(kernel)
 
 
+    def extract_msg_text(self, msg):
+        if not isinstance(msg, dict):
+            return str(msg)
+        return self._extract_msg_dict(msg)
+
+
     @abstractmethod
-    def extract_msg_text(self, msg_dict):
+    def _extract_msg_dict(self, msg_dict):
         pass
 

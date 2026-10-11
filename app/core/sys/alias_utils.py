@@ -75,7 +75,7 @@ async def _session_login(kernel, session, alias_family, password, t_id,
     social = kernel.get_dep(Dependencies.SOCIAL)
     gCon.log(f"Actor_dto is {actor_dto}")
     msg = ad.build_msg_login_put_tk(actor_dto, token)
-    gCon.log(f"Sending message {msg}")
+    gCon.log(f"Sending message {msg}, type {type(msg)}")
     await social.out_msg_listener_to_actor(actor_dto, msg)
 
 

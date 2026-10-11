@@ -74,6 +74,10 @@ modules:
     cli_presenter:
       constructor: tests.testers.RawPresenter.RawPresenter
 
+    msg_presenter:
+      constructor: tests.testers.MsgRawPresenter.MsgRawPresenter
+
+
 conf:
 
     social:
