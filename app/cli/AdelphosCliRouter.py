@@ -218,6 +218,16 @@ class AdelphosCliRouter(CliRouter):
         You can view the
         source code of adelphos <a href="https://github.com/linoferrentino/adelphos_ap">here</a>
         </div>
+        <div class="message received">
+
+        <b>The software is in PRE-RELEASE state. Planned shipping date:
+        Nov. 1st, 2026</b>
+
+        <p>
+
+        <b>Data entered before this date will be erased, please be
+        patient</b>
+        </div>
     </div>
 
     <div class="input-container">

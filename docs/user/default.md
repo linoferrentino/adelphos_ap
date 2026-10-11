@@ -5,20 +5,24 @@ layout: page
 
 ---
 
-This is the main documentation index for the Adelphos system: this
-document is intended for end users.
+ 
+This document is intended for end users, i.e. not technical people who will
+use adelphos. A Technical Documentation to install and modify adelphos,
+intended for technical people, can be found in the source tree [on
+github](https://github.com/linoferrentino/adelphos_ap)
 
-A Technical Documentation can be found in the source tree that you might
-find [on github](https://github.com/linoferrentino/adelphos_ap)
+The articles which are shown here are in order of depth. Adelphos is a new
+system and it might be unfamiliar, please start from the [Basic
+Concepts](content/BasicConcepts) page.
 
 
-
-
-- [BasicConcepts](content/BasicConcepts)
+- [Basic Concepts <-- START HERE](content/BasicConcepts)
 
 - [Tutorial](content/Tutorial)
 
-- [ApiReference](content/ApiReference)
+- [Adelphos and ActivityPub](content/AdelphosAndActivityPub)
 
-- [RoadMap](content/RoadMap)
+- [Api Reference](content/ApiReference)
+
+- [Road Map](content/RoadMap)
 

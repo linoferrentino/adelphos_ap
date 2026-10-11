@@ -1,17 +1,51 @@
 ---
-# Feel free to add content and custom Front Matter to this file.
-# To modify the layout, see https://jekyllrb.com/docs/themes/#overriding-theme-defaults
-
 layout: home
 
 body_classes: 'title-center title-h1h2'
-
 ---
+
+***
+# IMPORTANT!
+
+### Adelphos is in pre-release state.
+
+#### The planned date of the first release is: Nov. 1st 2026
+
+#### Before that the documentation and the software will change, please be patient.
+
+***
+***
+
 
 > 40 καὶ ἀποκριθεὶς ὁ βασιλεὺς ἐρεῖ αὐτοῖς, Ἀμὴν λέγω ὑμῖν, ἐφ' ὅσον ἐποιήσατε ἑνὶ τούτων τῶν ἀδελφῶν μου τῶν ἐλαχίστων, ἐμοὶ ἐποιήσατε.  
 >  
 > The King will answer them, ‘Most certainly I tell you, because you did it to one of the least of these my brothers, you did it to me.’  
 > <cite>- Matthew 25:40</cite>
+
+## Foreword
+
+Have you ever imagined a world in which people could simply *trust* other
+people like your relatives?
+
+Have you ever thought that sometimes an object could be useful to someone,
+but the shipping costs outweigh its monetary value?
+
+Have you ever had the feeling that something really important is missing in
+the abundance of virtual social interactions, that is the *feeling* that
+you are part of a family, your family part of other families and so on,
+until every one of us is part of the bigger family of *homo sapiens* on
+Earth?
+
+Adelphos might be not the full answer, but a tool that might render the
+ultimate goal more reachable.
+
+In a sentence: Adelphos is a system that aims to *amplify* the trust that
+we naturally give to members of our family to bigger and bigger groups of
+people, until, ideally, we embrace all the world.
+
+We will define trust (please see the [Basic
+Concepts](content/BasicConcepts) page), but for now we will simply define
+trust as the amount of monetary credit that you give to another person.
 
 ## Introduction
 
@@ -22,7 +56,6 @@ system as partial carriers of an object from the seller to the buyer, so
 that *no* external carrier (like FedEx, DHL, etc.) is needed.
 
 This is why adelphos is *closed*.
-
 
 There are other systems like this, as the _time banks_ and the _LETS_
 system, which is now evoluted in credit commons which enables system to
@@ -50,8 +83,92 @@ the people).
 The main difference from other similar systems (LETS, CreditCommons,
 Ripple) is that Adelphos is a closed ecosystem: it does not rely on
 external carriers: if a user sells an object it *creates* also the shipping
-of the item to the buyer using a chain of steps much like packets in a IP
-protocol.
+of the item to the buyer using a chain of steps, and the costs of these
+steps are automatically distributed.
+
+If the idea seems a bit far fetched I will make an example, because it is
+not so uncommon: you have done it countless of times since you were a
+boy/girl, but not in a systematic way, and without an external coordinator.
+
+For example Alice borrowed a book from the library and she needs to return
+it by August 3rd. However, on August 2nd she goes to the seaside for a one
+week holiday with her boyfriend and she forgets the book in her bedroom.
+She messages her brother Bob to ask him to take the book to the library for
+her.
+
+Bob trusts Alice (she is his sister) that the book is not a dangerous or a
+stolen item or and he agrees to help her.
+
+Alice trusts Bob (he is her brother) that he will actually take the book to
+the library (and that he won't lose it, sell it second hand, use it as
+paper to light a camping fire, etc). Trust is the key. She asks him to do
+the favour because **the cost of trusting his brother is less than the fine
+she will get if she returns the book one week later**
+
+So far so good. But things might no be so simple.
+
+Now, just for the sake of the example, suppose that Bob catches a cold in
+that day and it rains. The library is 3 miles away and he does not want to
+cycle in the rain.
+
+But he knows that his friend Charlie studies all the afternoons in the
+library because he is preparing an exam. Charlie is older than him, he has
+already a driving licence and probably he will go to the library by car
+that day.
+
+Charlie lives only half a mile away and he messages him asking if he could
+take a book from his sister. Charlie agrees but he is in a hurry, and he
+cannot make the detour to take the book from Bob.
+
+So Bob ultimately asks his mother Danielle to bring the book to Charlie
+using the car because Alice has forgotten to return it to the library.
+
+Danielle knows that Charlie's home is on the street to the mall, she needs
+to buy something for the house, she had already planned to go out, but she
+agrees to go earlier, takes the book to Charlie who eventually will take it
+to the library.
+
+In this simple example we have seen that when people trust themselves can
+act proactively to find optimal or near-optimal routes for objects: in this
+case Danielle, by anticipating the shopping time, has rendered the return
+of the object possible, and without any extra cost, because she would have
+gone to the mall in any case, and Charlie would have gone to the library by
+car, and Bob is in home, safe and comfy under the blankets.
+
+This example has three shipping steps: one trivial from Bob to his mother
+(in the same home), from his mother to Charlie, from Charlie to the
+library.
+
+Of course the example would be contrived, but just for the sake of
+imagining, you can think of one more step, for example Charlie realizes
+that that day he does not need to go to the library, but he has taken the
+pledge to return the book, he feels *responsible* for it so he takes the
+book to his friend Elise that will eventually take the book.
+
+You can imagine other steps as you like.
+
+From this example we can extract to important concepts that Adelphos will
+use.
+
+    * In each step the person holding the book is **responsible** to take
+      it to the next step.
+
+    * The person who started the process (in this case Alice) does not need
+      to know all the people who eventually will take her book to the
+      library.
+
+From these two observations we can deduce the cardinal routing rule used by
+Adelphos:
+
+    * The shipping of an object will be divided in such a way that in each
+      step the person holding the object has taken it from a person he
+      trusts and he will deliver it to a person he trusts.
+
+
+## From theory to practice.
+
+
+
 
 Each steps has a dikastes (δικαστής, the Greek word for _judge_) and a
 diakonos (διάκονος, the Greek word for _servant_) who will handle the
