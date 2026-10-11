@@ -95,6 +95,17 @@ from demo1")
             time.sleep(1)
             gCon.log(f"Trying to login.")
             async with aconnect_ws(f"http://localhost:{port2}/api/ws", client) as ws:
+                await ws.send_text("")
+                data = await tu.ws_assert_code_async(ws,
+                         AdErrno.EINVALID_SYNTAX)
+                gCon.log(f"Data is {data}")
+
+                await ws.send_text(
+f"alias.login alias lino.ferrea password test99")
+                data = await tu.ws_assert_code_async(ws,
+                         ECoreErrno.EINVALID_USER_OR_PASSWORD)
+                gCon.log(f"Data is {data}")
+ 
                 await ws.send_text(
 f"alias.login alias lino.ferre password test99")
                 data = await tu.ws_assert_code_async(ws, AdErrno.DONE_OK)

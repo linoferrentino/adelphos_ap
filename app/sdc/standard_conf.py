@@ -53,11 +53,18 @@ testable_kernel_prefix = common_kernel_prefix + """
     cli_presenter:
       constructor: tests.testers.RawPresenter.RawPresenter
 
+    msg_presenter:
+      constructor: tests.testers.MsgRawPresenter.MsgRawPresenter
+
 """
 
 release_kernel_prefix = common_kernel_prefix + """
     cli_presenter:
       constructor: app.cli.AdelphosSimplePresenter.AdelphosSimplePresenter
+
+    msg_presenter:
+      constructor: app.core.ui.AdelphosMsgPresenter.AdelphosMsgPresenter
+
 
 """
 

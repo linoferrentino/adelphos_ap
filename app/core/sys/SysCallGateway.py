@@ -63,6 +63,9 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
 
     async def sys_call_gateway_msg(self, param, msg, *, dict_output = False):
+        if len(msg) == 0:
+            raise AdelphosException(AdErrno.EINVALID_SYNTAX,
+                                    f"Please type something.")
         cp = CliParser(msg)
         ctx_cmd = cp.cmd.split('.')
         if len(ctx_cmd) != 2:

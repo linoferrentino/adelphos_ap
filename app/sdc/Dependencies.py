@@ -32,4 +32,5 @@ class Dependencies(StrEnum):
     FEDERATED_DB = 'fed_db'
     ROUTER = auto()
     CLI_PRESENTER = auto()
+    MSG_PRESENTER = auto()
 
