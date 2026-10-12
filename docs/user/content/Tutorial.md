@@ -63,5 +63,27 @@ three main roles of adelphos (boss, carrier and user)
 There are three main
 types of user in adelphos:
 
-    -
+
+
+# Invite a user in your family
+
+When you create a user (alias) in adelphos you are automatically the boss
+and the carrier of your family.
+
+The family is of *level zero*.
+
+The first thing to do is to invite other users to join your family.
+
+Remember that in adelphos the level zero is the level in which all the
+gains and the losses are shared 100% to the other members and trust is
+infinite.
+
+So do **not** invite a friend in your family of level zero unless you trust
+him completely. Remember: you will be liable for all the expenses and
+he/she will have access to all of your gains.
+
+
+
+
+
 
