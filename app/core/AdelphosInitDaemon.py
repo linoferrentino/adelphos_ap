@@ -28,19 +28,25 @@ class AdelphosInitDaemon(Daemon):
         super().__init__(kernel)
 
 
-    async def _create_remote_root(self, root_handle, root_password):
+    async def _create_remote_root(self, root_handle, root_password,
+                                  already_hashed):
         sg = self.get_dep(Dependencies.SOCIAL_GATEWAY)
         root_actor = await sg.discover_user(root_handle)
-        gCon.log(f"Found the remote root actor {root_actor}")
+        if already_hashed is None:
+            already_hashed = True
+        gCon.log(f"Remote root actor {root_actor} hashed passwd {already_hashed}")
         await self._create_root_alias(root_handle,
-                                      root_password, True)
+                                      root_password, already_hashed)
 
 
-    async def _create_local_root(self, local_user, root_password):
+    async def _create_local_root(self, local_user, root_password, already_hashed):
         social = self.get_dep(Dependencies.SOCIAL)
         root_user = social.local_user_get(local_user, create_if_not_exists = True)
+        if already_hashed is None:
+            already_hashed = False
+        gCon.log(f"Local root {root_user}, already hashed {already_hashed}")
         await self._create_root_alias(root_user.actor_dto.get_social_handle(),
-                                      root_password, False)
+                                      root_password, already_hashed)
 
 
     async def _create_root_alias(self, root_user, root_password,
@@ -64,15 +70,20 @@ class AdelphosInitDaemon(Daemon):
 
 
     async def start_impl(self):
-        root_handle = self.conf.get_conf('general')['root']
-        root_password = self.conf.get_conf('general')['root_password']
+        conf_general = self.conf.get_conf('general')
+        root_handle = conf_general['root']
+        root_password = conf_general['root_password']
+        already_hashed = conf_general.get('already_hashed', None)
+
         local_user = misc.get_local_alias(root_handle)
         if local_user is not None:
-            gCon.log(f"Root is the local user {local_user}")
-            await self._create_local_root(local_user, root_password)
+            gCon.log(f"Root is the local user {local_user}, hashed {already_hashed}")
+            await self._create_local_root(local_user,
+                        root_password, already_hashed)
         else:
-            gCon.log(f"root is {root_handle}")
-            await self._create_remote_root(root_handle, root_password)
+            gCon.log(f"root is {root_handle}, hashed {already_hashed}")
+            await self._create_remote_root(root_handle,
+                            root_password, already_hashed)
 
 
     async def stop_impl(self):

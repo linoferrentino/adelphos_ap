@@ -75,6 +75,7 @@ general:
   #  will get something different!)
   root_password: '$argon2id$v=19$m=65536,t=3,p=4$F/5IuDGWSdTdi1fTk1FIqA$2qrnHNWXn3f50S3Z6xIYIA+zFvp+qOIQRmmkbrYv8aQ'
   # If this is true than the password is already hashed. Default: true
+  # in case of a remote root, false in the case of a local root
   # To create a hashed password type this in the terminal
   #
   # >>> from argon2 import PasswordHasher
@@ -82,24 +83,74 @@ general:
   # >>> pwhas = ph.hash('my_super_secret_password')
   # >>> print (pwhas)
   # and copy the output to the root_password slot
-  # already_hashed: false
+  already_hashed: true
 
 social_dao:
+  # adelphos uses two databases, one local, and one the part of the
+  # distributed database that holds the fediverse data of adelphos.
+  # If you intend to run only one instance in the host you can leave
+  # the two names as the default.
+  #
+  # But if you intend to run two (or more!) instances of adelphos in
+  # the same host you will at least need to change the port, and the
+  # names of the two databases (otherwise the instances will fail,
+  # because sqlite will complain that the database is already opened.)
   db_name: ad_social.sqlite
     
 
 fed_db:
   db_name: ad_fdb.sqlite
+
+  # there are two types of databases for now, sqlite and mem. ``mem''
+  # is actually only used in testing.
   db_type: sqlite
  
 social:
+
+  # this is the configuration for the social part. Each adelphos
+  # instance is also a simplified 'mastodon' like instance, with users
+  # and inboxes.
+  #
+  # Only the inbox is implemented, no web interface and for now the
+  # inbox is only visibile in the console.
+  #
+  # Actually in a producation adelphos only the user adelphos is
+  # needed: this is the ActivityPub user which, under the hood, will
+  # communicate to other adelphos daemons in the fediverse to
+  # synchronize data in the federated database.
+  #
+  # Remember that in fediverse (as in email) it is perfectly fine to
+  # have the same user in different hosts.
+
   users:
+
+      # this is the only user that needs to be present. The name is
+      # fixed in adelphos (you can change it, but you must also change
+      # the name in the file app/consts.py)
+      #
+      # the private key is used to sign the messages. It can be a not
+      # exiting file, it will be created at first run.
+      #
+      # login shell is a parameter that actually is used only to
+      # distinguish bot users (like adelphos) and normal users.
+      #
+      # for bot users incoming messages from the fediverse are not put
+      # into an inbox but they are routed internally using a listener.
+      #
+      # You should not change this unless you are a developer
 
     - preferredusername: adelphos
       private_key: "private_key.pem"
       name: Adelphos daemon
       login_shell: false
 
+      # this is a test user. You can use this to test adelphos
+      # completely locally. In this way you can have the root user of
+      # adelphos mimicked by a user in this social part.
+      #
+      # Even if login_shell is True actually you are not really able
+      # to login (I have not implemented it), however you can see the
+      # messages on the console and for testing this is sufficient.
     - preferredusername: rlocal
       login_shell: true
 
