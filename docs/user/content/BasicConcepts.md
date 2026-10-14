@@ -98,6 +98,41 @@ laptop, for example, or to repair her scooter.
 
 ### The logarithmic nature of the trust.
 
+So, Alice trusts Bob for 80€. But how about a Bob's friend? Let's
+suppose that Bob has a friend, Carol, that would like to buy Alice's
+phone. Will Alice give to her 80€ in credit? Probably not.
+
+But how much? 60? 40? The problem is that escaping the circle of the
+family trust drops sharply, that is why usually these currencies based
+on credit are not widely adopted.
+
+My impression is that trust is logarithmic in scale, not linear. In
+physics logarithmic scales are used for example for sounds, and are
+called deciBel. A decibel is actually a quantity obtained from a value
+Q using this formula
+
+    q decibel = 10 * log ( Q / Q0 )
+
+Where Q0 is some reference value.
+
+In this case a factor of 10x increase will translate into the addition
+of 10.
+
+Adelphos uses the same principle to measure trust.
+
+Q0 is 1 Adelphos Coin.
+
+So the trust of 0 Db is actually a trust of 1 Adelphos Coin
+
+This because 10 * log ( 1 / 1 ) = 10 * log (1) = 10 * 0 = 0
+
+A trust of 10 Db is a trust of 10 Adelphos Coin
+A trust of 20 Db is a trust of 100 Adelphos Coin
+
+And so on.
+
+
+
 
 
 
