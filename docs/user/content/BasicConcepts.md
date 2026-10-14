@@ -6,11 +6,17 @@ layout: article
 
 ## Trust and credit.
 
-### The logarithmic scale of trust
+### The AdelphosCoin
 
-The example of the returning of a book seems easy, but how to put it
-into practice? Suppose a real world scenario, for example Alice wants
-to sell a used phone and she wants 80€ from it.
+Let's return to the example of the library book; that example worked
+because there was trust between the participants and there was no
+money involved in the overall transaction.
+
+With money things become complex because the transaction can happen if
+the seller can receive something concrete in exchange. 
+
+Let's think about a used phone, for example. Alice wants to sell a
+used phone and she wants 80€ from it.
 
 In the "usual" way Alice puts an ad in one of the sites that allow
 users to put ads; there are many of them, there is also a version in
@@ -23,15 +29,23 @@ the shipping address. Alice does the packaging and sends it.
 Eventually Bob receives it and, in some platforms, can leave a
 feedback to Alice.
 
-This seems simple, but Bob has used *real* money.
+This works because Alice and Bob agree on the nature and value of
+money and Alice knows that she can use those 80€ for something else,
+also outside the exchange platform.
 
-Adelphos wants to create a different economy, based on trust and
-credit, not using centralized currencies based on Debt.
+But Adelphos is different. It wants to create a different
+economy, based on trust and credit, not using centralized currencies
+based on debt issued by Central Banks.
 
-But to do that we need to explore better how people trust each other.
+But experiments like this have not had too much success; I think that
+the main obstacle to a widespread adoption of a virtual currency is
+the lack of trust and the fact that they rely on an external entity to
+do the routing.
 
-Suppose that Alice agrees to use Adelphos and puts the ad into
-it, Adelphos uses an internal currency, called AdCoin (AC), she puts
+But the main obstacle is trust.
+
+Suppose that Alice agrees to use Adelphos and puts the ad into it,
+Adelphos uses an internal currency, called AdelphosCoin (AC), she puts
 the ad and puts the price 80AC.
 
 (For now we have used the simple equation 1AC = 1€, but this is not
@@ -60,9 +74,54 @@ from the system (in-trust) and trust to the system (out-trust).  Both
 trusts are independently updated and govern the overall behavior of
 the system.
 
-The trusts cannot be modified by the user, however; it is Adelphos
-who, based on a particular algorithm, will modify them after each
-successful transaction.
+But how can a computer measure an aleatory value like trust which,
+like love and friendship, escapes a formal definition?  Computers do
+not have friends, they need an algorithm, clear data to compute, we
+just cannot tell a PC ``Alice trusts Bob'', we need to tell it ``how
+much Alice trusts Bob?''.
+
+Let's return to the phone example, because the key is in the credit.
+
+Alice maybe does not trust adelphos for 80€/AC (given the equivalence
+1€=1AC), at least initially, but suppose that she has a used book that
+she does not use any more. The book has not any real value, maybe 1 or
+2€. Probably she will trust to sell it to adelphos, because the risk
+is less.
+
+We can say that the trust of Alice is a number between 2 and 80.
+
+It also depends on the person to whom Alice is selling. If she gives
+the phone to her brother Bob, maybe she does not want to be payed,
+because maybe later in time she will need Bob's help to configure her
+laptop, for example, or to repair her scooter.
+
+
+### The logarithmic nature of the trust.
+
+
+
+
+Yes, of course, there are fuzzy system, AI agents, etc..., but from
+the start I wanted to create a system that could run on a very simple
+laptop, with only 4 Giga of Ram, no graphic card, to be able to run it
+on a solar panel also in a remote area with an unstable internet
+connection. Current AI systems are very hungry on system resources
+and/or memory.
+
+Adelphos is a system that wants to help to expand the trust of users,
+but to do that we need to *measure* trust because computer do
+understand only computable things (even the current AI systems
+transform the language into numbers called tokens, but this is another
+story...).
+
+There have been in the past some experiments to create a web of trust,
+but they too are mathematically complex, adelphos wants to 
+
+
+
+Yes, there are 
+
+
 
 
 
@@ -74,21 +133,6 @@ successful transaction.
 
 
 
-
-Computers do not have
-friends, they need an algorithm, clear data to compute.
-
-Yes, there are fuzzy system, AI agents, etc..., but from the start I
-wanted to create a system that could run on a very simple laptop, with
-only 4 Giga of Ram, no graphic card, to be able to run it on a solar
-panel also in a remote area with an unstable internet connection.
-Current AI systems are very hungry on system resources and/or memory.
-
-Adelphos is a system that wants to help to expand the trust of users,
-but to do that we need to *measure* trust because computer do
-understand only computable things (even the current AI systems
-transform the language into numbers called tokens, but this is another
-story...).
 
 
 
@@ -135,4 +179,25 @@ This is based on trust
 ## The Brotherhood
 
 ## Trust in the system and of the system in you
+
+### The logarithmic scale of trust  
+
+
+
+Adelphos wants to fill this lack of trust equating trust with credit,
+thus we can extract another cardinal rule of adelphos.
+
+    * In adelphos one unit of trust is equal to one unit of credit and
+      the system tracks 
+
+
+
+But to do that we need to explore better how people trust each other.
+
+
+The trusts cannot be modified by the user, however; it is Adelphos
+who, based on a particular algorithm, will modify them after each
+successful transaction.
+
+
 
