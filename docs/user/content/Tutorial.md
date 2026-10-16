@@ -176,17 +176,165 @@ daemon like this:
 At this point you can login. In the next lesson we will start to use
 the adelphos CLI interface.
 
+## Logging into adelphos, the CLI interface
+
+Adelphos at the moment does have a simple chat/like CLI interface,
+much like a chat with a human.
+
+Mastodon is used as a tool to get a MFA authentication, all the
+commands that you will send to adelphos are sent using this CLI
+interface which is located at the address $host/$api_root/daemon_cli
+
+In the case of the current adelphos instance we have
+
+$host = www.adelphos.it
+
+$api_root = api
+
+So the address to use is https://www.adelphos.it/api/daemon_cli
+
+You will be presented with a chat like interface; you can login with
+this command:
+
+alias.login alias maria.verdi password maria01
+
+The command is nearly identical to the one used to create the alias,
+with the exception that we do not have the mention
+@adelphos@www.adelphos.it, this because the recipient of the message
+is already clear.
+
+If you have entered correctly the password you will shortly receive a
+message from adelphos like this:
+
+```
+
+@maria.verdi Someone has entered your correct password in adelphos
+
+If it was you, copy in the chat the last line to finalize login, otherwise
+
+please change password immediately. DO NOT SHARE THE TOKEN with anyone.
+
+alias.put_token tk avxswUcfp7NlgGhuj7IilZFNNJso2IfCdiIhFVeM_gs
+
+```
+
+The meaning of the message should be clear; Maria needs to copy and
+past the last line of the message in the chat to finalize login
+
+So Maria copies the line
+
+    alias.put_token tk avxswUcfp7NlgGhuj7IilZFNNJso2IfCdiIhFVeM_gs
+
+in the chat and adelphos should respond
+
+    Login OK, welcome to adelphos, maria.verdi.
+
+At this point maria verdi is operative and she can use adelphos.
+
+## The two basic actions: join and associate
+
+Adelphos is at its core a network of families which contain other
+families in a recursive tree, much like a filesystem.
+
+In a file system the two main actions to create a tree are:
+
+    * create a directory inside another directory / delete a directory
+
+    * create a file in a directory / delete a file 
+
+These two actions are different because the first one creates a new
+level, while creating a file in a directory does not create a new
+level.
+
+In adelphos the actions are similar, but there is a great difference
+from the file system: in a computer you start from the root and start
+creating leaves in it, so you have the level zero
+
+    / or C:
+
+Then there is the level one
+
+    C:/win or /home
+
+Level two is
+
+    C:/win/system or /home/pferrentino
+
+And so on, so in a file system the level zero is the *greatest* level
+because it contains *all* the children (this is less true in Windows
+as we can have different drive letters, so different roots, but the
+overall principle is the same)
+
+In adelphos the direction of the tree is inverted: level zero is the
+smallest, the family, level zero is the family that contains families
+of level zero.
+
+    Level two is the family that has level-1 families as its members
+
+In general
+
+    In adelphos a level-n family has members of level n-1
+
+Each recursion must have a stopping condition otherwise we have an
+infinite regression. The end of recursion in adelphos is the level
+zero family.
+
+    The level zero family has user as members.
+
+A simplified, informal BNF of the adelphos family tree could be written as this
+
+```
+
+    family_tree ::= '[' family* ']'
+    family ::=  family_name ':' members 
+    members ::= '[' (family* | alias*) '],'
+    alias ::= identifier
+    family_name ::= identifier
+    identifier ::= [a-z]+[a-z0-9_]*
+
+```
+
+For example a very simple tree could be
+
+```
+    adelphos_tree = [
+        family_one : [ 
+            family_zero_1 : [ alice, bob ],
+            family_zero_2 : [ mary, pat ],
+        ],
+    ] 
+
+```
+
+This can be read in English like: we have a family called
+*family_one* that has two families as members, one called
+*family_zero_1* which has members alice and bob and the other called
+*family_zero_2* which has members mary and pat.
+
+## 
+
+
+The basic actions that a user can do in adelphos are
+
+    * join / expel
+
+    * associate / revoke
+
+The actions are paired because they come in pairs: detach is the
+opposite of associate, expel is the opposite of join.
+
+And these actions are valid at every level, of course they can be done
+by the admin of the level.
 
 
 
+## The join/expel action.
 
-Suppose that we invite @maria@ (mastodon.uno e).
+The join action does not create a new level. 
 
 
 
-
-# Create a family
-
+In this first version two main actions can be done at this point.
 
 
 

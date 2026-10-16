@@ -12,6 +12,21 @@ Let's return to the example of the library book; that example worked
 because there was trust between the participants and there was no
 money involved in the overall transaction.
 
+But in real life?
+
+    * Would you trust to bring an object from a person you know to a
+      person you know?
+
+    * Would you trust to sell an object giving it to a friend knowing
+      that it will reach destination?
+
+So, Adelphos is able to do the routing, but how to put it into
+practice? In a world where people do not trust and also real carriers
+with a centralized logistic have complains, losses and delays, how to
+make it work without a centralized brain and, most of all, without
+real gains (not in real money, however?)
+
+
 With money things become complex because the transaction can happen if
 the seller can receive something concrete in exchange. 
 
@@ -91,7 +106,7 @@ is less.
 We can say that the trust of Alice is a number between 2 and 80.
 
 It also depends on the person to whom Alice is selling. If she gives
-the phone to her brother Bob, maybe she does not want to be payed,
+the phone to her brother Bob, maybe she does not want to be paid,
 because maybe later in time she will need Bob's help to configure her
 laptop, for example, or to repair her scooter.
 
@@ -105,36 +120,6 @@ phone. Will Alice give to her 80€ in credit? Probably not.
 But how much? 60? 40? The problem is that escaping the circle of the
 family trust drops sharply, that is why usually these currencies based
 on credit are not widely adopted.
-
-My impression is that trust is logarithmic in scale, not linear. In
-physics logarithmic scales are used for example for sounds, and are
-called deciBel. A decibel is actually a quantity obtained from a value
-Q using this formula
-
-    q decibel = 10 * log ( Q / Q0 )
-
-Where Q0 is some reference value.
-
-In this case a factor of 10x increase will translate into the addition
-of 10.
-
-Adelphos uses the same principle to measure trust.
-
-Q0 is 1 Adelphos Coin.
-
-So the trust of 0 Db is actually a trust of 1 Adelphos Coin
-
-This because 10 * log ( 1 / 1 ) = 10 * log (1) = 10 * 0 = 0
-
-A trust of 10 Db is a trust of 10 Adelphos Coin
-A trust of 20 Db is a trust of 100 Adelphos Coin
-
-And so on.
-
-
-
-
-
 
 Yes, of course, there are fuzzy system, AI agents, etc..., but from
 the start I wanted to create a system that could run on a very simple
@@ -150,30 +135,107 @@ transform the language into numbers called tokens, but this is another
 story...).
 
 There have been in the past some experiments to create a web of trust,
-but they too are mathematically complex, adelphos wants to 
+but they too are mathematically complex; the simple idea that I had in
+designing the trust computation in adelphos is to note exactly how
+trust feels in real life.
+
+It is very high in the family and drops sharply; it is still high for
+first order friends, maybe not so much for second link friends
+(friends of friends) and then rapidly goes to zero.
+
+-------
+
+Suppose a simple example: would you accept a friend to sleep on your
+couch? Alice is one of your greatest friend, she happens to pass by
+wants to sleep one night at your place. You probably will say yes, and
+you could be happy too for the visit.
+
+A friend of friend? You know Alice very well. Alice asks you a bed for
+her friend Julie. You DO NOT know Julie... would you accept her? Maybe
+yes, maybe not.
+
+A friend of a friend of a friend? Probably no. Unless you plan to be
+paid for it. In that case the absence of trust is compensated by the
+promise to gain some money.
+
+------
+
+This simple example shows that trust is logarithmic in scale, not
+linear. In physics logarithmic scales are used for example for sounds,
+and are called deciBel. A decibel is actually a quantity obtained from
+a value Q using this formula
+
+$ q_{db}  = 10 \log ( \frac{Q}{Q_{0}} ) $
+
+Where $ Q_{0} $ is some reference value.
+
+In this case a factor of 10x increase will translate into the addition
+of 10.
+
+Adelphos uses the same principle to measure trust.
+
+$ Q_{0} $ is 1 Adelphos Coin. 
+
+So the trust of $ 0_{Db} $ is actually a trust of 1 Adelphos Coin
+
+This because $ 10 * \log ( \frac{1}{1} ) = 10 \log (1) = 10 * 0 = 0 $
+
+A trust of 10 Db is a trust of 10 Adelphos Coin
+
+A trust of 20 Db is a trust of 100 Adelphos Coin
+
+And so on.
+
+### In-trust and out-trust
+
+We have talked earlier about the dual nature of trust; the trust from
+adelphos to the user and from the user to adelphos. 
+
+In this paragraph we will define them better.
+
+In the previous paragraph we have equated trust with credit, and in
+adelphos the trust limits the amount of credit / debit that a family
+can have.
+
+#### Out trust
+
+The **out-trust** is the simplest of the two: this, in fact, is
+usually the *normal* way in which we feel it: we *feel* the amount of
+trust we put in one person not that trust that the person puts in
+adelphos.
+
+In a certain sense the out-trust is not really needed; if one person
+wants to sell an object of value without any money he should be free
+of doing it. But adelphos enforces it because it wants to exclude
+possible disappointments.
+
+Adelphos wants that the users build slowly trust into the system and
+be loyal to it, instead of having a user that starts with a high
+trust, and feels robbed after.
+
+#### In trust
+
+The **in-trust** is the opposite: it is the trust of the system in us,
+so it limits the amount of things we can buy without selling anything.
+
+The in trust should forbid the behaviour of a person who login into
+adelphos and starts to buy things without anything in return dropping
+in debt.
+
+#### The limits and the trust.
+
+The main rules of adelphos that link trust with credit are:
+
+The **out-trust** limits the **credit**
+
+The **in-trust** limits the **debit**
+
+Every actor in adelphos has a balance, we start from level zero.
 
 
 
-Yes, there are 
+## Expansion from the family to upper levels
 
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-In the past there have been some tentatives to measure the trust of
-a network of users: a notable example
 
 
 
@@ -184,32 +246,7 @@ friend).
 
 
 
-    * Would you trust to bring an object from a person you know to a
-      person you know?
 
-    * Would you trust to sell an object giving it to a friend knowing
-      that it will reach destination?
-
-
-
-
-So, Adelphos is able to do the routing, but how to put it into
-practice? In a world where people do not trust and also real carriers
-with a centralized logistic have complains, losses and delays, how to
-make it work without a centralized brain and, most of all, without
-real gains (not in real money, however?)
-
-When we talked about the 
-
-
-
-The key is based on a simple idea: trust can be measured
-
-This is based on trust
-
-
-
-## Expansion from the family to upper levels
 
 ## The Brotherhood
 
