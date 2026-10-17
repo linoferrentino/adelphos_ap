@@ -32,6 +32,12 @@ class FamilyCalls:
 
     @staticmethod
     @active_login
+    async def _sys_call_get_details(kernel, session, pars):
+        return await _family_get_details_safe(kernel, pars)
+
+
+    @staticmethod
+    @active_login
     async def _sys_call_change_boss(kernel, session, pars):
         await _family_change_boss_safe(kernel, pars)
 
@@ -99,6 +105,12 @@ class FamilyCalls:
 f"""You have been invited to join adelphos by @{session.alias_family}@{this_host}
  to accept it do a private mention 
  {social_handle} family.join alias $alias_chosen invite_code {invite_code}""")
+
+
+
+@federated_transaction(raise_if_fail = True)
+async def _family_get_details_safe(kernel, pars, t_id):
+    return await fu.family_get_details_impl(kernel, pars, t_id)
 
 
 @federated_transaction(raise_if_fail = True)

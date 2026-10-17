@@ -149,7 +149,44 @@ async def _ensure_editable_family_in_pars(kernel, pars, t_id):
     boss_uri = await family_ob().get_scalar('boss', t_id)
     scu.check_editable_object(pars, family_ob().uri, boss_uri)
     return family_ob
- 
+
+
+async def family_get_details_impl(kernel, pars, t_id):
+    family_uri = pars['family_uri']
+    alias_ob = await  scu.get_alias_in_session(kernel, pars, t_id)
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    family_ob = await fdb.uri_read_str(t_id, family_uri)
+
+    ok_perm = False
+    session = pars['_param']
+
+    if session.is_logged_root() == True:
+        gCon.log("YOU ARE root")
+        ok_perm = True
+    elif await scu._is_alias_boss_of_family_ob(kernel, alias_ob, family_ob,
+                                       t_id) == True:
+        gCon.log("YOU ARE boss")
+        ok_perm = True
+
+    elif await scu._is_alias_in_family_chain_ob(kernel, alias_ob, family_ob,
+                                        t_id) == True:
+        gCon.log("YOU ARE in family chain")
+        ok_perm = True
+
+    if not ok_perm:
+        raise AdelphosCoreException(ECoreErrno.EDENIED,
+            f"You have no rights in reading details of {family_uri}")
+
+    gCon.log(f"you can see the details of {family_uri}")
+
+    system_trust_db = await family_ob().get_scalar('system_trust', t_id)
+    system_trust = tutils.db_to_abs(system_trust_db)
+
+    return {
+            'in_trust_db' : system_trust_db,
+            'in_trust' : system_trust,
+    }
+
 
 def create_new_local_family(fdb, family, pars, fam_trust, t_id):
     family_uri = AdelphosUri(EAdelphosType.FAMILY_TYPE, family)

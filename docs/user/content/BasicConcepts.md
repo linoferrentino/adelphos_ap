@@ -233,43 +233,68 @@ The **in-trust** limits the **debit**
 Every actor in adelphos has a balance, we start from level zero.
 
 
-
-## Expansion from the family to upper levels
-
-
-
-
-When we talk about a simple book to return of the library our mind
-does not see any problem, because the value is clear (it is a book)
-and the people involved are in a clear relationship (brother, mother,
-friend).
-
-
-
-
-
-## The Brotherhood
-
-## Trust in the system and of the system in you
-
-### The logarithmic scale of trust  
-
-
-
-Adelphos wants to fill this lack of trust equating trust with credit,
-thus we can extract another cardinal rule of adelphos.
-
-    * In adelphos one unit of trust is equal to one unit of credit and
-      the system tracks 
-
-
-
-But to do that we need to explore better how people trust each other.
+### The change of trust in adelphos.
 
 
 The trusts cannot be modified by the user, however; it is Adelphos
 who, based on a particular algorithm, will modify them after each
 successful transaction.
+
+We will talk about this later when we talk about the commerce of goods
+and services and the feedback mechanism see
+[here](contents/RulesOfCommerce)
+
+
+## The Brotherhood
+
+Adelphos wants to expand the mechanism of families to upper levels, to
+families of families and so on.
+
+One of the key concepts of a family is the brotherhood; well, this is
+in some way a definition of the family: we distinguish friends from
+members of our family just because we *feel* that members of our
+family are *closer* than friends.
+
+Closer in what sense?
+
+We do not want to go down in the physical and emotional sense, but we
+remain on a material part; husband and wife, also for the civil law,
+need to love each other, be loyal, but, above all, to contribute
+together to the **common good**.
+
+The **common good** of the family is one of the greatest values of a
+family, each member is free to pursue his/her interests, hobbies and
+inspirations but should do all work with the common good of the family
+in mind.
+
+Adelphos limits to model this aspect of the family, which is important
+and can be summarized as follows: **in adelphos members of the same
+family share gains and losses**.
+
+This seems obvious in level zero, in a certain sense it is obvious
+that husband and wife share the same account, but adelphos is fractal
+in nature, so it tries to put the rules of the family also to upper
+levels, this means that **also in upper levels there is a sharing of
+gains and losses**.
+
+But we have to be practical: even in a _normal_ family there are
+personal goods which are private for the husband and a wife, so also
+adelphos remains to a practical level.
+
+Adelphos defines a brotherhood constant called Beta $ \beta $, which
+defines the ratio of the gain that the family distribute to other
+members and the gain that goes to the seller.
+
+Yes, in adelphos when you sell an object for 50 AC, for example, it is
+not true that you will receive 50 AC, you will likely receive
+less because a part of your gains goes to other families, maybe also
+to people you do not know.
+
+But this is also contrary! If you have 10 AC in your balance, you
+might buy an object for 20 AC or more (it depends on the topology of
+the network and by other characteristics) because people you might not
+know put their credit to help you buy.
+
 
 
 

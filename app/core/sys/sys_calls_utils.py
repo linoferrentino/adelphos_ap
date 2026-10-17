@@ -23,10 +23,14 @@ from app.logging import gCon
 
 
 async def _is_alias_in_family_chain(kernel, alias_ob, family_str, t_id):
+    gCon.log(f"is alias {alias_ob().uri.unparse()} in {family_str}?")
     fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
     family_ob = await fdb.uri_read_str(t_id, family_str)
+    return await _is_alias_in_family_chain_ob(kernel, alias_ob, family_ob, t_id)
+
+
+async def _is_alias_in_family_chain_ob(kernel, alias_ob, family_ob, t_id):
     lev_family = await family_ob().get_scalar('level', t_id)
-    gCon.log(f"is alias {alias_ob().uri.unparse()} in {family_str}?")
     family0 = await au.alias_ob_get_your_family(kernel, alias_ob, t_id)
     chain_up = await get_family_chain_up_l(kernel, family0, lev_family, t_id)
     top_fam = chain_up[-1]
@@ -35,6 +39,26 @@ async def _is_alias_in_family_chain(kernel, alias_ob, family_str, t_id):
         return True
     return False
 
+async def _is_alias_boss_of_family_ob(kernel, alias_ob, family_ob,
+                                      t_id):
+
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    alias_uri = alias_ob().uri.unparse()
+    while True:
+        boss_uri = await family_ob().get_scalar('boss', t_id)
+        if boss_uri == alias_uri:
+            gCon.log(f"boss {boss_uri} of {family_ob().uri.unparse()}")
+            return True
+        else:
+            gCon.log(f"{alias_uri} is not boss of {family_ob().uri.unparse()}/{boss_uri}")
+
+        family_uri = await family_ob().get_scalar('upper_family', t_id)
+        if family_uri is None:
+            gCon.log("No more families")
+            break
+        family_ob = await fdb.uri_read_str(t_id, family_uri)
+    return False
+ 
 
 async def _ensure_alias_in_families(kernel, alias_ob, families, t_id):
     for family in families:

@@ -118,6 +118,7 @@ def test_ok_complex(simulated_fediverse):
     )
     
     sim_fed.test(fixture_2_complex, (
+        _test_initial_details,
         _test_expel_families,
         _test_add_objects,
         _test_check_calculations,
@@ -125,6 +126,11 @@ def test_ok_complex(simulated_fediverse):
         _test_change_boss,
         _test_change_tax,
     ))
+
+
+def _test_initial_details(world):
+    ad = world.get_instance('adelphos')
+    rh.ws_play_script(ad.get_sock(), 'initial_details')
 
 
 def _test_add_objects(world):

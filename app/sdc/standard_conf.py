@@ -479,6 +479,11 @@ standard_cli_api = """
               inner_family:
                 required: true
 
+          - name: get_details
+            pars:
+              family_uri:
+                required: true
+
           - name: associate
             pars:
               import_export_tax:
