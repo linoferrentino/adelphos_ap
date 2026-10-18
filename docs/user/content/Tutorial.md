@@ -7,6 +7,16 @@ layout: page
 
 ## Tutorial for adelphos
 
+
+This tutorial is intended as a first guided tour to adelphos,
+this does not aim to explain the theory in adelphos, for this it
+is better to read the [Basic Concepts](BasicConcepts)
+
+
+
+
+
+
 Adelphos is a federated system in which users exchange goods and services
 but they are *not* isolated, as in similar systems like eBay.
 

@@ -4,9 +4,41 @@ layout: article
 
 ---
 
+## Introduction
+
+Here we will present the basic concepts of adelphos without going
+too much in detail, just to highlight the key concepts that make
+it different from other similar systems.
+
+The interested reader can find more details in the linked pages.
+
+
+## Money
+
+In adelphos users exchange goods and services using a virtual
+currency based on trust and credit called AdelphosCoin AC which
+is not convertible to any real currency. See [Adelphos
+Coin](AdelphosCoin) for details.
+
+
+## Trust and credit
+
+In adelphos each user issues some money in exchange for a good,
+there is no central mint, nor a private _mining_ like in
+cryptocurrencies.
+
+The system, however, limits the amount of credit / debit that
+each user can get / can give.
+
+
+
+
+
+
 ## Trust and credit.
 
 ### The AdelphosCoin
+
 
 Let's return to the example of the library book; that example worked
 because there was trust between the participants and there was no

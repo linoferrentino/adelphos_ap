@@ -34,7 +34,7 @@ alias.send_msg alias_to {alias_to_uri} msg '$YOUR_MESSAGE'
             'alias_from_uri' : alias_from_uri,
             'alias_to_uri' : alias_to_uri,
     }
-    return json.dumps(msg_ob)
+    return msg_ob
 
 
 
