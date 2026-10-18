@@ -303,14 +303,16 @@ async def _get_user_impl(kernel, session, pars, *, create = False):
     return local_user
 
 
-async def _a_assert_uri_k_v(kernel, meta_args):
-    (uri, key, exp_vals) = meta_args.split()
-    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
-    t_id = fdb.begin_transaction()
-    ob_uri = await fdb.uri_read_str(t_id, uri, must_lock = False)
-    real_val = await ob_uri().get_scalar(key, t_id)
+async def _a_assert_val(kernel, pars, meta_args):
+    (key, exp_vals) = meta_args.split()
+    real_val = eval(key)
+    gCon.log(f"key {key} -> real_val {real_val} exp_val {exp_vals}")
+    _compare_real_val_(key, real_val, exp_vals)
+
+
+def _compare_real_val_(key, real_val, exp_vals):
     (comp_type, exp_val) = (exp_vals[0], exp_vals[1:])
-    gCon.log(f"ob {uri} key {key} has val {real_val} expected {exp_val} with comp {comp_type}")
+    gCon.log(f"key {key} has val {real_val} expected {exp_val} with comp {comp_type}")
     match comp_type[0]:
         case '~':
             gCon.log(f"checking float {float(exp_val)} with real {float(real_val)}")
@@ -322,6 +324,16 @@ async def _a_assert_uri_k_v(kernel, meta_args):
             assert str(exp_val) == str(real_val)
         case _:
             raise AdelphosException(AdErrno.ESCRIPT_ERROR, f"invalid comparator {comp_type[0]}")
+
+
+async def _a_assert_uri_k_v(kernel, meta_args):
+    (uri, key, exp_vals) = meta_args.split()
+    fdb = kernel.get_dep(Dependencies.FEDERATED_DB)
+    t_id = fdb.begin_transaction()
+    ob_uri = await fdb.uri_read_str(t_id, uri, must_lock = False)
+    real_val = await ob_uri().get_scalar(key, t_id)
+
+    _compare_real_val_(uri, real_val, exp_vals)
 
     fdb.rollback_transaction(t_id)
 
@@ -368,6 +380,8 @@ async def _process_meta_line(kernel, session, pars, data):
             if val_assert != True:
                 raise AdelphosException(AdErrno.ESCRIPT_ERROR,
                     f"Assertion failed in script {meta_args} = {val_assert}")
+        case 'assert_val':
+            await _a_assert_val(kernel, pars, meta_args)
         case 'assert_uri_k_v':
             await _a_assert_uri_k_v(kernel, meta_args)
         case _:

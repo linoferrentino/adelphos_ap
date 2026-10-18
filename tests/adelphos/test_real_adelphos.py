@@ -35,6 +35,7 @@ import tests.daemon.daemon_tests as dtests
 import tests.social.social_tests as stests
 import tests.t_utils as tu
 import tests.helpers.alias_helpers as ah
+import tests.helpers.family_helpers as fh
 import app.misc.utils as misc
 
 def test_real1(get_standalone_app):
@@ -251,5 +252,10 @@ def test_real_alias_create_sync(get_routable_app):
 
         with test2.websocket_connect(CNST.WS_ROUTE) as websocket:
             ah.ws_alias_login(user_ob, websocket, 'lino.ferre', 'secret')
+            data = fh.ws_get_family_details(websocket, '#fa#ferre')
+            assert data['res']['in_trust_db'] == 6.98
+            assert data['res']['balance'] == 0
+            data = fh.ws_get_family_details(websocket, '#fa#ferr0', 
+                code_exp = ECoreErrno.EFDB)
 
 

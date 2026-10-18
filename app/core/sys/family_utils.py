@@ -182,9 +182,28 @@ async def family_get_details_impl(kernel, pars, t_id):
     system_trust_db = await family_ob().get_scalar('system_trust', t_id)
     system_trust = tutils.db_to_abs(system_trust_db)
 
+    my_trust_db = await family_ob().get_scalar('my_trust', t_id)
+    my_trust = tutils.db_to_abs(my_trust_db)
+
+    import_export_tax = await family_ob().get_scalar('import_export_tax', t_id)
+
+    balance = await family_ob().get_scalar('balance', t_id)
+    pending_balance = await family_ob().get_scalar('pending_balance', t_id)
+
+    level = await family_ob().get_scalar('level', t_id)
+    brotherhood_ratio = await family_ob().get_scalar('brotherhood_ratio', t_id)
+
+
     return {
             'in_trust_db' : system_trust_db,
             'in_trust' : system_trust,
+            'my_trust_db' : my_trust_db,
+            'my_trust' : my_trust,
+            'import_export_tax' : import_export_tax,
+            'balance' : balance,
+            'pending_balance' : pending_balance,
+            'level': level,
+            'brotherhood_ratio' : brotherhood_ratio,
     }
 
 

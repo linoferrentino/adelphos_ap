@@ -53,7 +53,6 @@ async def  ws_assert_payload_async(ws, payload_expected):
 
 
 def _ws_assert_code(data, code_expected):
-    gCon.log(f"[blue]_ws_assert_code[/blue] data is {data}, I expect {code_expected}")
     code_got = data['errno']
     assert isinstance(code_got, int)
     assert code_got == int(code_expected)

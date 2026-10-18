@@ -19,6 +19,13 @@ from app.logging import gCon
 import tests.social.social_tests as stests
 
 
+def ws_get_family_details(ws, family_uri, *,
+            code_exp = ECoreErrno.DONE_OK):
+    data = tu.ws_send_cmd(ws, f"family.get_details family_uri {family_uri}",\
+            code_exp)
+    return data
+
+
 def ws_invite_user_raw(ws, user_handle, invite_code, 
                    code_exp = AdErrno.DONE_OK):
     tu.ws_send_cmd(ws, f"family.invite user_handle {user_handle} \
