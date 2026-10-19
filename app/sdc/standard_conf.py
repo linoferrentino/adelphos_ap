@@ -488,7 +488,8 @@ standard_cli_api = """
             pars:
               import_export_tax:
                 par_type: float
-                required: true
+                required: false
+                default: 1.02
               family_dest:
                 required: true
               family_source:

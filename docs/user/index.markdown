@@ -1,17 +1,24 @@
 ---
 layout: home
 
-body_classes: 'title-center title-h1h2'
+
+aside:
+  toc: true
+
+sidebar:
+  nav: docs-en
+
 ---
 
 ***
-# IMPORTANT!
 
-### Adelphos is in pre-release state.
+**IMPORTANT!**
 
-#### The planned date of the first release is: Nov. 1st 2026
+**Adelphos is in pre-release state.**
 
-#### Before that the documentation and the software will change, please be patient.
+The planned date of the first release is: Nov. 1st 2026
+
+Before that the documentation and the software will change, please be patient.
 
 ***
 ***
@@ -21,6 +28,7 @@ body_classes: 'title-center title-h1h2'
 >  
 > The King will answer them, ‘Most certainly I tell you, because you did it to one of the least of these my brothers, you did it to me.’  
 > <cite>- Matthew 25:40</cite>
+
 
 ## Foreword
 
@@ -247,15 +255,7 @@ registration and electricity bill), everyone could start a new instance
 which can talk to all the others.
 
 
-# Login to adelphos
-
-You can login to adelphos [here](/api/daemon_cli)
-
-
-## Documentation
-
-[Here](default) you can read the complete end user documentation.
-    
+   
 
 ## Activity Pub and Adelphos
 

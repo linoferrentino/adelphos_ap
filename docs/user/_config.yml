@@ -51,6 +51,12 @@ license: CC-BY-NC-4.0 # "CC-BY-4.0", "CC-BY-SA-4.0", "CC-BY-NC-4.0", "CC-BY-ND-4
 toc:
   selectors: # "h1,h2,h3" (default)
 
+aside:
+  toc: true
+
+sidebar:
+  nav: docs-en
+
 # Build settings
 #theme: minima
 mathjax: true

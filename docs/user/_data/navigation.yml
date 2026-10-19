@@ -1,0 +1,22 @@
+docs-en:
+  - title:      Adelphos
+    children:
+      - title:  Login
+        url:    /api/daemon_cli
+  - title:      Documentation
+    children:
+      - title:  Index
+        url:    default
+      - title:  Quick Start
+        url:    /content/Tutorial
+      - title:  Basic Concepts 
+        url:    /content/BasicConcepts
+  - title:      Miscellanea 
+    children:
+      - title:  Adelphos and ActivityPub
+        url:    content/AdelphosAndActivityPub 
+      - title:  API Reference 
+        url:    content/ApiReference
+      - title:  Road Map
+        url:    content/RoadMap
+      
