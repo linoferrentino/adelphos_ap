@@ -24,23 +24,28 @@ async def _build_message_ob_str(hmsg, action, task_ob, active_step, t_id):
             'task_uri' : task_ob().uri.unparse(),
             'active_step' : asdict(active_step),
     }
-    return json.dumps(msg_ob)
+    return msg_ob
 
 
 async def get_dikastes_msg_for_active_step(kernel, task_ob, active_step, t_id):
     task_type = await task_ob().get_scalar("task_type", t_id)
-    msg = f"""New task as a judge: {task_type}.
-Login to adelphos to mark it completed or deny it."""
+    msg = f"""You have a new task as dikastes: {task_type}.
+Login to adelphos to mark it completed or deny it.
+The URI for this task is:
+{task_ob().uri.unparse()}
+"""
 
     return await _build_message_ob_str(msg, 'dikastes', task_ob, active_step, t_id)
 
 
 async def get_diakonos_msg_for_active_step(kernel, task_ob, active_step, t_id):
     task_type = await task_ob().get_scalar("task_type", t_id)
-    msg =  f"""New task {task_type} to do or to wait."""
+    msg =  f"""You have a task {task_type} as diakonos."""
     if active_step.data['dikastes_uri'] is not None:
         msg += f"""
-The judge for this task is: {active_step.data['dikastes_uri']}.
+The dikastes for this task is: {active_step.data['dikastes_uri']}.
+He/she will have to login to adelphos to mark it completed.
+You have to wait or do it.
 """
     msg += """
 """

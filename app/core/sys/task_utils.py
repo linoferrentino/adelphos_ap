@@ -272,7 +272,7 @@ async def task_send_notices_for_active_step(kernel, task_ob, t_id):
 
         msg = await uitk.get_dikastes_msg_for_active_step(kernel,
                     task_ob, active_step, t_id)
-        gCon.log(f"sending {msg} to dikastes {dikastes_uri}")
+        gCon.log(f"sending msg {type(msg)} to dikastes {dikastes_uri}")
         await su.out_msg_to_alias_ob(kernel, alias_dikastes_ob, msg, t_id)
 
     diakonos_uri = active_step.data['diakonos_uri']
@@ -283,7 +283,7 @@ async def task_send_notices_for_active_step(kernel, task_ob, t_id):
     msg = await uitk.get_diakonos_msg_for_active_step(kernel,
                     task_ob, active_step, t_id)
 
-    gCon.log(f"sending {msg} to diakonos {diakonos_uri}")
+    gCon.log(f"sending msg {type(msg)} to diakonos {diakonos_uri}")
     await su.out_msg_to_alias_ob(kernel, alias_diakonos_ob, msg, t_id)
 
 

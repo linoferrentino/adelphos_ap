@@ -32,7 +32,7 @@ alias.send_msg alias_to #al#root.admins msg "YOUR_MESSAGE"
             'cur_boss' : cur_boss,
             'family_uri' : family_uri,
     }
-    return json.dumps(msg_ob)
+    return msg_ob
 
 
 

@@ -110,7 +110,7 @@ class SysCallGateway(Dependency, SyncLifespanAware):
 
         dict_out = {
                 'errno' : errno,
-                'res' : msg_out if msg_out is not None else "",
+                'res' : msg_out if msg_out is not None else "Done.",
                 'realm' : self.realm,
                 'context' : context,
                 'syscall' : syscall.name,

@@ -35,7 +35,8 @@ def active_login(inner_syscall):
 
     async def check_logged(kernel, session, pars):
         if not session.is_login_valid():
-            raise AdelphosException(AdErrno.ENOLOGIN)
+            raise AdelphosException(AdErrno.ENOLOGIN,
+                'Login not valid, or expired session. Please re-login')
         return await inner_syscall(kernel, session, pars)
 
     return check_logged

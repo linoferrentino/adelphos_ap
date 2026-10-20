@@ -172,7 +172,141 @@ will get:
 Now let's associate the two families. Type the following command in
 the Pat's chat.
 
-    family.associate import_export_tax 1.02 family_dest #fa#fam_0_0 upper_name fam_1_0
+    family.associate family_dest #fa#fam_0_0 upper_name fam_1_0
+
+You should receive a message in the chat: "Done" 
+
+You should also have received a message in your mastodon inbox.
+The message is this:
+
+
+
+```
+
+@banulius_daehonan You have a task ASSOCIATE_FAMILY as diakonos.
+
+The dikastes for this task is: #al#john.fam_0_0@www.adelphos.it.
+
+He/she will have to login to adelphos to mark it completed.
+
+You have to wait or do it.
+
+```
+
+
+Instead John should have received a message of this kind
+
+
+```
+@banulius_daehonan You have a new task as dikastes: ASSOCIATE_FAMILY.
+
+Login to adelphos to mark it completed or deny it.
+
+The URI for this task is:
+
+#tk#173fe7789d259c6a7934516d33d5a3f9abfc5a860b08aecd0bbaa2d88431a9ec@www.adelphos.it
+
+```
+
+In adelphos each task has a _διάκονος_ (diakonos, a doer, servant
+in ancient Greek) and a _δικαστής_ (dikastes, a judge, always in
+ancient Greek)
+
+Each object in adelphos has a [Federated URI](FederatedUri), an
+identifier (for now you can think of it like an address).
+
+To finalize the association john should login, (you could use the
+tab that you have used in the past login, if you have saved it,
+otherwise open another).
+
+After the login you can see that you have actually a task to do
+as judge. Type the following in the chat.
+
+
+    alias.tasks_as_dikastes
+
+In my example I have obtained
+
+
+    [{'_fdb_ref_count': 2, '_fdb_version': 0, '_fdb_cid': 0,
+    'task_type': 'ASSOCIATE_FAMILY', 'linked_ob': None, 'created_on':
+    '2026-10-20T12:13:25.376342', 'steps': [{'task_step_type':
+    'default_state', 'data': {'dikastes_uri':
+    '#al#john.fam_0_0@www.adelphos.it', 'diakonos_uri':
+    '#al#pat.fam_0_1@www.adelphos.it', 'pars': {'import_export_tax':
+    1.02, 'family_dest': '#fa#fam_0_0', 'family_source':
+    '#fa#fam_0_1@www.adelphos.it', 'upper_name': 'fam_1_0',
+    'family_src_chain': ['#fa#fam_0_1@www.adelphos.it'],
+    'family_dst_chain': ['#fa#fam_0_0@www.adelphos.it']}},
+    'completed_on': None}], 'active_step': 0, 'data': None, 'state':
+    0, '_fdb_uri':
+    '#tk#173fe7789d259c6a7934516d33d5a3f9abfc5a860b08aecd0bbaa2d88431a9ec@www.adelphos.it'}]
+    
+You can notice that the task URI is the same. You can accept the
+association with this message
+
+    task.accept_associate task_uri #tk#173fe7789d259c6a7934516d33d5a3f9abfc5a860b08aecd0bbaa2d88431a9ec@www.adelphos.it
+
+You should receive a message: "Done"
+
+Pat will receive a message:
+
+    @banulius_daehonan Completed task or marked completed by the judge.
+
+    Thank you for using adelphos.
+
+And the task is gone. If john types
+
+    alias.tasks_as_dikastes
+
+You will receive an empty list []
+
+### Get the details of the new family
+
+This action has created a new family of level 1, this new family
+has a common ἀγορά (agora, a place, market).
+
+Every trade in adelphos happens in an agora of a certain level.
+
+Pat is now the boss of this new family and she can get the
+details. Type this in Pat's chat.
+
+    family.get_details family_uri #fa#fam_1_0 
+
+You will get this message
+
+    {'in_trust_db': 6.98, 'in_trust': 4.988844874600123,
+    'my_trust_db': 6.989700043360188, 'my_trust': 5.000000000000001,
+    'import_export_tax': 1.02, 'balance': 0.0, 'pending_balance':
+    0.0, 'level': 1, 'brotherhood_ratio': 0.6180339887536743}
+
+As you can see the trust is the same but the brotherhood_ratio is
+different. This is normal, see the [Basic
+Concepts](BasicConcepts) page for details
+
+### Put an ad.
+
+In this first version adelphos is able to handle the trade of
+physical objects, not of services.
+
+We will put two ads in the Pat's agora. In Pat's chat this: 
+
+    object.put_ad title 'a pokemon card' description 'pikachu' price 1.99
+
+You will receive a message like this
+
+    {'uri': '#ob#1_fam_0_1@www.adelphos.it'}
+
+This is the URI of the new object in adelphos.
+
+And then also this
+
+    object.put_ad title 'man sneakers' description 'size 10' price 10.28
+
+
+    
+
+
     
 
     
