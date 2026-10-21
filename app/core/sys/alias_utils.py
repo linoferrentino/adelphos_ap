@@ -61,11 +61,12 @@ async def _session_login(kernel, session, alias_family, password, t_id,
     }
     alias_ob = await _login_impl(kernel, pars, t_id)
     actor_handle = await alias_ob.get_scalar('actor_handle', t_id)
+    gCon.log(f"Asking actor_handle {actor_handle}")
     social_dao = kernel.get_dep(Dependencies.SOCIAL_DAO)
     actor_dto = social_dao.actor_get_from_actor_handle(actor_handle)
     if actor_dto is None:
         raise AdelphosCoreException(ECoreErrno.ESYS,
-                  f"could not find your login {alias}, please contact root")
+        f"could not find your login {alias} {actor_handle}, please contact root")
 
     token = session.login_start(alias, family, actor_dto, alias_ob,
                                 force)

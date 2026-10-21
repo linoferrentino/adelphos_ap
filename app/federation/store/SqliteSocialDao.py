@@ -163,6 +163,7 @@ class SqliteSocialDao(BaseSocialDao):
             cursor.execute(cmd[1])
 
         self._conn.commit()
+        self._conn.autocommit = True
 
 
     def stop_sync(self):

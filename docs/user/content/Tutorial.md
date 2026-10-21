@@ -228,19 +228,11 @@ as judge. Type the following in the chat.
 In my example I have obtained
 
 
-    [{'_fdb_ref_count': 2, '_fdb_version': 0, '_fdb_cid': 0,
-    'task_type': 'ASSOCIATE_FAMILY', 'linked_ob': None, 'created_on':
-    '2026-10-20T12:13:25.376342', 'steps': [{'task_step_type':
-    'default_state', 'data': {'dikastes_uri':
-    '#al#john.fam_0_0@www.adelphos.it', 'diakonos_uri':
-    '#al#pat.fam_0_1@www.adelphos.it', 'pars': {'import_export_tax':
-    1.02, 'family_dest': '#fa#fam_0_0', 'family_source':
-    '#fa#fam_0_1@www.adelphos.it', 'upper_name': 'fam_1_0',
-    'family_src_chain': ['#fa#fam_0_1@www.adelphos.it'],
-    'family_dst_chain': ['#fa#fam_0_0@www.adelphos.it']}},
-    'completed_on': None}], 'active_step': 0, 'data': None, 'state':
-    0, '_fdb_uri':
-    '#tk#173fe7789d259c6a7934516d33d5a3f9abfc5a860b08aecd0bbaa2d88431a9ec@www.adelphos.it'}]
+    [{'type': 'ASSOCIATE_FAMILY', 'uri':
+    '#tk#173fe7789d259c6a7934516d33d5a3f9abfc5a860b08aecd0bbaa2d88431a9ec@www.adelphos.it',
+    'dikastes': '#al#john.fam_0_0@www.adelphos.it', 'diakonos':
+    '#al#pat.fam_0_1@www.adelphos.it'}]
+
     
 You can notice that the task URI is the same. You can accept the
 association with this message
@@ -303,8 +295,63 @@ And then also this
 
     object.put_ad title 'man sneakers' description 'size 10' price 10.28
 
+You will get the uri of the object.
 
+    {'uri': '#ob#2_fam_0_1@www.adelphos.it'}
+
+If you type now
+
+    agora.find_first_object_title uplevel 0 ob_title pokemon
+
+you will get
+
+    ({'price': 1.99, 'uri': '#ob#1_fam_0_1@www.adelphos.it',
+'title': 'a pokemon card', 'description': 'pikachu'},)
+
+
+## find an ad.
+
+Now login as john (or switch tab) and type
+
+    agora.find_first_object_title uplevel 0 ob_title pokemon
+
+You will get: 
+
+    Adelphos core error #19#>: no object with title pokemon found
+
+This is right, you are john and pokemon is in Pat's agora. Let's
+search in a different uplevel
+
+    agora.find_first_object_title uplevel 1 ob_title pokemon
+
+You will get:
+
+    ({'price': 2.0298, 'uri': '#ob#1_fam_0_1@www.adelphos.it', 'title': 'a pokemon card', 'description': 'pikachu'},)
+
+
+You will see that the price is different, this because you have
+to pay the import/export tax.
+
+Try search for the sneakers:
     
+    agora.find_first_object_title uplevel 1 ob_title sneakers
+
+You will get:
+
+    Adelphos core error #19#>: no object with title sneakers found 
+
+This is correct, because the sneakers cost too much for your
+trust,  
+
+Now let's buy the pokemon card, in the chat type
+
+
+    agora.buy_object_uri ob_uri #ob#1_fam_0_1@www.adelphos.it
+
+
+You will get "Done"
+
+
 
 
     
