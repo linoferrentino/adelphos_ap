@@ -13,6 +13,7 @@
 
 from app.cli.CliPresenter import CliPresenter
 from app.logging import gCon
+import pprint
 
 class AdelphosSimplePresenter(CliPresenter):
 
@@ -22,5 +23,7 @@ class AdelphosSimplePresenter(CliPresenter):
 
     def present_to_user_ok(self, sys_call_out):
         gCon.log(f"Transforming {sys_call_out}")
-        return str(sys_call_out['res'])
+        ##return str(sys_call_out['res'])
+        return pprint.pformat(sys_call_out['res'],
+                             indent = 4, width = 60)
 

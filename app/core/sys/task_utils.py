@@ -385,17 +385,18 @@ async def _get_tasks_of_type_impl(kernel, pars, t_id):
     tasks = await myself().get_as_detached_list(f"tasks_as_{as_role}", t_id)
     gCon.log(f"tasks as {as_role} for user {myself().uri.unparse()} are {tasks}")
 
-    tasks_exp = list()
-    for task in tasks:
-        task_exp = {
-                'type' : task['task_type'],
-                'uri' : task['_fdb_uri'],
-                'dikastes' : task['steps'][task['active_step']]['data']['dikastes_uri'],
-                'diakonos' :
-                task['steps'][task['active_step']]['data']['diakonos_uri'],
-        }
-        tasks_exp.append(task_exp)
+    #tasks_exp = list()
+    #for task in tasks:
+    #    task_exp = {
+    #            'type' : task['task_type'],
+    #            'uri' : task['_fdb_uri'],
+    #            'dikastes' : task['steps'][task['active_step']]['data']['dikastes_uri'],
+    #            'diakonos' :
+    #            task['steps'][task['active_step']]['data']['diakonos_uri'],
+    #    }
+    #    tasks_exp.append(task_exp)
 
-    return tasks_exp
+    #return tasks_exp
+    return tasks
 
 
