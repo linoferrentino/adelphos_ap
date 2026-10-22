@@ -2,6 +2,12 @@
 title: Basic Concepts
 layout: article
 
+aside:
+  toc: true
+
+sidebar:
+  nav: docs-en
+
 ---
 
 ## Introduction

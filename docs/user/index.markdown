@@ -47,13 +47,63 @@ Earth?
 Adelphos might be not the full answer, but a tool that might render the
 ultimate goal more reachable.
 
-In a sentence: Adelphos is a system that aims to *amplify* the trust that
-we naturally give to members of our family to bigger and bigger groups of
-people, until, ideally, we embrace all the world.
+## A trust amplifier
 
-We will define trust (please see the [Basic
-Concepts](content/BasicConcepts) page), but for now we will simply define
-trust as the amount of monetary credit that you give to another person.
+First of all, trust, like love and friendship, escapes a formal
+definition. For the scope of the project we will define trust
+(please see the [Basic Concepts](content/BasicConcepts) page, for
+a quick view and the [trust](content/Trust) page for an in-depth
+explanation), but for now we will simply define trust as the
+amount of monetary credit that you give to another person.
+
+An adelphos is exactly this: a system that aims to *amplify* the
+trust that we naturally give to members of our family to bigger
+and bigger groups of people, until, ideally, we embrace all the
+world.
+
+Since ancient times humans have invented ways to amplify their powers;
+fire, weapons, levers, machines, cars, planes, and now computers and
+A.I.  are all tools to enhance various human capabilities, like the
+ability to lift weights, to travel, to kill, to store and process
+information.
+
+But no significant steps have made to amplify their capacity to love and to
+care for other people in a objectively way. Religions, spiritual teaching have
+done a great deal of work in educating people to care for people far from our
+perceived reality.
+
+Exiting the family borders trust drops drastically, like the bottom of an
+ocean; sometimes in small groups trust survives, or, ironically, in "mafia"
+style families united by crime.
+
+In the 'civil' world little has been achieved; wars, oppressions and inequality
+are still present; we do not fall into the trap of saying that "the past was
+better", but certainly it was not "worse".
+
+Sometimes we are still as we were in the tribes, closed and wary.
+
+But how would it be if we created a system that helped humans to trust
+each other? We should design a system that is able to mimic the way in
+which humans care for each other.
+
+This is the core of adelphos, We can define it a **trust amplifier**.
+
+As a phone is able to carry our voice to the other part of the globe,
+adelphos is able to up-level our natural trust in the closest circle
+(the family) to bigger and bigger groups.
+
+This is done by the user themselves who organize themselves (hence the
+word self-organizing) into bigger structures which are similar to the
+ones at the lower levels (hence the word fractal).
+
+There have been trials of similar systems, notably the Credit Commons
+protocol, but they have not had a widespread use probably because they lack
+the ability to measure trust and to give to end users a *closed* system
+which allows them to close the circle from the buyer to the seller, even if
+they are geographically separated.
+
+
+
 
 ## Introduction
 
@@ -194,48 +244,6 @@ objective of adelphos is thus to allow users to form an increasingly strong
 web of trust.
 
 
-## A trust amplifier
-
-Since ancient times humans have invented ways to amplify their powers;
-fire, weapons, levers, machines, cars, planes, and now computers and
-A.I.  are all tools to enhance various human capabilities, like the
-ability to lift weights, to travel, to kill, to store and process
-information.
-
-But no significant steps have made to amplify their capacity to love and to
-care for other people in a objectively way. Religions, spiritual teaching have
-done a great deal of work in educating people to care for people far from our
-perceived reality.
-
-Exiting the family borders trust drops drastically, like the bottom of an
-ocean; sometimes in small groups trust survives, or, ironically, in "mafia"
-style families united by crime.
-
-In the 'civil' world little has been achieved; wars, oppressions and inequality
-are still present; we do not fall into the trap of saying that "the past was
-better", but certainly it was not "worse".
-
-Sometimes we are still as we were in the tribes, closed and wary.
-
-But how would it be if we created a system that helped humans to trust
-each other? We should design a system that is able to mimic the way in
-which humans care for each other.
-
-This is the core of adelphos, We can define it a **trust amplifier**.
-
-As a phone is able to carry our voice to the other part of the globe,
-adelphos is able to up-level our natural trust in the closest circle
-(the family) to bigger and bigger groups.
-
-This is done by the user themselves who organize themselves (hence the
-word self-organizing) into bigger structures which are similar to the
-ones at the lower levels (hence the word fractal).
-
-There have been trials of similar systems, notably the Credit Commons
-protocol, but they have not had a widespread use probably because they lack
-the ability to measure trust and to give to end users a *closed* system
-which allows them to close the circle from the buyer to the seller, even if
-they are geographically separated.
 
 
 ## Ownership and Licence

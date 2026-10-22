@@ -1,10 +1,13 @@
 ---
 
 title: Adelphos documentation
-layout: home
+layout: article
 
 aside:
   toc: true
+
+sidebar:
+  nav: docs-en
 
 ---
 

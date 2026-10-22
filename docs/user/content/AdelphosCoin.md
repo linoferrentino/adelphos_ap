@@ -2,6 +2,13 @@
 title: AdelphosCoin
 layout: article
 
+aside:
+  toc: true
+
+sidebar:
+  nav: docs-en
+
+
 ---
 
 ## The value of a virtual currency
