@@ -32,6 +32,8 @@ from cryptography.hazmat.backends import default_backend as crypto_default_backe
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
 
+import app.misc.utils as utils
+
 
 class ActivityPubGateway(BaseSocialGateway):
 
@@ -159,8 +161,10 @@ class ActivityPubGateway(BaseSocialGateway):
         gCon.log(f"Here envelope is {msg}")
 
         #msg = re.sub("\n", "<p>", msg)
-        paragraphs = [f"<p>{p.strip()}</p>" for p in re.split(r'\n+', msg) if p.strip()]
-        html_msg = "".join(paragraphs) if paragraphs else "<p></p>"
+        #paragraphs = [f"<p>{p.strip()}</p>" for p in re.split(r'\n+', msg) if p.strip()]
+        #html_msg = "".join(paragraphs) if paragraphs else "<p></p>"
+
+        html_msg = utils.str_to_html_msg(msg)
 
         gCon.log(f"html msg is {html_msg}")
 

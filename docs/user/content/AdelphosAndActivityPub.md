@@ -2,6 +2,13 @@
 title: Adelphos and ActivityPub
 layout: article
 
+aside:
+  toc: true
+
+sidebar:
+  nav: docs-en
+
+
 ---
 
 
@@ -19,7 +26,7 @@ on a laptop without any problem, so electricity bills should not be a
 problem, we are not talking about costly GPUs for graphics or mining or
 learning AI).
 
-## Adelphos is a net of instances that speaks together
+### Communication between instances
 
 Adelphos can be run standalone, in which case all the activity will be done
 on one site; but the site owner can allow his instance to speak to other

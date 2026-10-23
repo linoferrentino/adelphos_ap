@@ -29,6 +29,13 @@ def is_localhost(host_str, this_host = None):
     return False
 
 
+def str_to_html_msg(msg_str):
+    paragraphs = [f"<p>{p.strip()}</p>" for p in re.split(r'\n+',
+               msg_str) if p.strip()]
+    html_msg = "".join(paragraphs) if paragraphs else "<p></p>"
+    return html_msg
+
+
 # Source - https://stackoverflow.com/a/34963527
 # Posted by eugene, modified by community. See post 'Timeline' for change history
 # Retrieved 2026-06-19, License - CC BY-SA 4.0

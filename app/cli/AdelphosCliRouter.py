@@ -256,7 +256,7 @@ class AdelphosCliRouter(CliRouter):
                     const chat = document.getElementById("chat");
                     const msg = document.createElement('div');
                     msg.classList.add('message', 'received');
-                    msg.textContent = event.data
+                    msg.innerHTML = event.data
                     chat.appendChild(msg)
                     chat.scrollTop = chat.scrollHeight;
 
