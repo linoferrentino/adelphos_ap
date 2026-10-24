@@ -1,11 +1,13 @@
 ---
 
 title: Tutorial
-layout: home
+layout: article
 
 aside:
   toc: true
 
+sidebar:
+  nav: docs-en
 
 ---
 
@@ -326,7 +328,18 @@ search in a different uplevel
 
 You will get:
 
-    ({'price': 2.0298, 'uri': '#ob#1_fam_0_1@www.adelphos.it', 'title': 'a pokemon card', 'description': 'pikachu'},)
+```
+
+( { 'description': 'pikachu',
+
+'price': 2.0298,
+
+'title': 'a pokemon card',
+
+'uri': '#ob#1_fam_0_1@www.adelphos.it'},)
+
+
+```
 
 
 You will see that the price is different, this because you have
@@ -349,7 +362,17 @@ Now let's buy the pokemon card, in the chat type
     agora.buy_object_uri ob_uri #ob#1_fam_0_1@www.adelphos.it
 
 
-You will get "Done"
+You will get "Done".
+
+### The routing.
+
+In this example, very simple, we have only two users and one
+common agora. In this case adelphos has created a very simple
+routing of the object.
+
+If you look at the Mastondon inbox, Pat will have receive a
+message that says this:
+
 
 
 

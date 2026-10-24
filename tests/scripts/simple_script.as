@@ -174,7 +174,7 @@ root.push_alias alias john.smith
 
 $ pop_msg | jmsg
 
-$ assert | re.search('SHIP_OBJECT', pars['jmsg']['hmsg']) is not None
+$ assert | re.search('SHIP_OBJECT', pars['jmsg']['mmsg']) is not None
 
 $ exec | pars['jtask_uri'] = pars['jmsg']['task_uri']
 
