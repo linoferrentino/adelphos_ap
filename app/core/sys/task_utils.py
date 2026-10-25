@@ -101,8 +101,9 @@ async def _create_first_step(kernel, offer_ob,
                 adelphos_from, first_carrier, family_origin, steps, t_id):
 
     adelphos_to = await offer_ob().get_scalar('adelphos_to', t_id)
+    offer_title = await offer_ob().get_scalar('title', t_id)
 
-    fsd = FirstStepData(first_carrier, adelphos_from)
+    fsd = FirstStepData(first_carrier, adelphos_from, offer_title)
     step = TaskStep(ERoutingStepType.BEFORE_CARRIER, fsd)
     gCon.log(f"adding first step {step}")
 
@@ -112,7 +113,8 @@ async def _create_first_step(kernel, offer_ob,
 async def _add_last_step(kernel, last_carrier, adelphos_to,
                          steps, family, offer_ob, t_id):
     gCon.log(f"Last step in family {family().uri.unparse()} to {adelphos_to}")
-    lsd = LastStepData(adelphos_to, last_carrier)
+    offer_title = await offer_ob().get_scalar('title', t_id)
+    lsd = LastStepData(adelphos_to, last_carrier, offer_title)
     step = TaskStep(ERoutingStepType.LAST_MILE, lsd)
     gCon.log(f"adding last step {step}")
     steps.append(step)
@@ -128,14 +130,13 @@ async def _check_create_routing_step(kernel, current_carrier,
 
     family_uri = family_ob().uri.unparse()
 
-    #agora_ob = await fu.family_get_your_agora(kernel, family_ob, t_id)
-    #agora_uri = agora_ob().uri.unparse()
-
     gCon.log(f"{current_carrier} brings the object to {new_carrier} in family {family_uri}")
 
     pin_to_give = secrets.randbelow(100000000)
+    offer_title = await offer_ob().get_scalar('title', t_id)
 
-    rsd = RoutingStepData(new_carrier, current_carrier, family_uri, pin_to_give)
+    rsd = RoutingStepData(new_carrier, current_carrier, offer_title,
+                          family_uri, pin_to_give)
 
     gCon.log(f"This is the step {rsd}")
 
@@ -205,7 +206,8 @@ async def add_routing_task(kernel, offer_ob, agora_exported_price,
 async def _create_give_hearts_step(kernel, adelphos_to, offer_ob,
             steps, t_id):
 
-    fsd = FeedbackStepData(None, adelphos_to)
+    offer_title = await offer_ob().get_scalar('title', t_id)
+    fsd = FeedbackStepData(None, adelphos_to, offer_title)
     gCon.log(f"adding give feedback step {fsd}")
     step = TaskStep(ERoutingStepType.GIVE_FEEDBACK, fsd)
 

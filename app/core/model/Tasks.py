@@ -59,23 +59,28 @@ class TaskStep:
 
 
 @dataclass
-class RoutingStepData(TaskStepData):
+class RoutingBaseStepData(TaskStepData):
+    object_title: str
+
+
+@dataclass
+class RoutingStepData(RoutingBaseStepData):
     family_dest: str
     pin_to_give: int
 
 
 @dataclass
-class FeedbackStepData(TaskStepData):
+class FeedbackStepData(RoutingBaseStepData):
     pass
 
 
 @dataclass
-class FirstStepData(TaskStepData):
+class FirstStepData(RoutingBaseStepData):
     pass
 
 
 @dataclass
-class LastStepData(TaskStepData):
+class LastStepData(RoutingBaseStepData):
     pass
 
 

@@ -13,7 +13,10 @@
 
 import json
 from dataclasses import asdict
-from app.core.model.Tasks import ETaskType
+from app.logging import gCon
+from app.core.model.Tasks import ETaskType, ERoutingStepType, EDefaultTaskType
+from app.core.model.AdelphosUri import AdelphosUri
+import app.consts as CNST
 
 
 async def _build_message_ob_str(hmsg, action, task_ob, active_step, t_id):
@@ -87,12 +90,89 @@ The URI for this task is:
 
 async def _get_diakonos_msg_for_ship_step(kernel, task_ob,
                     active_step, t_id):
-    return "_get_diakonos_msg_for_ship_step"
+    active_step_idx = await task_ob().get_scalar('active_step', t_id)
+    nsteps = len(await task_ob().get_as_list('steps', t_id))
+    gCon.log(f">> active step {active_step}")
+    data = active_step.data
+    gCon.log(f">> data {data}")
+
+    diakonos = data['diakonos_uri']
+    dikastes = data['dikastes_uri']
+    object_title = data['object_title']
+
+    step_msg = f"Hello {diakonos},"
+
+    if active_step_idx == 0:
+        step_msg += f"""
+you have sold the item {object_title}!
+"""
+    elif active_step_idx == nsteps - 1:
+        step_msg += f"""
+you should have received the item {object_title}!
+"""
+    else:
+        step_msg += f"""
+you have the duty to carry the item {object_title}"""
+
+    step_type = active_step.task_step_type
+    match step_type:
+        case ERoutingStepType.BEFORE_CARRIER:
+            step_msg += f"""
+and you have to carry it to the carrier of your family {dikastes} to
+be shipped.
+"""
+        case ERoutingStepType.ROUTING:
+            step_msg += f"""to {dikastes}, the carrier
+of family {data['family_dest']} for the next routing leg.
+You will have to give them the object and the PIN {data['pin_to_give']}.
+"""
+
+        case ERoutingStepType.LAST_MILE:
+            step_msg += f"""to {dikastes} in your family,
+its final destination.
+"""
+
+        case ERoutingStepType.GIVE_FEEDBACK:
+            task_uri = task_ob().uri.unparse()
+            step_msg += f"""
+Your next task is to give feeback. You can do it by issuing the following
+command in adelphos CLI:
+
+task.give_hearts hearts <number between 0 and 5> task_uri {task_uri}
+
+Remember that hearts from 0 to 2 are a negative feedback.
+
+"""
+
+    return step_msg
 
 
 async def _get_diakonos_msg_for_invite_step(kernel, task_ob,
                     active_step, t_id):
-    return "_get_diakonos_msg_for_invite_step"
+
+    data = active_step.data
+    diakonos = data['diakonos_uri']
+    user_handle = data['user_handle']
+    diakonos_uri = data['diakonos_uri']
+    invite_code = data['invite_code']
+    hostname = kernel.conf().get_host()
+    host_family = AdelphosUri.parse(diakonos_uri).family
+    
+    step_msg = f"""Hello {diakonos},
+You have invited to join adelphos by the fediverse user {user_handle} who
+is known in adelphos as {diakonos_uri}.
+
+If this seems right to you please send a private mention to adelphos like this:
+
+@{CNST.DAEMON_ID}@{hostname} alias.join_family alias <your_alias> \
+        family {host_family} invite_code {invite_code} password <your password>
+
+Please be aware that joining a family means that you will share totally
+(100%) its gain and losses. Do it only if you trust the invite.
+
+"""
+
+    return step_msg
 
 
 async def _get_diakonos_msg_for_associate_step(kernel, task_ob,
