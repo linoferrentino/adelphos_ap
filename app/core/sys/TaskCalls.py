@@ -171,6 +171,8 @@ async def _first_step_done_impl(kernel, pars, t_id):
     (alias_ob, task_ob, active_step_idx, steps, active_step) = \
             await _get_active_dikastes_task_for_alias(kernel, pars, t_id,
                                 ETaskType.SHIP_OBJECT, ERoutingStepType.BEFORE_CARRIER)
+    await tu.complete_active_step_for_task(kernel, task_ob, active_step,
+                active_step_idx, steps, t_id)
 
 
 async def _get_active_dikastes_task_for_alias(kernel, pars, t_id, task_type, step_type):
