@@ -26,7 +26,7 @@ class AdelphosBaseException(Exception):
     def out_str(self):
         out_str = f"Adelphos {self.realm} error #{self._errno}#"
         if self.detail is not None:
-            out_str += f">: {self.detail}"
+            out_str += f": {self.detail}"
         return out_str
 
 
@@ -45,7 +45,7 @@ class AdelphosBaseException(Exception):
 
     @staticmethod
     def parse_detail(err_str):
-        re_match = re.search(rf">: (.*)$", err_str)
+        re_match = re.search(rf": (.*)$", err_str)
         if re_match is None:
             return -1
         return re_match.group(1)

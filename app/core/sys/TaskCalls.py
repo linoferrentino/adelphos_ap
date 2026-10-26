@@ -77,7 +77,7 @@ class TaskCalls:
     @staticmethod
     @active_login
     async def _sys_call_confirm_routing_step(kernel, session, pars):
-        return await _task_confirm_routing_step_safe(kernel, pars)
+        await _task_confirm_routing_step_safe(kernel, pars)
 
 
 @federated_transaction(raise_if_fail = True)

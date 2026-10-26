@@ -34,8 +34,6 @@ async def _build_message_ob_str(hmsg, action, task_ob, active_step, t_id):
 
 async def _get_dikastes_msg_for_ship_step(kernel, task_ob,
                      active_step, t_id):
-    active_step_idx = await task_ob().get_scalar('active_step', t_id)
-    nsteps = len(await task_ob().get_as_list('steps', t_id))
     gCon.log(f">> active step {active_step}")
     data = active_step.data
     gCon.log(f">> data {data}")
@@ -46,34 +44,24 @@ async def _get_dikastes_msg_for_ship_step(kernel, task_ob,
 
     step_msg = ""
 
-    if active_step_idx == 0:
-        step_msg += f"""
-your family member {diakonos} has sold the item {object_title}!
-"""
-    elif active_step_idx == nsteps - 1:
-        step_msg += f"""
-The object {object_title} is almost in your hands!
-You will receive it from {diakonos}.
-"""
-    else:
-        step_msg += f"""
-You will receive the object {object_title} from {diakonos}
-"""
-
     step_type = active_step.task_step_type
     match step_type:
         case ERoutingStepType.BEFORE_CARRIER:
             step_msg += f"""
+Your family member {diakonos} has sold the item {object_title}!
 So, please, agree with them to get it and start its journey.
 """
         case ERoutingStepType.ROUTING:
             step_msg += f"""
+The diakonos {diakonos} will give to you the object {object_title}
 and he will have to give to you the PIN {data['pin_to_give']}.
 Do NOT accept the object without the correct PIN.
 """
 
         case ERoutingStepType.LAST_MILE:
             step_msg += f""".
+The object {object_title} is almost in your hands!
+You will receive it from {diakonos}.
 So, please, agree with them to get it, it should be easy, now.
 """
 
@@ -97,15 +85,11 @@ async def _get_dikastes_msg_for_associate_step(kernel, task_ob,
     
     step_msg = f"""
 
-    You have receive an invite from {diakonos} to associate
-    with his family to create a new family of name {upper_name}
+You have receive an invite from {diakonos} to associate
+with his family to create a new family of name {upper_name}
 
-    The parameters for the new family are:
-
-    {pars_format}
-
-    You have received this invite because you are the boss of the
-    family.
+You have received this invite because
+you are the boss of the invited family.
 
     
 """
@@ -213,7 +197,7 @@ you should have received the item {object_title}!
 """
     else:
         step_msg += f"""
-you have the duty to carry the item {object_title}"""
+your task is to route the object: ``{object_title}''"""
 
     step_type = active_step.task_step_type
     match step_type:
@@ -223,7 +207,8 @@ and you have to carry it to the carrier of your family {dikastes} to
 be shipped.
 """
         case ERoutingStepType.ROUTING:
-            step_msg += f"""to {dikastes}, the carrier
+            step_msg += f"""
+you should carry it to {dikastes}, the carrier
 of family {data['family_dest']} for the next routing leg.
 You will have to give them the object and the PIN {data['pin_to_give']}.
 """
@@ -239,7 +224,7 @@ its final destination.
 Your next task is to give feeback. You can do it by issuing the following
 command in adelphos CLI:
 
-task.give_hearts hearts <number between 0 and 5> task_uri {task_uri}
+task.give_hearts hearts [number between 0 and 5] task_uri {task_uri}
 
 Remember that hearts from 0 to 2 are a negative feedback.
 

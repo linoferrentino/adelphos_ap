@@ -30,6 +30,10 @@ def is_localhost(host_str, this_host = None):
 
 
 def str_to_html_msg(msg_str):
+
+    msg_str = re.sub('<', '&lt;', msg_str)
+    msg_str = re.sub('>', '&gt;', msg_str)
+
     paragraphs = [f"<p>{p.strip()}</p>" for p in re.split(r'\n+',
                msg_str) if p.strip()]
     html_msg = "".join(paragraphs) if paragraphs else "<p></p>"

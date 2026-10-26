@@ -179,19 +179,32 @@ the Pat's chat.
 You should receive a message in the chat: "Done" 
 
 You should also have received a message in your mastodon inbox.
-The message is this:
+The message is like this (of course the real alias and the task URI will change)
 
 
 
 ```
 
-@banulius_daehonan You have a task ASSOCIATE_FAMILY as diakonos.
+@dafrissia_atdred Hello #al#pat.fam_0_1@www.adelphos.it,
 
-The dikastes for this task is: #al#john.fam_0_0@www.adelphos.it.
+this is adelphos, you have a new task as diakonos:
+
+Your request to associate the family governed by #al#john.fam_0_0@www.adelphos.it,
+
+to create the new family fam_1_0 has been accepted.
+
+The dikastes for this task is
+
+#al#john.fam_0_0@www.adelphos.it.
 
 He/she will have to login to adelphos to mark it completed.
 
 You have to wait or do it.
+
+The URI for this task is:
+
+#tk#d0eb4f1bb1153482830cf794714129654722419d441b58fc70047acabde408f5@www.adelphos.it
+
 
 ```
 
@@ -200,13 +213,26 @@ Instead John should have received a message of this kind
 
 
 ```
-@banulius_daehonan You have a new task as dikastes: ASSOCIATE_FAMILY.
 
-Login to adelphos to mark it completed or deny it.
+@dafrissia_atdred Hello #al#john.fam_0_0@www.adelphos.it,
+
+this is adelphos, you are dikastes (Judge) for a new task:
+
+You have receive an invite from #al#pat.fam_0_1@www.adelphos.it to associate
+
+with his family to create a new family of name fam_1_0
+
+You have received this invite because you are the boss of the
+
+family.
+
+Login to adelphos to mark it completed or cancel it.
 
 The URI for this task is:
 
-#tk#173fe7789d259c6a7934516d33d5a3f9abfc5a860b08aecd0bbaa2d88431a9ec@www.adelphos.it
+#tk#d0eb4f1bb1153482830cf794714129654722419d441b58fc70047acabde408f5@www.adelphos.it
+
+
 
 ```
 
@@ -229,29 +255,75 @@ as judge. Type the following in the chat.
 
 In my example I have obtained
 
+```
 
-    [{'type': 'ASSOCIATE_FAMILY', 'uri':
-    '#tk#173fe7789d259c6a7934516d33d5a3f9abfc5a860b08aecd0bbaa2d88431a9ec@www.adelphos.it',
-    'dikastes': '#al#john.fam_0_0@www.adelphos.it', 'diakonos':
-    '#al#pat.fam_0_1@www.adelphos.it'}]
+[ { '_fdb_cid': 0,
+
+'_fdb_ref_count': 2,
+
+'_fdb_uri': '#tk#d0eb4f1bb1153482830cf794714129654722419d441b58fc70047acabde408f5@www.adelphos.it',
+
+'_fdb_version': 0,
+
+'active_step': 0,
+
+'created_on': '2026-10-26T14:22:24.004446',
+
+'data': None,
+
+'linked_ob': None,
+
+'state': 0,
+
+'steps': [ { 'completed_on': None,
+
+'data': { 'diakonos_uri': '#al#pat.fam_0_1@www.adelphos.it',
+
+'dikastes_uri': '#al#john.fam_0_0@www.adelphos.it',
+
+'pars': { 'family_dest': '#fa#fam_0_0',
+
+'family_dst_chain': [ '#fa#fam_0_0@www.adelphos.it'],
+
+'family_source': '#fa#fam_0_1@www.adelphos.it',
+
+'family_src_chain': [ '#fa#fam_0_1@www.adelphos.it'],
+
+'import_export_tax': 1.02,
+
+'upper_name': 'fam_1_0'}},
+
+'task_step_type': 'default_state'}],
+
+'task_type': 'ASSOCIATE_FAMILY'}]
+
+```
+
 
     
 You can notice that the task URI is the same. You can accept the
 association with this message
 
-    task.accept_associate task_uri #tk#173fe7789d259c6a7934516d33d5a3f9abfc5a860b08aecd0bbaa2d88431a9ec@www.adelphos.it
+    task.accept_associate task_uri #tk#d0eb4f1bb1153482830cf794714129654722419d441b58fc70047acabde408f5@www.adelphos.it
 
-You should receive a message: "Done"
+You should receive a message
+
+    Done
 
 Pat will receive a message:
+
+```
 
     @banulius_daehonan Completed task or marked completed by the judge.
 
     Thank you for using adelphos.
 
+```
+
 And the task is gone. If john types
 
     alias.tasks_as_dikastes
+
 
 You will receive an empty list []
 
@@ -269,10 +341,29 @@ details. Type this in Pat's chat.
 
 You will get this message
 
-    {'in_trust_db': 6.98, 'in_trust': 4.988844874600123,
-    'my_trust_db': 6.989700043360188, 'my_trust': 5.000000000000001,
-    'import_export_tax': 1.02, 'balance': 0.0, 'pending_balance':
-    0.0, 'level': 1, 'brotherhood_ratio': 0.6180339887536743}
+
+```
+
+{ 'balance': 0.0,
+
+'brotherhood_ratio': 0.6180339887536743,
+
+'import_export_tax': 1.02,
+
+'in_trust': 4.988844874600123,
+
+'in_trust_db': 6.98,
+
+'level': 1,
+
+'my_trust': 5.000000000000001,
+
+'my_trust_db': 6.989700043360188,
+
+'pending_balance': 0.0}
+
+
+```
 
 As you can see the trust is the same but the brotherhood_ratio is
 different. This is normal, see the [Basic
@@ -301,17 +392,38 @@ You will get the uri of the object.
 
     {'uri': '#ob#2_fam_0_1@www.adelphos.it'}
 
+
+Let's put another object, just for test
+
+    object.put_ad title 'a frying pan' description 'no stick' price 4.13
+
+The URI will be
+
+    {'uri': '#ob#3_fam_0_1@www.adelphos.it'}
+
+
 If you type now
 
     agora.find_first_object_title uplevel 0 ob_title pokemon
 
-you will get
-
-    ({'price': 1.99, 'uri': '#ob#1_fam_0_1@www.adelphos.it',
-'title': 'a pokemon card', 'description': 'pikachu'},)
+This command means to find the first object in the agora of level 0 *your agora* the first object with "pokemon" in the title. You will get:
 
 
-## find an ad.
+```
+
+( { 'description': 'pikachu',
+
+'price': 1.99,
+
+'title': 'a pokemon card',
+
+'uri': '#ob#1_fam_0_1@www.adelphos.it'},)
+
+
+```
+
+
+### Finding an ad.
 
 Now login as john (or switch tab) and type
 
@@ -354,7 +466,10 @@ You will get:
     Adelphos core error #19#>: no object with title sneakers found 
 
 This is correct, because the sneakers cost too much for your
-trust,  
+trust.
+
+If you try to search for the pan you will get it (try it!).
+  
 
 Now let's buy the pokemon card, in the chat type
 
@@ -374,9 +489,222 @@ If you look at the Mastondon inbox, Pat will have receive a
 message that says this:
 
 
+```
+
+@dafrissia_atdred Hello #al#john.fam_0_0@www.adelphos.it,
+
+this is adelphos, you are dikastes (Judge) for a new task:
+
+The diakonos #al#pat.fam_0_1@www.adelphos.it will give to you the object a pokemon card
+
+and he will have to give to you the PIN 95178896.
+
+Do NOT accept the object without the correct PIN.
+
+Login to adelphos to mark it completed or cancel it.
+
+The URI for this task is:
+
+#tk#812ce0d312131602f22e8c771e6d8ae48e51254c35e6634921dbe270b3fc2c1e@www.adelphos.it
 
 
+```
 
-    
+In this case, the receiver of the object is also the ultimate dikastes.
 
+
+Pat, who has put an ad, has received the message:
+
+
+```
+
+@dafrissia_atdred Hello #al#pat.fam_0_1@www.adelphos.it,
+
+this is adelphos, you have a new task as diakonos:
+
+you have sold the item a pokemon card!
+
+to #al#john.fam_0_0@www.adelphos.it, the carrier
+
+of family #fa#fam_0_0@www.adelphos.it for the next routing leg.
+
+You will have to give them the object and the PIN 95178896.
+
+The dikastes for this task is
+
+#al#john.fam_0_0@www.adelphos.it.
+
+He/she will have to login to adelphos to mark it completed.
+
+You have to wait or do it.
+
+The URI for this task is:
+
+#tk#812ce0d312131602f22e8c771e6d8ae48e51254c35e6634921dbe270b3fc2c1e@www.adelphos.it
+
+```
+
+
+Now, suppose that pam gives to john the pokemon card and the correct PIN.
+
+John will now login to adelphos and type
+
+
+    task.confirm_routing_step task_uri #tk#812ce0d312131602f22e8c771e6d8ae48e51254c35e6634921dbe270b3fc2c1e@www.adelphos.it pin 95178896
+
+You should get "done"
+
+Now in mastodon john has the last task, give feedback
+
+```
+
+@dafrissia_atdred Hello #al#john.fam_0_0@www.adelphos.it,
+
+this is adelphos, you have a new task as diakonos:
+
+you should have received the item a pokemon card!
+
+Your next task is to give feeback. You can do it by issuing the following
+
+command in adelphos CLI:
+
+task.give_hearts hearts [number between 0 and 5] task_uri #tk#812ce0d312131602f22e8c771e6d8ae48e51254c35e6634921dbe270b3fc2c1e@www.adelphos.it
+
+Remember that hearts from 0 to 2 are a negative feedback.
+
+The URI for this task is:
+
+#tk#812ce0d312131602f22e8c771e6d8ae48e51254c35e6634921dbe270b3fc2c1e@www.adelphos.it
+
+```
+
+Instead pat has obtained the message:
+
+```
+
+@dafrissia_atdred Completed task or marked completed by the judge.
+
+Thank you for using adelphos.
+
+```
+
+Now let's give feedback, but first let's see the family details of the upper
+family; as john type:
+
+
+    family.get_details family_uri #fa#fam_1_0
+
+You will get
+
+```
+{ 'balance': 0.08039599999999991,
+
+'brotherhood_ratio': 0.6180339887536743,
+
+'import_export_tax': 1.02,
+
+'in_trust': 4.988844874600123,
+
+'in_trust_db': 6.98,
+
+'level': 1,
+
+'my_trust': 5.000000000000001,
+
+'my_trust_db': 6.989700043360188,
+
+'pending_balance': 0.0}
+
+
+```
+
+Now, let's give five hearts, the maximum
+
+
+    task.give_hearts hearts 5 task_uri #tk#812ce0d312131602f22e8c771e6d8ae48e51254c35e6634921dbe270b3fc2c1e@www.adelphos.it 
+
+You should get Done. Now let's try to search again the details:
+
+
+    family.get_details family_uri #fa#fam_1_0
+
+you will get
+
+```
+
+{ 'balance': 0.08039599999999991,
+
+'brotherhood_ratio': 0.6294929690910641,
+
+'import_export_tax': 1.02,
+
+'in_trust': 4.988844874600123,
+
+'in_trust_db': 6.98,
+
+'level': 1,
+
+'my_trust': 5.000000000000001,
+
+'my_trust_db': 6.989700043360188,
+
+'pending_balance': 0.0}
+
+```
+
+As you can see the details are not the same, because the brotherhood_ratio has
+risen a bit.
+
+Let's see our details:
+
+
+    family.get_details family_uri #fa#fam_0_0
+
+You see:
+
+```
+
+{ 'balance': -2.0703959999999997,
+
+'brotherhood_ratio': 1.0,
+
+'import_export_tax': 1.02,
+
+'in_trust': 5.011872336272722,
+
+'in_trust_db': 7.0,
+
+'level': 0,
+
+'my_trust': 5.000000000000001,
+
+'my_trust_db': 6.989700043360188,
+
+'pending_balance': 0.0}
+
+
+```
+
+You see that we are in debit, because we have bought a pokemon card!
+
+Let's try to buy also the pan...
+
+    agora.buy_object_uri ob_uri #ob#3_fam_0_1@www.adelphos.it
+
+The system will tell us:
+
+```
+
+    Adelphos core error #21#>: Transaction aborted. The family #fa#fam_0_0@www.adelphos.it cannot buy, the system has not sufficient trust in it. Its new balance would be -6.367248 but its trust allows it only to have a negative balance of -5.011872336272722
+
+
+```
+
+The system has aborted the transaction, because adelphos trusts us only for 5Adelphos Coins, but if we bought the pan our balance would go down too much.
+
+The solution to this is of course to sell something.
+
+
+This ends the tutorial, I hope this is enough to kick start your adelphos
+experience!
     

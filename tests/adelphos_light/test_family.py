@@ -51,7 +51,7 @@ def _test_send_message_inexistent_alias(world):
     data = ah.ws_alias_send_msg(ad1.get_sock(), '#al#john_WHAT.fam_t2@www.ad2.com',
                     'hello john, is the book <history of Rome> still available?',
                          code_exp = ECoreErrno.ESYS)
-    assert re.search('Adelphos Federated Db error #5#>: #al#john_WHAT.fam_t2',
+    assert re.search('Adelphos Federated Db error #5#: #al#john_WHAT.fam_t2',
                      data['res']) is not None
     ad1.pop_user()
 
