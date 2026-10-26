@@ -17,6 +17,7 @@ from app.logging import gCon
 from app.core.model.Tasks import ETaskType, ERoutingStepType, EDefaultTaskType
 from app.core.model.AdelphosUri import AdelphosUri
 import app.consts as CNST
+import pprint
 
 
 async def _build_message_ob_str(hmsg, action, task_ob, active_step, t_id):
@@ -33,22 +34,113 @@ async def _build_message_ob_str(hmsg, action, task_ob, active_step, t_id):
 
 async def _get_dikastes_msg_for_ship_step(kernel, task_ob,
                      active_step, t_id):
-    return "_get_dikastes_msg_for_ship_step"
+    active_step_idx = await task_ob().get_scalar('active_step', t_id)
+    nsteps = len(await task_ob().get_as_list('steps', t_id))
+    gCon.log(f">> active step {active_step}")
+    data = active_step.data
+    gCon.log(f">> data {data}")
+
+    diakonos = data['diakonos_uri']
+    dikastes = data['dikastes_uri']
+    object_title = data['object_title']
+
+    step_msg = ""
+
+    if active_step_idx == 0:
+        step_msg += f"""
+your family member {diakonos} has sold the item {object_title}!
+"""
+    elif active_step_idx == nsteps - 1:
+        step_msg += f"""
+The object {object_title} is almost in your hands!
+You will receive it from {diakonos}.
+"""
+    else:
+        step_msg += f"""
+You will receive the object {object_title} from {diakonos}
+"""
+
+    step_type = active_step.task_step_type
+    match step_type:
+        case ERoutingStepType.BEFORE_CARRIER:
+            step_msg += f"""
+So, please, agree with them to get it and start its journey.
+"""
+        case ERoutingStepType.ROUTING:
+            step_msg += f"""
+and he will have to give to you the PIN {data['pin_to_give']}.
+Do NOT accept the object without the correct PIN.
+"""
+
+        case ERoutingStepType.LAST_MILE:
+            step_msg += f""".
+So, please, agree with them to get it, it should be easy, now.
+"""
+
+        case ERoutingStepType.GIVE_FEEDBACK:
+            raise Exception(f"no feedback as dikastes.")
+
+    return step_msg
+
 
 
 async def _get_dikastes_msg_for_associate_step(kernel, task_ob,
                      active_step, t_id):
-    return "_get_dikastes_msg_for_associate_step"
+
+    data = active_step.data
+    gCon.log(f"data for associate {data}")
+    diakonos = data['diakonos_uri']
+    dikastes = data['dikastes_uri']
+    upper_name = data['pars']['upper_name']
+    
+    pars_format = pprint.pformat(data, indent = 4)
+    
+    step_msg = f"""
+
+    You have receive an invite from {diakonos} to associate
+    with his family to create a new family of name {upper_name}
+
+    The parameters for the new family are:
+
+    {pars_format}
+
+    You have received this invite because you are the boss of the
+    family.
+
+    
+"""
+
+    return step_msg
+
 
 
 async def _get_dikastes_msg_for_join_step(kernel, task_ob,
                      active_step, t_id):
-    return "_get_dikastes_msg_for_join_step"
+
+    data = active_step.data
+    gCon.log(f"data for join {data}")
+    diakonos = data['diakonos_uri']
+    dikastes = data['dikastes_uri']
+    inner_family = data['pars']['inner_family']
+    containing_family = data['pars']['containing_family']
+
+    step_msg = f"""
+
+    You have received an invite from {diakonos} to join the family
+    {containing_family}
+
+    You have received this invite because you are the boss of the
+    family {inner_family}.
+
+
+"""
+
+    return step_msg
 
 
 async def _get_dikastes_msg_for_invite_step(kernel, task_ob,
                      active_step, t_id):
-    return "_get_dikastes_msg_for_invite_step"
+    raise Exception(f"the dikastes part for invite is not used")
 
 
 async def _get_dikastes_msg_for_active_step_impl(kernel, task_ob,
@@ -77,9 +169,18 @@ async def get_dikastes_msg_for_active_step(kernel, task_ob, active_step, t_id):
     step_msg = await _get_dikastes_msg_for_active_step_impl(kernel,
                         task_ob, active_step, t_id)
 
-    msg = f"""Hello, this is adelphos, you are dikastes (Judge) for a new task.
-    The task is:
+    gCon.log(f">> active step {active_step}")
+    data = active_step.data
+    gCon.log(f">> data {data}")
+
+    dikastes = data['dikastes_uri']
+
+    msg = f"""Hello {dikastes},
+
+this is adelphos, you are dikastes (Judge) for a new task:
+
 {step_msg}
+
 Login to adelphos to mark it completed or cancel it.
 The URI for this task is:
 {task_ob().uri.unparse()}
@@ -100,7 +201,7 @@ async def _get_diakonos_msg_for_ship_step(kernel, task_ob,
     dikastes = data['dikastes_uri']
     object_title = data['object_title']
 
-    step_msg = f"Hello {diakonos},"
+    step_msg = ""
 
     if active_step_idx == 0:
         step_msg += f"""
@@ -177,12 +278,45 @@ Please be aware that joining a family means that you will share totally
 
 async def _get_diakonos_msg_for_associate_step(kernel, task_ob,
                     active_step, t_id):
-    return "_get_diakonos_msg_for_associate_step"
+
+    data = active_step.data
+    gCon.log(f"data for associate {data}")
+    diakonos = data['diakonos_uri']
+    dikastes = data['dikastes_uri']
+    upper_name = data['pars']['upper_name']
+
+    step_msg = f"""
+
+    Your request to associate the family governed by {dikastes},
+    to create the new family {upper_name} has been accepted.
+
+
+"""
+
+    return step_msg
 
 
 async def _get_diakonos_msg_for_join_step(kernel, task_ob,
                     active_step, t_id):
-    return "_get_diakonos_msg_for_join_step"
+
+
+    data = active_step.data
+    gCon.log(f"data for join {data}")
+    diakonos = data['diakonos_uri']
+    dikastes = data['dikastes_uri']
+    inner_family = data['pars']['inner_family']
+    containing_family = data['pars']['containing_family']
+
+    step_msg = f"""
+
+    Your request to the family {inner_family} to join the
+    family {containing_family}
+    has been accepted and sent to its dikastes {dikastes} to
+    be accepted.
+
+"""
+
+    return step_msg
 
 
 async def _get_diakonos_msg_for_active_step_impl(kernel, task_ob,
@@ -220,10 +354,16 @@ async def get_diakonos_msg_for_active_step(kernel, task_ob, active_step, t_id):
     else:
         dike_msg = ""
 
-    msg = f"""Hello, this is adelphos, you have a new task as diakonos.
-The task is:
+    diakonos = active_step.data['diakonos_uri']
+
+    msg = f"""Hello {diakonos}, 
+
+this is adelphos, you have a new task as diakonos:
+
 {step_msg}
+
 {dike_msg}
+
 The URI for this task is:
 {task_ob().uri.unparse()}
 """
