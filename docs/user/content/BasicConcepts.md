@@ -280,7 +280,7 @@ successful transaction.
 
 We will talk about this later when we talk about the commerce of goods
 and services and the feedback mechanism see
-[here](contents/RulesOfCommerce)
+[here](RulesOfCommerce)
 
 
 ## The Brotherhood
