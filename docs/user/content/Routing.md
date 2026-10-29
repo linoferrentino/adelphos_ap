@@ -210,10 +210,60 @@ ratio.
 
 In this case the gain has become a loss!
 
-#### Level three
+
+#### Then the gains
+
+The gains are routed backwards from the _vertex_ family to the
+origin family of the object.
+
+The difference is that in this case the vertexPrice has already
+the export taxes, so we have to change the computation.
+
+$ vertexTax = ( vertexPrice \div 1.02) - vertexPrice = \\
+(2.44494 \div 1.02) - (2.44494) = 0.04794 $
+
+This export tax is a gain for the _vertex_ family, which will sum
+to the import tax.
+
+We have now a gain of
+
+$ newDelta = vertexPrice - vertexTax = 2.44494 - 0.04794 = 2.397 $
+
+This gain will go fully to the level one family, which gets,
+again, its export tax
+
+$ levelOneTax = ( newDelta \div 1.02 ) - newDelta = \\
+(2.397 \div 1.02) - 2.397 = 0.047 $
+
+And then we have the $ newDelta_{1} $, the price at level one
+which is
+
+$ newDelta_{1} = newDelta - levelOneTax = 2.397 - 0.047 = 2.35 $
+
+Which is the price that the user has decided for his object.
+
+But, when we have to pass it to the level zero we use the $ \beta $ the brotherhood ratio.
+
+So we have to distribute 2.35 using a $ \beta = 0.618 $ 
+
+The computation are the same as in the case of the losses
+
+The family will get:
+
+$ sharedGain = newDelta_{1} \times \beta = 2.35 \times 0.618 = 1.4523 $
+
+$ personalGain = newDelta_{1} - sharedGain = 2.35 - 1.4523 = 0.8977 $
+
+The shared gain will be added to the export tax.
+
+So, in the end, the user wanted 2.35AC for his object, but in the
+end he will receive only 0.89! This is not an error, because he
+has put some of his gains in a common purse. Later, when he
+decides to buy something, he can fetch money from the common
+purse, just like a family member.
 
 
-#### Level four and upwards
+#### Level three and upwards
 
 In the level three we simply do a recursion. From the _vertex_
 family of level _n_ we consider the top-most import and export
