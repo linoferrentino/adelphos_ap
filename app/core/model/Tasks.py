@@ -86,6 +86,7 @@ class LastStepData(RoutingBaseStepData):
 
 @dataclass
 class FamilyInviteData(TaskStepData):
+    src_user_handle: str
     user_handle: str
     invite_code: str
 

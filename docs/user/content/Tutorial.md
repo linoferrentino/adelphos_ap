@@ -705,6 +705,213 @@ The system has aborted the transaction, because adelphos trusts us only for 5Ade
 The solution to this is of course to sell something.
 
 
+## Joining in families
+
+To complete the tutorial let's do a join action.
+
+Join the families in adelphos can be done in two ways, depending on the level
+of the family involved.
+
+This because in level zero we have not families inside families but people, so
+in level zero we invite a user in fediverse to join our family
+
+
+### Ask a fediverse user to join our family
+
+We invite a fediverse user like this
+
+
+    family.invite invite_code 83823 user_handle @brautus_hundravun@activitypub.academy
+
+We choose a invite code and we send the mention to the user using his fediverse handle.
+
+He will receive a mention like this:
+
+
+```
+
+@brautus_hundravun
+
+Hello @brautus_hundravun@activitypub.academy
+
+You have invited to join adelphos by
+
+the fediverse user @brautus_hundravun@activitypub.academy who
+
+is known in adelphos as #al#pat.fam_0_1@www.adelphos.it.
+
+If this seems right to you please send
+
+a private mention to adelphos
+
+from this account like this:
+
+@adelphos@www.adelphos.it alias.join_family alias <your_alias> family fam_0_1 invite_code 83823 password <your password>
+
+Please be aware that joining a family means
+
+that you will share totally
+
+(100%) its gain and losses.
+
+Do it only if you trust the invite.
+
+```
+
+In our example we have re-used the same handle, but in your case
+obviously you will use another handle.
+
+The user can accept to join the family by choosing an alias and a
+password, for example
+
+    @adelphos@www.adelphos.it alias.join_family alias tjoin family fam_0_1 invite_code 83823 password tjoin11
+
+In this case you can join the family choosing an alias and a
+password.
+
+You will receive a mention from adelphos like this:
+
+
+    @brautus_hundravun OK, You can join family fam_0_1.
+
+Now you can open a CLI interface and login to adelphos like this,
+using the password chosen:
+
+    alias.login alias tjoin.fam_0_1 password tjoin11
+
+You will be asked to input the token, after that you will get:
+
+    Login OK, welcome to adelphos, tjoin.fam_0_1.
+
+As you can see the family is the same of _pat_, but the alias is
+different.
+
+For adelphos the alias _tjoin_ has the same credits and debits as
+pat, in fact, if he asks the family details he will get the same
+data as pat
+
+    family.get_details family_uri #fa#fam_0_1
+
+The difference is that tjoin has not the permissions to invite
+anybody in the family. In fact if he tries to do it, he will get
+a DENIED erro
+
+Try to invite someone:
+
+    family.invite invite_code 83823 user_handle @brautus_hundravun@activitypub.academy
+
+You will get:
+
+    Adelphos core error #12#: You are #al#tjoin.fam_0_1@www.adelphos.it not #al#pat.fam_0_1@www.adelphos.it
+
+The error number 12 is the EDENIED error, adelphos is telling you
+that you are a _normal_ user, not the boss of the family
+
+
+### Join a family in our family (level one and above)
+
+
+To do this create another family with mention to adelphos
+
+    @adelphos@www.adelphos.it alias.create alias bill.bill_fam password bill99
+
+
+Then, as pat, you ask bill to join your level One family like this:
+
+    family.join containing_family #fa#fam_1_0 inner_family #fa#bill_fam
+
+As you can see you have to give the URIs of the family involved because in
+theory you could join families in different adelphos instances.
+
+You will receive a done message, and bill has receive a Mastodon mention like
+this. 
+
+```
+
+@brautus_hundravun Hello #al#bill.bill_fam@www.adelphos.it,
+
+this is adelphos, you are dikastes (Judge) for a new task:
+
+You have received an invite from #al#pat.fam_0_1@www.adelphos.it to join the family
+
+#fa#fam_1_0
+
+You have received this invite because you are the boss of the
+
+family #fa#bill_fam.
+
+Login to adelphos to mark it completed or cancel it.
+
+The URI for this task is:
+
+#tk#4eb11b03779b5095b1b5e5e569c28ca27a19193a4501bfb160bd3b617eea15ab@www.adelphos.it
+
+
+```
+
+
+So, now, we login to adelphos as bill and we can join the family.
+
+We login and we type
+
+    alias.tasks_as_dikastes
+
+We will see that we have a task to confirm:
+
+```
+
+[ { '_fdb_cid': 0,
+
+'_fdb_ref_count': 2,
+
+'_fdb_uri': '#tk#4eb11b03779b5095b1b5e5e569c28ca27a19193a4501bfb160bd3b617eea15ab@www.adelphos.it',
+
+'_fdb_version': 0,
+
+'active_step': 0,
+
+'created_on': '2026-10-30T09:46:11.484595',
+
+'data': None,
+
+'linked_ob': None,
+
+'state': 0,
+
+'steps': [ { 'completed_on': None,
+
+'data': { 'diakonos_uri': '#al#pat.fam_0_1@www.adelphos.it',
+
+'dikastes_uri': '#al#bill.bill_fam@www.adelphos.it',
+
+'pars': { 'containing_family': '#fa#fam_1_0',
+
+'inner_family': '#fa#bill_fam'}},
+
+'task_step_type': 'default_state'}],
+
+'task_type': 'JOIN_FAMILY'}]
+
+
+```
+
+We can accept the join with this command
+
+    task.accept_join task_uri  #tk#4eb11b03779b5095b1b5e5e569c28ca27a19193a4501bfb160bd3b617eea15ab@www.adelphos.it
+
+
+To confirm that we are indeed in the family we can ask for the details of the
+containing family
+
+    family.get_details family_uri #fa#fam_1_0
+
+We can see the details, so it means that the join has succeded.
+
+
+
+
+
+
 This ends the tutorial, I hope this is enough to kick start your adelphos
 experience!
     

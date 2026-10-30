@@ -215,10 +215,11 @@ async def _create_give_hearts_step(kernel, adelphos_to, offer_ob,
 
 
 async def add_invite_to_fediverse_user_task(kernel, alias_ob,
-                    user_handle, invite_code, t_id):
+                    src_handle, user_handle, invite_code, t_id):
 
     diakonos_uri = alias_ob().uri.unparse()
-    fid = FamilyInviteData(None, diakonos_uri, user_handle, invite_code)
+    fid = FamilyInviteData(None, diakonos_uri, src_handle,
+                           user_handle, invite_code)
     step = TaskStep(EDefaultTaskType.DEFAULT_STATE, fid)
 
     gCon.log(f"Create the step {step}")

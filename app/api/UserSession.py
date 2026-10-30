@@ -90,6 +90,11 @@ class UserSession:
 
 
     @property
+    def social_handle(self):
+        return self.actor_dto.get_social_handle()
+
+
+    @property
     def alias_uri(self):
         return AdelphosUri.alias_as_uri(self.alias, self.family, 
             self.client.kernel.conf().get_host())

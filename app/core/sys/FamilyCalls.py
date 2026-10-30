@@ -22,6 +22,7 @@ from app.core.AdelphosCoreException import AdelphosCoreException
 from app.core.ECoreErrno import ECoreErrno
 
 from app.logging import gCon
+import app.consts as CNST
 
 import app.core.sys.sys_calls_utils as scu
 import app.core.sys.family_utils as fu
@@ -88,24 +89,12 @@ class FamilyCalls:
     @staticmethod
     @active_login
     async def _sys_call_invite(kernel, session, pars):
-        invite_code = pars['invite_code']
         user_handle = pars['user_handle']
         social_gw = kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
+        gCon.rule(f"searching============ {user_handle}")
         user_dto = await social_gw.discover_user(user_handle)
-        gCon.log(f"I will invite actor {user_dto.act.preferred_username}")
-        social = kernel.get_dep(Dependencies.SOCIAL)
-        social_api = kernel.get_dep(Dependencies.SOCIAL_API)
-        social_user = social_api.get_social_user()
-        this_host = kernel.conf().get_host()
-        social_handle = f"@{social_user}@{this_host}"
-
+        gCon.rule(f"[red]found! ============ {user_handle}[/red]")
         await _family_add_invite_safe(kernel, pars)
-        
-        await social.out_msg_listener_to_actor(user_dto,
-f"""You have been invited to join adelphos by @{session.alias_family}@{this_host}
- to accept it do a private mention 
- {social_handle} family.join alias $alias_chosen invite_code {invite_code}""")
-
 
 
 @federated_transaction(raise_if_fail = True)
@@ -168,6 +157,21 @@ async def _family_add_invite_impl(kernel, pars, t_id):
     user_handle = pars['user_handle']
     invite_code = pars['invite_code']
 
+    social_gw = kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
+    gCon.rule(f"searching============ {user_handle}")
+    user_dto = await social_gw.discover_user(user_handle)
+    gCon.rule(f"[red]found! ============ {user_handle}[/red]")
+    gCon.log(f"I will invite actor {user_dto.act.preferred_username}")
+    social = kernel.get_dep(Dependencies.SOCIAL)
+    social_api = kernel.get_dep(Dependencies.SOCIAL_API)
+    social_user = social_api.get_social_user()
+    this_host = kernel.conf().get_host()
+    social_handle = f"@{social_user}@{this_host}"
+    alias_ob = await scu.get_alias_in_session(kernel, pars, t_id)
+    diakonos_uri = alias_ob().uri.unparse()
+    host_family = AdelphosUri.parse(diakonos_uri).family
+    src_user_handle = pars['_param'].social_handle
+
     family_ob = await scu.get_family_in_session(kernel, pars, t_id)
 
     await scu.ensure_logged_alias_is_boss(family_ob, pars, t_id)
@@ -175,7 +179,30 @@ async def _family_add_invite_impl(kernel, pars, t_id):
     alias_ob = await scu.get_alias_in_session(kernel, pars, t_id)
 
     await tku.add_invite_to_fediverse_user_task(kernel, alias_ob,
-                user_handle, invite_code, t_id)
+                src_user_handle, user_handle, invite_code, t_id)
+
+    await social.out_msg_listener_to_actor(user_dto,
+f"""
+
+Hello {user_handle}
+
+You have invited to join adelphos by
+the fediverse user {src_user_handle} who
+is known in adelphos as {diakonos_uri}.
+
+If this seems right to you please send
+a private mention to adelphos
+from this account like this:
+
+@{CNST.DAEMON_ID}@{this_host} alias.join_family alias <your_alias> \
+        family {host_family} invite_code {invite_code} password <your password>
+
+Please be aware that joining a family means
+that you will share totally
+(100%) its gain and losses.
+
+Do it only if you trust the invite.
+""")
 
 
 async def _family_associate_first_half(kernel, pars, t_id):

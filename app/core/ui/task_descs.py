@@ -244,20 +244,15 @@ async def _get_diakonos_msg_for_invite_step(kernel, task_ob,
     hostname = kernel.conf().get_host()
     host_family = AdelphosUri.parse(diakonos_uri).family
     
-    step_msg = f"""Hello {diakonos},
-You have invited to join adelphos by the fediverse user {user_handle} who
-is known in adelphos as {diakonos_uri}.
+    step_msg = f"""
+You have invited the fediverse user {user_handle} to join your
+family {host_family}.
 
-If this seems right to you please send a private mention to adelphos like this:
+A notification has been sent to him.
 
-@{CNST.DAEMON_ID}@{hostname} alias.join_family alias <your_alias> \
-        family {host_family} invite_code {invite_code} password <your password>
-
-Please be aware that joining a family means that you will share totally
-(100%) its gain and losses. Do it only if you trust the invite.
+You will be notified when the recipient will accept the invite.
 
 """
-
     return step_msg
 
 

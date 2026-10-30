@@ -472,8 +472,6 @@ standard_cli_api = """
 
           - name: join
             pars:
-              invite_code:
-                required: true
               containing_family:
                 required: true
               inner_family:

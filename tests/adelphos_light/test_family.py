@@ -87,7 +87,7 @@ def test_simul_associates(simulated_fediverse):
 def _test_join_fam3_OK(world):
     ad1 = world.get_instance('ad1')
     ad1.push_user('alice.fam_t1')
-    fh.ws_join_with_family(ad1.get_sock(), 'XXX99', '#fa#upper_fam@www.ad1.com',
+    fh.ws_join_with_family(ad1.get_sock(), '#fa#upper_fam@www.ad1.com',
                            '#fa#fam_t2@www.ad2.com')
 
     alice_inbox = ad1.get_user_inbox('alice')
@@ -106,8 +106,6 @@ def _test_join_fam3_OK(world):
     datas = ah.ws_alias_get_tasks_as_dikastes(ad2.get_sock())
     assert len(datas['res']) == 1
     gCon.log(f"john's dikastes tasks are {datas['res']}")
-    invite_code = datas['res'][0]['steps'][0]['data']['pars']['invite_code']
-    assert invite_code == 'XXX99'
 
     task_uri = datas['res'][0]['_fdb_uri']
     gCon.log(f"uri to accept {task_uri}")
@@ -181,7 +179,7 @@ def _test_put_object_after_join(world):
 def _test_join_fam3_KO(world):
     ad1 = world.get_instance('ad1')
     ad1.push_user('alice.fam_t1')
-    fh.ws_join_with_family(ad1.get_sock(), 'XXX99', '#fa#fam_t1@www.ad1.com',
+    fh.ws_join_with_family(ad1.get_sock(), '#fa#fam_t1@www.ad1.com',
                            '#fa#fam_t2@www.ad2.com',
                            ECoreErrno.ECANNOT_JOIN_LEVEL_ZERO)
     ad1.pop_user()
@@ -190,7 +188,7 @@ def _test_join_fam3_KO(world):
 def _test_join_fam3_denied(world):
     ad1 = world.get_instance('ad1')
     ad1.push_user('bob.fam_t1')
-    fh.ws_join_with_family(ad1.get_sock(), 'XXX99', '#fa#fam_t1@www.ad1.com',
+    fh.ws_join_with_family(ad1.get_sock(), '#fa#fam_t1@www.ad1.com',
                            '#fa#fam_t2@www.ad2.com',
                            ECoreErrno.EDENIED)
     ad1.pop_user()
@@ -199,7 +197,7 @@ def _test_join_fam3_denied(world):
 def _test_join_fam3_already_associated(world):
     ad1 = world.get_instance('ad1')
     ad1.push_user('alice.fam_t1')
-    fh.ws_join_with_family(ad1.get_sock(), 'XXX99', '#fa#upper_fam@www.ad1.com',
+    fh.ws_join_with_family(ad1.get_sock(), '#fa#upper_fam@www.ad1.com',
                            '#fa#fam_t2@www.ad1.com',
                            ECoreErrno.EALREADY_ASSOCIATED)
     ad1.pop_user()

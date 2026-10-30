@@ -45,18 +45,19 @@ def ws_invite_user_macro(ws, user_handle, invite_code, user_inbox):
 
     msg = user_inbox.pop_lst_msg()
 
-    code_mt = re.search("invite_code (.*)$", msg.content)
+    gCon.log(f">>> the msg is {msg.content} <<<")
+
+    code_mt = re.search("invite_code (.*?) password", msg.content,
+                        re.MULTILINE)
     assert code_mt is not None
 
     code_got = code_mt.group(1)
     assert code_got == invite_code
 
-    gCon.log(f"the msg is {msg.content}")
 
-
-def ws_join_with_family(ws, invite_code, containing_family, inner_family,
+def ws_join_with_family(ws, containing_family, inner_family,
                         code_exp = ECoreErrno.DONE_OK):
-    cmd = f"family.join invite_code {invite_code} containing_family {containing_family}"
+    cmd = f"family.join containing_family {containing_family}"
     cmd += f" inner_family {inner_family}"
     return tu.ws_send_cmd(ws, cmd, code_exp)
 
