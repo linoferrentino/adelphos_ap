@@ -89,11 +89,11 @@ class FamilyCalls:
     @staticmethod
     @active_login
     async def _sys_call_invite(kernel, session, pars):
-        user_handle = pars['user_handle']
-        social_gw = kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
-        gCon.rule(f"searching============ {user_handle}")
-        user_dto = await social_gw.discover_user(user_handle)
-        gCon.rule(f"[red]found! ============ {user_handle}[/red]")
+        #user_handle = pars['user_handle']
+        #social_gw = kernel.get_dep(Dependencies.SOCIAL_GATEWAY)
+        #gCon.rule(f"searching============ {user_handle}")
+        #user_dto = await social_gw.discover_user(user_handle)
+        #gCon.rule(f"[red]found! ============ {user_handle}[/red]")
         await _family_add_invite_safe(kernel, pars)
 
 

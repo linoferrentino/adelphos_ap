@@ -15,6 +15,7 @@
 from abc import ABC, abstractmethod
 from app.exc.AdelphosException import AdelphosException
 from starlette.exceptions import HTTPException
+from app.logging import gCon
 
 
 class AbstractTransport(ABC):
@@ -39,6 +40,7 @@ class AbstractTransport(ABC):
             #raise AdelphosException(errno)
             return val
         except HTTPException as exc:
+            gCon.log(f"got a http {exc}, transform it as a {errno}")
             raise AdelphosException(errno)
 
 

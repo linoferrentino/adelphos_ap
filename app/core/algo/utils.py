@@ -15,6 +15,7 @@
 import traceback
 
 from app.core.ECoreErrno import ECoreErrno
+from app.core.AdelphosCoreException import AdelphosBaseException
 from app.core.AdelphosCoreException import AdelphosCoreException
 from app.federation.FdbException import FdbException
 import traceback
@@ -41,19 +42,23 @@ def federated_transaction(raise_if_fail):
                         }
                 fdb.commit_transaction(t_id)
                 return res if res is not None else ECoreErrno.DONE_OK
-            except AdelphosCoreException as ex:
-                traceback.print_exc()
-                fdb.rollback_transaction(t_id)
-                if raise_if_fail == False:
-                    return -ex.errno
-                raise ex
+
             except FdbException as fdbex:
                 traceback.print_exc()
                 fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
                     return str(fdbex)
                 raise AdelphosCoreException(ECoreErrno.EFDB, fdbex.out_str) from fdbex
+
+            except AdelphosBaseException as ex:
+                traceback.print_exc()
+                fdb.rollback_transaction(t_id)
+                if raise_if_fail == False:
+                    return -ex.errno
+                raise ex
+
             except Exception as exc:
+                gCon.log(f">>>>>> got an exc {exc} returning ESYS")
                 traceback.print_exc()
                 fdb.rollback_transaction(t_id)
                 if raise_if_fail == False:
