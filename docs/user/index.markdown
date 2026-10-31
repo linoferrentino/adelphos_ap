@@ -10,20 +10,6 @@ sidebar:
 
 ---
 
-***
-
-**IMPORTANT!**
-
-**Adelphos is in pre-release state.**
-
-The planned date of the first release is: Nov. 1st 2026
-
-Before that the documentation and the software will change, please be patient.
-
-***
-***
-
-
 > 40 καὶ ἀποκριθεὶς ὁ βασιλεὺς ἐρεῖ αὐτοῖς, Ἀμὴν λέγω ὑμῖν, ἐφ' ὅσον ἐποιήσατε ἑνὶ τούτων τῶν ἀδελφῶν μου τῶν ἐλαχίστων, ἐμοὶ ἐποιήσατε.  
 >  
 > The King will answer them, ‘Most certainly I tell you, because you did it to one of the least of these my brothers, you did it to me.’  
